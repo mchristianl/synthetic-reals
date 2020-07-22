@@ -9,13 +9,17 @@ open import Cubical.Relation.Binary.Base
 open import Cubical.Data.Sum.Base
 open import Cubical.Data.Sigma.Base
 open import Cubical.Data.Empty renaming (elim to ⊥-elim) -- `⊥` and `elim`
-open import Cubical.Structures.Poset
+-- open import Cubical.Structures.Poset
+open import Cubical.Foundations.Function
 
+open import Function.Base using (_∋_)
+open import Function.Base using (it) -- instance search
+
+-- open import Function.Reasoning using (∋-syntax)
 
 -- TODO: merge the notes with Hit.agda
--- there seems to be a convention that
---   We will adopt the convention of denoting the level of the carrier
---   set by ℓ₀ and the level of the relation result by ℓ₁.
+-- NOTE: there seems to be a convention that
+--   "We will adopt the convention of denoting the level of the carrier set by ℓ₀ and the level of the relation result by ℓ₁."
 
 -- https://www.cs.bham.ac.uk/~abb538/thesis.pdf
 -- Booij 2020 - Analysis in Univalent Type Theory
@@ -79,6 +83,9 @@ module ClassicalFieldModule where -- NOTE: one might want to put this into anoth
 -- - A strict partial order, denoted by <, is an irreflexive transitive cotransitive relation.
 
 -- NOTE: there is also PropRel in Cubical.Relation.Binary.Base which uses
+-- NOTE: one needs these "all-lowercase constructors" to make use copatterns
+-- NOTE: see also Relation.Binary.Indexed.Homogeneous.Definitions.html
+-- NOTE: see also Algebra.Definitions.html
 
 IsIrrefl : {ℓ ℓ' : Level} {A : Type ℓ} → (R : Rel A A ℓ') → Type (ℓ-max ℓ ℓ')
 IsIrrefl {A = A} R = (a : A) → ¬(R a a)
@@ -105,6 +112,52 @@ record IsStrictPartialOrder {ℓ ℓ' : Level} {A : Type ℓ} (R : Rel A A ℓ')
     isTrans   : BinaryRelation.isTrans R
     isCotrans : IsCotrans R
 
+-- NOTE: because it fits here we just also do
+
+record IsPreorder {ℓ ℓ' : Level} {A : Type ℓ} (R : Rel A A ℓ') : Type (ℓ-max ℓ ℓ') where
+  constructor ispreorder
+  field
+    isRefl    : BinaryRelation.isRefl R
+    isTrans   : BinaryRelation.isTrans R
+
+-- NOTE: there is already
+--         isAntisym : {A : Type ℓ₀} → isSet A → Order ℓ₁ A → hProp (ℓ-max ℓ₀ ℓ₁)
+--       in Cubical.Structures.Poset. Can we use this?
+
+IsAntisym : {ℓ ℓ' : Level} {A : Type ℓ} → (R : Rel A A ℓ') → Type (ℓ-max ℓ ℓ')
+IsAntisym {A = A} R = ∀ a b → R a b → R b a → a ≡ b
+
+record IsPartialOrder {ℓ ℓ' : Level} {A : Type ℓ} (R : Rel A A ℓ') : Type (ℓ-max ℓ ℓ') where
+  constructor ispartialorder
+  field
+    isRefl    : BinaryRelation.isRefl R
+    isAntisym : IsAntisym R 
+    isTrans   : BinaryRelation.isTrans R
+
+IsConnexive : {ℓ ℓ' : Level} {A : Type ℓ} → (R : Rel A A ℓ') → Type (ℓ-max ℓ ℓ')
+IsConnexive {A = A} R = ∀ a b → (R a b) ⊎ (R b a)
+
+record IsTotalOrder {ℓ ℓ' : Level} {A : Type ℓ} (R : Rel A A ℓ') : Type (ℓ-max ℓ ℓ') where
+  constructor istotalorder
+  field
+    isAntisym   : IsAntisym R 
+    isTrans     : BinaryRelation.isTrans R
+    isConnexive : IsConnexive R
+
+IsAsym : {ℓ ℓ' : Level} {A : Type ℓ} → (R : Rel A A ℓ') → Type (ℓ-max ℓ ℓ')
+IsAsym {A = A} R = ∀ a b → R a b → ¬ R b a
+
+IsTrichotomous : {ℓ ℓ' : Level} {A : Type ℓ} → (R : Rel A A ℓ') → Type (ℓ-max ℓ ℓ')
+IsTrichotomous {A = A} R = ∀ a b → ((R a b) ⊎ (R b a)) ⊎ (a ≡ b)
+
+record IsStrictTotalOrder {ℓ ℓ' : Level} {A : Type ℓ} (R : Rel A A ℓ') : Type (ℓ-max ℓ ℓ') where
+  constructor isstricttotalorder
+  field
+    isTrans        : BinaryRelation.isTrans R
+    isTrichotomous : IsTrichotomous R
+    isIrrefl       : IsIrrefl R
+    isAsym         : IsAsym R
+
 -- Definition 4.1.5.
 -- A constructive field is a set F with points 0, 1 : F, binary operations +, · : F → F → F, and a binary relation # such that
 -- 1. (F, 0, 1, +, ·) is a commutative ring with unit;
@@ -118,11 +171,12 @@ record IsConstructiveField {F : Type ℓ}
 
   field
     isCommRing : IsCommRing 0f 1f _+_ _·_ -_
-    ·-rinv     : (x : F) → (p : x # 0f) → x · (_⁻¹ᶠ x {{p}}) ≡ 1f
-    ·-linv     : (x : F) → (p : x # 0f) → (_⁻¹ᶠ x {{p}}) · x ≡ 1f
-    ·-inv-back : (x y : F) → (x · y ≡ 1f) → x # 0f × y # 0f
-    +-#-extensional : (w x y z : F) → (w + x) # (y + z) → (w # y) ⊎ (x # z)
-    isApartnessRel : IsApartnessRel _#_
+    ·-rinv     : ∀ x → (p : x # 0f) → x · (_⁻¹ᶠ x {{p}}) ≡ 1f
+    ·-linv     : ∀ x → (p : x # 0f) → (_⁻¹ᶠ x {{p}}) · x ≡ 1f
+    ·-inv-back : ∀ x y → (x · y ≡ 1f) → x # 0f × y # 0f
+    #-tight    : ∀ x y → ¬(x # y) → x ≡ y
+    +-#-extensional : ∀ w x y z → (w + x) # (y + z) → (w # y) ⊎ (x # z)
+    isApartnessRel  : IsApartnessRel _#_
 
   open IsCommRing {0r = 0f} {1r = 1f} isCommRing public
   open IsApartnessRel isApartnessRel public
@@ -151,6 +205,17 @@ record ConstructiveField : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
 
   open IsConstructiveField isConstructiveField public
 
+
+-- NOTE: some syntax for "implicational" reasoning
+infix  3 _◼ -- for a list of unicode symbols in agda, see https://people.inf.elte.hu/divip/AgdaTutorial/Symbols.html
+infixr 2 _⇒⟨_⟩_
+
+_⇒⟨_⟩_ : ∀{ℓ ℓ' ℓ''} {Q : Type ℓ'} {R : Type ℓ''} → (P : Type ℓ) → (P → Q) → (Q → R) → (P → R)
+_ ⇒⟨ pq ⟩ qr = qr ∘ pq
+
+_◼ : ∀{ℓ} (A : Type ℓ) → A → A
+_ ◼ = λ x → x
+
 -- Lemma 4.1.6.
 -- For a constructive field (F, 0, 1, +, ·, #), the following hold.
 -- 1. 1 # 0.
@@ -160,7 +225,6 @@ record ConstructiveField : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
 --    w · x # y · z ⇒ w # y ∨ x # z.
 module Lemmas-4-6-1 (F : ConstructiveField {ℓ} {ℓ'}) where
 
-  open import Function.Base using (it) -- instance search
   open ConstructiveField F
   
   open import Cubical.Structures.Ring
@@ -174,7 +238,7 @@ module Lemmas-4-6-1 (F : ConstructiveField {ℓ} {ℓ'}) where
   1f#0f with ·-identity 1f
   1f#0f | 1·1≡1 , _ = fst (·-inv-back _ _ 1·1≡1)
 
-  -- a few facts about rings that might be collected from elsewhere
+  -- NOTE: a few facts about rings that might be collected from elsewhere
   a+b-b≡a : ∀ a b → a ≡ (a + b) - b
   a+b-b≡a a b = let P = sym (fst (+-inv b))
                     Q = sym (fst (+-identity a))
@@ -198,6 +262,9 @@ module Lemmas-4-6-1 (F : ConstructiveField {ℓ} {ℓ'}) where
           LHS₂ = transport (λ j →  (+-assoc a b (- b)) j ≡ fst (+-identity a) j) LHS₁
           in  LHS₂ i ≡ RHS i  
     ) (+-preserves-≡ (- b) a+b≡0)
+
+  -- NOTE: there is already
+  -- -commutesWithRight-· : (x y : R) →  x · (- y) ≡ - (x · y)
 
   a·-b≡-a·b : ∀ a b → a · (- b) ≡ - a · b
   a·-b≡-a·b a b =
@@ -225,23 +292,13 @@ module Lemmas-4-6-1 (F : ConstructiveField {ℓ} {ℓ'}) where
     let P = transport (λ i →  a+b-b≡a x z i # a+b-b≡a y z i ) x#y 
     in  +-#-extensional _ _ _ _ P
   ... | inl x+z#y+z = x+z#y+z
-  ... | inr  -z#-z  = ⊥-elim (#-irrefl _ _ -z#-z -z#-z) 
+  ... | inr  -z#-z  = ⊥-elim (#-irrefl _ -z#-z)
 
   -- The other direction is similar.
   +-#-compatible-inv : ∀(x y z : Carrier) → x + z # y + z → x # y
   +-#-compatible-inv _ _ _ x+z#y+z with +-#-extensional _ _ _ _ x+z#y+z
   ... | inl x#y = x#y
-  ... | inr z#z = ⊥-elim (#-irrefl _ _ z#z z#z)
-
-  -- NOTE: some syntax for "implicational" reasoning
-  infix  3 _◼ -- for a list of unicode symbols in agda, see https://people.inf.elte.hu/divip/AgdaTutorial/Symbols.html
-  infixr 2 _⇒⟨_⟩_
-
-  _⇒⟨_⟩_ : ∀{ℓ ℓ' ℓ''} {Q : Type ℓ'} {R : Type ℓ''} → (P : Type ℓ) → (P → Q) → (Q → R) → (P → R)
-  _ ⇒⟨ pq ⟩ qr = qr ∘ pq
-
-  _◼ : ∀{ℓ} (A : Type ℓ) → A → A
-  _ ◼ = λ x → x
+  ... | inr z#z = ⊥-elim (#-irrefl _ z#z)
 
   -- Lemma 4.1.6.3
   ·-#-extensional-case1 : ∀(w x y z : Carrier) → w · x # y · z → w · x # w · z → x # z
@@ -274,7 +331,7 @@ module Lemmas-4-6-1 (F : ConstructiveField {ℓ} {ℓ'}) where
 -- Given a strict partial order < on a set X:
 -- 1. we have an apartness relation defined by
 --    x # y := (x < y) ∨ (y < x), and
-
+--
 _#'_ : ∀{X : Type ℓ} {_<_ : Rel X X ℓ'} → Rel X X ℓ'
 _#'_ {_<_ = _<_} x y = (x < y) ⊎ (y < x)
 
@@ -282,30 +339,91 @@ swap : ∀{x : Type ℓ} {y : Type ℓ'} → x ⊎ y → y ⊎ x
 swap (inl x) = inr x
 swap (inr x) = inl x
 
-#'-isApartnessRel : ∀{X : Type ℓ} {_<_ : Rel X X ℓ'} → IsStrictPartialOrder _<_ → IsApartnessRel (_#'_ {_<_ = _<_})
-#'-isApartnessRel {X = X} {_<_ = _<_} isSPO =
+#'-isApartnessRel : ∀{X : Type ℓ} {_<_ : Rel X X ℓ'} → {IsStrictPartialOrder _<_} → IsApartnessRel (_#'_ {_<_ = _<_})
+#'-isApartnessRel {X = X} {_<_ = _<_} {isSPO} =
   -- decompose record: see https://agda.readthedocs.io/en/v2.6.1/language/let-and-where.html#let-record-pattern
   let (isstrictpartialorder <-irrefl <-trans <-cotrans) = isSPO
   in λ where -- anonymous copattern-matching lambda: see https://agda.readthedocs.io/en/v2.6.1/language/record-types.html
     -- clauses work here and case-split does also work!
     -- but I get a "Not implemented: The Agda synthesizer (Agsy) does not support copatterns yet" on proof search
-    --.IsApartnessRel.isIrrefl a b a#b (inl b<a) → <-isIrrefl b a b<a {!!}
-    --.IsApartnessRel.isIrrefl a b a#b (inr a<b) → {!!}
-    .IsApartnessRel.isIrrefl a b (inl a<b) → {!!}
-    .IsApartnessRel.isIrrefl a b (inr b<a) → {!!}
-    .IsApartnessRel.isSym     → {!!}
-    .IsApartnessRel.isCotrans → {!!}
+    .IsApartnessRel.isIrrefl a (inl a<a) → <-irrefl _ a<a
+    .IsApartnessRel.isIrrefl a (inr a<a) → <-irrefl _ a<a
+    .IsApartnessRel.isSym    a b p → swap p
+    .IsApartnessRel.isCotrans a b (inl a<b) x → case (<-cotrans _ _ a<b x) of λ where -- case x of f = f x
+      -- NOTE: here we have proof search again
+      (inl a<x) → inl (inl a<x)
+      (inr x<b) → inr (inl x<b)
+    .IsApartnessRel.isCotrans a b (inr b<a) x → case (<-cotrans _ _ b<a x) of λ where
+      (inl b<x) → inr (inr b<x)
+      (inr x<a) → inl (inr x<a)
+
+-- variant without copatterns: "just" move the `λ where` "into" the record
+#'-isApartnessRel' : ∀{X : Type ℓ} {_<_ : Rel X X ℓ'} → {IsStrictPartialOrder _<_} → IsApartnessRel (_#'_ {_<_ = _<_})
+#'-isApartnessRel' {X = X} {_<_ = _<_} {isSPO} =
+  let (isstrictpartialorder <-irrefl <-trans <-cotrans) = isSPO
+  in record
+    { isIrrefl  = λ where a (inl a<a) → <-irrefl _ a<a
+                          a (inr a<a) → <-irrefl _ a<a
+    ; isSym     = λ where a b p → swap p
+    ; isCotrans = λ where
+      a b (inl a<b) x → case (<-cotrans _ _ a<b x) of λ where
+        (inl a<x) → inl (inl a<x)
+        (inr x<b) → inr (inl x<b)
+      a b (inr b<a) x → case (<-cotrans _ _ b<a x) of λ where
+        (inl b<x) → inr (inr b<x)
+        (inr x<a) → inl (inr x<a)
+    }
 
 -- 2. we have a preorder defined by
 --    x ≤ y := ¬(y < x).
--- 
+
+_≤'_ : ∀{X : Type ℓ} {_<_ : Rel X X ℓ'} → Rel X X ℓ'
+_≤'_ {_<_ = _<_} x y = ¬ (y < x)
+
+≤-isPreorder' : ∀{X : Type ℓ} {_<_ : Rel X X ℓ'} → {IsStrictPartialOrder _<_} → IsPreorder (_≤'_ {_<_ = _<_})
+≤-isPreorder' {X = X} {_<_ = _<_} {isSPO} =
+  let (isstrictpartialorder <-irrefl <-trans <-cotrans) = isSPO
+  in λ where
+   .IsPreorder.isRefl → <-irrefl
+   .IsPreorder.isTrans a b c ¬b<a ¬c<b c<a → case (<-cotrans _ _ c<a b) of λ where
+     (inl c<b) → ¬c<b c<b
+     (inr b<a) → ¬b<a b<a
+
 -- Definition 4.1.8.
 -- Let (A, ≤) be a partial order, and let min, max : A → A → A be binary operators on A. We say that (A, ≤, min, max) is a lattice if min computes greatest lower bounds in the sense that for every x, y, z : A, we have
 --   z ≤ min(x,y) ⇔ z ≤ x ∧ z ≤ y,
 -- and max computes least upper bounds in the sense that for every x, y, z : A, we have
 --   max(x,y) ≤ z ⇔ x ≤ z ∧ y ≤ z.
--- 
--- Remark 4.1.9.
+
+record IsLattice {A : Type ℓ}
+                 (_≤_ : Rel A A ℓ') (min max : A → A → A) : Type (ℓ-max ℓ ℓ') where
+  constructor islattice
+  field
+    isPartialOrder : IsPartialOrder _≤_
+    glb      : ∀ x y z → z ≤ min x y → z ≤ x × z ≤ y
+    glb-back : ∀ x y z → z ≤ x × z ≤ y → z ≤ min x y
+    lub      : ∀ x y z → max x y ≤ z → x ≤ z × y ≤ z
+    lub-back : ∀ x y z → x ≤ z × y ≤ z → max x y ≤ z
+
+  open IsPartialOrder isPartialOrder public
+    renaming
+      ( isRefl    to ≤-refl
+      ; isAntisym to ≤-antisym
+      ; isTrans   to ≤-trans )
+
+record Lattice : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
+  constructor lattice
+  field
+    Carrier : Type ℓ
+    _≤_ : Rel Carrier Carrier ℓ'
+    min max : Carrier → Carrier → Carrier
+    isLattice : IsLattice _≤_ min max
+
+  infixl 4 _≤_
+
+  open IsLattice isLattice public
+
+-- Remark 4.1.9.2
 -- 1. From the fact that (A, ≤, min, max) is a lattice, it does not follow that for every x and y, min(x,y) = x ∨ min(x,y) = y. However, we can characterize min as
 --   z < min(x,y) ⇔ z < x ∨ z < y
 --   and similarly for max, see Lemma 6.7.1.
@@ -324,7 +442,99 @@ swap (inr x) = inl x
 --    x + y < z + w ⇒ x < z ∨ y < w, (†)
 --    0 < z ∧ x < y ⇒ x z < y z.     (∗)
 -- Our notion of ordered fields coincides with The Univalent Foundations Program [89, Definition 11.2.7].
--- 
+
+-- NOTE: well, the HOTT book definition organizes things slightly different. Why prefer one approach over the other?
+
+record IsOrderedField {F : Type ℓ}
+                 (0f 1f : F) (_+_ : F → F → F) (-_ : F → F) (_·_ min max : F → F → F) (_<_ _#_ _≤_ : Rel F F ℓ') (_⁻¹ᶠ : (x : F) → {{x # 0f}} → F) : Type (ℓ-max ℓ ℓ') where
+  constructor isorderedfield
+  field
+    -- 1.
+    isCommRing : IsCommRing 0f 1f _+_ _·_ -_
+    -- 2.
+    <-isStrictTotalOrder : IsStrictTotalOrder _<_
+    -- 3.
+    ·-rinv     : (x : F) → (p : x # 0f) → x · (_⁻¹ᶠ x {{p}}) ≡ 1f
+    ·-linv     : (x : F) → (p : x # 0f) → (_⁻¹ᶠ x {{p}}) · x ≡ 1f
+    ·-inv-back : (x y : F) → (x · y ≡ 1f) → x # 0f × y # 0f
+    -- 4.
+    ≤-isPartialOrder : IsPartialOrder _≤_
+    -- 5.
+    <-isLattice : IsLattice _≤_ min max
+    -- 6. (†)
+    -- NOTE: this is 'shifted' from the pevious definition of #-extensionality for + .. does the name still fit?
+    +-<-extensional : ∀ w x y z → (x + y) < (z + w) → (x < z) ⊎ (y < w)
+    -- 6. (∗)
+    ·-preserves-< : ∀ x y z → 0f < z → x < y → (x · z) < (y · z)
+
+  open IsCommRing {0r = 0f} {1r = 1f} isCommRing public
+  open IsStrictTotalOrder <-isStrictTotalOrder public
+    renaming
+      ( isTrans        to <-trans
+      ; isTrichotomous to <-tricho
+      ; isIrrefl       to <-irrefl
+      ; isAsym         to <-asym )
+  open IsPartialOrder ≤-isPartialOrder public
+    renaming
+      ( isRefl    to ≤-refl
+      ; isAntisym to ≤-antisym
+      ; isTrans   to ≤-trans )
+  open IsLattice <-isLattice public    
+
+record OrderedField : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
+  field
+    Carrier : Type ℓ
+    0f 1f   : Carrier
+    _+_     : Carrier → Carrier → Carrier
+    -_      : Carrier → Carrier
+    _·_     : Carrier → Carrier → Carrier
+    min max : Carrier → Carrier → Carrier
+    _<_     : Rel Carrier Carrier ℓ'
+
+  _#_ = _#'_ {_<_ = _<_}
+  _≤_ = _≤'_ {_<_ = _<_}
+
+  field
+    _⁻¹ᶠ    : (x : Carrier) → {{x # 0f}} → Carrier
+    isOrderedField : IsOrderedField 0f 1f _+_ -_ _·_ min max _<_ _#_ _≤_ _⁻¹ᶠ
+
+  infix  9 _⁻¹ᶠ
+  infixl 7 _·_
+  infix  6 -_
+  infixl 5 _+_
+  infixl 4 _#_
+  infixl 4 _≤_
+  infixl 4 _<_
+
+  open IsOrderedField isOrderedField public
+
+  abstract
+    -- NOTE: there might be some reason not to "do" (or "open") all the theory of a record within that record
+    +-preserves-< : ∀ a b x → a < b → a + x < b + x
+    +-preserves-< a b x a<b = (
+       a            <  b            ⇒⟨ transport (λ i → sym (fst (+-identity a)) i < sym (fst (+-identity b)) i) ⟩
+       a +    0f    <  b +    0f    ⇒⟨ transport (λ i → a + sym (+-rinv x) i < b + sym (+-rinv x) i) ⟩
+       a + (x  - x) <  b + (x  - x) ⇒⟨ transport (λ i → +-assoc a x (- x) i < +-assoc b x (- x) i) ⟩
+      (a +  x) - x  < (b +  x) - x  ⇒⟨ +-<-extensional (- x) (a + x) (- x) (b + x) ⟩
+      (a + x < b + x) ⊎ (- x < - x) ⇒⟨ (λ{ (inl a+x<b+x) → a+x<b+x -- somehow ⊥-elim needs a hint in the next line
+                                         ; (inr  -x<-x ) → ⊥-elim {A = λ _ → (a + x < b + x)} (<-irrefl (- x) -x<-x) }) ⟩
+       a + x < b + x ◼) a<b
+
+    <-isStrictPartialOrder : IsStrictPartialOrder _<_
+    <-isStrictPartialOrder = record
+     { isIrrefl  = <-irrefl
+     ; isTrans   = <-trans
+     ; isCotrans = λ where
+       a b a<b x →
+         ( a      <  b      ⇒⟨ +-preserves-< _ _ _ ⟩
+           a + x  <  b + x  ⇒⟨ transport (λ i → a + x < (+-comm b x) i) ⟩
+           a + x  <  x + b  ⇒⟨ +-<-extensional b a x x ⟩
+          (a < x) ⊎ (x < b) ◼) a<b
+     }
+
+    ≤-isPreorder : IsPreorder _≤_
+    ≤-isPreorder = ≤-isPreorder' {_<_ = _<_} {<-isStrictPartialOrder} 
+
 -- Lemma 4.1.11.
 -- In the presence of the first five axioms of Definition 4.1.10, conditions (†) and (∗) are together equivalent to the condition that for all x, y, z : F,
 --  1. x ≤ y ⇔ ¬(y < x),
@@ -337,12 +547,313 @@ swap (inr x) = inl x
 --  8. x ≤ y ∧ 0 ≤ z ⇒ x z ≤ y z,
 --  9. 0 < z ⇒ (x < y ⇔ x z < y z),
 -- 10. 0 < 1.
+-- NOTE: this looks useful, so we might want to have it separately
+--       therefore I'll just copy the `OrderedField` record's nested structure (Definition 4.1.10)
+--       although this "header" of it looks very ugly
+-- NOTE: well, there is some syntax for this: https://lists.chalmers.se/pipermail/agda/2018/010217.html
+--       also see https://github.com/agda/agda/issues/1235
+--       BUT: it adds a ₁ to every symbol in the goal preview, even when normalizing
+module Lemma-4-1-11
+  --------------------------------------- structures
+  (F       : Type ℓ)
+  (0f 1f   : F)
+  (_+_     : F → F → F)
+  (-_      : F → F)
+  (_·_     : F → F → F)
+  (min max : F → F → F)
+  (_<_     : Rel F F ℓ')
+  --------------------------------------- definitions (fixites)
+  -- https://lists.chalmers.se/pipermail/agda/2018/010217.html
+  --   Those lets are not parameters of the module
+  (let _·_  = _·_ ; infixl 7 _·_ )
+  (let -_   = -_  ; infix  6 -_ )
+  (let _+_  = _+_ ; infixl 5 _+_ )
+  (let _<_  = _<_ ; infixl 4 _<_ )
+  --------------------------------------- properties
+  -- 1.
+  (isCommRing : IsCommRing 0f 1f _+_ _·_ -_)
+  -- 2.
+  (<-isStrictTotalOrder : IsStrictTotalOrder _<_)
+  --------------------------------------- definitions
+  (let _#_ = _#'_ {_<_ = _<_}; infixl 4 _#_)
+  (let _≤_ = _≤'_ {_<_ = _<_}; infixl 4 _≤_)
+  --------------------------------------- structures
+  (_⁻¹ᶠ    : (x : F) → {{x # 0f}} → F)
+  (let _⁻¹ᶠ = _⁻¹ᶠ; infix  9 _⁻¹ᶠ)
+  --------------------------------------- properties
+  -- 3.
+  (·-rinv     : ∀ x → (p : x # 0f) → x · (_⁻¹ᶠ x {{p}}) ≡ 1f)
+  (·-linv     : ∀ x → (p : x # 0f) → (_⁻¹ᶠ x {{p}}) · x ≡ 1f)
+  (·-inv-back : ∀(x y : F) → (x · y ≡ 1f) → (x # 0f) × (y # 0f) )
+  -- 4.
+  (≤-isPartialOrder : IsPartialOrder _≤_)
+  -- 5.
+  (<-isLattice : IsLattice _≤_ min max)
+  --------------------------------------- definitions (fixites)
+  -- https://lists.chalmers.se/pipermail/agda/2018/010217.html
+  --   Those lets are not parameters of the module
+  -- this one is tricky: its usually from `Group` and we get it by opening `IsCommRing`
+  -- (let _-_  = λ(x y : F) → x + (- y) ; infixl 6 _-_)
+  where
+  --------------------------------------- populating the scope
+  open IsCommRing {0r = 0f} {1r = 1f} isCommRing public
+  open IsStrictTotalOrder <-isStrictTotalOrder public
+    renaming
+      ( isTrans        to <-trans
+      ; isTrichotomous to <-tricho
+      ; isIrrefl       to <-irrefl
+      ; isAsym         to <-asym )
+  open IsPartialOrder ≤-isPartialOrder public
+    renaming
+      ( isRefl    to ≤-refl
+      ; isAntisym to ≤-antisym
+      ; isTrans   to ≤-trans )
+  open IsLattice <-isLattice public    
+
+----8<---------------------------8<--------------------------8<----
+
+  -- NOTE: I am doing this for the n'th time now ...
+  --       these four cases can surely be omitted by using correct equivalences (TODO)
+  -- NOTE: I think I am very close. Sometimes it amounts just to dropping `transport` to have the equivalence
+  --       so there is still some exercise for getting used to this
+
+  -- +-preserves-≡ʳ : ∀ x y z → x ≡ y → x + z ≡ y + z
+  -- +-preserves-≡ʳ x y z x≡y = transport (λ i → x + z ≡ x≡y i + z) refl
+
+  -- +-preserves-≡ˡ : ∀ x y z → x ≡ y → z + x ≡ z + y
+  -- +-preserves-≡ˡ x y z x≡y = transport (λ i → z + x ≡ z + x≡y i) refl
+
+  open import Cubical.Structures.Ring
+  R = (makeRing 0f 1f _+_ _·_ -_ is-set +-assoc +-rid +-rinv +-comm ·-assoc ·-rid ·-lid ·-rdist-+ ·-ldist-+)
+
+  -- implicitInverse : (x y : F) → x + y ≡ 0f → y ≡ - x
+  -- implicitInverse = Theory.implicitInverse R
+
+  -isDistributive : (x y : F) → (- x) + (- y) ≡ - (x + y)
+  -isDistributive = Theory.-isDistributive R
+
+  -- translatedDifference : (x a b : F) → a - b ≡ (x + a) - (x + b)
+  -- translatedDifference = Theory.translatedDifference R
+
+  module forward
+    -- 6. (†)
+    (+-<-extensional : ∀ w x y z → (x + y) < (z + w) → (x < z) ⊎ (y < w))
+    -- 6. (∗)
+    (·-preserves-< : ∀ x y z → 0f < z → x < y → (x · z) < (y · z))
+    where
+
+    -- NOTE: the equivalences might be proven together
+    -- TODO: name these
+
+    --  1. x ≤ y ⇔ ¬(y < x),
+    item-1 : ∀ x y → x ≤ y → ¬(y < x)
+    item-1 = λ _ _ x≤y → x≤y -- holds definitionally
+
+    item-1-back : ∀ x y → ¬(y < x) → x ≤ y
+    item-1-back = λ _ _ ¬[y<x] → ¬[y<x]
+
+    --  2. x # y ⇔ (x < y) ∨ (y < x)
+    item-2 : ∀ x y → x # y → (x < y) ⊎ (y < x)
+    item-2 = λ _ _ x#y → x#y -- holds definitionally
+
+    item-2-back : ∀ x y → (x < y) ⊎ (y < x) → x # y
+    item-2-back = λ _ _ [x<y]⊎[y<x] → [x<y]⊎[y<x] -- holds definitionally
+
+    -- NOTE: just a plain copy of the previous proof
+    +-preserves-< : ∀ a b x → a < b → a + x < b + x
+    +-preserves-< a b x a<b = (
+       a            <  b            ⇒⟨ transport (λ i → sym (fst (+-identity a)) i < sym (fst (+-identity b)) i) ⟩
+       a +    0f    <  b +    0f    ⇒⟨ transport (λ i → a + sym (+-rinv x) i < b + sym (+-rinv x) i) ⟩
+       a + (x  - x) <  b + (x  - x) ⇒⟨ transport (λ i → +-assoc a x (- x) i < +-assoc b x (- x) i) ⟩
+      (a +  x) - x  < (b +  x) - x  ⇒⟨ +-<-extensional (- x) (a + x) (- x) (b + x) ⟩
+      (a + x < b + x) ⊎ (- x < - x) ⇒⟨ (λ{ (inl a+x<b+x) → a+x<b+x -- somehow ⊥-elim needs a hint in the next line
+                                         ; (inr  -x<-x ) → ⊥-elim {A = λ _ → (a + x < b + x)} (<-irrefl (- x) -x<-x) }) ⟩
+       a + x < b + x ◼) a<b
+
+    +-preserves-<-back : ∀ x y z → x + z < y + z → x < y
+    +-preserves-<-back x y z =
+      ( x + z < y + z              ⇒⟨ +-preserves-< _ _ (- z) ⟩
+        (x + z) - z  < (y + z) - z ⇒⟨ transport (λ i → +-assoc x z (- z) (~ i) < +-assoc y z (- z) (~ i)) ⟩
+        x + (z - z) < y + (z - z)  ⇒⟨ transport (λ i → x + +-rinv z i < y + +-rinv z i) ⟩
+        x + 0f < y + 0f            ⇒⟨ transport (λ i → fst (+-identity x) i < fst (+-identity y) i) ⟩
+        x < y ◼)
+
+    --  3. x ≤ y ⇔ x + z ≤ y + z,
+    item-3 : ∀ x y z → x ≤ y → x + z ≤ y + z
+    item-3 x y z = (
+       x     ≤ y          ⇒⟨ (λ z → z) ⟩ -- unfold the definition
+      (y     < x     → ⊥) ⇒⟨ (λ f → f ∘ (+-preserves-<-back y x z) ) ⟩
+      (y + z < x + z → ⊥) ⇒⟨ (λ z → z) ⟩ -- refold the definition
+       x + z ≤ y + z ◼)
+
+    item-3-back : ∀ x y z → x + z ≤ y + z → x ≤ y
+    item-3-back x y z = (
+       x + z ≤ y + z      ⇒⟨ (λ z → z) ⟩ -- unfold the definition
+      (y + z < x + z → ⊥) ⇒⟨ (λ f p → f (+-preserves-< y x z p)) ⟩ -- just a variant of the above
+      (y     < x     → ⊥) ⇒⟨ (λ z → z) ⟩ -- refold the definition
+       x     ≤ y ◼)
+
+    --  4. x < y ⇔ x + z < y + z,
+    item-4 : ∀ x y z → x < y → x + z < y + z
+    item-4 = +-preserves-<
+
+    item-4-back : ∀ x y z → x + z < y + z → x < y
+    item-4-back = +-preserves-<-back
+
+    --  5. 0 < x + y ⇒ 0 < x ∨ 0 < y,
+    item-5 : ∀ x y → 0f < x + y → (0f < x) ⊎ (0f < y)
+    item-5 x y = (
+      (0f      < x + y) ⇒⟨ transport (λ i → fst (+-identity 0f) (~ i) < x + y) ⟩
+      (0f + 0f < x + y) ⇒⟨ +-<-extensional y 0f 0f x ⟩
+      (0f < x) ⊎ (0f < y) ◼)
+
+    --  6. x < y ≤ z ⇒ x < z,
+    item-6 : ∀ x y z → x < y → y ≤ z → x < z
+    item-6 x y z x<y y≤z = (
+       x      <  y      ⇒⟨ +-preserves-< _ _ _ ⟩
+       x + z  <  y + z  ⇒⟨ transport (λ i → x + z < +-comm y z i) ⟩
+       x + z  <  z + y  ⇒⟨ +-<-extensional y x z z  ⟩
+      (x < z) ⊎ (z < y) ⇒⟨ (λ{ (inl x<z) → x<z
+                             ; (inr z<y) → ⊥-elim (y≤z z<y) }) ⟩
+       x < z  ◼) x<y
+
+    --  7. x ≤ y < z ⇒ x < z,
+    item-7 : ∀ x y z → x ≤ y → y < z → x < z
+    item-7 x y z x≤y = ( -- very similar to the previous one
+       y      <  z      ⇒⟨ +-preserves-< y z x ⟩
+       y + x  <  z + x  ⇒⟨ transport (λ i → +-comm y x i < z + x) ⟩
+       x + y  <  z + x  ⇒⟨ +-<-extensional x x y z ⟩
+      (x < z) ⊎ (y < x) ⇒⟨ (λ{ (inl x<z) → x<z
+                             ; (inr y<x) → ⊥-elim (x≤y y<x)}) ⟩
+       x < z  ◼)
+
+    --  8. x ≤ y ∧ 0 ≤ z ⇒ x z ≤ y z,
+    -- For item 8, suppose x ≤ y and 0 ≤ z and yz < xz. Then 0 < z (x − y) by (†), and so,
+    -- being apart from 0, z (x − y) has a multiplicative inverse w. Hence z itself has a multiplicative
+    -- inverse w (x −y), and so 0 < z ∨ z < 0, where the latter case contradicts the assumption 0 ≤ z,
+    -- so that we have 0 < z. Now w (x − y) has multiplicative inverse z, so it is apart from 0, that
+    -- is (0 < w (x − y)) ∨ (w (x − y) < 0). In the latter case, from (∗) we get zw (x − y) < 0, i.e.
+    -- 1 < 0 which contradicts item 10, so that we have 0 < w (x − y). By (∗), from 0 < w (x − y) and
+    -- yz < xz we get yzw (x − y) < xzw (x − y), so y < x, contradicting our assumption that x ≤ y.
+    item-8 : ∀ x y z → x ≤ y → 0f ≤ z → x · z ≤ y · z
+    item-8 x y z x≤y 0≤z = {! ·-preserves-< x y z !}
+
+    --  9. 0 < z ⇒ (x < y ⇔ x z < y z),
+    item-9 : ∀ x y z → 0f < z → (x < y → x · z < y · z)
+    item-9 = ·-preserves-<
+
+    -- For the other direction of item 9, assume 0 < z and xz < yz, so that yz − xz has a multiplicative
+    -- inverse w, and so z itself has multiplicative inverse w (y − x). Then since 0 < z and
+    -- xz < yz, by (∗), we get xzw (y − x) < yzw (y − x), and hence x < y.
+    item-9-back : ∀ x y z → 0f < z → (x · z < y · z → x < y)
+    item-9-back x y z 0<z =
+      let -- make the instance available
+        instance _ = z # 0f ∋ inr 0<z
+        z⁻¹ = z ⁻¹ᶠ
+        #-sym : ∀{a b} → a # b → b # a
+        #-sym {a} {b} = swap
+        0#z⁻¹ =  #-sym (snd (·-inv-back z z⁻¹ (·-rinv z (inr 0<z))))
+        0<z⁻¹ : 0f < z ⁻¹ᶠ
+        0<z⁻¹ = {! ·-preserves-< 0f 1f  !}
+        -- 0 < 1
+        -- 0 < z · z⁻¹
+      in (
+      (x · z) < (y · z) ⇒⟨ {! ·-preserves-< (x · z) (y · z) z⁻¹!} ⟩
+      (x · z) · z⁻¹ < (y · z) · z⁻¹ ⇒⟨ {!!} ⟩
+      x · (z · z⁻¹) < y · (z · z⁻¹) ⇒⟨ {!!} ⟩
+      x · 1f < y · 1f ⇒⟨ {!!} ⟩
+      x < y ◼)
 
 
--- we have in cubical
+    -- 10. 0 < 1.
+    -- For item 10, since 1 has multiplicative inverse 1, it is apart from 0, hence 0 < 1 ∨ 1 < 0.
+    -- If 1 < 0 then by item 4 we have 0 < −1 and so by (∗) we get 0 < (−1) · (−1), that is, 0 < 1, so by transitivity 1 < 1, contradicting irreflexivity of <.
+    item10 : 0f < 1f
+    item10 with snd (·-inv-back _ _ (fst (·-identity 1f)))
+    ... | inl 1<0 = let
+      0<-1 = (
+       1f < 0f ⇒⟨ +-preserves-< 1f 0f (- 1f) ⟩
+       1f - 1f < 0f - 1f  ⇒⟨ {!!} ⟩
+       0f < - 1f ⇒⟨ {!!} ⟩
+       0f < (- 1f) · (- 1f) ⇒⟨ {!!} ⟩
+       1f < 1f ⇒⟨ {!!} ⟩
+       0f < 1f ◼) 1<0
+      in {! !}
+    ... | inr 0<1 = 0<1
+
+  -- Conversely, assume the 10 listed items—in particular, items 4, 5 and 9.
+  module back
+    -- (item-1      : ∀ x y → x ≤ y → ¬(y < x))
+    -- (item-1-back : ∀ x y → ¬(y < x) → x ≤ y)
+    -- (item-2      : ∀ x y → x # y → (x < y) ⊎ (y < x))
+    -- (item-2-back : ∀ x y → (x < y) ⊎ (y < x) → x # y)
+    -- (item-3      : ∀ x y z → x ≤ y → x + z ≤ y + z)
+    -- (item-3-back : ∀ x y z → x + z ≤ y + z → x ≤ y)
+       (item-4      : ∀ x y z → x < y → x + z < y + z)
+    -- (item-4-back : ∀ x y z → x + z < y + z → x < y)
+       (item-5      : ∀ x y → 0f < x + y → (0f < x) ⊎ (0f < y))
+    -- (item-6      : ∀ x y z → x < y → y ≤ z → x < z)
+    -- (item-7      : ∀ x y z → x ≤ y → y < z → x < z)
+    -- (item-8      : ∀ x y z → x ≤ y → 0f ≤ z → x · z ≤ y · z)
+       (item-9      : ∀ x y z → 0f < z → (x < y → x · z < y · z))
+    -- (item-9-back : ∀ x y z → 0f < z → (x · z < y · z → x < y))
+    -- (item10      : 0f < 1f)
+    where
+
+    item-4' : ∀ x y → 0f < x - y → y < x
+    item-4' x y = (
+      0f     <  x - y         ⇒⟨ item-4 0f (x + (- y)) y ⟩
+      0f + y < (x - y) + y    ⇒⟨ transport (λ i → snd (+-identity y) i < sym (+-assoc x (- y) y) i) ⟩
+           y <  x + (- y + y) ⇒⟨ transport (λ i → y < x + snd (+-inv y) i) ⟩
+           y <  x + 0f        ⇒⟨ transport (λ i → y < fst (+-identity x) i)  ⟩
+           y <  x ◼)
+
+    lemma : ∀ x y z w → (z +   w) + ((- x)  + (- y)) ≡ (z - x) + (w - y)
+    lemma x y z w = (
+      -- NOTE: there has to be a shorter way to to this kind of calculations ...
+      --       also I got not much introspection while creating the paths
+      (z +   w) + ((- x)  + (- y))   ≡⟨ ( λ i → +-assoc z w ((- x)  + (- y)) (~ i)) ⟩
+      (z + ( w  + ((- x)  + (- y)))) ≡⟨ ( λ i → z + (+-assoc w (- x) (- y) i)) ⟩
+      (z + ((w  +  (- x)) + (- y)))  ≡⟨ ( λ i → z + ((+-comm w (- x) i) + (- y)) ) ⟩
+      (z + (((- x) +  w)  + (- y)))  ≡⟨ ( λ i → z + (+-assoc (- x) w (- y) (~ i))) ⟩
+      (z + (( - x) + (w - y)))       ≡⟨ ( λ i → +-assoc z (- x) (w  - y) i ) ⟩
+      (z - x) + (w - y) ∎)
+
+    -- 6. (†)
+    -- In order to show (†), suppose x + y < z + w.
+    -- So, by item 4, we get (x + y) − (x + y) < (z + w) − (x + y), that is, 0 < (z − x) + (w − y).
+    -- By item 5, (0 < z − x) ∨ (0 < w − y), and so by item 4 in either case, we get x < z ∨ y < w.
+    +-<-extensional : ∀ w x y z → (x + y) < (z + w) → (x < z) ⊎ (y < w)
+    +-<-extensional w x y z = (
+      (x + y)           < (z + w)           ⇒⟨ item-4 (x + y) (z + w) (- (x + y)) ⟩
+      (x + y) - (x + y) < (z + w) - (x + y)
+        ⇒⟨ transport (λ i → +-rinv (x + y) i < (z + w) + (-isDistributive x y) (~ i))    ⟩
+
+                     0f < (z +   w) + ((- x)  + (- y))   ⇒⟨ transport (λ i → 0f < lemma x y z w i) ⟩
+                     0f < (z - x) + (w - y) ⇒⟨ item-5 (z - x) (w - y) ⟩
+      (0f < z - x) ⊎ (0f < w - y)           ⇒⟨ (λ{ (inl p) → inl (item-4' z x p)
+                                                 ; (inr p) → inr (item-4' w y p)}) ⟩
+      ( x < z    ) ⊎ ( y < w    ) ◼)
+    
+    -- 6. (∗)
+    ·-preserves-< : ∀ x y z → 0f < z → x < y → (x · z) < (y · z)
+    ·-preserves-< = item-9
+
+-- Lemma 4.1.12. An ordered field (F, 0, 1, +, · , min, max, <) is a constructive field (F, 0, 1, +, · , #).
+
+
+-- 4.2 Rationals
+-- ...
+-- NOTE: we have in cubical
 --   import Cubical.HITs.Rationals.HITQ
 --     ℚ as a higher inductive type
 --   import Cubical.HITs.Rationals.QuoQ
 --     ℚ as a set quotient of ℤ × ℕ₊₁ (as in the HoTT book)
 --   import Cubical.HITs.Rationals.SigmaQ
 --     ℚ as the set of coprime pairs in ℤ × ℕ₊₁
+
+-- 4.3 Archimedean property
+--
+-- We now define the notion of Archimedean ordered fields. We phrase this in terms of a certain
+-- interpolation property, that can be defined from the fact that there is a unique morphism of
+-- ordered fields from the rationals to every ordered field.
