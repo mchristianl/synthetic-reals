@@ -25,14 +25,14 @@ open import Function.Base using (it) -- instance search
 -- Booij 2020 - Analysis in Univalent Type Theory
 
 -- 4.1  Algebraic structure of numbers
--- 
+--
 -- Fields have the property that nonzero numbers have a multiplicative inverse, or more precisely, that
 --   (∀ x : F) x ≠ 0 ⇒ (∃ y : F) x · y = 1.
--- 
+--
 -- Remark 4.1.1.
 -- If we require the collection of numbers to form a set in the sense of Definition 2.5.4, and satisfy the ring axioms, then multiplicative inverses are unique, so that the above is equivalent to the proposition
 --   (Π x : F) x ≠ 0 ⇒ (Σ y : F) x · y = 1.
--- 
+--
 -- Definition 4.1.2.
 -- A classical field is a set F with points 0, 1 : F, operations +, · : F → F → F, which is a commutative ring with unit, such that
 --   (∀ x : F) x ≠ 0 ⇒ (∃ y : F) x · y = 1.
@@ -73,11 +73,11 @@ module ClassicalFieldModule where -- NOTE: one might want to put this into anoth
 
 -- Remark 4.1.3.
 -- As in the classical case, by proving that additive and multiplicative inverses are unique, we also obtain the negation and division operations.
--- 
+--
 -- For the reals, the assumption x ≠ 0 does not give us any information allowing us to bound x away from 0, which we would like in order to compute multiplicative inverses.
 -- Hence, we give a variation on the denition of fields in which the underlying set comes equipped with an apartness relation #, which satises x # y ⇒ x ≠ y, although the converse implication may not hold.
 -- This apartness relation allows us to make appropriate error bounds and compute multiplicative inverses based on the assumption x # 0.
--- 
+--
 -- Definition 4.1.4.
 -- - An apartness relation, denoted by #, is an irreflexive symmetric cotransitive relation.
 -- - A strict partial order, denoted by <, is an irreflexive transitive cotransitive relation.
@@ -131,7 +131,7 @@ record IsPartialOrder {ℓ ℓ' : Level} {A : Type ℓ} (R : Rel A A ℓ') : Typ
   constructor ispartialorder
   field
     isRefl    : BinaryRelation.isRefl R
-    isAntisym : IsAntisym R 
+    isAntisym : IsAntisym R
     isTrans   : BinaryRelation.isTrans R
 
 IsConnexive : {ℓ ℓ' : Level} {A : Type ℓ} → (R : Rel A A ℓ') → Type (ℓ-max ℓ ℓ')
@@ -140,7 +140,7 @@ IsConnexive {A = A} R = ∀ a b → (R a b) ⊎ (R b a)
 record IsTotalOrder {ℓ ℓ' : Level} {A : Type ℓ} (R : Rel A A ℓ') : Type (ℓ-max ℓ ℓ') where
   constructor istotalorder
   field
-    isAntisym   : IsAntisym R 
+    isAntisym   : IsAntisym R
     isTrans     : BinaryRelation.isTrans R
     isConnexive : IsConnexive R
 
@@ -175,6 +175,7 @@ record IsConstructiveField {F : Type ℓ}
     ·-linv     : ∀ x → (p : x # 0f) → (_⁻¹ᶠ x {{p}}) · x ≡ 1f
     ·-inv-back : ∀ x y → (x · y ≡ 1f) → x # 0f × y # 0f
     #-tight    : ∀ x y → ¬(x # y) → x ≡ y
+    -- NOTE: the followin ⊎ caused trouble two times with resolving ℓ or ℓ'
     +-#-extensional : ∀ w x y z → (w + x) # (y + z) → (w # y) ⊎ (x # z)
     isApartnessRel  : IsApartnessRel _#_
 
@@ -186,6 +187,7 @@ record IsConstructiveField {F : Type ℓ}
       ; isCotrans to #-cotrans )
 
 record ConstructiveField : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
+  constructor constructivefield
   field
     Carrier : Type ℓ
     0f   : Carrier
@@ -196,7 +198,7 @@ record ConstructiveField : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
     _#_  : Rel Carrier Carrier ℓ'
     _⁻¹ᶠ : (x : Carrier) → {{x # 0f}} → Carrier
     isConstructiveField : IsConstructiveField 0f 1f _+_ _·_ -_ _#_ _⁻¹ᶠ
- 
+
   infix  9 _⁻¹ᶠ
   infixl 7 _·_
   infix  6 -_
@@ -226,7 +228,7 @@ _ ◼ = λ x → x
 module Lemmas-4-6-1 (F : ConstructiveField {ℓ} {ℓ'}) where
 
   open ConstructiveField F
-  
+
   open import Cubical.Structures.Ring
   -- NOTE: this also creates additional `Ring.Carrier (makeRing ...)` in the "Goal/Have-previews", except when using C-u C-u C-... then these get normalized fine
   -- using this `R` makes it a little better
@@ -260,7 +262,7 @@ module Lemmas-4-6-1 (F : ConstructiveField {ℓ} {ℓ'}) where
           LHS₁ = +-preserves-≡-l a (fst (+-inv b))
           LHS₂ : (a + b) - b ≡ a
           LHS₂ = transport (λ j →  (+-assoc a b (- b)) j ≡ fst (+-identity a) j) LHS₁
-          in  LHS₂ i ≡ RHS i  
+          in  LHS₂ i ≡ RHS i
     ) (+-preserves-≡ (- b) a+b≡0)
 
   -- NOTE: there is already
@@ -282,14 +284,14 @@ module Lemmas-4-6-1 (F : ConstructiveField {ℓ} {ℓ'}) where
         P = sym (·-rdist-+ a b (- c))
         Q : a · b - a · c ≡ a · (b + - c)
         Q = transport (λ i →  a · b + a·-b≡-a·b a c i ≡ a · (b + - c) ) P
-    in  Q  
+    in  Q
 
   -- Lemma 4.1.6.2
   --   For #-compatibility of +, suppose x # y, that is, (x +z) −z # (y +z) −z.
   --   Then #-extensionality gives (x + z # y + z) ∨ (−z # −z), where the latter case is excluded by irreflexivity of #.
   +-#-compatible : ∀(x y z : Carrier) → x # y → x + z # y + z
   +-#-compatible x y z x#y with
-    let P = transport (λ i →  a+b-b≡a x z i # a+b-b≡a y z i ) x#y 
+    let P = transport (λ i →  a+b-b≡a x z i # a+b-b≡a y z i ) x#y
     in  +-#-extensional _ _ _ _ P
   ... | inl x+z#y+z = x+z#y+z
   ... | inr  -z#-z  = ⊥-elim (#-irrefl _ -z#-z)
@@ -339,8 +341,8 @@ swap : ∀{x : Type ℓ} {y : Type ℓ'} → x ⊎ y → y ⊎ x
 swap (inl x) = inr x
 swap (inr x) = inl x
 
-#'-isApartnessRel : ∀{X : Type ℓ} {_<_ : Rel X X ℓ'} → {IsStrictPartialOrder _<_} → IsApartnessRel (_#'_ {_<_ = _<_})
-#'-isApartnessRel {X = X} {_<_ = _<_} {isSPO} =
+#'-isApartnessRel : ∀{X : Type ℓ} {_<_ : Rel X X ℓ'} → (isSPO : IsStrictPartialOrder _<_) → IsApartnessRel (_#'_ {_<_ = _<_})
+#'-isApartnessRel {X = X} {_<_ = _<_} isSPO =
   -- decompose record: see https://agda.readthedocs.io/en/v2.6.1/language/let-and-where.html#let-record-pattern
   let (isstrictpartialorder <-irrefl <-trans <-cotrans) = isSPO
   in λ where -- anonymous copattern-matching lambda: see https://agda.readthedocs.io/en/v2.6.1/language/record-types.html
@@ -428,9 +430,9 @@ record Lattice : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
 --   z < min(x,y) ⇔ z < x ∨ z < y
 --   and similarly for max, see Lemma 6.7.1.
 -- 2. In a partial order, for two fixed elements a and b, all joins and meets of a, b are equal, so that Lemma 2.6.20 the type of joins and the type of meets are propositions. Hence, providing the maps min and max as in the above definition is equivalent to the showing the existenceof all binary joins and meets.
--- 
+--
 -- The following definition is modified from on The Univalent Foundations Program [89, Definition 11.2.7].
--- 
+--
 -- Definition 4.1.10.
 -- An ordered field is a set F together with constants 0, 1, operations +, ·, min, max, and a binary relation < such that:
 -- 1. (F, 0, 1, +, ·) is a commutative ring with unit;
@@ -479,9 +481,10 @@ record IsOrderedField {F : Type ℓ}
       ( isRefl    to ≤-refl
       ; isAntisym to ≤-antisym
       ; isTrans   to ≤-trans )
-  open IsLattice <-isLattice public    
+  open IsLattice <-isLattice public
 
 record OrderedField : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
+  constructor orderedfield
   field
     Carrier : Type ℓ
     0f 1f   : Carrier
@@ -495,6 +498,10 @@ record OrderedField : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
   _≤_ = _≤'_ {_<_ = _<_}
 
   field
+    -- NOTE: we might want to add some general instances to convert `0f # x` or `x < 0f` or `0f < x` into `x # 0f`
+    --       because there is always some fiddling necessary when using _⁻¹ᶠ
+    --       e.g. see poof of `item-8` below where we also had to turn `0f ≤ z` and `z # 0` into `0f < z` because
+    --         ·-preserves-< was defined in terms of `0f < z`
     _⁻¹ᶠ    : (x : Carrier) → {{x # 0f}} → Carrier
     isOrderedField : IsOrderedField 0f 1f _+_ -_ _·_ min max _<_ _#_ _≤_ _⁻¹ᶠ
 
@@ -533,7 +540,7 @@ record OrderedField : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
      }
 
     ≤-isPreorder : IsPreorder _≤_
-    ≤-isPreorder = ≤-isPreorder' {_<_ = _<_} {<-isStrictPartialOrder} 
+    ≤-isPreorder = ≤-isPreorder' {_<_ = _<_} {<-isStrictPartialOrder}
 
 -- Lemma 4.1.11.
 -- In the presence of the first five axioms of Definition 4.1.10, conditions (†) and (∗) are together equivalent to the condition that for all x, y, z : F,
@@ -608,14 +615,34 @@ module Lemma-4-1-11
       ( isRefl    to ≤-refl
       ; isAntisym to ≤-antisym
       ; isTrans   to ≤-trans )
-  open IsLattice <-isLattice public    
+  open IsLattice <-isLattice public
 
 ----8<---------------------------8<--------------------------8<----
+
+  -- NOTE: when using "implicational" reasoning `_⇒⟨_⟩` agda is pretty good in determining the arguments within `⟨_⟩`
+  --       but all arguments become necessary when being inside of a path, e.g. for using `transport`
+  --       so it might be a good strategy to have all the "tactics" (well, not really tactics, but
+  --         the most used "proof machinery" at least) available as explicit functions, such that only a single function
+  --         needs to be applied in each step
+  --       often, just using `cong₂` instead of a path as the argument of `transport` already helps
+  --         well, no. see [XX]
+  --       this is observable in the standard library to some degree `grep -RHni ≡⟨ ~/agda/cubical/`
+  -- NOTE: there is also a `≡⟨⟩` just for the identity which is useful for folding/unfolding definition
+  --         i.e. steps that hold definitionally
+  --         _≡⟨⟩_ : ∀ (x {y} : A) → x ≡ y → x ≡ y
+  --         _ ≡⟨⟩ x≡y = x≡y
+  --         infixr 2 _≡⟨⟩_
+  --       this just avoids the use of `≡⟨ λ x → x ⟩`
 
   -- NOTE: I am doing this for the n'th time now ...
   --       these four cases can surely be omitted by using correct equivalences (TODO)
   -- NOTE: I think I am very close. Sometimes it amounts just to dropping `transport` to have the equivalence
   --       so there is still some exercise for getting used to this
+  -- NOTE: there is Tactic.MonoidSolver in the old standard library
+  --       and https://github.com/UlfNorell/agda-prelude/blob/master/src/Tactic/Monoid.agda
+  --           https://github.com/UlfNorell/agda-prelude/blob/master/test/MonoidTactic.agda
+  --       and https://github.com/agda/agda-stdlib/blob/experimental/README/Solvers/ReflectiveMonoid.agda 
+  --       and maybe a few more ...
 
   -- +-preserves-≡ʳ : ∀ x y z → x ≡ y → x + z ≡ y + z
   -- +-preserves-≡ʳ x y z x≡y = transport (λ i → x + z ≡ x≡y i + z) refl
@@ -635,151 +662,249 @@ module Lemma-4-1-11
   -- translatedDifference : (x a b : F) → a - b ≡ (x + a) - (x + b)
   -- translatedDifference = Theory.translatedDifference R
 
+  -commutesWithRight-· : (x y : F) →  x · (- y) ≡ - (x · y)
+  -commutesWithRight-· = Theory.-commutesWithRight-· R
+
+  -commutesWithLeft-· : (x y : F) →  (- x) · y ≡ - (x · y)
+  -commutesWithLeft-· = Theory.-commutesWithLeft-· R
+
+  0-leftNullifies : (x : F) → 0f · x ≡ 0f
+  0-leftNullifies = Theory.0-leftNullifies R
+
   module forward
     -- 6. (†)
     (+-<-extensional : ∀ w x y z → (x + y) < (z + w) → (x < z) ⊎ (y < w))
     -- 6. (∗)
     (·-preserves-< : ∀ x y z → 0f < z → x < y → (x · z) < (y · z))
     where
+    abstract -- does this really improve performance?
 
-    -- NOTE: the equivalences might be proven together
-    -- TODO: name these
+      -- NOTE: the equivalences might be proven together
+      -- TODO: name these
 
-    --  1. x ≤ y ⇔ ¬(y < x),
-    item-1 : ∀ x y → x ≤ y → ¬(y < x)
-    item-1 = λ _ _ x≤y → x≤y -- holds definitionally
+      --  1. x ≤ y ⇔ ¬(y < x),
+      item-1 : ∀ x y → x ≤ y → ¬(y < x)
+      item-1 = λ _ _ x≤y → x≤y -- holds definitionally
 
-    item-1-back : ∀ x y → ¬(y < x) → x ≤ y
-    item-1-back = λ _ _ ¬[y<x] → ¬[y<x]
+      item-1-back : ∀ x y → ¬(y < x) → x ≤ y
+      item-1-back = λ _ _ ¬[y<x] → ¬[y<x]
 
-    --  2. x # y ⇔ (x < y) ∨ (y < x)
-    item-2 : ∀ x y → x # y → (x < y) ⊎ (y < x)
-    item-2 = λ _ _ x#y → x#y -- holds definitionally
+      --  2. x # y ⇔ (x < y) ∨ (y < x)
+      item-2 : ∀ x y → x # y → (x < y) ⊎ (y < x)
+      item-2 = λ _ _ x#y → x#y -- holds definitionally
 
-    item-2-back : ∀ x y → (x < y) ⊎ (y < x) → x # y
-    item-2-back = λ _ _ [x<y]⊎[y<x] → [x<y]⊎[y<x] -- holds definitionally
+      item-2-back : ∀ x y → (x < y) ⊎ (y < x) → x # y
+      item-2-back = λ _ _ [x<y]⊎[y<x] → [x<y]⊎[y<x] -- holds definitionally
 
-    -- NOTE: just a plain copy of the previous proof
-    +-preserves-< : ∀ a b x → a < b → a + x < b + x
-    +-preserves-< a b x a<b = (
-       a            <  b            ⇒⟨ transport (λ i → sym (fst (+-identity a)) i < sym (fst (+-identity b)) i) ⟩
-       a +    0f    <  b +    0f    ⇒⟨ transport (λ i → a + sym (+-rinv x) i < b + sym (+-rinv x) i) ⟩
-       a + (x  - x) <  b + (x  - x) ⇒⟨ transport (λ i → +-assoc a x (- x) i < +-assoc b x (- x) i) ⟩
-      (a +  x) - x  < (b +  x) - x  ⇒⟨ +-<-extensional (- x) (a + x) (- x) (b + x) ⟩
-      (a + x < b + x) ⊎ (- x < - x) ⇒⟨ (λ{ (inl a+x<b+x) → a+x<b+x -- somehow ⊥-elim needs a hint in the next line
-                                         ; (inr  -x<-x ) → ⊥-elim {A = λ _ → (a + x < b + x)} (<-irrefl (- x) -x<-x) }) ⟩
-       a + x < b + x ◼) a<b
+      -- NOTE: just a plain copy of the previous proof
+      +-preserves-< : ∀ a b x → a < b → a + x < b + x
+      +-preserves-< a b x a<b = (
+         a            <  b            ⇒⟨ transport (λ i → sym (fst (+-identity a)) i < sym (fst (+-identity b)) i) ⟩
+         a +    0f    <  b +    0f    ⇒⟨ transport (λ i → a + sym (+-rinv x) i < b + sym (+-rinv x) i) ⟩
+         a + (x  - x) <  b + (x  - x) ⇒⟨ transport (λ i → +-assoc a x (- x) i < +-assoc b x (- x) i) ⟩
+        (a +  x) - x  < (b +  x) - x  ⇒⟨ +-<-extensional (- x) (a + x) (- x) (b + x) ⟩
+        (a + x < b + x) ⊎ (- x < - x) ⇒⟨ (λ{ (inl a+x<b+x) → a+x<b+x -- somehow ⊥-elim needs a hint in the next line
+                                           ; (inr  -x<-x ) → ⊥-elim {A = λ _ → (a + x < b + x)} (<-irrefl (- x) -x<-x) }) ⟩
+         a + x < b + x ◼) a<b
 
-    +-preserves-<-back : ∀ x y z → x + z < y + z → x < y
-    +-preserves-<-back x y z =
-      ( x + z < y + z              ⇒⟨ +-preserves-< _ _ (- z) ⟩
-        (x + z) - z  < (y + z) - z ⇒⟨ transport (λ i → +-assoc x z (- z) (~ i) < +-assoc y z (- z) (~ i)) ⟩
-        x + (z - z) < y + (z - z)  ⇒⟨ transport (λ i → x + +-rinv z i < y + +-rinv z i) ⟩
-        x + 0f < y + 0f            ⇒⟨ transport (λ i → fst (+-identity x) i < fst (+-identity y) i) ⟩
-        x < y ◼)
+      +-preserves-<-back : ∀ x y z → x + z < y + z → x < y
+      +-preserves-<-back x y z =
+        ( x + z < y + z              ⇒⟨ +-preserves-< _ _ (- z) ⟩
+          (x + z) - z  < (y + z) - z ⇒⟨ transport (λ i → +-assoc x z (- z) (~ i) < +-assoc y z (- z) (~ i)) ⟩
+          x + (z - z) < y + (z - z)  ⇒⟨ transport (λ i → x + +-rinv z i < y + +-rinv z i) ⟩
+          x + 0f < y + 0f            ⇒⟨ transport (λ i → fst (+-identity x) i < fst (+-identity y) i) ⟩
+          x < y ◼)
 
-    --  3. x ≤ y ⇔ x + z ≤ y + z,
-    item-3 : ∀ x y z → x ≤ y → x + z ≤ y + z
-    item-3 x y z = (
-       x     ≤ y          ⇒⟨ (λ z → z) ⟩ -- unfold the definition
-      (y     < x     → ⊥) ⇒⟨ (λ f → f ∘ (+-preserves-<-back y x z) ) ⟩
-      (y + z < x + z → ⊥) ⇒⟨ (λ z → z) ⟩ -- refold the definition
-       x + z ≤ y + z ◼)
+      --  3. x ≤ y ⇔ x + z ≤ y + z,
+      item-3 : ∀ x y z → x ≤ y → x + z ≤ y + z
+      item-3 x y z = (
+         x     ≤ y          ⇒⟨ (λ z → z) ⟩ -- unfold the definition
+        (y     < x     → ⊥) ⇒⟨ (λ f → f ∘ (+-preserves-<-back y x z) ) ⟩
+        (y + z < x + z → ⊥) ⇒⟨ (λ z → z) ⟩ -- refold the definition
+         x + z ≤ y + z ◼)
 
-    item-3-back : ∀ x y z → x + z ≤ y + z → x ≤ y
-    item-3-back x y z = (
-       x + z ≤ y + z      ⇒⟨ (λ z → z) ⟩ -- unfold the definition
-      (y + z < x + z → ⊥) ⇒⟨ (λ f p → f (+-preserves-< y x z p)) ⟩ -- just a variant of the above
-      (y     < x     → ⊥) ⇒⟨ (λ z → z) ⟩ -- refold the definition
-       x     ≤ y ◼)
+      item-3-back : ∀ x y z → x + z ≤ y + z → x ≤ y
+      item-3-back x y z = (
+         x + z ≤ y + z      ⇒⟨ (λ z → z) ⟩ -- unfold the definition
+        (y + z < x + z → ⊥) ⇒⟨ (λ f p → f (+-preserves-< y x z p)) ⟩ -- just a variant of the above
+        (y     < x     → ⊥) ⇒⟨ (λ z → z) ⟩ -- refold the definition
+         x     ≤ y ◼)
 
-    --  4. x < y ⇔ x + z < y + z,
-    item-4 : ∀ x y z → x < y → x + z < y + z
-    item-4 = +-preserves-<
+      --  4. x < y ⇔ x + z < y + z,
+      item-4 : ∀ x y z → x < y → x + z < y + z
+      item-4 = +-preserves-<
 
-    item-4-back : ∀ x y z → x + z < y + z → x < y
-    item-4-back = +-preserves-<-back
+      item-4-back : ∀ x y z → x + z < y + z → x < y
+      item-4-back = +-preserves-<-back
 
-    --  5. 0 < x + y ⇒ 0 < x ∨ 0 < y,
-    item-5 : ∀ x y → 0f < x + y → (0f < x) ⊎ (0f < y)
-    item-5 x y = (
-      (0f      < x + y) ⇒⟨ transport (λ i → fst (+-identity 0f) (~ i) < x + y) ⟩
-      (0f + 0f < x + y) ⇒⟨ +-<-extensional y 0f 0f x ⟩
-      (0f < x) ⊎ (0f < y) ◼)
+      --  5. 0 < x + y ⇒ 0 < x ∨ 0 < y,
+      item-5 : ∀ x y → 0f < x + y → (0f < x) ⊎ (0f < y)
+      item-5 x y = (
+        (0f      < x + y) ⇒⟨ transport (λ i → fst (+-identity 0f) (~ i) < x + y) ⟩
+        (0f + 0f < x + y) ⇒⟨ +-<-extensional y 0f 0f x ⟩
+        (0f < x) ⊎ (0f < y) ◼)
 
-    --  6. x < y ≤ z ⇒ x < z,
-    item-6 : ∀ x y z → x < y → y ≤ z → x < z
-    item-6 x y z x<y y≤z = (
-       x      <  y      ⇒⟨ +-preserves-< _ _ _ ⟩
-       x + z  <  y + z  ⇒⟨ transport (λ i → x + z < +-comm y z i) ⟩
-       x + z  <  z + y  ⇒⟨ +-<-extensional y x z z  ⟩
-      (x < z) ⊎ (z < y) ⇒⟨ (λ{ (inl x<z) → x<z
-                             ; (inr z<y) → ⊥-elim (y≤z z<y) }) ⟩
-       x < z  ◼) x<y
+      --  6. x < y ≤ z ⇒ x < z,
+      item-6 : ∀ x y z → x < y → y ≤ z → x < z
+      item-6 x y z x<y y≤z = (
+         x      <  y      ⇒⟨ +-preserves-< _ _ _ ⟩
+         x + z  <  y + z  ⇒⟨ transport (λ i → x + z < +-comm y z i) ⟩
+         x + z  <  z + y  ⇒⟨ +-<-extensional y x z z  ⟩
+        (x < z) ⊎ (z < y) ⇒⟨ (λ{ (inl x<z) → x<z
+                               ; (inr z<y) → ⊥-elim (y≤z z<y) }) ⟩
+         x < z  ◼) x<y
 
-    --  7. x ≤ y < z ⇒ x < z,
-    item-7 : ∀ x y z → x ≤ y → y < z → x < z
-    item-7 x y z x≤y = ( -- very similar to the previous one
-       y      <  z      ⇒⟨ +-preserves-< y z x ⟩
-       y + x  <  z + x  ⇒⟨ transport (λ i → +-comm y x i < z + x) ⟩
-       x + y  <  z + x  ⇒⟨ +-<-extensional x x y z ⟩
-      (x < z) ⊎ (y < x) ⇒⟨ (λ{ (inl x<z) → x<z
-                             ; (inr y<x) → ⊥-elim (x≤y y<x)}) ⟩
-       x < z  ◼)
+      --  7. x ≤ y < z ⇒ x < z,
+      item-7 : ∀ x y z → x ≤ y → y < z → x < z
+      item-7 x y z x≤y = ( -- very similar to the previous one
+         y      <  z      ⇒⟨ +-preserves-< y z x ⟩
+         y + x  <  z + x  ⇒⟨ transport (λ i → +-comm y x i < z + x) ⟩
+         x + y  <  z + x  ⇒⟨ +-<-extensional x x y z ⟩
+        (x < z) ⊎ (y < x) ⇒⟨ (λ{ (inl x<z) → x<z
+                               ; (inr y<x) → ⊥-elim (x≤y y<x)}) ⟩
+         x < z  ◼)
 
-    --  8. x ≤ y ∧ 0 ≤ z ⇒ x z ≤ y z,
-    -- For item 8, suppose x ≤ y and 0 ≤ z and yz < xz. Then 0 < z (x − y) by (†), and so,
-    -- being apart from 0, z (x − y) has a multiplicative inverse w. Hence z itself has a multiplicative
-    -- inverse w (x −y), and so 0 < z ∨ z < 0, where the latter case contradicts the assumption 0 ≤ z,
-    -- so that we have 0 < z. Now w (x − y) has multiplicative inverse z, so it is apart from 0, that
-    -- is (0 < w (x − y)) ∨ (w (x − y) < 0). In the latter case, from (∗) we get zw (x − y) < 0, i.e.
-    -- 1 < 0 which contradicts item 10, so that we have 0 < w (x − y). By (∗), from 0 < w (x − y) and
-    -- yz < xz we get yzw (x − y) < xzw (x − y), so y < x, contradicting our assumption that x ≤ y.
-    item-8 : ∀ x y z → x ≤ y → 0f ≤ z → x · z ≤ y · z
-    item-8 x y z x≤y 0≤z = {! ·-preserves-< x y z !}
+      item-10 : 0f < 1f
 
-    --  9. 0 < z ⇒ (x < y ⇔ x z < y z),
-    item-9 : ∀ x y z → 0f < z → (x < y → x · z < y · z)
-    item-9 = ·-preserves-<
+      --  8. x ≤ y ∧ 0 ≤ z ⇒ x z ≤ y z,
+      item-8 : ∀ x y z → x ≤ y → 0f ≤ z → x · z ≤ y · z
+      -- For item 8, suppose x ≤ y and 0 ≤ z and yz < xz.
+      item-8 x y z x≤y 0≤z y·z<x·z = let
+        -- Then 0 < z (x − y) by (†),
+        i   = (  y · z            <  x · z                ⇒⟨ transport (λ i → ·-comm y z i < ·-comm x z i) ⟩
+                 z · y            <  z · x                ⇒⟨ +-preserves-< _ _ _ ⟩
+                (z · y) - (z · y) < (z · x) - (z ·    y ) ⇒⟨ transport (cong₂ _<_ (+-rinv (z · y))
+                                                               ( λ i → (z · x) + sym (-commutesWithRight-· z y) i )) ⟩
+                               0f < (z · x) + (z · (- y)) ⇒⟨ transport (cong₂ _<_ refl (sym (fst (dist z x (- y))))) ⟩ -- [XX]
+                               0f <  z · (x - y) ◼) y·z<x·z
+        instance _ = z · (x - y) # 0f ∋ inr i
+        -- and so, being apart from 0, z (x − y) has a multiplicative inverse w.
+        w   = (z · (x - y)) ⁻¹ᶠ
+        ii  : 1f ≡ (z · (x - y)) · w
+        ii  = sym (·-rinv _ _)
+        -- Hence z itself has a multiplicative inverse w (x − y),
+        iii : 1f ≡ z · ((x - y) · w)
+        iii = transport (λ i → 1f ≡ ·-assoc z (x - y) w (~ i)) ii
+        instance z#0f = z # 0f ∋ fst (·-inv-back _ _ (sym iii))
+        -- and so 0 < z ∨ z < 0, where the latter case contradicts the assumption 0 ≤ z, so that we have 0 < z.
+        instance _    = 0f < z ∋ case z#0f of λ where
+                        (inl z<0) → ⊥-elim (0≤z z<0)
+                        (inr 0<z) → 0<z
+        -- Now w (x − y) has multiplicative inverse z, so it is apart from 0,
+        iv  :  (x - y) · w # 0f
+        iv  = snd (·-inv-back _ _ (sym iii))
+        -- that is (0 < w (x − y)) ∨ (w (x − y) < 0).  
+        in case iv of λ where
+          -- By (∗), from 0 < w (x − y) and yz < xz we get yzw (x − y) < xzw (x − y), so y < x, contradicting our assumption that x ≤ y.
+          (inr 0<[x-y]·w) → (
+             y ·  z                   <  x ·  z                    ⇒⟨ ·-preserves-< _ _ _ 0<[x-y]·w ⟩
+            (y ·  z) · ((x - y) · w)  < (x ·  z) · ((x - y) · w)   ⇒⟨ transport (λ i →
+                                                                          (·-assoc y z ((x - y) · w)) (~ i)
+                                                                        < (·-assoc x z ((x - y) · w)) (~ i)) ⟩
+             y · (z  · ((x - y) · w)) <  x · (z  · ((x - y) · w))  ⇒⟨ transport (λ i →
+                                                                         y · (iii (~ i)) < x · (iii (~ i))) ⟩
+             y · 1f                   <  x · 1f                    ⇒⟨ transport (cong₂ _<_
+                                                                        (fst (·-identity y)) (fst (·-identity x))) ⟩
+             y                        <  x                         ⇒⟨ x≤y ⟩
+            ⊥ ◼) y·z<x·z
+          -- In the latter case, from (∗) we get zw (x − y) < 0, i.e.
+          -- 1 < 0 which contradicts item 10, so that we have 0 < w (x − y).
+          (inl p) → (
+                 (x - y) · w      < 0f     ⇒⟨ ·-preserves-< _ _ _ it ⟩
+                ((x - y) · w) · z < 0f · z ⇒⟨ transport (cong₂ _<_ (·-comm _ _) (0-leftNullifies z)) ⟩
+            z · ((x - y) · w)     < 0f     ⇒⟨ ( transport λ i → iii (~ i) < 0f) ⟩
+                               1f < 0f     ⇒⟨ <-asym _ _ item-10 ⟩
+            ⊥ ◼) p
 
-    -- For the other direction of item 9, assume 0 < z and xz < yz, so that yz − xz has a multiplicative
-    -- inverse w, and so z itself has multiplicative inverse w (y − x). Then since 0 < z and
-    -- xz < yz, by (∗), we get xzw (y − x) < yzw (y − x), and hence x < y.
-    item-9-back : ∀ x y z → 0f < z → (x · z < y · z → x < y)
-    item-9-back x y z 0<z =
-      let -- make the instance available
+      --  9. 0 < z ⇒ (x < y ⇔ x z < y z),
+      item-9 : ∀ x y z → 0f < z → (x < y → x · z < y · z)
+      item-9 = ·-preserves-<
+
+      -- ·-inv-same-sign : ∀ x → (p : 0f < x) → (0f < _⁻¹ᶠ x {{inr p}})
+      -- ·-inv-same-sign x p = {!!}
+
+      -- ·-inv-unique : ∀ x y z → x · y ≡ 1f → x · z ≡ 1f → y ≡ z
+      -- ·-inv-unique = {!!}
+
+      {-
+      ·-inv-same-sign : ∀ x y → 0f < x → 1f ≡ x · y → 0f < y
+      ·-inv-same-sign x y 0<x 1=x·y = let
+        instance _ = 0<x -- this is to multiply with 
+        instance _ = x # 0f ∋ inr 0<x -- this is to make use of ⁻¹
+        in (0f < 1f    ⇒⟨ {!!} ⟩
+            0f < x · y ⇒⟨ {!!} ⟩
+            (x ⁻¹ᶠ) · 0f < x ⁻¹ᶠ · (x · y) ⇒⟨ {!!} ⟩
+            0f < (x ⁻¹ᶠ · x) · y ⇒⟨ {!!} ⟩
+            0f < y ◼) item-10
+
+            0 < x · y
+      -}
+
+      item-9-back : ∀ x y z → 0f < z → (x · z < y · z → x < y)
+      -- For the other direction of item 9, assume 0 < z and xz < yz,
+      item-9-back x y z 0<z x·z<y·z = let
+        instance _ = (          x · z  <  y · z            ⇒⟨ +-preserves-< _ _ _ ⟩
+                     (x · z) - (x · z) < (y · z) - (x · z) ⇒⟨ transport (cong₂ _<_ (+-rinv (x · z)) refl) ⟩
+                                    0f < (y · z) - (x · z) ◼) x·z<y·z
+                 _ = (y · z) - (x · z) # 0f ∋ inr it
+        -- so that yz − xz has a multiplicative inverse w,
+        w = ((y · z) - (x · z)) ⁻¹ᶠ
+        o = ( (y · z) - (   x  · z) ≡⟨ ( λ i → (y · z) + (-commutesWithLeft-· x z) (~ i)) ⟩
+              (y · z) + ((- x) · z) ≡⟨ sym (snd (dist y (- x) z)) ⟩
+              (y - x) · z ∎)
+        instance _ = (y - x) · z # 0f ∋  transport (λ i → o i # 0f) it
+        -- and so z itself has multiplicative inverse w (y − x).
+        iii = (
+          1f                      ≡⟨ (λ i → ·-linv ((y · z) - (x · z)) it (~ i)) ⟩
+          w · ((y · z) - (x · z)) ≡⟨ (λ i → w · o i) ⟩
+          w · ((y - x) · z)       ≡⟨ (λ i → w · ·-comm (y - x) z i ) ⟩
+          w · (z · (y - x))       ≡⟨ (λ i → ·-assoc w z (y - x) i) ⟩
+          (w · z) · (y - x)       ≡⟨ (λ i → ·-comm w z i · (y - x)) ⟩
+          (z · w) · (y - x)       ≡⟨ (λ i → ·-assoc z w (y - x) (~ i)) ⟩
+          z · (w · (y - x))       ∎)
+        -- Then since 0 < z and xz < yz, by (∗), we get xzw (y − x) < yzw (y − x), and hence x < y.
         instance _ = z # 0f ∋ inr 0<z
-        z⁻¹ = z ⁻¹ᶠ
-        #-sym : ∀{a b} → a # b → b # a
-        #-sym {a} {b} = swap
-        0#z⁻¹ =  #-sym (snd (·-inv-back z z⁻¹ (·-rinv z (inr 0<z))))
-        0<z⁻¹ : 0f < z ⁻¹ᶠ
-        0<z⁻¹ = {! ·-preserves-< 0f 1f  !}
-        -- 0 < 1
-        -- 0 < z · z⁻¹
-      in (
-      (x · z) < (y · z) ⇒⟨ {! ·-preserves-< (x · z) (y · z) z⁻¹!} ⟩
-      (x · z) · z⁻¹ < (y · z) · z⁻¹ ⇒⟨ {!!} ⟩
-      x · (z · z⁻¹) < y · (z · z⁻¹) ⇒⟨ {!!} ⟩
-      x · 1f < y · 1f ⇒⟨ {!!} ⟩
-      x < y ◼)
+        z⁻¹ = w · (y - x)
+        instance _ = 0f < w · (y - x) ∋ {! lemma' z 0<z!}
+        -- instance _ = 0f < z⁻¹ ∋ ?
+        in (  x ·  z         <  y ·  z         ⇒⟨ ·-preserves-< _ _ z⁻¹ it ⟩
+             (x ·  z) · z⁻¹  < (y ·  z) · z⁻¹  ⇒⟨ transport (λ i → ·-assoc x z z⁻¹ (~ i) < ·-assoc y z z⁻¹ (~ i)) ⟩
+              x · (z  · z⁻¹) <  y · (z  · z⁻¹) ⇒⟨ transport (λ i → x · iii (~ i) < y · iii (~ i)) ⟩
+              x · 1f         <  y · 1f         ⇒⟨ transport (cong₂ _<_ (fst (·-identity x)) (fst (·-identity y))) ⟩
+              x              <  y              ◼) x·z<y·z
+      {-
+        let
+          instance _ = z # 0f ∋ inr 0<z -- make the instance available
+          z⁻¹ = z ⁻¹ᶠ
+          #-sym : ∀{a b} → a # b → b # a
+          #-sym {a} {b} = swap
+          0#z⁻¹ =  #-sym (snd (·-inv-back z z⁻¹ (·-rinv z (inr 0<z))))
+          0<z⁻¹ : 0f < z ⁻¹ᶠ
+          0<z⁻¹ = {! ·-preserves-< 0f 1f  !}
+          -- 0 < 1
+          -- 0 < z · z⁻¹
+        in (
+        (x · z) < (y · z) ⇒⟨ {! ·-preserves-< (x · z) (y · z) z⁻¹!} ⟩
+        (x · z) · z⁻¹ < (y · z) · z⁻¹ ⇒⟨ {!!} ⟩
+        x · (z · z⁻¹) < y · (z · z⁻¹) ⇒⟨ {!!} ⟩
+        x · 1f < y · 1f ⇒⟨ {!!} ⟩
+        x < y ◼)
+      -}
 
-
-    -- 10. 0 < 1.
-    -- For item 10, since 1 has multiplicative inverse 1, it is apart from 0, hence 0 < 1 ∨ 1 < 0.
-    -- If 1 < 0 then by item 4 we have 0 < −1 and so by (∗) we get 0 < (−1) · (−1), that is, 0 < 1, so by transitivity 1 < 1, contradicting irreflexivity of <.
-    item10 : 0f < 1f
-    item10 with snd (·-inv-back _ _ (fst (·-identity 1f)))
-    ... | inl 1<0 = let
-      0<-1 = (
-       1f < 0f ⇒⟨ +-preserves-< 1f 0f (- 1f) ⟩
-       1f - 1f < 0f - 1f  ⇒⟨ {!!} ⟩
-       0f < - 1f ⇒⟨ {!!} ⟩
-       0f < (- 1f) · (- 1f) ⇒⟨ {!!} ⟩
-       1f < 1f ⇒⟨ {!!} ⟩
-       0f < 1f ◼) 1<0
-      in {! !}
-    ... | inr 0<1 = 0<1
+      -- 10. 0 < 1.
+      item-10 with snd (·-inv-back _ _ (fst (·-identity 1f)))
+      -- For item 10, since 1 has multiplicative inverse 1, it is apart from 0, hence 0 < 1 ∨ 1 < 0.
+      ... | inl 1<0 =
+        -- If 1 < 0 then by item 4 we have 0 < −1 and so by (∗) we get 0 < (−1) · (−1), that is, 0 < 1, so by transitivity 1 < 1, contradicting irreflexivity of <.
+         (1f          < 0f                ⇒⟨ +-preserves-< 1f 0f (- 1f) ⟩
+          1f    - 1f  < 0f - 1f           ⇒⟨ transport (λ i → +-rinv 1f i < snd (+-identity (- 1f)) i) ⟩
+          0f          <    - 1f           ⇒⟨ ( λ 0<-1 → ·-preserves-< 0f (- 1f) (- 1f) 0<-1 0<-1) ⟩
+          0f · (- 1f) <   (- 1f) · (- 1f) ⇒⟨ transport (cong₂ _<_ (0-leftNullifies (- 1f)) refl) ⟩
+          0f          <   (- 1f) · (- 1f) ⇒⟨ {!!} ⟩
+          0f          <      1f           ⇒⟨ <-trans _ _ _ 1<0 ⟩
+          1f          <      1f           ⇒⟨ <-irrefl 1f ⟩
+                      ⊥                   ⇒⟨ ⊥-elim ⟩ _ ◼) 1<0
+      ... | inr 0<1 = 0<1
 
   -- Conversely, assume the 10 listed items—in particular, items 4, 5 and 9.
   module back
@@ -797,7 +922,7 @@ module Lemma-4-1-11
     -- (item-8      : ∀ x y z → x ≤ y → 0f ≤ z → x · z ≤ y · z)
        (item-9      : ∀ x y z → 0f < z → (x < y → x · z < y · z))
     -- (item-9-back : ∀ x y z → 0f < z → (x · z < y · z → x < y))
-    -- (item10      : 0f < 1f)
+    -- (item-10     : 0f < 1f)
     where
 
     item-4' : ∀ x y → 0f < x - y → y < x
@@ -834,13 +959,54 @@ module Lemma-4-1-11
       (0f < z - x) ⊎ (0f < w - y)           ⇒⟨ (λ{ (inl p) → inl (item-4' z x p)
                                                  ; (inr p) → inr (item-4' w y p)}) ⟩
       ( x < z    ) ⊎ ( y < w    ) ◼)
-    
+
     -- 6. (∗)
     ·-preserves-< : ∀ x y z → 0f < z → x < y → (x · z) < (y · z)
     ·-preserves-< = item-9
 
 -- Lemma 4.1.12. An ordered field (F, 0, 1, +, · , min, max, <) is a constructive field (F, 0, 1, +, · , #).
-
+lemma-4-1-12 :
+  -- NOTE: we do a slightly different thing here
+  ∀{ℓ ℓ'} (OF : OrderedField {ℓ} {ℓ'}) →
+  let open OrderedField OF
+  ----------------------------------------------------
+  in (IsConstructiveField 0f 1f _+_ _·_ -_ _#_ _⁻¹ᶠ)
+lemma-4-1-12 {ℓ} {ℓ'} OF = let -- NOTE: for mentioning the ℓ and ℓ' and not taking them as new "variables"
+  open OrderedField OF
+  in record
+   { -- see https://agda.readthedocs.io/en/v2.6.1/language/record-types.html#building-records-from-modules
+     -- the following line just picks all same-named thigs from the `OrderedField OF` module
+     OrderedField OF -- wow!
+     -- alternatively we can specify it explicitly (renaming should work with this syntax):
+     --   OrderedField OF using (isCommRing; ·-rinv; ·-linv; ·-inv-back)
+     -- and of course the "normal" syntax would be
+     --     isCommRing      = isCommRing
+     --   ; ·-rinv          = ·-rinv
+     --   ; ·-linv          = ·-linv
+     --   ; ·-inv-back      = ·-inv-back
+     --
+     -- #-tighness follows from <-trichotomousness (part of being a strict total order)
+   ; #-tight         = -- NOTE: we do not have proof-search here ...
+                       λ where
+                       -- NOTE: ... but here we have it again
+                       x y ¬x#y → case <-tricho x y of λ where
+                         (inl x#y) → ⊥-elim (¬x#y x#y)
+                         (inr x≡y) → x≡y
+     -- + being #-extensional follows from + being < extensional
+   ; +-#-extensional = λ where
+                       w x y z (inl p) → case +-<-extensional _ _ _ _ p of (
+                         (_ → (w # y) ⊎ (x # z)) ∋ λ -- NOTE: here we had to add a (return-)type annotation to the λ
+                         { (inl w<y) → inl (inl w<y)
+                         ; (inr x<z) → inr (inl x<z)
+                         })
+                       w x y z (inr p) → case  +-<-extensional _ _ _ _ p of (
+                         (_ → (w # y) ⊎ (x # z)) ∋ λ
+                         { (inl y<w) → inl (inr y<w)
+                         ; (inr z<x) → inr (inr z<x)
+                         })
+     -- We've proved this before
+   ; isApartnessRel  = #'-isApartnessRel <-isStrictPartialOrder
+   }
 
 -- 4.2 Rationals
 -- ...
