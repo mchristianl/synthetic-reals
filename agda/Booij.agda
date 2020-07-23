@@ -1046,6 +1046,72 @@ lemma-4-1-12 {ℓ} {ℓ'} OF = let -- NOTE: for mentioning the ℓ and ℓ' and 
 -- is a map f : F → G such that
 -- 1. f is a morphism of rings,
 -- 2. f reflects < in the sense that for every x, y : F
--     f (x) <G f (y) ⇒ x <F y.
+--    f (x) <G f (y) ⇒ x <F y.
+
+-- NOTE: see Cubical.Structures.Group.Morphism
+--       and Cubical.Structures.Group.MorphismProperties
+
+-- open import Cubical.Structures.Group.Morphism
+open import Cubical.Structures.Ring
+
+record IsRingHom
+  {ℓ ℓ'}
+  (F : Ring {ℓ}) (G : Ring {ℓ'})
+  (f : (Ring.Carrier F) → (Ring.Carrier G)) : Type (ℓ-max ℓ ℓ')
+  where
+  module F = Ring F
+  module G = Ring G
+  field
+    preserves-+ : ∀ a b → f (a F.+ b) ≡ f a G.+ f b
+    preserves-· : ∀ a b → f (a F.· b) ≡ f a G.· f b
+    perserves-1 : f F.1r ≡ G.1r
+
+record IsOrderedFieldHom
+  {ℓ ℓ' ℓₚ ℓₚ'} -- NOTE: this is a lot of levels. Can we get rid of some of these?
+  (F : OrderedField {ℓ} {ℓₚ}) (G : OrderedField {ℓ'} {ℓₚ'})
+  -- NOTE: `let` is not allowed in a telescope
+  --       this was also mentioned in previous github issue about module parameter fixities
+  -- (let module F = OrderedField F)
+  -- (let module G = OrderedField G)
+  (f : (OrderedField.Carrier F) → (OrderedField.Carrier G)) : Type (ℓ-max (ℓ-max ℓ ℓ') (ℓ-max ℓₚ ℓₚ'))
+  where
+  module F = OrderedField F
+  module G = OrderedField G
+  field
+    -- NOTE: the following works, because OrderedField shares all of the same-named properties of Ring
+    --       but if this would not be the case, then we could just rename this with the `renaming` syntax
+    --       either here, directly or just above
+    isRingHom : IsRingHom (record {F}) (record {G}) f
+    reflects-< : ∀ x y → f x G.< f y → x F.< y
+  -- NOTE: for properties, see https://en.wikipedia.org/wiki/Ring_homomorphism#Properties
+    
+record OrderedFieldHom {ℓ ℓ' ℓₚ ℓₚ'} (F : OrderedField {ℓ} {ℓₚ}) (G : OrderedField {ℓ'} {ℓₚ'}) : Type (ℓ-max (ℓ-max ℓ ℓ') (ℓ-max ℓₚ ℓₚ')) where
+  constructor grouphom
+  module F = OrderedField F
+  module G = OrderedField G
+  field
+    fun : F.Carrier → G.Carrier
+    isOrderedFieldHom : IsOrderedFieldHom F G fun
 
 -- Remark 4.3.2. The contrapositive of reflecting < means preserving ≤.
+
+-- Lemma 4.3.3. For every ordered field (F, 0 F , 1 F , + F , · F , min F , max F , < F ), there is a unique morphism
+-- i of ordered fields from the rationals to F . Additionally, i preserves < in the sense that for every q, r : Q
+--   q < r ⇒ i (q) < F i (r ).
+
+
+-- near questions:
+--
+-- 1. can we continue the same patterns for morphisms as we have with the other structures?
+-- 2. what machinery is necessary to express unique existence? (there is ∃! in the standard library)
+--
+-- far questions:
+--
+-- - approaches to limits and spaces for mathematical analysis
+--   - locales? for topological spaces
+--     Also a few years ago I was told that "locales" it the alternative to topological spaces
+--     while
+--   - limits and filters (see HOL)
+--     Some time ago I heard "on the streets" that filters are "not cool" amongst constructive mathematicians but I
+--     is that a "thing" or did I just misheard that
+-- (un)bounded linear operators, adjoints and bounds
