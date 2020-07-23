@@ -2,12 +2,28 @@
 
 module Booij where
 
-open import Cubical.Foundations.Everything renaming (_⁻¹ to _⁻¹ᵖ)
+{- NOTE: for some properties where it is applicable
+         we should supply both variants: the tuple variant and the l/r-variant
+         and we might choose that the tuple variant is the field and the l/r-variant is the projection
+         TODO: check whether this is the way its done in the standard library
+
+an example
+
+   ·-inv      : (x : F) → (p : x # 0f) → (x · (_⁻¹ᶠ x {{p}}) ≡ 1f) × ((_⁻¹ᶠ x {{p}}) · x ≡ 1f)
+   ·-rinv     : (x : F) → (p : x # 0f) →  x · (_⁻¹ᶠ x {{p}}) ≡ 1f
+   ·-linv     : (x : F) → (p : x # 0f) →                              (_⁻¹ᶠ x {{p}}) · x ≡ 1f
+
+and then we have also
+
+   ·-inv-back : (x y : F) → (x · y ≡ 1f) → x # 0f × y # 0f
+-}
+
+open import Cubical.Foundations.Everything renaming (_⁻¹ to _⁻¹ᵖ; assoc to ∙-assoc)
 open import Cubical.Structures.CommRing
 open import Cubical.Relation.Nullary.Base -- ¬_
 open import Cubical.Relation.Binary.Base
-open import Cubical.Data.Sum.Base
-open import Cubical.Data.Sigma.Base
+open import Cubical.Data.Sum.Base renaming (_⊎_ to infixr 4 _⊎_)
+open import Cubical.Data.Sigma.Base renaming (_×_ to infixr 4 _×_)
 open import Cubical.Data.Empty renaming (elim to ⊥-elim) -- `⊥` and `elim`
 -- open import Cubical.Structures.Poset
 open import Cubical.Foundations.Function
@@ -40,6 +56,17 @@ open import Function.Base using (it) -- instance search
 private
   variable
     ℓ ℓ' ℓ'' : Level
+
+module _ where
+  open import Cubical.Structures.Group
+  import Cubical.Structures.Group.Properties
+  module GroupLemmas' (G : Group {ℓ}) where
+    open Group G public
+    simplR = GroupLemmas.simplR G
+    invUniqueL : {g h : Carrier} → g + h ≡ 0g → g ≡ - h
+    invUniqueL {g} {h} p = simplR h (p ∙ sym (invl h)) 
+
+
 
 module ClassicalFieldModule where -- NOTE: one might want to put this into another file to omit the name-clashing
   record IsClassicalField {F : Type ℓ}
@@ -134,6 +161,8 @@ record IsPartialOrder {ℓ ℓ' : Level} {A : Type ℓ} (R : Rel A A ℓ') : Typ
     isAntisym : IsAntisym R
     isTrans   : BinaryRelation.isTrans R
 
+-- NOTE: not necessary anymore
+{-
 IsConnexive : {ℓ ℓ' : Level} {A : Type ℓ} → (R : Rel A A ℓ') → Type (ℓ-max ℓ ℓ')
 IsConnexive {A = A} R = ∀ a b → (R a b) ⊎ (R b a)
 
@@ -157,6 +186,7 @@ record IsStrictTotalOrder {ℓ ℓ' : Level} {A : Type ℓ} (R : Rel A A ℓ') :
     isTrichotomous : IsTrichotomous R
     isIrrefl       : IsIrrefl R
     isAsym         : IsAsym R
+-}
 
 -- Definition 4.1.5.
 -- A constructive field is a set F with points 0, 1 : F, binary operations +, · : F → F → F, and a binary relation # such that
@@ -175,7 +205,7 @@ record IsConstructiveField {F : Type ℓ}
     ·-linv     : ∀ x → (p : x # 0f) → (_⁻¹ᶠ x {{p}}) · x ≡ 1f
     ·-inv-back : ∀ x y → (x · y ≡ 1f) → x # 0f × y # 0f
     #-tight    : ∀ x y → ¬(x # y) → x ≡ y
-    -- NOTE: the followin ⊎ caused trouble two times with resolving ℓ or ℓ'
+    -- NOTE: the following ⊎ caused trouble two times with resolving ℓ or ℓ'
     +-#-extensional : ∀ w x y z → (w + x) # (y + z) → (w # y) ⊎ (x # z)
     isApartnessRel  : IsApartnessRel _#_
 
@@ -248,6 +278,7 @@ module Lemmas-4-6-1 (F : ConstructiveField {ℓ} {ℓ'}) where
                     S = transport (λ i → a ≡ (+-assoc a b (- b)) i ) R
                 in S
 
+  -- NOTE: this is called `simplL` and `simplL` in `Cubical.Structures.Group.Properties.GroupLemmas`
   +-preserves-≡ : ∀{a b} → ∀ c → a ≡ b → a + c ≡ b + c
   +-preserves-≡ c a≡b i = a≡b i + c
 
@@ -436,7 +467,7 @@ record Lattice : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
 -- Definition 4.1.10.
 -- An ordered field is a set F together with constants 0, 1, operations +, ·, min, max, and a binary relation < such that:
 -- 1. (F, 0, 1, +, ·) is a commutative ring with unit;
--- 2. < is a strict order;
+-- 2. < is a strict [partial] order;
 -- 3. x : F has a multiplicative inverse iff x # 0, recalling that # is defined as in Lemma 4.1.7;
 -- 4. ≤, as in Lemma 4.1.7, is antisymmetric, so that (F, ≤) is a partial order;
 -- 5. (F, ≤, min, max) is a lattice.
@@ -446,7 +477,6 @@ record Lattice : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
 -- Our notion of ordered fields coincides with The Univalent Foundations Program [89, Definition 11.2.7].
 
 -- NOTE: well, the HOTT book definition organizes things slightly different. Why prefer one approach over the other?
-
 record IsOrderedField {F : Type ℓ}
                  (0f 1f : F) (_+_ : F → F → F) (-_ : F → F) (_·_ min max : F → F → F) (_<_ _#_ _≤_ : Rel F F ℓ') (_⁻¹ᶠ : (x : F) → {{x # 0f}} → F) : Type (ℓ-max ℓ ℓ') where
   constructor isorderedfield
@@ -454,13 +484,19 @@ record IsOrderedField {F : Type ℓ}
     -- 1.
     isCommRing : IsCommRing 0f 1f _+_ _·_ -_
     -- 2.
-    <-isStrictTotalOrder : IsStrictTotalOrder _<_
+    <-isStrictPartialOrder : IsStrictPartialOrder _<_
     -- 3.
     ·-rinv     : (x : F) → (p : x # 0f) → x · (_⁻¹ᶠ x {{p}}) ≡ 1f
     ·-linv     : (x : F) → (p : x # 0f) → (_⁻¹ᶠ x {{p}}) · x ≡ 1f
+    -- NOTE: this "creates" new properties `x # 0f` and `y # 0f` that are different (!) from possibly existing "previous" ones
+    --       meaning, that this conflicts a usage where we might recreate these properties somewhere (inside of a module or a function)
+    --       and having the result-type depending on them
+    --       we can't use the result "outside" then, because it' differs in this `x # 0f` and `y # 0f` entity
+    --       although we might not see it (because instance arguments are hidden)
+    --       there is another NOTE of this further down
     ·-inv-back : (x y : F) → (x · y ≡ 1f) → x # 0f × y # 0f
-    -- 4.
-    ≤-isPartialOrder : IsPartialOrder _≤_
+    -- 4. NOTE: we already have ≤-isPartialOrder in <-isLattice
+    -- ≤-isPartialOrder : IsPartialOrder _≤_
     -- 5.
     <-isLattice : IsLattice _≤_ min max
     -- 6. (†)
@@ -470,17 +506,16 @@ record IsOrderedField {F : Type ℓ}
     ·-preserves-< : ∀ x y z → 0f < z → x < y → (x · z) < (y · z)
 
   open IsCommRing {0r = 0f} {1r = 1f} isCommRing public
-  open IsStrictTotalOrder <-isStrictTotalOrder public
+  open IsStrictPartialOrder <-isStrictPartialOrder public
     renaming
-      ( isTrans        to <-trans
-      ; isTrichotomous to <-tricho
-      ; isIrrefl       to <-irrefl
-      ; isAsym         to <-asym )
-  open IsPartialOrder ≤-isPartialOrder public
-    renaming
-      ( isRefl    to ≤-refl
-      ; isAntisym to ≤-antisym
-      ; isTrans   to ≤-trans )
+      ( isIrrefl  to <-irrefl
+      ; isTrans   to <-trans
+      ; isCotrans to <-cotrans )
+  -- open IsPartialOrder ≤-isPartialOrder public
+  --   renaming
+  --     ( isRefl    to ≤-refl
+  --     ; isAntisym to ≤-antisym
+  --     ; isTrans   to ≤-trans )
   open IsLattice <-isLattice public
 
 record OrderedField : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
@@ -527,6 +562,8 @@ record OrderedField : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
                                          ; (inr  -x<-x ) → ⊥-elim {A = λ _ → (a + x < b + x)} (<-irrefl (- x) -x<-x) }) ⟩
        a + x < b + x ◼) a<b
 
+    {- NOTE: this was "each strict total order is a strict parial order .. when having +-<-extensionality and +-preserves-< and ..." or so
+             but we do not have a strict total order in IsOrderedField
     <-isStrictPartialOrder : IsStrictPartialOrder _<_
     <-isStrictPartialOrder = record
      { isIrrefl  = <-irrefl
@@ -538,9 +575,80 @@ record OrderedField : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
            a + x  <  x + b  ⇒⟨ +-<-extensional b a x x ⟩
           (a < x) ⊎ (x < b) ◼) a<b
      }
+     -}
 
     ≤-isPreorder : IsPreorder _≤_
     ≤-isPreorder = ≤-isPreorder' {_<_ = _<_} {<-isStrictPartialOrder}
+
+import Cubical.Structures.Group
+module GroupTheory1 (G : Cubical.Structures.Group.Group {ℓ}) where
+  open Cubical.Structures.Group
+  open Group G
+
+  -- ported from
+  -- import Algebra.Properties.Group
+
+  right-helper : ∀ x y → y ≡ - x + (x + y)
+  right-helper x y = (
+    y               ≡⟨ sym (snd (identity y)) ⟩
+    0g          + y ≡⟨ cong₂ _+_ (sym (snd (inverse x))) refl  ⟩
+    ((- x) + x) + y ≡⟨ sym (assoc (- x) x y) ⟩
+    (- x) + (x + y) ∎)
+
+  -- alternative:
+  --   follows from uniqueness of -
+  --     (a + -a) ≡ 0
+  --     ∃! b . a + b = 0
+  --   show that a is an additive inverse of - a then it must be THE additive inverse of - a and has to be called - - a which is a by uniqueness
+  -involutive : ∀ x → - - x ≡ x
+  -involutive x = (
+    (- (- x))             ≡⟨ sym (fst (identity _)) ⟩
+    (- (- x)) + 0g        ≡⟨ cong₂ _+_ refl (sym (snd (inverse _))) ⟩
+    (- (- x)) + (- x + x) ≡⟨ sym (right-helper (- x) x) ⟩
+    x                    ∎)
+
+contraposition : {P : Type ℓ} {Q : Type ℓ'} → (P → Q) → ¬ Q → ¬ P
+contraposition f ¬q p = ⊥-elim (¬q (f p))
+
+-- deMorgan₁ : {P : Type ℓ} {Q : Type ℓ'} → ¬(P × Q) → (¬ P) ⊎ (¬ Q)
+-- deMorgan₁ {P = P} {Q = Q} = {!!}
+
+-- deMorgan₁-back : {P : Type ℓ} {Q : Type ℓ'} → (¬ P) ⊎ (¬ Q) → ¬(P × Q)
+-- deMorgan₁-back {P = P} {Q = Q} = {!!}
+
+deMorgan₂ : {P : Type ℓ} {Q : Type ℓ'} → ¬(P ⊎ Q) → (¬ P) × (¬ Q)
+deMorgan₂ {P = P} {Q = Q} = {!!}
+
+
+-- deMorgan₁ : ∀ x y → ¬ (x × y) ≡ (¬ x) ⊎ (¬ y)
+-- deMorgan₁ x y = lemma (x × y) (¬ x ⊎ ¬ y) lem₁ lem₂
+--   where
+--   lem₁ = (
+--     (x × y) × (¬ x ⊎ ¬ y)          ≡⟨ {! ×-⊎-distribˡ _ _ _ !} ⟩
+--     (x × y) × ¬ x ⊎ (x × y) × ¬ y  ≡⟨ {! ⊎-congʳ $ ×-congʳ $ ×-comm _ _ !} ⟩
+--     (y × x) × ¬ x ⊎ (x × y) × ¬ y  ≡⟨ {! ×-assoc _ _ _ ⟨ ⊎-cong ⟩ ⟩ ×-assoc _ _ _ !} ⟩
+--     y × (x × ¬ x) ⊎ x × (y × ¬ y)  ≡⟨ {! (×-congˡ $ ×-complementʳ _) ⟨ ⊎-cong ⟩
+--                                       (×-congˡ $ ×-complementʳ _) !} ⟩
+--     (y × ⊥) ⊎ (x × ⊥)              ≡⟨ {! ×-zeroʳ _ ⟨ ⊎-cong ⟩ ⟩ ×-zeroʳ _ !} ⟩
+--     ⊥ ⊎ ⊥                          ≡⟨ {! ⊎-identityʳ _ !} ⟩
+--     ⊥                              ∎)
+-- 
+--   lem₃ = (
+--     (x × y) ⊎ ¬ x          ≡⟨ {! ⊎-×-distribʳ _ _ _ !} ⟩
+--     (x ⊎ ¬ x) × (y ⊎ ¬ x)  ≡⟨ {! ×-congʳ $ ⊎-complementʳ _ !} ⟩
+--     ⊤ × (y ⊎ ¬ x)          ≡⟨ {! ×-identityˡ _ !} ⟩
+--     y ⊎ ¬ x                ≡⟨ {! ⊎-comm _ _ !} ⟩
+--     ¬ x ⊎ y                ∎)
+-- 
+--   lem₂ = (
+--     (x × y) ⊎ (¬ x ⊎ ¬ y)  ≡⟨ {! ⊎-assoc _ _ _ !} ⟩
+--     ((x × y) ⊎ ¬ x) ⊎ ¬ y  ≡⟨ {! ⊎-congʳ lem₃ !} ⟩
+--     (¬ x ⊎ y) ⊎ ¬ y        ≡⟨ {! ⊎-assoc _ _ _ !} ⟩
+--     ¬ x ⊎ (y ⊎ ¬ y)        ≡⟨ {! ⊎-congˡ $ ⊎-complementʳ _ !} ⟩
+--     ¬ x ⊎ ⊤                ≡⟨ {! ⊎-zeroʳ _ !} ⟩
+--     ⊤                      )
+
+
 
 -- Lemma 4.1.11.
 -- In the presence of the first five axioms of Definition 4.1.10, conditions (†) and (∗) are together equivalent to the condition that for all x, y, z : F,
@@ -580,7 +688,7 @@ module Lemma-4-1-11
   -- 1.
   (isCommRing : IsCommRing 0f 1f _+_ _·_ -_)
   -- 2.
-  (<-isStrictTotalOrder : IsStrictTotalOrder _<_)
+  (<-isStrictTotalOrder : IsStrictPartialOrder _<_)
   --------------------------------------- definitions
   (let _#_ = _#'_ {_<_ = _<_}; infixl 4 _#_)
   (let _≤_ = _≤'_ {_<_ = _<_}; infixl 4 _≤_)
@@ -604,12 +712,11 @@ module Lemma-4-1-11
   where
   --------------------------------------- populating the scope
   open IsCommRing {0r = 0f} {1r = 1f} isCommRing public
-  open IsStrictTotalOrder <-isStrictTotalOrder public
+  open IsStrictPartialOrder <-isStrictTotalOrder public
     renaming
-      ( isTrans        to <-trans
-      ; isTrichotomous to <-tricho
-      ; isIrrefl       to <-irrefl
-      ; isAsym         to <-asym )
+      ( isIrrefl  to <-irrefl
+      ; isTrans   to <-trans
+      ; isCotrans to <-cotrans )
   open IsPartialOrder ≤-isPartialOrder public
     renaming
       ( isRefl    to ≤-refl
@@ -670,6 +777,9 @@ module Lemma-4-1-11
 
   0-leftNullifies : (x : F) → 0f · x ≡ 0f
   0-leftNullifies = Theory.0-leftNullifies R
+
+  G = (Cubical.Structures.Group.makeGroup 0f _+_ -_ is-set +-assoc +-rid +-lid +-rinv +-linv)
+  open GroupTheory1 G
 
   module forward
     -- 6. (†)
@@ -813,7 +923,8 @@ module Lemma-4-1-11
                  (x - y) · w      < 0f     ⇒⟨ ·-preserves-< _ _ _ it ⟩
                 ((x - y) · w) · z < 0f · z ⇒⟨ transport (cong₂ _<_ (·-comm _ _) (0-leftNullifies z)) ⟩
             z · ((x - y) · w)     < 0f     ⇒⟨ ( transport λ i → iii (~ i) < 0f) ⟩
-                               1f < 0f     ⇒⟨ <-asym _ _ item-10 ⟩
+                               1f < 0f     ⇒⟨ <-trans _ _ _  item-10 ⟩
+                               0f < 0f     ⇒⟨ <-irrefl _ ⟩
             ⊥ ◼) p
 
       --  9. 0 < z ⇒ (x < y ⇔ x z < y z),
@@ -840,6 +951,90 @@ module Lemma-4-1-11
             0 < x · y
       -}
 
+      -- NOTE: ∙ reads from left to right, e.g. "step1 ∙ step2 ∙ step3"
+      -- NOTE: ported from Cubical.Structures.Group.GroupLemmas
+      simplR : {a b : F} (c : F) {{_ : c # 0f}} → a · c ≡ b · c → a ≡ b
+      simplR {a} {b} c {{_}} a·c≡b·c =
+         a                ≡⟨ sym (fst (·-identity a)) ∙ cong (a ·_) (sym (·-rinv c it)) ∙ ·-assoc _ _ _ ⟩
+        (a · c) · (c ⁻¹ᶠ) ≡⟨ cong (_· c ⁻¹ᶠ) a·c≡b·c ⟩
+        (b · c) · (c ⁻¹ᶠ) ≡⟨ sym (·-assoc _ _ _) ∙ cong (b ·_) (·-rinv c it) ∙ fst (·-identity b)  ⟩
+         b ∎
+
+      ·-preserves-≡ʳ : {a b : F} (c : F) {{_ : c # 0f}} → a · c ≡ b · c → a ≡ b
+      ·-preserves-≡ʳ = simplR
+
+      -- NOTE: while this might make it "easier" to read at some point, we broke the signature into two parts
+      -- ·-linv-unique : (x y : F) (x·y≡1 : (x ·₁ y) ≡ 1f) → x ≡ (y ⁻¹ᶠ₁)
+      module _ (x y : F) (x·y≡1 : x · y ≡ 1f) where
+        -- NOTE: (IMPORTANT)
+        --       the following line "creates" a "new" `y#0`
+        --       now, this is apriory not equal to previous `y#0`s because `·-inv-back` does not give us a prop
+        --       therefore I am observing a situation where I have exactly the goal
+        --         Goal: (z ⁻¹ᶠ₁) ≡ ((((y ·₁ z) - (x ·₁ z)) ⁻¹ᶠ₁) ·₁ (y - x))
+        --         Have: (z ⁻¹ᶠ₁) ≡ ((((y ·₁ z) - (x ·₁ z)) ⁻¹ᶠ₁) ·₁ (y - x))
+        --       but Agda refuses to take what I have with the following message
+        --         ERROR
+        --           [almost what I was giving agda, but expanded] != inr 0<z of type (z <₁ 0f) ⊎ (0f <₁ z)
+        --         when checking that the expression
+        --           [what I was giving agda] has type [the goal type]
+        --       so this might be mitigated by using Prop instead
+        --       although some more thinking should go into this kind of instance usage
+        y#0 = snd (·-inv-back _ _ x·y≡1)
+        instance _ = y#0
+        import Cubical.Structures.Group
+
+        -- NOTE: ported from Cubical.Structures.Group.GroupLemmas
+        abstract
+          ·-linv-unique' : Σ[ p ∈ y # 0f ] (x ≡ _⁻¹ᶠ y {{p}})
+          ·-linv-unique' = it , (
+            x · y ≡ 1f        ⇒⟨ transport (λ i → x · y ≡ ·-linv y it (~ i)) ⟩
+            x · y ≡ y ⁻¹ᶠ · y ⇒⟨ simplR _  ⟩
+            x     ≡ y ⁻¹ᶠ     ◼) x·y≡1
+
+      ·-linv-unique : (x y : F) → ((x · y) ≡ 1f) → Σ[ p ∈ y # 0f ] x ≡ (_⁻¹ᶠ y {{p}})
+      ·-linv-unique = ·-linv-unique'
+
+      -- NOTE: a variant for not having to state the `let instance` twice (but this needs an indentation)
+      -- ⁻¹ᶠ-involutive : (x : F) (z#0 : x #' 0f) → ((x ⁻¹ᶠ₁) ⁻¹ᶠ₁) ≡ x
+      module _ (z : F) (z#0 : z # 0f) where
+        private
+          instance _ = z#0
+          z⁻¹ = z ⁻¹ᶠ -- NOTE: interestingly, the instance argument is not applied and y remains normalized in terms of z
+                    --       so we get `y : {{ _ : z #' 0f }} → F` here
+          z⁻¹#0 = snd (·-inv-back z z⁻¹ (·-rinv z it))
+          -- NOTE: for some reason I get "There are instances whose type is still unsolved when checking that the expression it has type z #' 0f"
+          --       typing `y : F` did not help much. therefore this goes in two lines
+          instance _ = z⁻¹#0
+          z⁻¹⁻¹ = z⁻¹ ⁻¹ᶠ
+
+        -- NOTE: this should be similar to `right-helper` + `-involutive`
+        ⁻¹ᶠ-involutive : (z ⁻¹ᶠ) ⁻¹ᶠ ≡ z
+        ⁻¹ᶠ-involutive = (
+           z⁻¹⁻¹              ≡⟨ sym (fst (·-identity _)) ⟩
+           z⁻¹⁻¹ ·      1f    ≡⟨ (λ i →  z⁻¹⁻¹ · ·-linv _ it (~ i)) ⟩
+           z⁻¹⁻¹ · (z⁻¹  · z) ≡⟨ ·-assoc _ _ _ ⟩
+          (z⁻¹⁻¹ ·  z⁻¹) · z  ≡⟨ (λ i → ·-linv z⁻¹ it i · z) ⟩
+                1f       · z  ≡⟨  snd (·-identity _)  ⟩
+                           z  ∎)
+
+      -- ⁻¹ᶠ-preserves-sign : (x : F) (0<z : 0f <₁ x) → 0f <₁ (x ⁻¹ᶠ₁)
+      module _ (z : F) (0<z : 0f < z) where
+        private
+          instance _ = z # 0f ∋ inr 0<z
+          z⁻¹ = z ⁻¹ᶠ
+          z⁻¹#0 = snd (·-inv-back z z⁻¹ (·-rinv z it))
+        abstract
+          ⁻¹ᶠ-preserves-sign : 0f < z ⁻¹ᶠ
+          ⁻¹ᶠ-preserves-sign with z⁻¹#0
+          ... | inl z⁻¹<0 = (
+            z⁻¹     < 0f     ⇒⟨ ·-preserves-< _ _ z 0<z ⟩
+            z⁻¹ · z < 0f · z ⇒⟨ transport (λ i → ·-linv z it i <  0-leftNullifies z i) ⟩
+            1f      < 0f     ⇒⟨ <-trans _ _ _ item-10 ⟩
+            0f      < 0f     ⇒⟨ <-irrefl _ ⟩
+                    ⊥        ⇒⟨ ⊥-elim ⟩ _ ◼) z⁻¹<0
+          ... | inr 0<z⁻¹ = 0<z⁻¹
+
+
       item-9-back : ∀ x y z → 0f < z → (x · z < y · z → x < y)
       -- For the other direction of item 9, assume 0 < z and xz < yz,
       item-9-back x y z 0<z x·z<y·z = let
@@ -854,24 +1049,93 @@ module Lemma-4-1-11
               (y - x) · z ∎)
         instance _ = (y - x) · z # 0f ∋  transport (λ i → o i # 0f) it
         -- and so z itself has multiplicative inverse w (y − x).
-        iii = (
-          1f                      ≡⟨ (λ i → ·-linv ((y · z) - (x · z)) it (~ i)) ⟩
-          w · ((y · z) - (x · z)) ≡⟨ (λ i → w · o i) ⟩
-          w · ((y - x) · z)       ≡⟨ (λ i → w · ·-comm (y - x) z i ) ⟩
-          w · (z · (y - x))       ≡⟨ (λ i → ·-assoc w z (y - x) i) ⟩
-          (w · z) · (y - x)       ≡⟨ (λ i → ·-comm w z i · (y - x)) ⟩
-          (z · w) · (y - x)       ≡⟨ (λ i → ·-assoc z w (y - x) (~ i)) ⟩
-          z · (w · (y - x))       ∎)
+        1≡z·[w·[y-x]] = γ
+        iii = 1≡z·[w·[y-x]]
+        1≡[w·[y-x]]·z : 1f ≡ (w · (y - x)) · z
+        1≡[w·[y-x]]·z = transport (λ i → 1f ≡ ·-comm z (w · (y - x)) i) 1≡z·[w·[y-x]]
         -- Then since 0 < z and xz < yz, by (∗), we get xzw (y − x) < yzw (y − x), and hence x < y.
         instance _ = z # 0f ∋ inr 0<z
         z⁻¹ = w · (y - x)
-        instance _ = 0f < w · (y - x) ∋ {! lemma' z 0<z!}
+        z⁻¹≡w·[y-x] : z ⁻¹ᶠ ≡ (w · (y - x))
+        z⁻¹≡w·[y-x] = {! sym (snd (·-linv-unique (w · (y - x)) z (sym 1≡[w·[y-x]]·z))) !}
+        instance _ = 0f < w · (y - x) ∋ {! 1≡z·[w·[y-x]]!}
         -- instance _ = 0f < z⁻¹ ∋ ?
         in (  x ·  z         <  y ·  z         ⇒⟨ ·-preserves-< _ _ z⁻¹ it ⟩
              (x ·  z) · z⁻¹  < (y ·  z) · z⁻¹  ⇒⟨ transport (λ i → ·-assoc x z z⁻¹ (~ i) < ·-assoc y z z⁻¹ (~ i)) ⟩
               x · (z  · z⁻¹) <  y · (z  · z⁻¹) ⇒⟨ transport (λ i → x · iii (~ i) < y · iii (~ i)) ⟩
               x · 1f         <  y · 1f         ⇒⟨ transport (cong₂ _<_ (fst (·-identity x)) (fst (·-identity y))) ⟩
               x              <  y              ◼) x·z<y·z
+        where
+          abstract
+            γ =
+              let -- NOTE: for some reason the instance resolution does only work in let-blocks
+              -- I get a "Terms marked as eligible for instance search should end with a name, so `instance' is ignored here. when checking the definition of my-instance"
+              instance my-instance = (          x · z  <  y · z            ⇒⟨ +-preserves-< _ _ _ ⟩
+                           (x · z) - (x · z) < (y · z) - (x · z) ⇒⟨ transport (cong₂ _<_ (+-rinv (x · z)) refl) ⟩
+                                          0f < (y · z) - (x · z) ◼) x·z<y·z
+                       _ = (y · z) - (x · z) # 0f ∋ inr it
+              -- so that yz − xz has a multiplicative inverse w,
+              w = ((y · z) - (x · z)) ⁻¹ᶠ
+              o = ( (y · z) - (   x  · z) ≡⟨ ( λ i → (y · z) + (-commutesWithLeft-· x z) (~ i)) ⟩
+                    (y · z) + ((- x) · z) ≡⟨ sym (snd (dist y (- x) z)) ⟩
+                    (y - x) · z ∎)
+              instance _ = (y - x) · z # 0f ∋  transport (λ i → o i # 0f) it
+              in (
+                1f                      ≡⟨ (λ i → ·-linv ((y · z) - (x · z)) it (~ i)) ⟩
+                w · ((y · z) - (x · z)) ≡⟨ (λ i → w · o i) ⟩
+                w · ((y - x) · z)       ≡⟨ (λ i → w · ·-comm (y - x) z i ) ⟩
+                w · (z · (y - x))       ≡⟨ (λ i → ·-assoc w z (y - x) i) ⟩
+                (w · z) · (y - x)       ≡⟨ (λ i → ·-comm w z i · (y - x)) ⟩
+                (z · w) · (y - x)       ≡⟨ (λ i → ·-assoc z w (y - x) (~ i)) ⟩
+                z · (w · (y - x))       ∎)
+
+      {-
+      module _ (x y z : F) (0<z : 0f < z) (x·z<y·z : x · z < y · z) where
+        -- For the other direction of item 9, assume 0 < z and xz < yz,
+        instance _ = (          x · z  <  y · z            ⇒⟨ +-preserves-< _ _ _ ⟩
+                     (x · z) - (x · z) < (y · z) - (x · z) ⇒⟨ transport (cong₂ _<_ (+-rinv (x · z)) refl) ⟩
+                                    0f < (y · z) - (x · z) ◼) x·z<y·z
+        instance _ = (y · z) - (x · z) # 0f ∋ inr it
+        -- so that yz − xz has a multiplicative inverse w,
+        w = ((y · z) - (x · z)) ⁻¹ᶠ
+        o = ( (y · z) - (   x  · z) ≡⟨ ( λ i → (y · z) + (-commutesWithLeft-· x z) (~ i)) ⟩
+              (y · z) + ((- x) · z) ≡⟨ sym (snd (dist y (- x) z)) ⟩
+              (y - x) · z ∎)
+        instance _ = (y - x) · z # 0f ∋  transport (λ i → o i # 0f) it
+        -- and so z itself has multiplicative inverse w (y − x).
+        1≡z·[w·[y-x]] : 1f ≡ z · (w · (y - x))
+        1≡z·[w·[y-x]] = γ where
+          abstract
+            γ = (
+             1f                      ≡⟨ (λ i → ·-linv ((y · z) - (x · z)) it (~ i)) ⟩
+             w · ((y · z) - (x · z)) ≡⟨ (λ i → w · o i) ⟩
+             w · ((y - x) · z)       ≡⟨ (λ i → w · ·-comm (y - x) z i ) ⟩
+             w · (z · (y - x))       ≡⟨ (λ i → ·-assoc w z (y - x) i) ⟩
+             (w · z) · (y - x)       ≡⟨ (λ i → ·-comm w z i · (y - x)) ⟩
+             (z · w) · (y - x)       ≡⟨ (λ i → ·-assoc z w (y - x) (~ i)) ⟩
+             z · (w · (y - x))       ∎)
+        1≡[w·[y-x]]·z : 1f ≡ (w · (y - x)) · z
+        1≡[w·[y-x]]·z = transport (λ i → 1f ≡ ·-comm z (w · (y - x)) i) 1≡z·[w·[y-x]]
+        -- Then since 0 < z and xz < yz, by (∗), we get xzw (y − x) < yzw (y − x), and hence x < y.
+        instance _ = z # 0f ∋ inr 0<z
+        z⁻¹ = w · (y - x)
+        --  ·-linv-unique _ _ (sym iii)
+        z⁻¹≡w·[y-x] : z ⁻¹ᶠ ≡ (w · (y - x))
+        z⁻¹≡w·[y-x] = {! sym (·-linv-unique _ _ (sym 1≡[w·[y-x]]·z)) !}
+        --   (⁻¹ᶠ-preserves-sign z 0<z)
+        -- transport (λ i → z⁻¹≡w·[y-x] i)        
+        iv : 0f < (z ⁻¹ᶠ) → 0f < ((((y · z) + (- (x · z))) ⁻¹ᶠ) · (y + (- x)))
+        iv = {! transport (λ i → 0f < z⁻¹≡w·[y-x] i) !}
+        -- (⁻¹ᶠ-preserves-sign z 0<z)
+        instance _ = 0f < w · (y - x) ∋ {!    !}
+        item-9-back : x < y
+        item-9-back =
+           (  x ·  z         <  y ·  z         ⇒⟨ ·-preserves-< _ _ z⁻¹ it ⟩
+             (x ·  z) · z⁻¹  < (y ·  z) · z⁻¹  ⇒⟨ transport (λ i → ·-assoc x z z⁻¹ (~ i) < ·-assoc y z z⁻¹ (~ i)) ⟩
+              x · (z  · z⁻¹) <  y · (z  · z⁻¹) ⇒⟨ transport (λ i → x · 1≡z·[w·[y-x]] (~ i) < y · 1≡z·[w·[y-x]] (~ i)) ⟩
+              x · 1f         <  y · 1f         ⇒⟨ transport (cong₂ _<_ (fst (·-identity x)) (fst (·-identity y))) ⟩
+              x              <  y              ◼) x·z<y·z
+      -}
       {-
         let
           instance _ = z # 0f ∋ inr 0<z -- make the instance available
@@ -900,7 +1164,10 @@ module Lemma-4-1-11
           1f    - 1f  < 0f - 1f           ⇒⟨ transport (λ i → +-rinv 1f i < snd (+-identity (- 1f)) i) ⟩
           0f          <    - 1f           ⇒⟨ ( λ 0<-1 → ·-preserves-< 0f (- 1f) (- 1f) 0<-1 0<-1) ⟩
           0f · (- 1f) <   (- 1f) · (- 1f) ⇒⟨ transport (cong₂ _<_ (0-leftNullifies (- 1f)) refl) ⟩
-          0f          <   (- 1f) · (- 1f) ⇒⟨ {!!} ⟩
+          0f          <   (- 1f) · (- 1f) ⇒⟨ transport (λ i → 0f < -commutesWithRight-· (- 1f) (1f)   i ) ⟩
+          0f          < -((- 1f) ·    1f )⇒⟨ transport (λ i → 0f < -commutesWithLeft-·  (- 1f)  1f (~ i)) ⟩
+          0f          < (-(- 1f))·    1f  ⇒⟨ transport (λ i → 0f < -involutive 1f i · 1f) ⟩
+          0f          <      1f  ·    1f  ⇒⟨ transport (λ i → 0f < fst (·-identity 1f) i) ⟩
           0f          <      1f           ⇒⟨ <-trans _ _ _ 1<0 ⟩
           1f          <      1f           ⇒⟨ <-irrefl 1f ⟩
                       ⊥                   ⇒⟨ ⊥-elim ⟩ _ ◼) 1<0
@@ -1004,17 +1271,12 @@ lemma-4-1-12 {ℓ} {ℓ'} OF = let -- NOTE: for mentioning the ℓ and ℓ' and 
                          { (inl y<w) → inl (inr y<w)
                          ; (inr z<x) → inr (inr z<x)
                          })
-     -- NOTE: #-tighness follows from <-trichotomousness (part of being a strict total order)
-     --       but Booij does this differently and never mentions trichotomousness
-     --       So I am not sure whether we have a strict total order in the first place
+     -- NOTE: I got a "Cannot resolve overloaded projection ≤-antisym because it is not applied to a visible argument" for just `≤-antisym` in a goal
+     --       because there were multiple `≤-antisym` exported from `OrderedField`
      -- Tightness follows from the fact that ≤ is antisymmetric, combined with the fact
      --   that ¬(P ∨ Q) is equivalent to ¬P ∧ ¬Q.
-   ; #-tight         = -- NOTE: we do not have proof-search here ...
-                       λ where
-                       -- NOTE: ... but here we have it again
-                       x y ¬x#y → case <-tricho x y of λ where
-                         (inl x#y) → ⊥-elim (¬x#y x#y)
-                         (inr x≡y) → x≡y
+   ; #-tight         = λ x y ¬[x<y]⊎¬[y<x] → let (¬[x<y] , ¬[y<x]) = deMorgan₂ ¬[x<y]⊎¬[y<x]
+                                             in  ≤-antisym _ _ ¬[y<x] ¬[x<y]
    }
 
 -- We will mainly be concerned with ordered fields, as opposed to the more general con-
@@ -1099,11 +1361,15 @@ record OrderedFieldHom {ℓ ℓ' ℓₚ ℓₚ'} (F : OrderedField {ℓ} {ℓₚ
 -- i of ordered fields from the rationals to F . Additionally, i preserves < in the sense that for every q, r : Q
 --   q < r ⇒ i (q) < F i (r ).
 
+-- isContr : Type ℓ → Type ℓ
+-- isContr A = Σ[ x ∈ A ] (∀ y → x ≡ y)
+
 
 -- near questions:
 --
 -- 1. can we continue the same patterns for morphisms as we have with the other structures?
 -- 2. what machinery is necessary to express unique existence? (there is ∃! in the standard library)
+-- 3. trichotomy of ordered fields ... do we have this? (you write the rationals have)
 --
 -- far questions:
 --
@@ -1115,3 +1381,17 @@ record OrderedFieldHom {ℓ ℓ' ℓₚ ℓₚ'} (F : OrderedField {ℓ} {ℓₚ
 --     Some time ago I heard "on the streets" that filters are "not cool" amongst constructive mathematicians but I
 --     is that a "thing" or did I just misheard that
 -- (un)bounded linear operators, adjoints and bounds
+
+import Cubical.Data.Sigma.Base
+
+
+-- most of my types are contractible ... not
+-- cohesive type theory has a builtin notion of real number
+--  balance between continuity and discontinuity
+-- therefore it is better suited to do differential geometry and alike
+
+-- classical mathematical starting point
+--   locally euclidean, charts, atlasses
+-- univalent starting point
+--   two manifolds are diffeomorphic exactly when they are equal
+--   a function between manifolds is a diffeomorphism
