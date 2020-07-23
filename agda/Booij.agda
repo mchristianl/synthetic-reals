@@ -974,39 +974,55 @@ lemma-4-1-12 :
 lemma-4-1-12 {ℓ} {ℓ'} OF = let -- NOTE: for mentioning the ℓ and ℓ' and not taking them as new "variables"
   open OrderedField OF
   in record
-   { -- see https://agda.readthedocs.io/en/v2.6.1/language/record-types.html#building-records-from-modules
-     -- the following line just picks all same-named thigs from the `OrderedField OF` module
-     OrderedField OF -- wow!
-     -- alternatively we can specify it explicitly (renaming should work with this syntax):
-     --   OrderedField OF using (isCommRing; ·-rinv; ·-linv; ·-inv-back)
-     -- and of course the "normal" syntax would be
-     --     isCommRing      = isCommRing
-     --   ; ·-rinv          = ·-rinv
-     --   ; ·-linv          = ·-linv
-     --   ; ·-inv-back      = ·-inv-back
+   { -- NOTE: see https://agda.readthedocs.io/en/v2.6.1/language/record-types.html#building-records-from-modules
+     --       the following line just picks all same-named thigs from the `OrderedField OF` module
+     OrderedField OF
+     -- NOTE: alternatively we can specify it explicitly (renaming should work with this syntax):
+     --         OrderedField OF using (isCommRing; ·-rinv; ·-linv; ·-inv-back)
+     -- NOTE: and of course the "normal" syntax would be
+     --           isCommRing      = isCommRing
+     --         ; ·-rinv          = ·-rinv
+     --         ; ·-linv          = ·-linv
+     --         ; ·-inv-back      = ·-inv-back
      --
-     -- #-tighness follows from <-trichotomousness (part of being a strict total order)
+     -- NOTE: We've proved this before
+   ; isApartnessRel  = #'-isApartnessRel <-isStrictPartialOrder
+     -- We need to show that + is #-extensional, and that # is tight.
+     --
+     -- First, assume w + x # y + z. We need to show w # y ∨ x # z.
+   ; +-#-extensional = λ where
+                       -- Consider the case w + x < y + z, so that we can use (†) to obtain w < y ∨ x < z,
+                       --   which gives w # y ∨ x # z in either case.
+                       w x y z (inl w+x<y+z) → case +-<-extensional _ _ _ _ w+x<y+z of (
+                         (_ → (w # y) ⊎ (x # z)) ∋ λ -- NOTE: here we had to add a (return-)type annotation to the λ
+                         { (inl w<y) → inl (inl w<y)
+                         ; (inr x<z) → inr (inl x<z)
+                         })
+                       -- The case w + x > y + z is similar.
+                       w x y z (inr y+z<w+x) → case  +-<-extensional _ _ _ _ y+z<w+x of (
+                         (_ → (w # y) ⊎ (x # z)) ∋ λ
+                         { (inl y<w) → inl (inr y<w)
+                         ; (inr z<x) → inr (inr z<x)
+                         })
+     -- NOTE: #-tighness follows from <-trichotomousness (part of being a strict total order)
+     --       but Booij does this differently and never mentions trichotomousness
+     --       So I am not sure whether we have a strict total order in the first place
+     -- Tightness follows from the fact that ≤ is antisymmetric, combined with the fact
+     --   that ¬(P ∨ Q) is equivalent to ¬P ∧ ¬Q.
    ; #-tight         = -- NOTE: we do not have proof-search here ...
                        λ where
                        -- NOTE: ... but here we have it again
                        x y ¬x#y → case <-tricho x y of λ where
                          (inl x#y) → ⊥-elim (¬x#y x#y)
                          (inr x≡y) → x≡y
-     -- + being #-extensional follows from + being < extensional
-   ; +-#-extensional = λ where
-                       w x y z (inl p) → case +-<-extensional _ _ _ _ p of (
-                         (_ → (w # y) ⊎ (x # z)) ∋ λ -- NOTE: here we had to add a (return-)type annotation to the λ
-                         { (inl w<y) → inl (inl w<y)
-                         ; (inr x<z) → inr (inl x<z)
-                         })
-                       w x y z (inr p) → case  +-<-extensional _ _ _ _ p of (
-                         (_ → (w # y) ⊎ (x # z)) ∋ λ
-                         { (inl y<w) → inl (inr y<w)
-                         ; (inr z<x) → inr (inr z<x)
-                         })
-     -- We've proved this before
-   ; isApartnessRel  = #'-isApartnessRel <-isStrictPartialOrder
    }
+
+-- We will mainly be concerned with ordered fields, as opposed to the more general con-
+-- structive fields. This is because the Archimedean property can be phrased straightforwardly
+-- for ordered fields, as in Section 4.3, and because the ordering relation allows us to define loca-
+-- tors, as in Chapter 6.
+-- 
+-- We have defined ordered fields, which capture the algebraic structure of the real numbers.
 
 -- 4.2 Rationals
 -- ...
@@ -1023,3 +1039,13 @@ lemma-4-1-12 {ℓ} {ℓ'} OF = let -- NOTE: for mentioning the ℓ and ℓ' and 
 -- We now define the notion of Archimedean ordered fields. We phrase this in terms of a certain
 -- interpolation property, that can be defined from the fact that there is a unique morphism of
 -- ordered fields from the rationals to every ordered field.
+
+-- Definition 4.3.1.
+-- A morphism from an ordered field (F, 0F , 1F , +F , ·F , minF , maxF , <F )
+--              to an ordered field (G, 0G , 1G , +G , ·G , minG , maxG , <G )
+-- is a map f : F → G such that
+-- 1. f is a morphism of rings,
+-- 2. f reflects < in the sense that for every x, y : F
+-     f (x) <G f (y) ⇒ x <F y.
+
+-- Remark 4.3.2. The contrapositive of reflecting < means preserving ≤.
