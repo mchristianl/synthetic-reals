@@ -64,6 +64,36 @@ In intuitionistic logic, de Morgan’s law often refers to the one of de Morgan'
 
 Theorem. De Morgan’s law is equivalent to weak excluded middle.
 
+```agda
+deMorgan₁ : ∀ x y → ¬ (x × y) ≡ (¬ x) ⊎ (¬ y)
+deMorgan₁ x y = lemma (x × y) (¬ x ⊎ ¬ y) lem₁ lem₂
+  where
+  lem₁ = (
+    (x × y) × (¬ x ⊎ ¬ y)          ≡⟨ {! ×-⊎-distribˡ _ _ _ !} ⟩
+    (x × y) × ¬ x ⊎ (x × y) × ¬ y  ≡⟨ {! ⊎-congʳ $ ×-congʳ $ ×-comm _ _ !} ⟩
+    (y × x) × ¬ x ⊎ (x × y) × ¬ y  ≡⟨ {! ×-assoc _ _ _ ⟨ ⊎-cong ⟩ ⟩ ×-assoc _ _ _ !} ⟩
+    y × (x × ¬ x) ⊎ x × (y × ¬ y)  ≡⟨ {! (×-congˡ $ ×-complementʳ _) ⟨ ⊎-cong ⟩
+                                      (×-congˡ $ ×-complementʳ _) !} ⟩
+    (y × ⊥) ⊎ (x × ⊥)              ≡⟨ {! ×-zeroʳ _ ⟨ ⊎-cong ⟩ ⟩ ×-zeroʳ _ !} ⟩
+    ⊥ ⊎ ⊥                          ≡⟨ {! ⊎-identityʳ _ !} ⟩
+    ⊥                              ∎)
+
+  lem₃ = (
+    (x × y) ⊎ ¬ x          ≡⟨ {! ⊎-×-distribʳ _ _ _ !} ⟩
+    (x ⊎ ¬ x) × (y ⊎ ¬ x)  ≡⟨ {! ×-congʳ $ ⊎-complementʳ _ !} ⟩
+    ⊤ × (y ⊎ ¬ x)          ≡⟨ {! ×-identityˡ _ !} ⟩
+    y ⊎ ¬ x                ≡⟨ {! ⊎-comm _ _ !} ⟩
+    ¬ x ⊎ y                ∎)
+
+  lem₂ = (
+    (x × y) ⊎ (¬ x ⊎ ¬ y)  ≡⟨ {! ⊎-assoc _ _ _ !} ⟩
+    ((x × y) ⊎ ¬ x) ⊎ ¬ y  ≡⟨ {! ⊎-congʳ lem₃ !} ⟩
+    (¬ x ⊎ y) ⊎ ¬ y        ≡⟨ {! ⊎-assoc _ _ _ !} ⟩
+    ¬ x ⊎ (y ⊎ ¬ y)        ≡⟨ {! ⊎-congˡ $ ⊎-complementʳ _ !} ⟩
+    ¬ x ⊎ ⊤                ≡⟨ {! ⊎-zeroʳ _ !} ⟩
+    ⊤                      )
+```
+
 ## more logic for LEM
 
 the following does only hold when LEM is available (e.g. in a BooleanAlgebra)
@@ -169,6 +199,8 @@ we have the "left associated" term on the LHS and the "right associated" term
 
 there seems to be a convention that
 > "We will adopt the convention of denoting the level of the carrier set by ℓ₀ and the level of the relation result by ℓ₁."
+
+
 
 ## using equivalences instead of `lemma` and `lemma-back`
 
@@ -322,6 +354,32 @@ these [ P ] and [ Q ] are called "mere propositions"
     is that a "thing" or did I just misheard that
 (un)bounded linear operators, adjoints and bounds
 
+## anonymous copattern-matching lambda
+
+see https://agda.readthedocs.io/en/v2.6.1/language/record-types.html
+
+decompose record: see https://agda.readthedocs.io/en/v2.6.1/language/let-and-where.html#let-record-pattern
+
+```agda
+#'-isApartnessRel : ∀{X : Type ℓ} {_<_ : Rel X X ℓ'} → (isSPO : IsStrictPartialOrder _<_) → IsApartnessRel (_#'_ {_<_ = _<_})
+#'-isApartnessRel {X = X} {_<_ = _<_} isSPO =
+  --
+  let (isstrictpartialorder <-irrefl <-trans <-cotrans) = isSPO
+  in λ where
+    -- clauses work here and case-split does also work!
+    -- but I get a "Not implemented: The Agda synthesizer (Agsy) does not support copatterns yet" on proof search
+    .IsApartnessRel.isIrrefl a (inl a<a) → <-irrefl _ a<a
+    .IsApartnessRel.isIrrefl a (inr a<a) → <-irrefl _ a<a
+    .IsApartnessRel.isSym    a b p → swap p
+    .IsApartnessRel.isCotrans a b (inl a<b) x → case (<-cotrans _ _ a<b x) of λ where -- case x of f = f x
+      -- NOTE: here we have proof search again
+      (inl a<x) → inl (inl a<x)
+      (inr x<b) → inr (inl x<b)
+    .IsApartnessRel.isCotrans a b (inr b<a) x → case (<-cotrans _ _ b<a x) of λ where
+      (inl b<x) → inr (inr b<x)
+      (inr x<a) → inl (inr x<a)
+```
+
 ## instance syntax collection
 
 there are a few in the code, but more here:
@@ -340,6 +398,218 @@ there are a few in the code, but more here:
       0 < x · y
 ```
 
+## more issues with instances
+
+in the following, the `·-inv-back : (x y : F) → (x · y ≡ 1f) → x # 0f × y # 0f`
+"creates" new properties `x # 0f` and `y # 0f` that are different (!) from possibly existing "previous" ones
+
+meaning, that this conflicts a usage where we might recreate these properties somewhere (inside of a module or a function)
+
+and having the result-type depending on them
+
+we can't use the result "outside" then, because it' differs in this `x # 0f` and `y # 0f` entity
+
+although we might not see it (because instance arguments are hidden)
+
+there is another NOTE of this
+
+```agda
+record IsOrderedField {F : Type ℓ}
+                 (0f 1f : F) (_+_ : F → F → F) (-_ : F → F) (_·_ min max : F → F → F) (_<_ _#_ _≤_ : Rel F F ℓ') (_⁻¹ᶠ : (x : F) → {{x # 0f}} → F) : Type (ℓ-max ℓ ℓ') where
+  constructor isorderedfield
+  field
+    -- 1.
+    isCommRing : IsCommRing 0f 1f _+_ _·_ -_
+    -- 2.
+    <-isStrictPartialOrder : IsStrictPartialOrder _<_
+    -- 3.
+    ·-rinv     : (x : F) → (p : x # 0f) → x · (_⁻¹ᶠ x {{p}}) ≡ 1f
+    ·-linv     : (x : F) → (p : x # 0f) → (_⁻¹ᶠ x {{p}}) · x ≡ 1f
+    ·-inv-back : (x y : F) → (x · y ≡ 1f) → x # 0f × y # 0f
+    -- 4. NOTE: we already have ≤-isPartialOrder in <-isLattice
+    -- ≤-isPartialOrder : IsPartialOrder _≤_
+    -- 5.
+    <-isLattice : IsLattice _≤_ min max
+    -- 6. (†)
+    -- NOTE: this is 'shifted' from the pevious definition of #-extensionality for + .. does the name still fit?
+    +-<-extensional : ∀ w x y z → (x + y) < (z + w) → (x < z) ⊎ (y < w)
+    -- 6. (∗)
+    ·-preserves-< : ∀ x y z → 0f < z → x < y → (x · z) < (y · z)
+
+  open IsCommRing {0r = 0f} {1r = 1f} isCommRing public
+  open IsStrictPartialOrder <-isStrictPartialOrder public
+    renaming
+      ( isIrrefl  to <-irrefl
+      ; isTrans   to <-trans
+      ; isCotrans to <-cotrans )
+  open IsLattice <-isLattice public
+```
+
+and then we might want to add some general instances to convert `0f # x` or `x < 0f` or `0f < x` into `x # 0f`
+
+because there is always some fiddling necessary when using `_⁻¹ᶠ`
+
+e.g. see poof of `item-8` below where we also had to turn `0f ≤ z` and `z # 0` into `0f < z` because `·-preserves-<` was defined in terms of `0f < z`
+
+in:
+
+```agda
+record OrderedField : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
+  constructor orderedfield
+  field
+    Carrier : Type ℓ
+    0f 1f   : Carrier
+    _+_     : Carrier → Carrier → Carrier
+    -_      : Carrier → Carrier
+    _·_     : Carrier → Carrier → Carrier
+    min max : Carrier → Carrier → Carrier
+    _<_     : Rel Carrier Carrier ℓ'
+
+  _#_ = _#'_ {_<_ = _<_}
+  _≤_ = _≤'_ {_<_ = _<_}
+
+  field
+    _⁻¹ᶠ    : (x : Carrier) → {{x # 0f}} → Carrier
+    isOrderedField : IsOrderedField 0f 1f _+_ -_ _·_ min max _<_ _#_ _≤_ _⁻¹ᶠ
+```
+
+## some properties that are not necessary anymore
+
+- there is also PropRel in Cubical.Relation.Binary.Base which uses
+- **one needs these "all-lowercase constructors" to make use of copatterns**
+- see also Relation.Binary.Indexed.Homogeneous.Definitions.html
+- see also Algebra.Definitions.html
+
+```agda
+IsConnexive : {ℓ ℓ' : Level} {A : Type ℓ} → (R : Rel A A ℓ') → Type (ℓ-max ℓ ℓ')
+IsConnexive {A = A} R = ∀ a b → (R a b) ⊎ (R b a)
+
+record IsTotalOrder {ℓ ℓ' : Level} {A : Type ℓ} (R : Rel A A ℓ') : Type (ℓ-max ℓ ℓ') where
+  constructor istotalorder
+  field
+    isAntisym   : IsAntisym R
+    isTrans     : BinaryRelation.isTrans R
+    isConnexive : IsConnexive R
+
+IsAsym : {ℓ ℓ' : Level} {A : Type ℓ} → (R : Rel A A ℓ') → Type (ℓ-max ℓ ℓ')
+IsAsym {A = A} R = ∀ a b → R a b → ¬ R b a
+
+IsTrichotomous : {ℓ ℓ' : Level} {A : Type ℓ} → (R : Rel A A ℓ') → Type (ℓ-max ℓ ℓ')
+IsTrichotomous {A = A} R = ∀ a b → ((R a b) ⊎ (R b a)) ⊎ (a ≡ b)
+
+record IsStrictTotalOrder {ℓ ℓ' : Level} {A : Type ℓ} (R : Rel A A ℓ') : Type (ℓ-max ℓ ℓ') where
+  constructor isstricttotalorder
+  field
+    isTrans        : BinaryRelation.isTrans R
+    isTrichotomous : IsTrichotomous R
+    isIrrefl       : IsIrrefl R
+    isAsym         : IsAsym R
+```
+
+## infix for module parameters
+
+well, there is some syntax for this: https://lists.chalmers.se/pipermail/agda/2018/010217.html
+
+also see https://github.com/agda/agda/issues/1235
+
+BUT: it adds a ₁ to every symbol in the goal preview, even when normalizing
+
+```agda
+module Lemma-4-1-11
+  --------------------------------------- structures
+  (F       : Type ℓ)
+  (0f 1f   : F)
+  (_+_     : F → F → F)
+  (-_      : F → F)
+  (_·_     : F → F → F)
+  (min max : F → F → F)
+  (_<_     : Rel F F ℓ')
+  --------------------------------------- definitions (fixites)
+  -- https://lists.chalmers.se/pipermail/agda/2018/010217.html
+  --   Those lets are not parameters of the module
+  (let _·_  = _·_ ; infixl 7 _·_ )
+  (let -_   = -_  ; infix  6 -_ )
+  (let _+_  = _+_ ; infixl 5 _+_ )
+  (let _<_  = _<_ ; infixl 4 _<_ )
+  --------------------------------------- properties
+  -- 1.
+  (isCommRing : IsCommRing 0f 1f _+_ _·_ -_)
+  -- 2.
+  (<-isStrictTotalOrder : IsStrictPartialOrder _<_)
+  --------------------------------------- definitions
+  (let _#_ = _#'_ {_<_ = _<_}; infixl 4 _#_)
+  (let _≤_ = _≤'_ {_<_ = _<_}; infixl 4 _≤_)
+  --------------------------------------- structures
+  (_⁻¹ᶠ    : (x : F) → {{x # 0f}} → F)
+  (let _⁻¹ᶠ = _⁻¹ᶠ; infix  9 _⁻¹ᶠ)
+  --------------------------------------- properties
+  -- 3.
+  (·-rinv     : ∀ x → (p : x # 0f) → x · (_⁻¹ᶠ x {{p}}) ≡ 1f)
+  (·-linv     : ∀ x → (p : x # 0f) → (_⁻¹ᶠ x {{p}}) · x ≡ 1f)
+  (·-inv-back : ∀(x y : F) → (x · y ≡ 1f) → (x # 0f) × (y # 0f) )
+  -- 4.
+  (≤-isPartialOrder : IsPartialOrder _≤_)
+  -- 5.
+  (<-isLattice : IsLattice _≤_ min max)
+  --------------------------------------- definitions (fixites)
+  -- https://lists.chalmers.se/pipermail/agda/2018/010217.html
+  --   Those lets are not parameters of the module
+  -- this one is tricky: its usually from `Group` and we get it by opening `IsCommRing`
+  -- (let _-_  = λ(x y : F) → x + (- y) ; infixl 6 _-_)
+  where
+  --------------------------------------- populating the scope
+  open IsCommRing {0r = 0f} {1r = 1f} isCommRing public
+  open IsStrictPartialOrder <-isStrictTotalOrder public
+    renaming
+      ( isIrrefl  to <-irrefl
+      ; isTrans   to <-trans
+      ; isCotrans to <-cotrans )
+  open IsPartialOrder ≤-isPartialOrder public
+    renaming
+      ( isRefl    to ≤-refl
+      ; isAntisym to ≤-antisym
+      ; isTrans   to ≤-trans )
+  open IsLattice <-isLattice public
+
+----8<---------------------------8<--------------------------8<----
+
+  -- ....
+```
+
+## populating the module scope with a field AND a ring
+
+in the following, `open Cubical.Structures.Ring.Theory R` also creates additional `Ring.Carrier (makeRing ...)` in the "Goal/Have-previews", except when using C-u C-u C-... then these get normalized fine
+
+using this `R` makes it a little better
+
+it seems to be an issue to have overlapping `_+_`, `_·_`, `-_` in one scope
+
+```agda
+module Lemmas-4-6-1 (F : ConstructiveField {ℓ} {ℓ'}) where
+  open ConstructiveField F
+  open import Cubical.Structures.Ring
+  R = (makeRing 0f 1f _+_ _·_ -_ is-set +-assoc +-rid +-rinv +-comm ·-assoc ·-rid ·-lid ·-rdist-+ ·-ldist-+)
+  open Cubical.Structures.Ring.Theory R
+
+  ...
+```
+
+one better way to do this might be to use the `module F = ...` syntax as in
+
+```agda
+record IsRingHom
+  {ℓ ℓ'}
+  (F : Ring {ℓ}) (G : Ring {ℓ'})
+  (f : (Ring.Carrier F) → (Ring.Carrier G)) : Type (ℓ-max ℓ ℓ')
+  where
+  module F = Ring F
+  module G = Ring G
+  field
+    preserves-+ : ∀ a b → f (a F.+ b) ≡ f a G.+ f b
+    preserves-· : ∀ a b → f (a F.· b) ≡ f a G.· f b
+    perserves-1 : f F.1r ≡ G.1r
+```
+
 ## some ring and field lemma stubs
 
 ```agda
@@ -348,6 +618,28 @@ there are a few in the code, but more here:
 
 ·-inv-unique : ∀ x y z → x · y ≡ 1f → x · z ≡ 1f → y ≡ z
 ·-inv-unique = {!!}
+```
+
+```agda
+<-isStrictPartialOrder : IsStrictPartialOrder _<_
+<-isStrictPartialOrder = record
+  { isIrrefl  = <-irrefl
+  ; isTrans   = <-trans
+  ; isCotrans = λ where
+    a b a<b x →
+      ( a      <  b      ⇒⟨ +-preserves-< _ _ _ ⟩
+        a + x  <  b + x  ⇒⟨ transport (λ i → a + x < (+-comm b x) i) ⟩
+        a + x  <  x + b  ⇒⟨ +-<-extensional b a x x ⟩
+       (a < x) ⊎ (x < b) ◼) a<b
+  }
+```  
+
+```agda
+open IsPartialOrder ≤-isPartialOrder public
+  renaming
+    ( isRefl    to ≤-refl
+    ; isAntisym to ≤-antisym
+    ; isTrans   to ≤-trans )
 ```
 
 ## "reading" • from left to right
@@ -567,5 +859,12 @@ lemma-4-1-12 {ℓ} {ℓ'} OF = let -- NOTE: for mentioning the ℓ and ℓ' and 
   because there were multiple `≤-antisym` exported from `OrderedField`
 - `let` is not allowed in a telescope
   this was also mentioned in previous github issue about module parameter fixities
-
-##
+- "Not implemented: The Agda synthesizer (Agsy) does not support copatterns yet"
+- for some reason I get "There are instances whose type is still unsolved when checking that the expression it has type z #' 0f"
+  typing `y : F` did not help much. therefore this goes in two lines
+  ```agda
+  instance _ = z⁻¹#0
+  z⁻¹⁻¹ = z⁻¹ ⁻¹ᶠ
+  ```
+- for some reason the instance resolution does only work in let-blocks
+  I get a "Terms marked as eligible for instance search should end with a name, so 'instance' is ignored here. when checking the definition of my-instance"

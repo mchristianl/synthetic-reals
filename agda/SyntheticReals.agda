@@ -1,6 +1,6 @@
 {-# OPTIONS --cubical --no-import-sorts #-}
 
-module Booij where
+module SyntheticReals where
 
 open import Cubical.Foundations.Everything renaming (_⁻¹ to _⁻¹ᵖ; assoc to ∙-assoc)
 open import Cubical.Structures.CommRing
@@ -47,8 +47,6 @@ module _ where
     invUniqueL : {g h : Carrier} → g + h ≡ 0g → g ≡ - h
     invUniqueL {g} {h} p = simplR h (p ∙ sym (invl h))
 
-
-
 module ClassicalFieldModule where -- NOTE: one might want to put this into another file to omit the name-clashing
   record IsClassicalField {F : Type ℓ}
                           (0f : F) (1f : F) (_+_ : F → F → F) (_·_ : F → F → F) (-_ : F → F) (_⁻¹ᶠ : (x : F) → {{¬(x ≡ 0f)}} → F) : Type ℓ where
@@ -91,7 +89,7 @@ module ClassicalFieldModule where -- NOTE: one might want to put this into anoth
 -- - A strict partial order, denoted by <, is an irreflexive transitive cotransitive relation.
 
 -- NOTE: there is also PropRel in Cubical.Relation.Binary.Base which uses
--- NOTE: one needs these "all-lowercase constructors" to make use copatterns
+-- NOTE: one needs these "all-lowercase constructors" to make use of copatterns
 -- NOTE: see also Relation.Binary.Indexed.Homogeneous.Definitions.html
 -- NOTE: see also Algebra.Definitions.html
 
@@ -129,7 +127,7 @@ record IsPreorder {ℓ ℓ' : Level} {A : Type ℓ} (R : Rel A A ℓ') : Type (�
     isTrans   : BinaryRelation.isTrans R
 
 -- NOTE: there is already
---         isAntisym : {A : Type ℓ₀} → isSet A → Order ℓ₁ A → hProp (ℓ-max ℓ₀ ℓ₁)
+--       isAntisym : {A : Type ℓ₀} → isSet A → Order ℓ₁ A → hProp (ℓ-max ℓ₀ ℓ₁)
 --       in Cubical.Structures.Poset. Can we use this?
 
 IsAntisym : {ℓ ℓ' : Level} {A : Type ℓ} → (R : Rel A A ℓ') → Type (ℓ-max ℓ ℓ')
@@ -141,33 +139,6 @@ record IsPartialOrder {ℓ ℓ' : Level} {A : Type ℓ} (R : Rel A A ℓ') : Typ
     isRefl    : BinaryRelation.isRefl R
     isAntisym : IsAntisym R
     isTrans   : BinaryRelation.isTrans R
-
--- NOTE: not necessary anymore
-{-
-IsConnexive : {ℓ ℓ' : Level} {A : Type ℓ} → (R : Rel A A ℓ') → Type (ℓ-max ℓ ℓ')
-IsConnexive {A = A} R = ∀ a b → (R a b) ⊎ (R b a)
-
-record IsTotalOrder {ℓ ℓ' : Level} {A : Type ℓ} (R : Rel A A ℓ') : Type (ℓ-max ℓ ℓ') where
-  constructor istotalorder
-  field
-    isAntisym   : IsAntisym R
-    isTrans     : BinaryRelation.isTrans R
-    isConnexive : IsConnexive R
-
-IsAsym : {ℓ ℓ' : Level} {A : Type ℓ} → (R : Rel A A ℓ') → Type (ℓ-max ℓ ℓ')
-IsAsym {A = A} R = ∀ a b → R a b → ¬ R b a
-
-IsTrichotomous : {ℓ ℓ' : Level} {A : Type ℓ} → (R : Rel A A ℓ') → Type (ℓ-max ℓ ℓ')
-IsTrichotomous {A = A} R = ∀ a b → ((R a b) ⊎ (R b a)) ⊎ (a ≡ b)
-
-record IsStrictTotalOrder {ℓ ℓ' : Level} {A : Type ℓ} (R : Rel A A ℓ') : Type (ℓ-max ℓ ℓ') where
-  constructor isstricttotalorder
-  field
-    isTrans        : BinaryRelation.isTrans R
-    isTrichotomous : IsTrichotomous R
-    isIrrefl       : IsIrrefl R
-    isAsym         : IsAsym R
--}
 
 -- Definition 4.1.5.
 -- A constructive field is a set F with points 0, 1 : F, binary operations +, · : F → F → F, and a binary relation # such that
@@ -217,17 +188,6 @@ record ConstructiveField : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
   infixl 4 _#_
 
   open IsConstructiveField isConstructiveField public
-
-
--- NOTE: some syntax for "implicational" reasoning
--- infix  3 _◼ -- for a list of unicode symbols in agda, see https://people.inf.elte.hu/divip/AgdaTutorial/Symbols.html
--- infixr 2 _⇒⟨_⟩_
--- 
--- _⇒⟨_⟩_ : ∀{ℓ ℓ' ℓ''} {Q : Type ℓ'} {R : Type ℓ''} → (P : Type ℓ) → (P → Q) → (Q → R) → (P → R)
--- _ ⇒⟨ pq ⟩ qr = qr ∘ pq
--- 
--- _◼ : ∀{ℓ} (A : Type ℓ) → A → A
--- _ ◼ = λ x → x
 
 -- Lemma 4.1.6.
 -- For a constructive field (F, 0, 1, +, ·, #), the following hold.
@@ -355,16 +315,12 @@ swap (inr x) = inl x
 
 #'-isApartnessRel : ∀{X : Type ℓ} {_<_ : Rel X X ℓ'} → (isSPO : IsStrictPartialOrder _<_) → IsApartnessRel (_#'_ {_<_ = _<_})
 #'-isApartnessRel {X = X} {_<_ = _<_} isSPO =
-  -- decompose record: see https://agda.readthedocs.io/en/v2.6.1/language/let-and-where.html#let-record-pattern
   let (isstrictpartialorder <-irrefl <-trans <-cotrans) = isSPO
-  in λ where -- anonymous copattern-matching lambda: see https://agda.readthedocs.io/en/v2.6.1/language/record-types.html
-    -- clauses work here and case-split does also work!
-    -- but I get a "Not implemented: The Agda synthesizer (Agsy) does not support copatterns yet" on proof search
+  in λ where
     .IsApartnessRel.isIrrefl a (inl a<a) → <-irrefl _ a<a
     .IsApartnessRel.isIrrefl a (inr a<a) → <-irrefl _ a<a
     .IsApartnessRel.isSym    a b p → swap p
     .IsApartnessRel.isCotrans a b (inl a<b) x → case (<-cotrans _ _ a<b x) of λ where -- case x of f = f x
-      -- NOTE: here we have proof search again
       (inl a<x) → inl (inl a<x)
       (inr x<b) → inr (inl x<b)
     .IsApartnessRel.isCotrans a b (inr b<a) x → case (<-cotrans _ _ b<a x) of λ where
@@ -469,12 +425,6 @@ record IsOrderedField {F : Type ℓ}
     -- 3.
     ·-rinv     : (x : F) → (p : x # 0f) → x · (_⁻¹ᶠ x {{p}}) ≡ 1f
     ·-linv     : (x : F) → (p : x # 0f) → (_⁻¹ᶠ x {{p}}) · x ≡ 1f
-    -- NOTE: this "creates" new properties `x # 0f` and `y # 0f` that are different (!) from possibly existing "previous" ones
-    --       meaning, that this conflicts a usage where we might recreate these properties somewhere (inside of a module or a function)
-    --       and having the result-type depending on them
-    --       we can't use the result "outside" then, because it' differs in this `x # 0f` and `y # 0f` entity
-    --       although we might not see it (because instance arguments are hidden)
-    --       there is another NOTE of this further down
     ·-inv-back : (x y : F) → (x · y ≡ 1f) → x # 0f × y # 0f
     -- 4. NOTE: we already have ≤-isPartialOrder in <-isLattice
     -- ≤-isPartialOrder : IsPartialOrder _≤_
@@ -492,11 +442,6 @@ record IsOrderedField {F : Type ℓ}
       ( isIrrefl  to <-irrefl
       ; isTrans   to <-trans
       ; isCotrans to <-cotrans )
-  -- open IsPartialOrder ≤-isPartialOrder public
-  --   renaming
-  --     ( isRefl    to ≤-refl
-  --     ; isAntisym to ≤-antisym
-  --     ; isTrans   to ≤-trans )
   open IsLattice <-isLattice public
 
 record OrderedField : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
@@ -514,10 +459,6 @@ record OrderedField : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
   _≤_ = _≤'_ {_<_ = _<_}
 
   field
-    -- NOTE: we might want to add some general instances to convert `0f # x` or `x < 0f` or `0f < x` into `x # 0f`
-    --       because there is always some fiddling necessary when using _⁻¹ᶠ
-    --       e.g. see poof of `item-8` below where we also had to turn `0f ≤ z` and `z # 0` into `0f < z` because
-    --         ·-preserves-< was defined in terms of `0f < z`
     _⁻¹ᶠ    : (x : Carrier) → {{x # 0f}} → Carrier
     isOrderedField : IsOrderedField 0f 1f _+_ -_ _·_ min max _<_ _#_ _≤_ _⁻¹ᶠ
 
@@ -542,21 +483,6 @@ record OrderedField : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
       (a + x < b + x) ⊎ (- x < - x) ⇒⟨ (λ{ (inl a+x<b+x) → a+x<b+x -- somehow ⊥-elim needs a hint in the next line
                                          ; (inr  -x<-x ) → ⊥-elim {A = λ _ → (a + x < b + x)} (<-irrefl (- x) -x<-x) }) ⟩
        a + x < b + x ◼) a<b
-
-    {- NOTE: this was "each strict total order is a strict parial order .. when having +-<-extensionality and +-preserves-< and ..." or so
-             but we do not have a strict total order in IsOrderedField
-    <-isStrictPartialOrder : IsStrictPartialOrder _<_
-    <-isStrictPartialOrder = record
-     { isIrrefl  = <-irrefl
-     ; isTrans   = <-trans
-     ; isCotrans = λ where
-       a b a<b x →
-         ( a      <  b      ⇒⟨ +-preserves-< _ _ _ ⟩
-           a + x  <  b + x  ⇒⟨ transport (λ i → a + x < (+-comm b x) i) ⟩
-           a + x  <  x + b  ⇒⟨ +-<-extensional b a x x ⟩
-          (a < x) ⊎ (x < b) ◼) a<b
-     }
-     -}
 
     ≤-isPreorder : IsPreorder _≤_
     ≤-isPreorder = ≤-isPreorder' {_<_ = _<_} {<-isStrictPartialOrder}
@@ -600,37 +526,6 @@ contraposition f ¬q p = ⊥-elim (¬q (f p))
 deMorgan₂' : {P : Type ℓ} {Q : Type ℓ'} → ¬(P ⊎ Q) → (¬ P) × (¬ Q)
 deMorgan₂' {P = P} {Q = Q} = {!!}
 
-
--- deMorgan₁ : ∀ x y → ¬ (x × y) ≡ (¬ x) ⊎ (¬ y)
--- deMorgan₁ x y = lemma (x × y) (¬ x ⊎ ¬ y) lem₁ lem₂
---   where
---   lem₁ = (
---     (x × y) × (¬ x ⊎ ¬ y)          ≡⟨ {! ×-⊎-distribˡ _ _ _ !} ⟩
---     (x × y) × ¬ x ⊎ (x × y) × ¬ y  ≡⟨ {! ⊎-congʳ $ ×-congʳ $ ×-comm _ _ !} ⟩
---     (y × x) × ¬ x ⊎ (x × y) × ¬ y  ≡⟨ {! ×-assoc _ _ _ ⟨ ⊎-cong ⟩ ⟩ ×-assoc _ _ _ !} ⟩
---     y × (x × ¬ x) ⊎ x × (y × ¬ y)  ≡⟨ {! (×-congˡ $ ×-complementʳ _) ⟨ ⊎-cong ⟩
---                                       (×-congˡ $ ×-complementʳ _) !} ⟩
---     (y × ⊥) ⊎ (x × ⊥)              ≡⟨ {! ×-zeroʳ _ ⟨ ⊎-cong ⟩ ⟩ ×-zeroʳ _ !} ⟩
---     ⊥ ⊎ ⊥                          ≡⟨ {! ⊎-identityʳ _ !} ⟩
---     ⊥                              ∎)
---
---   lem₃ = (
---     (x × y) ⊎ ¬ x          ≡⟨ {! ⊎-×-distribʳ _ _ _ !} ⟩
---     (x ⊎ ¬ x) × (y ⊎ ¬ x)  ≡⟨ {! ×-congʳ $ ⊎-complementʳ _ !} ⟩
---     ⊤ × (y ⊎ ¬ x)          ≡⟨ {! ×-identityˡ _ !} ⟩
---     y ⊎ ¬ x                ≡⟨ {! ⊎-comm _ _ !} ⟩
---     ¬ x ⊎ y                ∎)
---
---   lem₂ = (
---     (x × y) ⊎ (¬ x ⊎ ¬ y)  ≡⟨ {! ⊎-assoc _ _ _ !} ⟩
---     ((x × y) ⊎ ¬ x) ⊎ ¬ y  ≡⟨ {! ⊎-congʳ lem₃ !} ⟩
---     (¬ x ⊎ y) ⊎ ¬ y        ≡⟨ {! ⊎-assoc _ _ _ !} ⟩
---     ¬ x ⊎ (y ⊎ ¬ y)        ≡⟨ {! ⊎-congˡ $ ⊎-complementʳ _ !} ⟩
---     ¬ x ⊎ ⊤                ≡⟨ {! ⊎-zeroʳ _ !} ⟩
---     ⊤                      )
-
-
-
 -- Lemma 4.1.11.
 -- In the presence of the first five axioms of Definition 4.1.10, conditions (†) and (∗) are together equivalent to the condition that for all x, y, z : F,
 --  1. x ≤ y ⇔ ¬(y < x),
@@ -646,9 +541,6 @@ deMorgan₂' {P = P} {Q = Q} = {!!}
 -- NOTE: this looks useful, so we might want to have it separately
 --       therefore I'll just copy the `OrderedField` record's nested structure (Definition 4.1.10)
 --       although this "header" of it looks very ugly
--- NOTE: well, there is some syntax for this: https://lists.chalmers.se/pipermail/agda/2018/010217.html
---       also see https://github.com/agda/agda/issues/1235
---       BUT: it adds a ₁ to every symbol in the goal preview, even when normalizing
 module Lemma-4-1-11
   --------------------------------------- structures
   (F       : Type ℓ)
@@ -1087,7 +979,7 @@ lemma-4-1-12 :
   let open OrderedField OF
   ----------------------------------------------------
   in (IsConstructiveField 0f 1f _+_ _·_ -_ _#_ _⁻¹ᶠ)
-lemma-4-1-12 {ℓ} {ℓ'} OF = let -- NOTE: for mentioning the ℓ and ℓ' and not taking them as new "variables"
+lemma-4-1-12 {ℓ} {ℓ'} OF = let -- NOTE: for mentioning the ℓ and ℓ' and not taking them as new "variables" we bring them into scope
   open OrderedField OF
   in record -- We need to show that + is #-extensional, and that # is tight.
    { OrderedField OF
