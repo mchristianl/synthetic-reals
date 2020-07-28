@@ -69,6 +69,8 @@ open import Cubical.Foundations.Function
 open import Function.Base using (_∋_)
 open import Function.Base using (it) -- instance search
 
+open import MoreLogic
+
 -- open import Function.Reasoning using (∋-syntax)
 
 -- TODO: merge the notes with Hit.agda
@@ -277,14 +279,14 @@ record ConstructiveField : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
 
 
 -- NOTE: some syntax for "implicational" reasoning
-infix  3 _◼ -- for a list of unicode symbols in agda, see https://people.inf.elte.hu/divip/AgdaTutorial/Symbols.html
-infixr 2 _⇒⟨_⟩_
-
-_⇒⟨_⟩_ : ∀{ℓ ℓ' ℓ''} {Q : Type ℓ'} {R : Type ℓ''} → (P : Type ℓ) → (P → Q) → (Q → R) → (P → R)
-_ ⇒⟨ pq ⟩ qr = qr ∘ pq
-
-_◼ : ∀{ℓ} (A : Type ℓ) → A → A
-_ ◼ = λ x → x
+-- infix  3 _◼ -- for a list of unicode symbols in agda, see https://people.inf.elte.hu/divip/AgdaTutorial/Symbols.html
+-- infixr 2 _⇒⟨_⟩_
+-- 
+-- _⇒⟨_⟩_ : ∀{ℓ ℓ' ℓ''} {Q : Type ℓ'} {R : Type ℓ''} → (P : Type ℓ) → (P → Q) → (Q → R) → (P → R)
+-- _ ⇒⟨ pq ⟩ qr = qr ∘ pq
+-- 
+-- _◼ : ∀{ℓ} (A : Type ℓ) → A → A
+-- _ ◼ = λ x → x
 
 -- Lemma 4.1.6.
 -- For a constructive field (F, 0, 1, +, ·, #), the following hold.
@@ -654,8 +656,8 @@ contraposition f ¬q p = ⊥-elim (¬q (f p))
 -- deMorgan₁-back : {P : Type ℓ} {Q : Type ℓ'} → (¬ P) ⊎ (¬ Q) → ¬(P × Q)
 -- deMorgan₁-back {P = P} {Q = Q} = {!!}
 
-deMorgan₂ : {P : Type ℓ} {Q : Type ℓ'} → ¬(P ⊎ Q) → (¬ P) × (¬ Q)
-deMorgan₂ {P = P} {Q = Q} = {!!}
+deMorgan₂' : {P : Type ℓ} {Q : Type ℓ'} → ¬(P ⊎ Q) → (¬ P) × (¬ Q)
+deMorgan₂' {P = P} {Q = Q} = {!!}
 
 
 -- deMorgan₁ : ∀ x y → ¬ (x × y) ≡ (¬ x) ⊎ (¬ y)
@@ -892,6 +894,8 @@ module Lemma-4-1-11
       --       
       --         typ = fst
       --         str = snd
+      --
+      --       these [ P ] and [ Q ] are called "mere propositions"
 
 
       -- TODO: name the following "items"
@@ -1379,7 +1383,7 @@ lemma-4-1-12 {ℓ} {ℓ'} OF = let -- NOTE: for mentioning the ℓ and ℓ' and 
      --       because there were multiple `≤-antisym` exported from `OrderedField`
      -- Tightness follows from the fact that ≤ is antisymmetric, combined with the fact
      --   that ¬(P ∨ Q) is equivalent to ¬P ∧ ¬Q.
-   ; #-tight         = λ x y ¬[x<y]⊎¬[y<x] → let (¬[x<y] , ¬[y<x]) = deMorgan₂ ¬[x<y]⊎¬[y<x]
+   ; #-tight         = λ x y ¬[x<y]⊎¬[y<x] → let (¬[x<y] , ¬[y<x]) = deMorgan₂' ¬[x<y]⊎¬[y<x]
                                              in  ≤-antisym _ _ ¬[y<x] ¬[x<y]
    }
 

@@ -52,23 +52,25 @@ open import Cubical.HITs.PropositionalTruncation
 import Cubical.Data.Empty as ⊥
 open import Cubical.Data.Unit.Base
 
-⊥' : ∀{ℓ} → hProp ℓ
-⊥' = Lift ⊥.⊥ , λ () 
 
-⊤' : ∀{ℓ} → hProp ℓ
-⊤' = Lift Unit , isOfHLevelLift 1 (λ _ _ _ → tt)
+
+⊥↑ : ∀{ℓ} → hProp ℓ
+⊥↑ = Lift ⊥.⊥ , λ () 
+
+⊤↑ : ∀{ℓ} → hProp ℓ
+⊤↑ = Lift Unit , isOfHLevelLift 1 (λ _ _ _ → tt)
 
 -- _ = {! ⇔toPath!}
 
-⊔-complementˡ :  ∀ x → ¬ x ⊔ x ≡ ⊤ -- LeftInverse _≡_ ⊤ ¬_ _⊔_
+⊔-complementˡ :  ∀ x → ¬ x ⊔ x ≡ ⊤↑ -- LeftInverse _≡_ ⊤ ¬_ _⊔_
 ⊔-complementˡ = {! comm+invʳ⇒invˡ ⊔-comm ⊔-complementʳ !}
 
 -- ⊔-complementʳ : ∀ x → x ⊔ ¬ x ≡ ∥ [ ⊤ ] ∥ₚ
 -- ⊔-complementʳ : ∀(x : hProp ℓ) → x ⊔ ¬ x ≡ ((hProp ℓ) ∋ ⊤)
-⊔-complementʳ : ∀(x : hProp ℓ) → x ⊔ ¬ x ≡ ⊤'
+⊔-complementʳ : ∀(x : hProp ℓ) → x ⊔ ¬ x ≡ ⊤↑
 ⊔-complementʳ x =  λ i → {! ⊔-comm x (¬ x) i !} 
 
-⊔-complement : (∀ x → ¬ x ⊔ x ≡ ⊤) × (∀ x → x ⊔ ¬ x ≡ ⊤) -- Inverse _≡_ ⊤ ¬_ _⊔_
+⊔-complement : (∀ x → ¬ x ⊔ x ≡ ⊤↑) × (∀ x → x ⊔ ¬ x ≡ ⊤↑) -- Inverse _≡_ ⊤ ¬_ _⊔_
 ⊔-complement = ⊔-complementˡ , {! ⊔-complementʳ !}
 
 -- agda deduces
@@ -199,16 +201,30 @@ t0 (squash x₁ x₂ i) (squash y₁ y₂ j) = squash (squash x₁ x₂ i) (squa
 -- We refer to types that are propositions as properties.
 -- We refer to types that potentially have several witnesses as structure.
 
+{-
 module _ {ℓ} (X Y : Type ℓ) (g : X → Y) where
 
   f : ∥ X ∥ → Y
   f ∣ x ∣ = g x
   f (squash x₀ x₁ i) = {!  !}
+-}
 
+-- well, that might not work at all
+-- ⊓-unliftˡ : {P : hProp ℓ} {Q : hProp ℓ'} 
 
 import Cubical.HITs.PropositionalTruncation.Properties
 
-{-
+-- _ : (P : hProp P.ℓ) (Q : hProp Q.ℓ) (R : hProp R.ℓ) → (hProp P.ℓ → hProp Q.ℓ → hProp R.ℓ) → h
+-- _ = ?
+
+--_ = _≡ₚ_
+
+⊓-identityˡ-↑ : (P : hProp ℓ) → ⊤↑ {ℓ} ⊓ P ≡ P
+⊓-identityˡ-↑ _ = ⇔toPath snd  λ x → lift tt , x
+
+-- \ is \\
+-- ↑ is \u
+
 
 private
   lemma : ∀ x y → x ⊓ y ≡ ⊥ → x ⊔ y ≡ ⊤ → ¬ x ≡ y
@@ -220,7 +236,7 @@ private
     ⊥ ⊔ (¬ x ⊓ y)          ≡⟨ (λ i → x⊓y=⊥ (~ i) ⊔ (¬ x ⊓ y)) ⟩
     (x ⊓ y) ⊔ (¬ x ⊓ y)    ≡⟨  sym (⊓-⊔-distribʳ y x (¬ x)) ⟩
     (x ⊔ ¬ x) ⊓ y          ≡⟨ (λ i → (⊔-complementʳ x) i ⊓ y ) ⟩
-    ⊤ ⊓ y                  ≡⟨ ⊓-identityˡ _ ⟩
+    ⊤↑ ⊓ y                 ≡⟨ ⊓-identityˡ-↑ _ ⟩
     y                      ∎)
 
--}
+
