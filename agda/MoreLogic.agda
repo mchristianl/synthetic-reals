@@ -42,7 +42,6 @@ _ ⇒⟨ pq ⟩ qr = qr ∘ pq
 _◼ : ∀{ℓ} (A : Type ℓ) → A → A
 _ ◼ = λ x → x
 
-
 -- lifted versions of ⊥ and ⊤
 
 ⊥↑ : ∀{ℓ} → hProp ℓ
@@ -172,14 +171,16 @@ implicationₚ {ℓ = ℓ} P Q ¬[p⊓q] p q = ⊥-elim (¬[p⊓q] (p , q))
 contrapositionₚ : {P Q : hProp ℓ} → ( [ P ⇒ Q ] ) → [ ¬ Q ⇒ ¬ P ]
 contrapositionₚ f ¬q p = ⊥-elim (¬q (f p))
 
--- weak deMorgan laws: only these two hold without further assumptions
+-- weak deMorgan laws: only these three hold without further assumptions
 
 deMorgan₂ : (P Q : hProp ℓ) → [ ¬ (P ⊔ Q) ] → [ ¬ P ⊓ ¬ Q ]
 deMorgan₂ P Q ¬[p⊔q] = (λ p →  ⊥-elim (¬[p⊔q] (inl p))) , λ q → ⊥-elim (¬[p⊔q] (inr q))
 
+deMorgan₂-back : (P Q : hProp ℓ) → [ ¬ P ⊓ ¬ Q ] → [ ¬ (P ⊔ Q) ]
+deMorgan₂-back P Q (¬p , ¬q) p⊔q = ⊔-elim P Q (λ p⊔q → ⊥) ¬p ¬q p⊔q
+
 deMorgan₁-back : (P Q : hProp ℓ) → [ ¬ P ⊔ ¬ Q ] → [ ¬ (P ⊓ Q) ]
 deMorgan₁-back {ℓ = ℓ} P Q [¬p⊔¬q] (p , q) = ⊔-elim (¬ P) (¬ Q) (λ [¬p⊔¬q] → ⊥) (λ ¬p → ¬p p) (λ ¬q → ¬q q) [¬p⊔¬q]
-
 
 {-
 deMorgan₁ : (P Q : hProp ℓ) → [ ¬ (P ⊓ Q) ] → [ ¬ P ⊔ ¬ Q ]
