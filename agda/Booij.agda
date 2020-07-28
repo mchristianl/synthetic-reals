@@ -2,60 +2,6 @@
 
 module Booij where
 
-{- NOTE: some notes/observations about coding conventions
-
-for some properties where it is applicable we should supply both variants:
-  the tuple variant and the l/r-variant
-and we might choose that the tuple variant is the field and the l/r-variant is the projection
-
-TODO: check whether this is the way its done in the standard library
-
-an example
-
-   ·-inv      : (x : F) → (p : x # 0f) → (x · (_⁻¹ᶠ x {{p}}) ≡ 1f) × ((_⁻¹ᶠ x {{p}}) · x ≡ 1f)
-   ·-rinv     : (x : F) → (p : x # 0f) →  x · (_⁻¹ᶠ x {{p}}) ≡ 1f
-   ·-linv     : (x : F) → (p : x # 0f) →                              (_⁻¹ᶠ x {{p}}) · x ≡ 1f
-
-and then we have also
-
-   ·-inv-back : (x y : F) → (x · y ≡ 1f) → x # 0f × y # 0f
-
-also, the old standard library defines things with the identity element on the right side
-
-  LeftInverse  e _⁻¹ _∙_ = ∀ x → ((x ⁻¹) ∙ x) ≈ e
-  RightInverse e _⁻¹ _∙_ = ∀ x → (x ∙ (x ⁻¹)) ≈ e
-  Inverse      e  ⁻¹  ∙  = (LeftInverse e ⁻¹) ∙ × (RightInverse e ⁻¹ ∙)
-
-so maybe we take as a convention to have the "more complex" term on the LHS and the "eliminated" or "normalized" term on the RHS of ≡, e.g.
-
-  _*_ DistributesOverˡ _+_ = ∀ x y z → (x * (y + z)) ≈ ((x * y) + (x * z))
-  _*_ DistributesOverʳ _+_ = ∀ x y z → ((y + z) * x) ≈ ((y * x) + (z * x))
-
-is there a reason for the ˡ ʳ convention in this case?
-Also, in these definitions of `DistributesOver` we have
-  that the multiply-occuring parameter (`x` in this case) is the first one
-
-also recall that
-
-  _⇒_ will associate to the right in
-
-    infixr 20 _⇒_
-    _ : x ⇒  y ⇒  z  ≡   x ⇒ (y  ⇒  z)
-
-  _⇒’_ will associate to the left in
-
-    infixl 20 _⇒’_
-    _ : x ⇒’ y ⇒’ z  ≡  (x ⇒’ y) ⇒’ z
-
-so in
-
-  Associative _∙_ = ∀ x y z → ((x ∙ y) ∙ z) ≈ (x ∙ (y ∙ z))
-
-we have the "left associated" term on the LHS and the "right associated" term
-
-
--}
-
 open import Cubical.Foundations.Everything renaming (_⁻¹ to _⁻¹ᵖ; assoc to ∙-assoc)
 open import Cubical.Structures.CommRing
 open import Cubical.Relation.Nullary.Base -- ¬_
@@ -67,15 +13,10 @@ open import Cubical.Data.Empty renaming (elim to ⊥-elim) -- `⊥` and `elim`
 open import Cubical.Foundations.Function
 
 open import Function.Base using (_∋_)
+-- open import Function.Reasoning using (∋-syntax)
 open import Function.Base using (it) -- instance search
 
 open import MoreLogic
-
--- open import Function.Reasoning using (∋-syntax)
-
--- TODO: merge the notes with Hit.agda
--- NOTE: there seems to be a convention that
---   "We will adopt the convention of denoting the level of the carrier set by ℓ₀ and the level of the relation result by ℓ₁."
 
 -- https://www.cs.bham.ac.uk/~abb538/thesis.pdf
 -- Booij 2020 - Analysis in Univalent Type Theory
@@ -766,37 +707,6 @@ module Lemma-4-1-11
 
 ----8<---------------------------8<--------------------------8<----
 
-  -- NOTE: when using "implicational" reasoning `_⇒⟨_⟩` agda is pretty good in determining the arguments within `⟨_⟩`
-  --       but all arguments become necessary when being inside of a path, e.g. for using `transport`
-  --       so it might be a good strategy to have all the "tactics" (well, not really tactics, but
-  --         the most used "proof machinery" at least) available as explicit functions, such that only a single function
-  --         needs to be applied in each step
-  --       often, just using `cong₂` instead of a path as the argument of `transport` already helps
-  --         well, no. see [XX]
-  --       this is observable in the standard library to some degree `grep -RHni ≡⟨ ~/agda/cubical/`
-  -- NOTE: there is also a `≡⟨⟩` just for the identity which is useful for folding/unfolding definition
-  --         i.e. steps that hold definitionally
-  --         _≡⟨⟩_ : ∀ (x {y} : A) → x ≡ y → x ≡ y
-  --         _ ≡⟨⟩ x≡y = x≡y
-  --         infixr 2 _≡⟨⟩_
-  --       this just avoids the use of `≡⟨ λ x → x ⟩`
-
-  -- NOTE: I am doing this for the n'th time now ...
-  --       these four cases can surely be omitted by using correct equivalences (TODO)
-  -- NOTE: I think I am very close. Sometimes it amounts just to dropping `transport` to have the equivalence
-  --       so there is still some exercise for getting used to this
-  -- NOTE: there is Tactic.MonoidSolver in the old standard library
-  --       and https://github.com/UlfNorell/agda-prelude/blob/master/src/Tactic/Monoid.agda
-  --           https://github.com/UlfNorell/agda-prelude/blob/master/test/MonoidTactic.agda
-  --       and https://github.com/agda/agda-stdlib/blob/experimental/README/Solvers/ReflectiveMonoid.agda
-  --       and maybe a few more ...
-
-  -- +-preserves-≡ʳ : ∀ x y z → x ≡ y → x + z ≡ y + z
-  -- +-preserves-≡ʳ x y z x≡y = transport (λ i → x + z ≡ x≡y i + z) refl
-
-  -- +-preserves-≡ˡ : ∀ x y z → x ≡ y → z + x ≡ z + y
-  -- +-preserves-≡ˡ x y z x≡y = transport (λ i → z + x ≡ z + x≡y i) refl
-
   open import Cubical.Structures.Ring
   R = (makeRing 0f 1f _+_ _·_ -_ is-set +-assoc +-rid +-rinv +-comm ·-assoc ·-rid ·-lid ·-rdist-+ ·-ldist-+)
 
@@ -827,78 +737,11 @@ module Lemma-4-1-11
     -- 6. (∗)
     (·-preserves-< : ∀ x y z → 0f < z → x < y → (x · z) < (y · z))
     where
-    abstract -- does this really improve performance?
+    -- abstract
 
       _ : ( Σ[ A ∈ Type ℓ ] (∀(x y : A) → x ≡ y) )
         ≡ ( Σ (Type ℓ) (λ A → (x y : A) → x ≡ y) )
       _ = refl
-
-      -- NOTE: the equivalences might be proven together
-      --       this could be done with `⇒∶_⇐∶_` and `⇐∶_⇒∶_` from `Cubical.Foundations.Logic`
-      --       
-      --         ⊓-assoc : (P : hProp ℓ) (Q : hProp ℓ') (R : hProp ℓ'') → P ⊓ Q ⊓ R ≡ (P ⊓ Q) ⊓ R
-      --         ⊓-assoc _ _ _ =
-      --           ⇒∶ (λ {(x , (y , z)) →  (x , y) , z})
-      --           ⇐∶ (λ {((x , y) , z) → x , (y , z) })
-      --
-      --       which makes use of
-      --
-      --         ⇔toPath : [ P ⇒ Q ] → [ Q ⇒ P ] → P ≡ Q
-      --         ⇔toPath : {ℓ : Level} {P Q : hProp ℓ}
-      --                 → (fst P → fst Q)
-      --                 → (fst Q → fst P)
-      --                 -------------------------------------------------------------
-      --                 → P ≡ Q
-      --       
-      --       where we have
-      --
-      --         hProp ℓ = Σ[ A ∈ Type ℓ ] (∀(x y : A) → x ≡ y)
-      --
-      --       and
-      --       
-      --         _⇒_ : (A : hProp ℓ) → (B : hProp ℓ') → hProp _
-      --         A ⇒ B = ([ A ] → [ B ]) , isPropΠ λ _ → isProp[] B
-      --       
-      --       and `[_]` and `isProp[]` being the projections of hProp
-      --       
-      --         [_] : hProp ℓ → Type ℓ
-      --         [_] = fst
-      --       
-      --         isProp[] : (A : hProp ℓ) → isProp [ A ]
-      --         isProp[] = snd
-      --       
-      --       which are `fst` and `snd` from the sigma type Σ, coming from `hProp` being implemented via `TypeWithStr`
-      --       
-      --         hProp        ℓ   = TypeOfHLevel ℓ    1
-      --         TypeOfHLevel ℓ n = TypeWithStr  ℓ   (isOfHLevel n)
-      --         TypeWithStr  ℓ S = Σ[ X ∈ Type  ℓ ]  S X
-      --       
-      --       where the "S-structure" is `isOfHLevel n : Type ℓ → Type ℓ`
-      --       
-      --         isOfHLevel      0        A = isContr A
-      --         isOfHLevel      1        A = isProp  A
-      --         isOfHLevel (suc (suc n)) A = (x y : A) → isOfHLevel (suc n) (x ≡ y)
-      --
-      --       so we get
-      --       
-      --         hProp ℓ = Σ[ X ∈ Type ℓ ] isProp X
-      --       
-      --       [quote:]
-      --       A structure is a type-family S : Type ℓ → Type ℓ', i.e. for X : Type ℓ and s : S X,
-      --       the pair (X , s) : TypeWithStr ℓ S means that X is equipped with a S-structure, witnessed by s.
-      --       
-      --         TypeWithStr : (ℓ : Level) (S : Type ℓ → Type ℓ') → Type (ℓ-max (ℓ-suc ℓ) ℓ')
-      --         TypeWithStr ℓ S = Σ[ X ∈ Type ℓ ] S X
-      --       
-      --       it's two projections are
-      --       
-      --         typ = fst
-      --         str = snd
-      --
-      --       these [ P ] and [ Q ] are called "mere propositions"
-
-
-      -- TODO: name the following "items"
 
       --  1. x ≤ y ⇔ ¬(y < x),
       item-1 : ∀ x y → x ≤ y → ¬(y < x)
@@ -1039,27 +882,6 @@ module Lemma-4-1-11
       item-9 : ∀ x y z → 0f < z → (x < y → x · z < y · z)
       item-9 = ·-preserves-<
 
-      -- ·-inv-same-sign : ∀ x → (p : 0f < x) → (0f < _⁻¹ᶠ x {{inr p}})
-      -- ·-inv-same-sign x p = {!!}
-
-      -- ·-inv-unique : ∀ x y z → x · y ≡ 1f → x · z ≡ 1f → y ≡ z
-      -- ·-inv-unique = {!!}
-
-      {-
-      ·-inv-same-sign : ∀ x y → 0f < x → 1f ≡ x · y → 0f < y
-      ·-inv-same-sign x y 0<x 1=x·y = let
-        instance _ = 0<x -- this is to multiply with
-        instance _ = x # 0f ∋ inr 0<x -- this is to make use of ⁻¹
-        in (0f < 1f    ⇒⟨ {!!} ⟩
-            0f < x · y ⇒⟨ {!!} ⟩
-            (x ⁻¹ᶠ) · 0f < x ⁻¹ᶠ · (x · y) ⇒⟨ {!!} ⟩
-            0f < (x ⁻¹ᶠ · x) · y ⇒⟨ {!!} ⟩
-            0f < y ◼) item-10
-
-            0 < x · y
-      -}
-
-      -- NOTE: ∙ reads from left to right, e.g. "step1 ∙ step2 ∙ step3"
       -- NOTE: ported from Cubical.Structures.Group.GroupLemmas
       simplR : {a b : F} (c : F) {{_ : c # 0f}} → a · c ≡ b · c → a ≡ b
       simplR {a} {b} c {{_}} a·c≡b·c =
@@ -1071,23 +893,9 @@ module Lemma-4-1-11
       ·-preserves-≡ʳ : {a b : F} (c : F) {{_ : c # 0f}} → a · c ≡ b · c → a ≡ b
       ·-preserves-≡ʳ = simplR
 
-      -- NOTE: while this might make it "easier" to read at some point, we broke the signature into two parts
       -- ·-linv-unique : (x y : F) (x·y≡1 : (x ·₁ y) ≡ 1f) → x ≡ (y ⁻¹ᶠ₁)
       module _ (x y : F) (x·y≡1 : x · y ≡ 1f) where
-        -- NOTE: (IMPORTANT)
-        --       the following line "creates" a "new" `y#0`
-        --       now, this is apriory not equal to previous `y#0`s because `·-inv-back` does not give us a prop
-        --       therefore I am observing a situation where I have exactly the goal
-        --         Goal: (z ⁻¹ᶠ₁) ≡ ((((y ·₁ z) - (x ·₁ z)) ⁻¹ᶠ₁) ·₁ (y - x))
-        --         Have: (z ⁻¹ᶠ₁) ≡ ((((y ·₁ z) - (x ·₁ z)) ⁻¹ᶠ₁) ·₁ (y - x))
-        --       but Agda refuses to take what I have with the following message
-        --         ERROR
-        --           [almost what I was giving agda, but expanded] != inr 0<z of type (z <₁ 0f) ⊎ (0f <₁ z)
-        --         when checking that the expression
-        --           [what I was giving agda] has type [the goal type]
-        --       so this might be mitigated by using Prop instead
-        --       although some more thinking should go into this kind of instance usage
-        y#0 = snd (·-inv-back _ _ x·y≡1)
+        y#0 = snd (·-inv-back _ _ x·y≡1) -- duplicated inhabitant (see notes)
         instance _ = y#0
         import Cubical.Structures.Group
 
@@ -1102,7 +910,6 @@ module Lemma-4-1-11
       ·-linv-unique : (x y : F) → ((x · y) ≡ 1f) → Σ[ p ∈ y # 0f ] x ≡ (_⁻¹ᶠ y {{p}})
       ·-linv-unique = ·-linv-unique'
 
-      -- NOTE: a variant for not having to state the `let instance` twice (but this needs an indentation)
       -- ⁻¹ᶠ-involutive : (x : F) (z#0 : x #' 0f) → ((x ⁻¹ᶠ₁) ⁻¹ᶠ₁) ≡ x
       module _ (z : F) (z#0 : z # 0f) where
         private
@@ -1197,72 +1004,6 @@ module Lemma-4-1-11
                 (z · w) · (y - x)       ≡⟨ (λ i → ·-assoc z w (y - x) (~ i)) ⟩
                 z · (w · (y - x))       ∎)
 
-      {-
-      module _ (x y z : F) (0<z : 0f < z) (x·z<y·z : x · z < y · z) where
-        -- For the other direction of item 9, assume 0 < z and xz < yz,
-        instance _ = (          x · z  <  y · z            ⇒⟨ +-preserves-< _ _ _ ⟩
-                     (x · z) - (x · z) < (y · z) - (x · z) ⇒⟨ transport (cong₂ _<_ (+-rinv (x · z)) refl) ⟩
-                                    0f < (y · z) - (x · z) ◼) x·z<y·z
-        instance _ = (y · z) - (x · z) # 0f ∋ inr it
-        -- so that yz − xz has a multiplicative inverse w,
-        w = ((y · z) - (x · z)) ⁻¹ᶠ
-        o = ( (y · z) - (   x  · z) ≡⟨ ( λ i → (y · z) + (-commutesWithLeft-· x z) (~ i)) ⟩
-              (y · z) + ((- x) · z) ≡⟨ sym (snd (dist y (- x) z)) ⟩
-              (y - x) · z ∎)
-        instance _ = (y - x) · z # 0f ∋  transport (λ i → o i # 0f) it
-        -- and so z itself has multiplicative inverse w (y − x).
-        1≡z·[w·[y-x]] : 1f ≡ z · (w · (y - x))
-        1≡z·[w·[y-x]] = γ where
-          abstract
-            γ = (
-             1f                      ≡⟨ (λ i → ·-linv ((y · z) - (x · z)) it (~ i)) ⟩
-             w · ((y · z) - (x · z)) ≡⟨ (λ i → w · o i) ⟩
-             w · ((y - x) · z)       ≡⟨ (λ i → w · ·-comm (y - x) z i ) ⟩
-             w · (z · (y - x))       ≡⟨ (λ i → ·-assoc w z (y - x) i) ⟩
-             (w · z) · (y - x)       ≡⟨ (λ i → ·-comm w z i · (y - x)) ⟩
-             (z · w) · (y - x)       ≡⟨ (λ i → ·-assoc z w (y - x) (~ i)) ⟩
-             z · (w · (y - x))       ∎)
-        1≡[w·[y-x]]·z : 1f ≡ (w · (y - x)) · z
-        1≡[w·[y-x]]·z = transport (λ i → 1f ≡ ·-comm z (w · (y - x)) i) 1≡z·[w·[y-x]]
-        -- Then since 0 < z and xz < yz, by (∗), we get xzw (y − x) < yzw (y − x), and hence x < y.
-        instance _ = z # 0f ∋ inr 0<z
-        z⁻¹ = w · (y - x)
-        --  ·-linv-unique _ _ (sym iii)
-        z⁻¹≡w·[y-x] : z ⁻¹ᶠ ≡ (w · (y - x))
-        z⁻¹≡w·[y-x] = {! sym (·-linv-unique _ _ (sym 1≡[w·[y-x]]·z)) !}
-        --   (⁻¹ᶠ-preserves-sign z 0<z)
-        -- transport (λ i → z⁻¹≡w·[y-x] i)
-        iv : 0f < (z ⁻¹ᶠ) → 0f < ((((y · z) + (- (x · z))) ⁻¹ᶠ) · (y + (- x)))
-        iv = {! transport (λ i → 0f < z⁻¹≡w·[y-x] i) !}
-        -- (⁻¹ᶠ-preserves-sign z 0<z)
-        instance _ = 0f < w · (y - x) ∋ {!    !}
-        item-9-back : x < y
-        item-9-back =
-           (  x ·  z         <  y ·  z         ⇒⟨ ·-preserves-< _ _ z⁻¹ it ⟩
-             (x ·  z) · z⁻¹  < (y ·  z) · z⁻¹  ⇒⟨ transport (λ i → ·-assoc x z z⁻¹ (~ i) < ·-assoc y z z⁻¹ (~ i)) ⟩
-              x · (z  · z⁻¹) <  y · (z  · z⁻¹) ⇒⟨ transport (λ i → x · 1≡z·[w·[y-x]] (~ i) < y · 1≡z·[w·[y-x]] (~ i)) ⟩
-              x · 1f         <  y · 1f         ⇒⟨ transport (cong₂ _<_ (fst (·-identity x)) (fst (·-identity y))) ⟩
-              x              <  y              ◼) x·z<y·z
-      -}
-      {-
-        let
-          instance _ = z # 0f ∋ inr 0<z -- make the instance available
-          z⁻¹ = z ⁻¹ᶠ
-          #-sym : ∀{a b} → a # b → b # a
-          #-sym {a} {b} = swap
-          0#z⁻¹ =  #-sym (snd (·-inv-back z z⁻¹ (·-rinv z (inr 0<z))))
-          0<z⁻¹ : 0f < z ⁻¹ᶠ
-          0<z⁻¹ = {! ·-preserves-< 0f 1f  !}
-          -- 0 < 1
-          -- 0 < z · z⁻¹
-        in (
-        (x · z) < (y · z) ⇒⟨ {! ·-preserves-< (x · z) (y · z) z⁻¹!} ⟩
-        (x · z) · z⁻¹ < (y · z) · z⁻¹ ⇒⟨ {!!} ⟩
-        x · (z · z⁻¹) < y · (z · z⁻¹) ⇒⟨ {!!} ⟩
-        x · 1f < y · 1f ⇒⟨ {!!} ⟩
-        x < y ◼)
-      -}
-
       -- 10. 0 < 1.
       item-10 with snd (·-inv-back _ _ (fst (·-identity 1f)))
       -- For item 10, since 1 has multiplicative inverse 1, it is apart from 0, hence 0 < 1 ∨ 1 < 0.
@@ -1348,22 +1089,10 @@ lemma-4-1-12 :
   in (IsConstructiveField 0f 1f _+_ _·_ -_ _#_ _⁻¹ᶠ)
 lemma-4-1-12 {ℓ} {ℓ'} OF = let -- NOTE: for mentioning the ℓ and ℓ' and not taking them as new "variables"
   open OrderedField OF
-  in record
-   { -- NOTE: see https://agda.readthedocs.io/en/v2.6.1/language/record-types.html#building-records-from-modules
-     --       the following line just picks all same-named thigs from the `OrderedField OF` module
-     OrderedField OF
-     -- NOTE: alternatively we can specify it explicitly (renaming should work with this syntax):
-     --         OrderedField OF using (isCommRing; ·-rinv; ·-linv; ·-inv-back)
-     -- NOTE: and of course the "normal" syntax would be
-     --           isCommRing      = isCommRing
-     --         ; ·-rinv          = ·-rinv
-     --         ; ·-linv          = ·-linv
-     --         ; ·-inv-back      = ·-inv-back
-     --
-     -- NOTE: We've proved this before
-   ; isApartnessRel  = #'-isApartnessRel <-isStrictPartialOrder
-     -- We need to show that + is #-extensional, and that # is tight.
-     --
+  in record -- We need to show that + is #-extensional, and that # is tight.
+   { OrderedField OF
+   ; isApartnessRel  = #'-isApartnessRel <-isStrictPartialOrder -- NOTE: We've proved this before
+   
      -- First, assume w + x # y + z. We need to show w # y ∨ x # z.
    ; +-#-extensional = λ where
                        -- Consider the case w + x < y + z, so that we can use (†) to obtain w < y ∨ x < z,
@@ -1379,8 +1108,7 @@ lemma-4-1-12 {ℓ} {ℓ'} OF = let -- NOTE: for mentioning the ℓ and ℓ' and 
                          { (inl y<w) → inl (inr y<w)
                          ; (inr z<x) → inr (inr z<x)
                          })
-     -- NOTE: I got a "Cannot resolve overloaded projection ≤-antisym because it is not applied to a visible argument" for just `≤-antisym` in a goal
-     --       because there were multiple `≤-antisym` exported from `OrderedField`
+
      -- Tightness follows from the fact that ≤ is antisymmetric, combined with the fact
      --   that ¬(P ∨ Q) is equivalent to ¬P ∧ ¬Q.
    ; #-tight         = λ x y ¬[x<y]⊎¬[y<x] → let (¬[x<y] , ¬[y<x]) = deMorgan₂' ¬[x<y]⊎¬[y<x]
@@ -1439,21 +1167,16 @@ record IsRingHom
 record IsOrderedFieldHom
   {ℓ ℓ' ℓₚ ℓₚ'} -- NOTE: this is a lot of levels. Can we get rid of some of these?
   (F : OrderedField {ℓ} {ℓₚ}) (G : OrderedField {ℓ'} {ℓₚ'})
-  -- NOTE: `let` is not allowed in a telescope
-  --       this was also mentioned in previous github issue about module parameter fixities
-  -- (let module F = OrderedField F)
+  -- (let module F = OrderedField F) -- NOTE: `let` is not allowed in a telescope
   -- (let module G = OrderedField G)
   (f : (OrderedField.Carrier F) → (OrderedField.Carrier G)) : Type (ℓ-max (ℓ-max ℓ ℓ') (ℓ-max ℓₚ ℓₚ'))
   where
   module F = OrderedField F
   module G = OrderedField G
   field
-    -- NOTE: the following works, because OrderedField shares all of the same-named properties of Ring
-    --       but if this would not be the case, then we could just rename this with the `renaming` syntax
-    --       either here, directly or just above
     isRingHom : IsRingHom (record {F}) (record {G}) f
     reflects-< : ∀ x y → f x G.< f y → x F.< y
-  -- NOTE: for properties, see https://en.wikipedia.org/wiki/Ring_homomorphism#Properties
+  -- NOTE: for more properties, see https://en.wikipedia.org/wiki/Ring_homomorphism#Properties
 
 record OrderedFieldHom {ℓ ℓ' ℓₚ ℓₚ'} (F : OrderedField {ℓ} {ℓₚ}) (G : OrderedField {ℓ'} {ℓₚ'}) : Type (ℓ-max (ℓ-max ℓ ℓ') (ℓ-max ℓₚ ℓₚ')) where
   constructor grouphom
@@ -1469,37 +1192,4 @@ record OrderedFieldHom {ℓ ℓ' ℓₚ ℓₚ'} (F : OrderedField {ℓ} {ℓₚ
 -- i of ordered fields from the rationals to F . Additionally, i preserves < in the sense that for every q, r : Q
 --   q < r ⇒ i (q) < F i (r ).
 
--- isContr : Type ℓ → Type ℓ
--- isContr A = Σ[ x ∈ A ] (∀ y → x ≡ y)
 
-
--- near questions:
---
--- 1. can we continue the same patterns for morphisms as we have with the other structures?
--- 2. what machinery is necessary to express unique existence? (there is ∃! in the standard library)
--- 3. trichotomy of ordered fields ... do we have this? (you write the rationals have)
---
--- far questions:
---
--- - approaches to limits and spaces for mathematical analysis
---   - locales? for topological spaces
---     Also a few years ago I was told that "locales" it the alternative to topological spaces
---     while
---   - limits and filters (see HOL)
---     Some time ago I heard "on the streets" that filters are "not cool" amongst constructive mathematicians but I
---     is that a "thing" or did I just misheard that
--- (un)bounded linear operators, adjoints and bounds
-
-import Cubical.Data.Sigma.Base
-
-
--- most of my types are contractible ... not
--- cohesive type theory has a builtin notion of real number
---  balance between continuity and discontinuity
--- therefore it is better suited to do differential geometry and alike
-
--- classical mathematical starting point
---   locally euclidean, charts, atlasses
--- univalent starting point
---   two manifolds are diffeomorphic exactly when they are equal
---   a function between manifolds is a diffeomorphism
