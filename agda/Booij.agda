@@ -2,10 +2,13 @@
 
 module Booij where
 
-{- NOTE: for some properties where it is applicable
-         we should supply both variants: the tuple variant and the l/r-variant
-         and we might choose that the tuple variant is the field and the l/r-variant is the projection
-         TODO: check whether this is the way its done in the standard library
+{- NOTE: some notes/observations about coding conventions
+
+for some properties where it is applicable we should supply both variants:
+  the tuple variant and the l/r-variant
+and we might choose that the tuple variant is the field and the l/r-variant is the projection
+
+TODO: check whether this is the way its done in the standard library
 
 an example
 
@@ -16,6 +19,41 @@ an example
 and then we have also
 
    ·-inv-back : (x y : F) → (x · y ≡ 1f) → x # 0f × y # 0f
+
+also, the old standard library defines things with the identity element on the right side
+
+  LeftInverse  e _⁻¹ _∙_ = ∀ x → ((x ⁻¹) ∙ x) ≈ e
+  RightInverse e _⁻¹ _∙_ = ∀ x → (x ∙ (x ⁻¹)) ≈ e
+  Inverse      e  ⁻¹  ∙  = (LeftInverse e ⁻¹) ∙ × (RightInverse e ⁻¹ ∙)
+
+so maybe we take as a convention to have the "more complex" term on the LHS and the "eliminated" or "normalized" term on the RHS of ≡, e.g.
+
+  _*_ DistributesOverˡ _+_ = ∀ x y z → (x * (y + z)) ≈ ((x * y) + (x * z))
+  _*_ DistributesOverʳ _+_ = ∀ x y z → ((y + z) * x) ≈ ((y * x) + (z * x))
+
+is there a reason for the ˡ ʳ convention in this case?
+Also, in these definitions of `DistributesOver` we have
+  that the multiply-occuring parameter (`x` in this case) is the first one
+
+also recall that
+
+  _⇒_ will associate to the right in
+
+    infixr 20 _⇒_
+    _ : x ⇒  y ⇒  z  ≡   x ⇒ (y  ⇒  z)
+
+  _⇒’_ will associate to the left in
+
+    infixl 20 _⇒’_
+    _ : x ⇒’ y ⇒’ z  ≡  (x ⇒’ y) ⇒’ z
+
+so in
+
+  Associative _∙_ = ∀ x y z → ((x ∙ y) ∙ z) ≈ (x ∙ (y ∙ z))
+
+we have the "left associated" term on the LHS and the "right associated" term
+
+
 -}
 
 open import Cubical.Foundations.Everything renaming (_⁻¹ to _⁻¹ᵖ; assoc to ∙-assoc)
@@ -64,7 +102,7 @@ module _ where
     open Group G public
     simplR = GroupLemmas.simplR G
     invUniqueL : {g h : Carrier} → g + h ≡ 0g → g ≡ - h
-    invUniqueL {g} {h} p = simplR h (p ∙ sym (invl h)) 
+    invUniqueL {g} {h} p = simplR h (p ∙ sym (invl h))
 
 
 
@@ -632,14 +670,14 @@ deMorgan₂ {P = P} {Q = Q} = {!!}
 --     (y × ⊥) ⊎ (x × ⊥)              ≡⟨ {! ×-zeroʳ _ ⟨ ⊎-cong ⟩ ⟩ ×-zeroʳ _ !} ⟩
 --     ⊥ ⊎ ⊥                          ≡⟨ {! ⊎-identityʳ _ !} ⟩
 --     ⊥                              ∎)
--- 
+--
 --   lem₃ = (
 --     (x × y) ⊎ ¬ x          ≡⟨ {! ⊎-×-distribʳ _ _ _ !} ⟩
 --     (x ⊎ ¬ x) × (y ⊎ ¬ x)  ≡⟨ {! ×-congʳ $ ⊎-complementʳ _ !} ⟩
 --     ⊤ × (y ⊎ ¬ x)          ≡⟨ {! ×-identityˡ _ !} ⟩
 --     y ⊎ ¬ x                ≡⟨ {! ⊎-comm _ _ !} ⟩
 --     ¬ x ⊎ y                ∎)
--- 
+--
 --   lem₂ = (
 --     (x × y) ⊎ (¬ x ⊎ ¬ y)  ≡⟨ {! ⊎-assoc _ _ _ !} ⟩
 --     ((x × y) ⊎ ¬ x) ⊎ ¬ y  ≡⟨ {! ⊎-congʳ lem₃ !} ⟩
@@ -748,7 +786,7 @@ module Lemma-4-1-11
   -- NOTE: there is Tactic.MonoidSolver in the old standard library
   --       and https://github.com/UlfNorell/agda-prelude/blob/master/src/Tactic/Monoid.agda
   --           https://github.com/UlfNorell/agda-prelude/blob/master/test/MonoidTactic.agda
-  --       and https://github.com/agda/agda-stdlib/blob/experimental/README/Solvers/ReflectiveMonoid.agda 
+  --       and https://github.com/agda/agda-stdlib/blob/experimental/README/Solvers/ReflectiveMonoid.agda
   --       and maybe a few more ...
 
   -- +-preserves-≡ʳ : ∀ x y z → x ≡ y → x + z ≡ y + z
@@ -789,8 +827,74 @@ module Lemma-4-1-11
     where
     abstract -- does this really improve performance?
 
+      _ : ( Σ[ A ∈ Type ℓ ] (∀(x y : A) → x ≡ y) )
+        ≡ ( Σ (Type ℓ) (λ A → (x y : A) → x ≡ y) )
+      _ = refl
+
       -- NOTE: the equivalences might be proven together
-      -- TODO: name these
+      --       this could be done with `⇒∶_⇐∶_` and `⇐∶_⇒∶_` from `Cubical.Foundations.Logic`
+      --       
+      --         ⊓-assoc : (P : hProp ℓ) (Q : hProp ℓ') (R : hProp ℓ'') → P ⊓ Q ⊓ R ≡ (P ⊓ Q) ⊓ R
+      --         ⊓-assoc _ _ _ =
+      --           ⇒∶ (λ {(x , (y , z)) →  (x , y) , z})
+      --           ⇐∶ (λ {((x , y) , z) → x , (y , z) })
+      --
+      --       which makes use of
+      --
+      --         ⇔toPath : [ P ⇒ Q ] → [ Q ⇒ P ] → P ≡ Q
+      --         ⇔toPath : {ℓ : Level} {P Q : hProp ℓ}
+      --                 → (fst P → fst Q)
+      --                 → (fst Q → fst P)
+      --                 -------------------------------------------------------------
+      --                 → P ≡ Q
+      --       
+      --       where we have
+      --
+      --         hProp ℓ = Σ[ A ∈ Type ℓ ] (∀(x y : A) → x ≡ y)
+      --
+      --       and
+      --       
+      --         _⇒_ : (A : hProp ℓ) → (B : hProp ℓ') → hProp _
+      --         A ⇒ B = ([ A ] → [ B ]) , isPropΠ λ _ → isProp[] B
+      --       
+      --       and `[_]` and `isProp[]` being the projections of hProp
+      --       
+      --         [_] : hProp ℓ → Type ℓ
+      --         [_] = fst
+      --       
+      --         isProp[] : (A : hProp ℓ) → isProp [ A ]
+      --         isProp[] = snd
+      --       
+      --       which are `fst` and `snd` from the sigma type Σ, coming from `hProp` being implemented via `TypeWithStr`
+      --       
+      --         hProp        ℓ   = TypeOfHLevel ℓ    1
+      --         TypeOfHLevel ℓ n = TypeWithStr  ℓ   (isOfHLevel n)
+      --         TypeWithStr  ℓ S = Σ[ X ∈ Type  ℓ ]  S X
+      --       
+      --       where the "S-structure" is `isOfHLevel n : Type ℓ → Type ℓ`
+      --       
+      --         isOfHLevel      0        A = isContr A
+      --         isOfHLevel      1        A = isProp  A
+      --         isOfHLevel (suc (suc n)) A = (x y : A) → isOfHLevel (suc n) (x ≡ y)
+      --
+      --       so we get
+      --       
+      --         hProp ℓ = Σ[ X ∈ Type ℓ ] isProp X
+      --       
+      --       [quote:]
+      --       A structure is a type-family S : Type ℓ → Type ℓ', i.e. for X : Type ℓ and s : S X,
+      --       the pair (X , s) : TypeWithStr ℓ S means that X is equipped with a S-structure, witnessed by s.
+      --       
+      --         TypeWithStr : (ℓ : Level) (S : Type ℓ → Type ℓ') → Type (ℓ-max (ℓ-suc ℓ) ℓ')
+      --         TypeWithStr ℓ S = Σ[ X ∈ Type ℓ ] S X
+      --       
+      --       it's two projections are
+      --       
+      --         typ = fst
+      --         str = snd
+
+
+      -- TODO: name the following "items"
 
       --  1. x ≤ y ⇔ ¬(y < x),
       item-1 : ∀ x y → x ≤ y → ¬(y < x)
@@ -903,7 +1007,7 @@ module Lemma-4-1-11
         -- Now w (x − y) has multiplicative inverse z, so it is apart from 0,
         iv  :  (x - y) · w # 0f
         iv  = snd (·-inv-back _ _ (sym iii))
-        -- that is (0 < w (x − y)) ∨ (w (x − y) < 0).  
+        -- that is (0 < w (x − y)) ∨ (w (x − y) < 0).
         in case iv of λ where
           -- By (∗), from 0 < w (x − y) and yz < xz we get yzw (x − y) < xzw (x − y), so y < x, contradicting our assumption that x ≤ y.
           (inr 0<[x-y]·w) → (
@@ -940,7 +1044,7 @@ module Lemma-4-1-11
       {-
       ·-inv-same-sign : ∀ x y → 0f < x → 1f ≡ x · y → 0f < y
       ·-inv-same-sign x y 0<x 1=x·y = let
-        instance _ = 0<x -- this is to multiply with 
+        instance _ = 0<x -- this is to multiply with
         instance _ = x # 0f ∋ inr 0<x -- this is to make use of ⁻¹
         in (0f < 1f    ⇒⟨ {!!} ⟩
             0f < x · y ⇒⟨ {!!} ⟩
@@ -1123,7 +1227,7 @@ module Lemma-4-1-11
         z⁻¹≡w·[y-x] : z ⁻¹ᶠ ≡ (w · (y - x))
         z⁻¹≡w·[y-x] = {! sym (·-linv-unique _ _ (sym 1≡[w·[y-x]]·z)) !}
         --   (⁻¹ᶠ-preserves-sign z 0<z)
-        -- transport (λ i → z⁻¹≡w·[y-x] i)        
+        -- transport (λ i → z⁻¹≡w·[y-x] i)
         iv : 0f < (z ⁻¹ᶠ) → 0f < ((((y · z) + (- (x · z))) ⁻¹ᶠ) · (y + (- x)))
         iv = {! transport (λ i → 0f < z⁻¹≡w·[y-x] i) !}
         -- (⁻¹ᶠ-preserves-sign z 0<z)
@@ -1283,7 +1387,7 @@ lemma-4-1-12 {ℓ} {ℓ'} OF = let -- NOTE: for mentioning the ℓ and ℓ' and 
 -- structive fields. This is because the Archimedean property can be phrased straightforwardly
 -- for ordered fields, as in Section 4.3, and because the ordering relation allows us to define loca-
 -- tors, as in Chapter 6.
--- 
+--
 -- We have defined ordered fields, which capture the algebraic structure of the real numbers.
 
 -- 4.2 Rationals
@@ -1346,7 +1450,7 @@ record IsOrderedFieldHom
     isRingHom : IsRingHom (record {F}) (record {G}) f
     reflects-< : ∀ x y → f x G.< f y → x F.< y
   -- NOTE: for properties, see https://en.wikipedia.org/wiki/Ring_homomorphism#Properties
-    
+
 record OrderedFieldHom {ℓ ℓ' ℓₚ ℓₚ'} (F : OrderedField {ℓ} {ℓₚ}) (G : OrderedField {ℓ'} {ℓₚ'}) : Type (ℓ-max (ℓ-max ℓ ℓ') (ℓ-max ℓₚ ℓₚ')) where
   constructor grouphom
   module F = OrderedField F
