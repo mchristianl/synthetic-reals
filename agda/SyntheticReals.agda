@@ -1,4 +1,6 @@
-{-# OPTIONS --cubical --no-import-sorts #-}
+{-# OPTIONS --cubical --no-import-sorts --allow-unsolved-metas #-}
+-- need --allow-unsolved-metas for generating html
+--   see https://github.com/agda/agda/issues/3642
 
 module SyntheticReals where
 
