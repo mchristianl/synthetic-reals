@@ -1,0 +1,37 @@
+<!DOCTYPE HTML>
+<html><head><meta charset="utf-8"><title>Cubical.Structures.Constant</title><link rel="stylesheet" href="Agda.css"></head><body><pre class="Agda"><a id="1" class="Comment">{-
+
+Constant structure: _ ↦ A
+
+-}</a>
+<a id="35" class="Symbol">{-#</a> <a id="39" class="Keyword">OPTIONS</a> <a id="47" class="Pragma">--cubical</a> <a id="57" class="Pragma">--no-import-sorts</a> <a id="75" class="Pragma">--safe</a> <a id="82" class="Symbol">#-}</a>
+<a id="86" class="Keyword">module</a> <a id="93" href="Cubical.Structures.Constant.html" class="Module">Cubical.Structures.Constant</a> <a id="121" class="Keyword">where</a>
+
+<a id="128" class="Keyword">open</a> <a id="133" class="Keyword">import</a> <a id="140" href="Cubical.Foundations.Prelude.html" class="Module">Cubical.Foundations.Prelude</a>
+<a id="168" class="Keyword">open</a> <a id="173" class="Keyword">import</a> <a id="180" href="Cubical.Foundations.Equiv.html" class="Module">Cubical.Foundations.Equiv</a>
+
+<a id="207" class="Keyword">open</a> <a id="212" class="Keyword">import</a> <a id="219" href="Cubical.Foundations.SIP.html" class="Module">Cubical.Foundations.SIP</a>
+
+<a id="244" class="Keyword">private</a>
+  <a id="254" class="Keyword">variable</a>
+    <a id="267" href="Cubical.Structures.Constant.html#267" class="Generalizable">ℓ</a> <a id="269" href="Cubical.Structures.Constant.html#269" class="Generalizable">ℓ&#39;</a> <a id="272" class="Symbol">:</a> <a id="274" href="Agda.Primitive.html#523" class="Postulate">Level</a>
+
+<a id="281" class="Comment">-- Structured isomorphisms</a>
+
+<a id="309" class="Keyword">module</a> <a id="316" href="Cubical.Structures.Constant.html#316" class="Module">_</a> <a id="318" class="Symbol">(</a><a id="319" href="Cubical.Structures.Constant.html#319" class="Bound">A</a> <a id="321" class="Symbol">:</a> <a id="323" href="Agda.Primitive.html#326" class="Primitive">Type</a> <a id="328" href="Cubical.Structures.Constant.html#269" class="Generalizable">ℓ&#39;</a><a id="330" class="Symbol">)</a> <a id="332" class="Keyword">where</a>
+
+  <a id="341" href="Cubical.Structures.Constant.html#341" class="Function">ConstantStructure</a> <a id="359" class="Symbol">:</a> <a id="361" href="Agda.Primitive.html#326" class="Primitive">Type</a> <a id="366" href="Cubical.Structures.Constant.html#267" class="Generalizable">ℓ</a> <a id="368" class="Symbol">→</a> <a id="370" href="Agda.Primitive.html#326" class="Primitive">Type</a> <a id="375" href="Cubical.Structures.Constant.html#328" class="Bound">ℓ&#39;</a>
+  <a id="380" href="Cubical.Structures.Constant.html#341" class="Function">ConstantStructure</a> <a id="398" class="Symbol">_</a> <a id="400" class="Symbol">=</a> <a id="402" href="Cubical.Structures.Constant.html#319" class="Bound">A</a>
+
+  <a id="407" href="Cubical.Structures.Constant.html#407" class="Function">ConstantEquivStr</a> <a id="424" class="Symbol">:</a> <a id="426" href="Cubical.Foundations.Structure.html#905" class="Function">StrEquiv</a> <a id="435" class="Symbol">{</a><a id="436" href="Cubical.Structures.Constant.html#267" class="Generalizable">ℓ</a><a id="437" class="Symbol">}</a> <a id="439" href="Cubical.Structures.Constant.html#341" class="Function">ConstantStructure</a> <a id="457" href="Cubical.Structures.Constant.html#328" class="Bound">ℓ&#39;</a>
+  <a id="462" href="Cubical.Structures.Constant.html#407" class="Function">ConstantEquivStr</a> <a id="479" class="Symbol">(_</a> <a id="482" href="Agda.Builtin.Sigma.html#236" class="InductiveConstructor Operator">,</a> <a id="484" href="Cubical.Structures.Constant.html#484" class="Bound">a</a><a id="485" class="Symbol">)</a> <a id="487" class="Symbol">(_</a> <a id="490" href="Agda.Builtin.Sigma.html#236" class="InductiveConstructor Operator">,</a> <a id="492" href="Cubical.Structures.Constant.html#492" class="Bound">a&#39;</a><a id="494" class="Symbol">)</a> <a id="496" class="Symbol">_</a> <a id="498" class="Symbol">=</a> <a id="500" href="Cubical.Structures.Constant.html#484" class="Bound">a</a> <a id="502" href="Agda.Builtin.Cubical.Path.html#381" class="Function Operator">≡</a> <a id="504" href="Cubical.Structures.Constant.html#492" class="Bound">a&#39;</a>
+
+  <a id="510" href="Cubical.Structures.Constant.html#510" class="Function">constantUnivalentStr</a> <a id="531" class="Symbol">:</a> <a id="533" href="Cubical.Foundations.SIP.html#1814" class="Function">UnivalentStr</a> <a id="546" class="Symbol">{</a><a id="547" href="Cubical.Structures.Constant.html#267" class="Generalizable">ℓ</a><a id="548" class="Symbol">}</a> <a id="550" href="Cubical.Structures.Constant.html#341" class="Function">ConstantStructure</a> <a id="568" href="Cubical.Structures.Constant.html#407" class="Function">ConstantEquivStr</a>
+  <a id="587" href="Cubical.Structures.Constant.html#510" class="Function">constantUnivalentStr</a> <a id="608" href="Cubical.Structures.Constant.html#608" class="Bound">e</a> <a id="610" class="Symbol">=</a> <a id="612" href="Cubical.Foundations.Equiv.Base.html#578" class="Function">idEquiv</a> <a id="620" class="Symbol">_</a>
+
+  <a id="625" href="Cubical.Structures.Constant.html#625" class="Function">constantEquivAction</a> <a id="645" class="Symbol">:</a> <a id="647" href="Cubical.Foundations.Structure.html#1187" class="Function">EquivAction</a> <a id="659" class="Symbol">{</a><a id="660" href="Cubical.Structures.Constant.html#267" class="Generalizable">ℓ</a><a id="661" class="Symbol">}</a> <a id="663" href="Cubical.Structures.Constant.html#341" class="Function">ConstantStructure</a>
+  <a id="683" href="Cubical.Structures.Constant.html#625" class="Function">constantEquivAction</a> <a id="703" href="Cubical.Structures.Constant.html#703" class="Bound">e</a> <a id="705" class="Symbol">=</a> <a id="707" href="Cubical.Foundations.Equiv.Base.html#578" class="Function">idEquiv</a> <a id="715" class="Symbol">_</a>
+
+  <a id="720" href="Cubical.Structures.Constant.html#720" class="Function">constantTransportStr</a> <a id="741" class="Symbol">:</a> <a id="743" href="Cubical.Foundations.SIP.html#3149" class="Function">TransportStr</a> <a id="756" class="Symbol">{</a><a id="757" href="Cubical.Structures.Constant.html#267" class="Generalizable">ℓ</a><a id="758" class="Symbol">}</a> <a id="760" href="Cubical.Structures.Constant.html#625" class="Function">constantEquivAction</a>
+  <a id="782" href="Cubical.Structures.Constant.html#720" class="Function">constantTransportStr</a> <a id="803" href="Cubical.Structures.Constant.html#803" class="Bound">e</a> <a id="805" class="Symbol">_</a> <a id="807" class="Symbol">=</a> <a id="809" href="Cubical.Foundations.Prelude.html#933" class="Function">sym</a> <a id="813" class="Symbol">(</a><a id="814" href="Cubical.Foundations.Prelude.html#6039" class="Function">transportRefl</a> <a id="828" class="Symbol">_)</a>
+</pre></body></html>
