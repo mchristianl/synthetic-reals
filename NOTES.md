@@ -473,6 +473,177 @@ record OrderedField : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
     isOrderedField : IsOrderedField 0f 1f _+_ -_ _·_ min max _<_ _#_ _≤_ _⁻¹ᶠ
 ```
 
+### detailed issue description
+
+I got the error in a context
+
+```
+Goal: (z ⁻¹ᶠ) ≡ ((((y · z) - (x · z)) ⁻¹ᶠ) · (y - x))
+Have: (z ⁻¹ᶠ) ≡ ((((y · z) - (x · z)) ⁻¹ᶠ) · (y - x))
+```
+
+here, we have
+
+```agda
+_⁻¹ᶠ     : (x₁ : F) {{ _ : x₁ #' 0f }} → F
+-- where
+_#'_ {_<_ = _<_} x y = (x < y) ⊎ (y < x)
+```
+
+so we need two special instances in scope to make use of `_⁻¹ᶠ`
+
+```
+z # 0f
+(y · z) - (x · z) # 0f
+```
+
+or rather
+
+```
+(z < 0f) ⊎ (0f < z)
+((y · z) - (x · z) < 0f) ⊎ (0f < ((y · z) - (x · z))
+```
+
+But these are not the two troublesome instances. The `(y · z) - (x · z) # 0f` does not cause the issue that we are surveying, but it might be involved in a subtle way.
+
+There are the following instances in scope (just a dump)
+
+```agda
+_        : z #' 0f   (instance)
+_        = (z #' 0f) ∋ inr 0<z
+_        : ((y - x) ·₁ z) #' 0f   (instance)
+_        = (((y - x) ·₁ z) #' 0f) ∋
+           transport
+           (λ i →
+              ((y ·₁ z) - (x ·₁ z) ≡⟨
+               (λ i₁ → (y ·₁ z) +₁ -commutesWithLeft-· x z (~ i₁)) ⟩
+               ((y ·₁ z) +₁ ((-₁ x) ·₁ z)) ≡⟨
+               (λ i₁ → snd (dist y (-₁ x) z) (~ i₁)) ⟩ ((y - x) ·₁ z) ∎)
+              i
+              #' 0f)
+           it
+_        : ((y ·₁ z) - (x ·₁ z)) #' 0f   (instance)
+_        = (((y ·₁ z) - (x ·₁ z)) #' 0f) ∋ inr it
+_        : 0f <₁ ((y ·₁ z) - (x ·₁ z))   (instance)
+_        = (((x ·₁ z) <₁ (y ·₁ z)) ⇒⟨
+            +-preserves-< (x ·₁ z) (y ·₁ z) (-₁ (x ·₁ z)) ⟩
+            (((x ·₁ z) - (x ·₁ z)) <₁ ((y ·₁ z) - (x ·₁ z))) ⇒⟨
+            transport (λ i → +-rinv (x ·₁ z) i <₁ ((y ·₁ z) - (x ·₁ z))) ⟩
+            (0f <₁ ((y ·₁ z) - (x ·₁ z))) ◼)
+           x·z<y·z
+```
+
+Now, the issue is that when giving the Hole with the same displayed type as the Goal from above
+
+```
+sym (snd (·-linv-unique (w · (y - x)) z (sym 1≡[w·[y-x]]·z)))
+```
+
+it gets rejected. This is due to the instances ① and ② being created with
+
+```agda
+① = z # 0f ∋ inr 0<z
+_ = (x · z            <  y · z
+      ⇒⟨ +-preserves-< _ _ _ ⟩
+    (x · z) - (x · z) < (y · z) - (x · z)
+      ⇒⟨ transport (cong₂ _<_ (+-rinv (x · z)) refl) ⟩
+    0f < (y · z) - (x · z) ◼) x·z<y·z
+_ = (y · z) - (x · z) # 0f ∋ inr it
+...
+w     = ((((y · z) - (x · z)) ⁻¹ᶠ) · (y - x))
+w·z≡1 = (λ i → transport
+          (λ i → 1f ≡ ·-comm z ((((y · z) - (x · z)) ⁻¹ᶠ) · (y - x)) i)
+          γ (~ i))
+② = z # 0f ∋ snd (·-inv-back _ _ w·z≡1)
+```
+
+and `·-linv-unique` creates its instance ② differently than ① was crated
+
+```agda
+·-linv-unique : (w z : F) → ((w · z) ≡ 1f) → Σ[ p ∈ z # 0f ] w ≡ (_⁻¹ᶠ z {{p}})
+·-linv-unique = let
+  z#0 = snd (·-inv-back _ _ w·z≡1) -- duplicated inhabitant (see notes)
+  instance _ = z # 0f ∋ z#0
+  ...
+  in ...
+```
+
+Here, `fst (·-linv-unique ...)` is the instance of `z # 0f` which is used for the resulting `w ≡ z ⁻¹ᶠ`.
+
+So we have two instances ① and ② of `z # 0f` around and the "Goal" type's `_⁻¹ᶠ` assumes ① where the the "Have" type's `_⁻¹ᶠ` assumes ②. The instance ② makes a roundabout with `·-inv-back` applied to a fact `1≡[w·[y-x]]·z` that in turn used `·-linv` to get derived.
+
+```agda
+·-linv     : ∀ x → (p : x # 0f) → (_⁻¹ᶠ x {{p}}) · x ≡ 1f
+·-inv-back : ∀(x y : F) → (x · y ≡ 1f) → (x # 0f) × (y # 0f)
+```
+
+So we are turning ① with `·-linv` into a "fresh" instance of `z ⁻¹ᶠ · z ≡ 1f` and use `·-inv-back` to turn this into the "fresh" instance ② which "differs" from ①.
+
+The previously mentioned hole then gets rejected with the error message
+
+```agda
+fst
+(·-linv-unique' ((((y · z) - (x · z)) ⁻¹ᶠ) · (y - x)) z
+ (λ i →
+    transport
+    (λ i → 1f ≡ ·-comm z ((((y · z) - (x · z)) ⁻¹ᶠ) · (y - x)) i)
+    γ (~ i)))
+!= inr 0<z of type (z < 0f) ⊎ (0f < z)
+when checking that the expression
+sym (snd (·-linv-unique (w · (y - x)) z (sym 1≡[w·[y-x]]·z))) has
+type (z ⁻¹ᶠ) ≡ ((((y · z) - (x · z)) ⁻¹ᶠ) · (y - x))
+```
+
+which is basically saying
+
+```agda
+② != ① of type z # 0f
+when checking that the expression
+"in the Hole" has type "of the Goal"
+```
+
+To sum up:
+Although Hole-Type and Goal-Type display the same, their hidden arguments differ.
+Of these hidden arguments, the two instances ① and ② differ because ② is created with a roundabout from ① and we have no equality on the apartness type `_#_` (or rather the order type `_<_`).
+
+The question is now, whether it is possible to make agda silently use such a coercion when it is available. I could imagine that using `hProp` still makes Agda reject such a situation because we need to explicitly tell that the `hProp`-coercion has to be used for converting the "Have" type into the "Goal" type. This is because two definitionally distinct `hProps` are still definitionally distinct.
+
+There is the [Prop](https://agda.readthedocs.io/en/v2.6.0/language/prop.html) sort in agda for which _"all elements of a type in Prop are considered to be (definitionally) equal"_.
+
+[a related github issue?](https://github.com/agda/agda/issues/3649)
+> Any Prop is trivially a hProp so one direction is easy. For the other direction it is not possible in general to convert a hProp into a Prop; for example the singleton type Σ A λ x → x₀ ≡ x is a hProp but it cannot be made into a Prop because you can extract the first component from it (more about this and other examples in our [paper](https://hal.inria.fr/hal-01859964)).
+>
+> During the Agda meeting in Tokyo, @UlfNorell started to work on a new kind of implicit argument which is solved by a custom macro. Your application seems to be a perfect use-case for this new feature, since it gives you much more freedom to guide the proof search than with instance search. Performance of reflection-based proof search is also something we are planning to look into in the future.
+
+[more issues tagges with "prop"](https://github.com/agda/agda/issues?q=Prop+label%3Aprop)
+
+like so?
+
+```agda
+data Prop2Type (P : Prop ℓ) : Type (ℓ-suc ℓ) where
+  inₚ : (p : P) → Prop2Type P
+
+Prop-to-hProp : Prop ℓ → hProp (ℓ-suc ℓ)
+Prop-to-hProp P = Prop2Type P ,  λ{ (inₚ x) (inₚ y) → refl }
+```
+
+## about implicit arguments
+
+making `_<_` an implicit argument in
+
+```agda
+_#'_ : ∀{X : Type ℓ} {_<_ : Rel X X ℓ'} → Rel X X ℓ'
+_#'_ {_<_ = _<_} x y = (x < y) ⊎ (y < x)
+```
+
+and lateron "using" this in a module telescope with
+
+```
+  (let _#_ = _#'_ {_<_ = _<_}; infixl 4 _#_)
+```
+
+which enables to write `_#_` and displays `_#'_` but still takes only two arguments (so at least it displays correctly).
+
 ## some properties that are not necessary anymore
 
 - there is also PropRel in Cubical.Relation.Binary.Base which uses

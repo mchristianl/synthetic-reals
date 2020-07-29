@@ -788,7 +788,7 @@ module Lemma-4-1-11
       -- ·-linv-unique : (x y : F) (x·y≡1 : (x ·₁ y) ≡ 1f) → x ≡ (y ⁻¹ᶠ₁)
       module _ (x y : F) (x·y≡1 : x · y ≡ 1f) where
         y#0 = snd (·-inv-back _ _ x·y≡1) -- duplicated inhabitant (see notes)
-        instance _ = y#0
+        instance _ = y # 0f ∋ y#0
         import Cubical.Structures.Group
 
         -- NOTE: ported from Cubical.Structures.Group.GroupLemmas

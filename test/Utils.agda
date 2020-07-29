@@ -1,4 +1,4 @@
-{-# OPTIONS --cubical --no-import-sorts #-}
+{-# OPTIONS --cubical --no-import-sorts --prop #-}
 
 module Utils where
 
@@ -240,3 +240,8 @@ private
     y                      ∎)
 
 
+data Prop2Type (P : Prop ℓ) : Type (ℓ-suc ℓ) where
+  inₚ : (p : P) → Prop2Type P
+
+Prop-to-hProp : Prop ℓ → hProp (ℓ-suc ℓ)
+Prop-to-hProp P = Prop2Type P ,  λ{ (inₚ x) (inₚ y) → refl }
