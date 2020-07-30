@@ -781,6 +781,75 @@ record IsRingHom
     perserves-1 : f F.1r ≡ G.1r
 ```
 
+this got better when moving the Ring-Lemmas into a different scope (where just the Ring's `_+_`, `_·_`, `-_` are made visible) and just importing them back
+
+```agda
+module FieldProperties (F : Field) where
+-- do not (yet) open the Field
+  module RingProperties (R : Ring) where
+    open Ring R -- populate the scope with the Ring's `_+_`, `_·_`, `-_` and alike
+
+    ring-lemma1 : ∀ x y → x + y ≡ y + x -- state some properties
+    ring-lemma1 = ...
+
+
+  open Field F -- populate the scope with the Field's `_+_`, `_·_`, `-_` and alike
+  R = makeRing ... -- use the Field's `_+_`, `_·_`, `-_` and alike
+  open RingProperties R -- only make ring-lemmas available for the Field's fields
+
+  -- continue using the Field's `_+_`, `_·_`, `-_` and alike and the corresponding ring-lemmas
+```
+
+Finally, when directly "constructing" the record anonymously with the `record {...}` syntax in the same line where opening the module, the names will be normalized correctly, even without `C-u C-u C-x C-,`. E.g. suppose in the following that we want to use the `0-leftNullifies` fact on Rings from `Cubical.Structures.Ring.Theory`:
+
+```agda
+module Theory (R' : Ring {ℓ}) where
+  open Ring R' renaming ( Carrier to R )
+
+  0-leftNullifies : (x : R) → 0r · x ≡ 0r
+  0-leftNullifies x = ...
+```
+
+but we want to use this fact on a "Ring-derived" structure `AlmostOrderedField`. There are several ways to bring `0-leftNullifies` into scope, but they add a projection to the un-normalized terms:
+
+```agda
+module Lemma-4-1-11 (AOF : AlmostOrderedField {ℓ} {ℓ'}) where
+  open AlmostOrderedField AOF renaming (Carrier to F)
+
+  module Test1 where
+    open import Cubical.Structures.Ring
+    RR = (Cubical.Structures.Ring.makeRing 0f 1f _+_ _·_ -_ is-set +-assoc +-rid +-rinv +-comm ·-assoc ·-rid ·-lid ·-rdist-+ ·-ldist-+)
+    open Cubical.Structures.Ring.Theory RR
+
+    -- Have: (x : Ring.Carrier RR) → (RR Ring.· Ring.0r RR) x ≡ Ring.0r RR
+    _ = {! 0-leftNullifies !}
+
+  module Test2 where
+    open import Cubical.Structures.Ring renaming (Ring to R)
+    RR = (Cubical.Structures.Ring.makeRing 0f 1f _+_ _·_ -_ is-set +-assoc +-rid +-rinv +-comm ·-assoc ·-rid ·-lid ·-rdist-+ ·-ldist-+)
+    open Cubical.Structures.Ring.Theory RR
+
+    -- Have: (x : R.Carrier RR) → (RR R.· R.0r RR) x ≡ R.0r RR
+    _ = {! 0-leftNullifies !}
+
+  module Test3 where
+    module AOFM = AlmostOrderedField AOF
+    import Cubical.Structures.Ring
+    open Cubical.Structures.Ring.Theory (record {AOFM}) -- NOTE: this does not work
+
+    -- Have: (x : AOFM.Carrier) → AOFM.0f AOFM.· x ≡ AOFM.0f
+    _ = {! 0-leftNullifies !}
+
+  module Test4 where
+    import Cubical.Structures.Ring
+    open Cubical.Structures.Ring.Theory (record {AlmostOrderedField AOF})
+
+    -- Have: (x : F) → 0f · x ≡ 0f
+    _ = {! 0-leftNullifies !}
+```
+
+So only the last way in `module Test4` works out nicely. This simple syntax with `record {AlmostOrderedField AOF}` only works out when `Ring` and `AlmostOrderedField` share exactly the same field names. When this is not the case, we need to (back-)rename these fields. But this could be done once in the `AlmostOrderedField` module wich then re-exports all the properties.
+
 ## some ring and field lemma stubs
 
 ```agda
