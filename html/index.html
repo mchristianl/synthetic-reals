@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>synthetic reals</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+  </style>
+  <link rel="stylesheet" href="Agda.css" />
+  <link rel="stylesheet" href="github-markdown.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+   var mathElements = document.getElementsByClassName("math");
+   for (var i = 0; i < mathElements.length; i++) {
+    var texText = mathElements[i].firstChild;
+    if (mathElements[i].tagName == "SPAN") {
+     katex.render(texText.data, mathElements[i], {
+      displayMode: mathElements[i].classList.contains('display'),
+      throwOnError: false,
+      fleqn: false
+     });
+  }}});
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">synthetic reals</h1>
+</header>
+<p>This is an attempt to make use of <a href="https://abooij.blogspot.com/p/phd-thesis.html">Booij 2020 - Analysis in Univalent Type Theory</a> to get a <em>cauchy-complete archimedean field</em> into <code>--cubical</code> Agda as <a href="https://github.com/agda/cubical/issues/286">suggested in a Github issue</a>. I am quite verbosely copying from <a href="chapter-4-1.md">chapter 4</a> of Booij’s thesis.</p>
+<p><span class="math inline">\int_\Omega f\,\mathrm{d}x</span></p>
+<!--
+
+Bonus trick: to hide an Agda code block, just put it between html comments
+
+<pre class="Agda"><a id="477" class="Symbol">{-#</a> <a id="481" class="Keyword">OPTIONS</a> <a id="489" class="Pragma">--cubical</a> <a id="499" class="Pragma">--no-import-sorts</a> <a id="517" class="Pragma">--allow-unsolved-metas</a> <a id="540" class="Symbol">#-}</a>
+<a id="544" class="Comment">-- need --allow-unsolved-metas for generating html</a>
+<a id="595" class="Comment">--   see https://github.com/agda/agda/issues/3642</a>
+</pre>
+-->
+<p>The “main” file is</p>
+<pre class="Agda"><a id="681" class="Keyword">import</a> <a id="688" href="SyntheticReals.html" class="Module">SyntheticReals</a>
+</pre>
+<p>extensions of <code>Cubical.Foundations.Logic</code> and similar things live in</p>
+<pre class="Agda"><a id="782" class="Keyword">import</a> <a id="789" href="MoreLogic.html" class="Module">MoreLogic</a>
+</pre>
+</body>
+</html>
