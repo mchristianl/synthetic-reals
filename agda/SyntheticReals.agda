@@ -519,14 +519,8 @@ module GroupTheory1 (G : Cubical.Structures.Group.Group {ℓ}) where
 contraposition : {P : Type ℓ} {Q : Type ℓ'} → (P → Q) → ¬ Q → ¬ P
 contraposition f ¬q p = ⊥-elim (¬q (f p))
 
--- deMorgan₁ : {P : Type ℓ} {Q : Type ℓ'} → ¬(P × Q) → (¬ P) ⊎ (¬ Q)
--- deMorgan₁ {P = P} {Q = Q} = {!!}
-
--- deMorgan₁-back : {P : Type ℓ} {Q : Type ℓ'} → (¬ P) ⊎ (¬ Q) → ¬(P × Q)
--- deMorgan₁-back {P = P} {Q = Q} = {!!}
-
 deMorgan₂' : {P : Type ℓ} {Q : Type ℓ'} → ¬(P ⊎ Q) → (¬ P) × (¬ Q)
-deMorgan₂' {P = P} {Q = Q} = {!!}
+deMorgan₂' {P = P} {Q = Q} ¬[p⊎q] = (λ p → ⊥-elim (¬[p⊎q] (inl p))) , λ q → ⊥-elim (¬[p⊎q] (inr q))
 
 -- Lemma 4.1.11.
 -- In the presence of the first five axioms of Definition 4.1.10, conditions (†) and (∗) are together equivalent to the condition that for all x, y, z : F,
@@ -545,13 +539,14 @@ deMorgan₂' {P = P} {Q = Q} = {!!}
 --       although this "header" of it looks very ugly
 module Lemma-4-1-11
   --------------------------------------- structures
-  (F       : Type ℓ)
-  (0f 1f   : F)
-  (_+_     : F → F → F)
-  (-_      : F → F)
-  (_·_     : F → F → F)
-  (min max : F → F → F)
-  (_<_     : Rel F F ℓ')
+  (F        : Type ℓ)
+  (0f 1f    : F)
+  (_+_      : F → F → F)
+  (-_       : F → F)
+  (_·_      : F → F → F)
+  (min max  : F → F → F)
+  (_<_      : Rel F F ℓ')
+  (<-isProp : ∀ x y → isProp (x < y))
   --------------------------------------- definitions (fixites)
   -- https://lists.chalmers.se/pipermail/agda/2018/010217.html
   --   Those lets are not parameters of the module
@@ -600,6 +595,12 @@ module Lemma-4-1-11
   open IsLattice <-isLattice public
 
 ----8<---------------------------8<--------------------------8<----
+
+  #-isProp : ∀ x y → isProp (x # y)
+  #-isProp x y (inl x<y₁) (inl x<y₂) = cong inl (<-isProp x y x<y₁ x<y₂)
+  #-isProp x y (inl x<y ) (inr y<x ) = ⊥-elim (<-irrefl y (<-trans y x y y<x x<y))
+  #-isProp x y (inr y<x ) (inl x<y ) = ⊥-elim (<-irrefl y (<-trans y x y y<x x<y))
+  #-isProp x y (inr y<x₁) (inr y<x₂) = cong inr (<-isProp y x y<x₁ y<x₂) 
 
   open import Cubical.Structures.Ring
   R = (makeRing 0f 1f _+_ _·_ -_ is-set +-assoc +-rid +-rinv +-comm ·-assoc ·-rid ·-lid ·-rdist-+ ·-ldist-+)
@@ -866,8 +867,11 @@ module Lemma-4-1-11
         instance _ = z # 0f ∋ inr 0<z
         z⁻¹ = w · (y - x)
         z⁻¹≡w·[y-x] : z ⁻¹ᶠ ≡ (w · (y - x))
-        z⁻¹≡w·[y-x] = {! sym (snd (·-linv-unique (w · (y - x)) z (sym 1≡[w·[y-x]]·z))) !}
-        instance _ = 0f < w · (y - x) ∋ {! 1≡z·[w·[y-x]]!}
+        z⁻¹≡w·[y-x] = let tmp = sym (snd (·-linv-unique (w · (y - x)) z (sym 1≡[w·[y-x]]·z))) 
+                      in transport (cong (λ z#0 → _⁻¹ᶠ z {{z#0}} ≡ (w · (y - x))) (#-isProp z 0f _ _)) tmp
+        0<z⁻¹ : 0f < z ⁻¹ᶠ
+        0<z⁻¹ = ⁻¹ᶠ-preserves-sign z 0<z
+        instance _ = 0f < w · (y - x) ∋ transport (λ i → 0f < z⁻¹≡w·[y-x] i) 0<z⁻¹
         -- instance _ = 0f < z⁻¹ ∋ ?
         in (  x ·  z         <  y ·  z         ⇒⟨ ·-preserves-< _ _ z⁻¹ it ⟩
              (x ·  z) · z⁻¹  < (y ·  z) · z⁻¹  ⇒⟨ transport (λ i → ·-assoc x z z⁻¹ (~ i) < ·-assoc y z z⁻¹ (~ i)) ⟩
@@ -875,7 +879,7 @@ module Lemma-4-1-11
               x · 1f         <  y · 1f         ⇒⟨ transport (cong₂ _<_ (fst (·-identity x)) (fst (·-identity y))) ⟩
               x              <  y              ◼) x·z<y·z
         where
-          abstract
+          abstract -- NOTE: `abstract` is only allowed in `where` blocks and `where` blocks are not allowed in `let` blocks
             γ =
               let -- NOTE: for some reason the instance resolution does only work in let-blocks
               -- I get a "Terms marked as eligible for instance search should end with a name, so `instance' is ignored here. when checking the definition of my-instance"
