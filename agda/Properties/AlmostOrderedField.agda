@@ -42,6 +42,58 @@ import Cubical.Structures.Ring
 open Cubical.Structures.Ring.Theory (record {AlmostOrderedField AOF})
 open MoreAlgebra.Properties.Group   (record {AlmostOrderedField AOF renaming (+-isGroup to isGroup )})
 
+
+-- NOTE: ported from Cubical.Structures.Group.GroupLemmas
+-- NOTE: these versions differ from the Group-versions because they are defined w.r.t. an appartness relation _#_ that is not present for the Group
+simplR : {a b : F} (c : F) {{_ : c # 0f}} → a · c ≡ b · c → a ≡ b
+simplR {a} {b} c {{_}} a·c≡b·c =
+   a                ≡⟨ sym (fst (·-identity a)) ∙ cong (a ·_) (sym (·-rinv c it)) ∙ ·-assoc _ _ _ ⟩
+  (a · c) · (c ⁻¹ᶠ) ≡⟨ cong (_· c ⁻¹ᶠ) a·c≡b·c ⟩
+  (b · c) · (c ⁻¹ᶠ) ≡⟨ sym (·-assoc _ _ _) ∙ cong (b ·_) (·-rinv c it) ∙ fst (·-identity b)  ⟩
+   b ∎
+
+·-preserves-≡ʳ : {a b : F} (c : F) {{_ : c # 0f}} → a · c ≡ b · c → a ≡ b
+·-preserves-≡ʳ = simplR
+
+-- ·-linv-unique : (x y : F) (x·y≡1 : (x ·₁ y) ≡ 1f) → x ≡ (y ⁻¹ᶠ₁)
+module _ (x y : F) (x·y≡1 : x · y ≡ 1f) where
+  y#0 = snd (·-inv-back _ _ x·y≡1) -- duplicated inhabitant (see notes)
+  instance _ = y # 0f ∋ y#0
+  import Cubical.Structures.Group
+
+  -- NOTE: ported from Cubical.Structures.Group.GroupLemmas
+  abstract
+    ·-linv-unique' : Σ[ p ∈ y # 0f ] (x ≡ _⁻¹ᶠ y {{p}})
+    ·-linv-unique' = it , (
+      x · y ≡ 1f        ⇒⟨ transport (λ i → x · y ≡ ·-linv y it (~ i)) ⟩
+      x · y ≡ y ⁻¹ᶠ · y ⇒⟨ simplR _  ⟩
+      x     ≡ y ⁻¹ᶠ     ◼) x·y≡1
+
+·-linv-unique : (x y : F) → ((x · y) ≡ 1f) → Σ[ p ∈ y # 0f ] x ≡ (_⁻¹ᶠ y {{p}})
+·-linv-unique = ·-linv-unique'
+
+-- ⁻¹ᶠ-involutive : (x : F) (z#0 : x #' 0f) → ((x ⁻¹ᶠ₁) ⁻¹ᶠ₁) ≡ x
+module _ (z : F) (z#0 : z # 0f) where
+  private
+    instance _ = z#0
+    z⁻¹ = z ⁻¹ᶠ -- NOTE: interestingly, the instance argument is not applied and y remains normalized in terms of z
+              --       so we get `y : {{ _ : z #' 0f }} → F` here
+    z⁻¹#0 = snd (·-inv-back z z⁻¹ (·-rinv z it))
+    -- NOTE: for some reason I get "There are instances whose type is still unsolved when checking that the expression it has type z #' 0f"
+    --       typing `y : F` did not help much. therefore this goes in two lines
+    instance _ = z⁻¹#0
+    z⁻¹⁻¹ = z⁻¹ ⁻¹ᶠ
+
+  -- NOTE: this should be similar to `right-helper` + `-involutive`
+  ⁻¹ᶠ-involutive : (z ⁻¹ᶠ) ⁻¹ᶠ ≡ z
+  ⁻¹ᶠ-involutive = (
+     z⁻¹⁻¹              ≡⟨ sym (fst (·-identity _)) ⟩
+     z⁻¹⁻¹ ·      1f    ≡⟨ (λ i →  z⁻¹⁻¹ · ·-linv _ it (~ i)) ⟩
+     z⁻¹⁻¹ · (z⁻¹  · z) ≡⟨ ·-assoc _ _ _ ⟩
+    (z⁻¹⁻¹ ·  z⁻¹) · z  ≡⟨ (λ i → ·-linv z⁻¹ it i · z) ⟩
+          1f       · z  ≡⟨  snd (·-identity _)  ⟩
+                     z  ∎)
+
 module forward -- 6. ⇒ 1. 2. 3. 4. 5.
   -- 6. (†)
   (+-<-extensional : ∀ w x y z → (x + y) < (z + w) → (x < z) ⊎ (y < w))
@@ -49,11 +101,6 @@ module forward -- 6. ⇒ 1. 2. 3. 4. 5.
   (·-preserves-< : ∀ x y z → 0f < z → x < y → (x · z) < (y · z))
   where
   -- abstract
-
-    _ : ( Σ[ A ∈ Type ℓ ] (∀(x y : A) → x ≡ y) )
-      ≡ ( Σ (Type ℓ) (λ A → (x y : A) → x ≡ y) )
-    _ = refl
-
     --  1. x ≤ y ⇔ ¬(y < x),
     item-1 : ∀ x y → x ≤ y → ¬(y < x)
     item-1 = λ _ _ x≤y → x≤y -- holds definitionally
@@ -138,6 +185,22 @@ module forward -- 6. ⇒ 1. 2. 3. 4. 5.
 
     item-10 : 0f < 1f
 
+    module _ (z : F) (0<z : 0f < z) where
+      private
+        instance _ = z # 0f ∋ inr 0<z
+        z⁻¹ = z ⁻¹ᶠ
+        z⁻¹#0 = snd (·-inv-back z z⁻¹ (·-rinv z it))
+      abstract
+        ⁻¹ᶠ-preserves-sign : 0f < z ⁻¹ᶠ
+        ⁻¹ᶠ-preserves-sign with z⁻¹#0
+        ... | inl z⁻¹<0 = (
+          z⁻¹     < 0f     ⇒⟨ ·-preserves-< _ _ z 0<z ⟩
+          z⁻¹ · z < 0f · z ⇒⟨ transport (λ i → ·-linv z it i <  0-leftNullifies z i) ⟩
+          1f      < 0f     ⇒⟨ <-trans _ _ _ item-10 ⟩
+          0f      < 0f     ⇒⟨ <-irrefl _ ⟩
+                  ⊥        ⇒⟨ ⊥-elim ⟩ _ ◼) z⁻¹<0
+        ... | inr 0<z⁻¹ = 0<z⁻¹
+
     --  8. x ≤ y ∧ 0 ≤ z ⇒ x z ≤ y z,
     item-8 : ∀ x y z → x ≤ y → 0f ≤ z → x · z ≤ y · z
     -- For item 8, suppose x ≤ y and 0 ≤ z and yz < xz.
@@ -192,74 +255,6 @@ module forward -- 6. ⇒ 1. 2. 3. 4. 5.
     --  9. 0 < z ⇒ (x < y ⇔ x z < y z),
     item-9 : ∀ x y z → 0f < z → (x < y → x · z < y · z)
     item-9 = ·-preserves-<
-
-    -- NOTE: ported from Cubical.Structures.Group.GroupLemmas
-    simplR : {a b : F} (c : F) {{_ : c # 0f}} → a · c ≡ b · c → a ≡ b
-    simplR {a} {b} c {{_}} a·c≡b·c =
-       a                ≡⟨ sym (fst (·-identity a)) ∙ cong (a ·_) (sym (·-rinv c it)) ∙ ·-assoc _ _ _ ⟩
-      (a · c) · (c ⁻¹ᶠ) ≡⟨ cong (_· c ⁻¹ᶠ) a·c≡b·c ⟩
-      (b · c) · (c ⁻¹ᶠ) ≡⟨ sym (·-assoc _ _ _) ∙ cong (b ·_) (·-rinv c it) ∙ fst (·-identity b)  ⟩
-       b ∎
-
-    ·-preserves-≡ʳ : {a b : F} (c : F) {{_ : c # 0f}} → a · c ≡ b · c → a ≡ b
-    ·-preserves-≡ʳ = simplR
-
-    -- ·-linv-unique : (x y : F) (x·y≡1 : (x ·₁ y) ≡ 1f) → x ≡ (y ⁻¹ᶠ₁)
-    module _ (x y : F) (x·y≡1 : x · y ≡ 1f) where
-      y#0 = snd (·-inv-back _ _ x·y≡1) -- duplicated inhabitant (see notes)
-      instance _ = y # 0f ∋ y#0
-      import Cubical.Structures.Group
-
-      -- NOTE: ported from Cubical.Structures.Group.GroupLemmas
-      abstract
-        ·-linv-unique' : Σ[ p ∈ y # 0f ] (x ≡ _⁻¹ᶠ y {{p}})
-        ·-linv-unique' = it , (
-          x · y ≡ 1f        ⇒⟨ transport (λ i → x · y ≡ ·-linv y it (~ i)) ⟩
-          x · y ≡ y ⁻¹ᶠ · y ⇒⟨ simplR _  ⟩
-          x     ≡ y ⁻¹ᶠ     ◼) x·y≡1
-
-    ·-linv-unique : (x y : F) → ((x · y) ≡ 1f) → Σ[ p ∈ y # 0f ] x ≡ (_⁻¹ᶠ y {{p}})
-    ·-linv-unique = ·-linv-unique'
-
-    -- ⁻¹ᶠ-involutive : (x : F) (z#0 : x #' 0f) → ((x ⁻¹ᶠ₁) ⁻¹ᶠ₁) ≡ x
-    module _ (z : F) (z#0 : z # 0f) where
-      private
-        instance _ = z#0
-        z⁻¹ = z ⁻¹ᶠ -- NOTE: interestingly, the instance argument is not applied and y remains normalized in terms of z
-                  --       so we get `y : {{ _ : z #' 0f }} → F` here
-        z⁻¹#0 = snd (·-inv-back z z⁻¹ (·-rinv z it))
-        -- NOTE: for some reason I get "There are instances whose type is still unsolved when checking that the expression it has type z #' 0f"
-        --       typing `y : F` did not help much. therefore this goes in two lines
-        instance _ = z⁻¹#0
-        z⁻¹⁻¹ = z⁻¹ ⁻¹ᶠ
-
-      -- NOTE: this should be similar to `right-helper` + `-involutive`
-      ⁻¹ᶠ-involutive : (z ⁻¹ᶠ) ⁻¹ᶠ ≡ z
-      ⁻¹ᶠ-involutive = (
-         z⁻¹⁻¹              ≡⟨ sym (fst (·-identity _)) ⟩
-         z⁻¹⁻¹ ·      1f    ≡⟨ (λ i →  z⁻¹⁻¹ · ·-linv _ it (~ i)) ⟩
-         z⁻¹⁻¹ · (z⁻¹  · z) ≡⟨ ·-assoc _ _ _ ⟩
-        (z⁻¹⁻¹ ·  z⁻¹) · z  ≡⟨ (λ i → ·-linv z⁻¹ it i · z) ⟩
-              1f       · z  ≡⟨  snd (·-identity _)  ⟩
-                         z  ∎)
-
-    -- ⁻¹ᶠ-preserves-sign : (x : F) (0<z : 0f <₁ x) → 0f <₁ (x ⁻¹ᶠ₁)
-    module _ (z : F) (0<z : 0f < z) where
-      private
-        instance _ = z # 0f ∋ inr 0<z
-        z⁻¹ = z ⁻¹ᶠ
-        z⁻¹#0 = snd (·-inv-back z z⁻¹ (·-rinv z it))
-      abstract
-        ⁻¹ᶠ-preserves-sign : 0f < z ⁻¹ᶠ
-        ⁻¹ᶠ-preserves-sign with z⁻¹#0
-        ... | inl z⁻¹<0 = (
-          z⁻¹     < 0f     ⇒⟨ ·-preserves-< _ _ z 0<z ⟩
-          z⁻¹ · z < 0f · z ⇒⟨ transport (λ i → ·-linv z it i <  0-leftNullifies z i) ⟩
-          1f      < 0f     ⇒⟨ <-trans _ _ _ item-10 ⟩
-          0f      < 0f     ⇒⟨ <-irrefl _ ⟩
-                  ⊥        ⇒⟨ ⊥-elim ⟩ _ ◼) z⁻¹<0
-        ... | inr 0<z⁻¹ = 0<z⁻¹
-
 
     item-9-back : ∀ x y z → 0f < z → (x · z < y · z → x < y)
     -- For the other direction of item 9, assume 0 < z and xz < yz,

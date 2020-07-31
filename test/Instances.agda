@@ -9,6 +9,7 @@ open import Cubical.Relation.Binary.Base
 open import Cubical.Data.Sum.Base renaming (_⊎_ to infixr 4 _⊎_)
 open import Cubical.Data.Sigma.Base renaming (_×_ to infixr 4 _×_)
 open import Cubical.Foundations.Logic
+open import Agda.Builtin.Equality  renaming (_≡_ to _≡ᵢ_; refl to reflₚ)
 
 variable
   ℓ ℓ' ℓ'' : Level
@@ -24,6 +25,13 @@ _ = refl
 PropRel' : ∀ {ℓ} (A B : Type ℓ) (ℓ' : Level) → Type (ℓ-max ℓ (ℓ-suc ℓ'))
 PropRel' A B ℓ' = Σ[ R ∈ Rel A B ℓ' ] ∀ a b → isProp (R a b)
 
+#-coerceₚ' : ∀{ℓ'} → {P Q : hProp ℓ'} → [ P ] → {{[ P ] ≡ [ Q ]}} → [ Q ]
+#-coerceₚ' {ℓ} {[p] , p-isProp} {[q] , q-isProp} p {{ p≡q }} = transport p≡q p
+
+
+path-to-id : ∀{ℓ} {A : Type ℓ} {x y : A} → x ≡ y → x ≡ᵢ y
+path-to-id p = {!!}
+
 -- just for the explanation
 record PoorField : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
   field
@@ -36,6 +44,9 @@ record PoorField : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
     
     -- #-rel : PropRel F F ℓ'
 
+  _#ₚ_ : F → F → hProp ℓ'
+  x #ₚ y = (x # y) , #-isprop x y
+
   -- NOTE: this creates a `Goal: fst #-rel ...` everywhere
   --       we might just separate the relation from the isprop
   --       i.e. directly define _#_ and #-isprop
@@ -46,7 +57,10 @@ record PoorField : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
   --       although this email thread is about more general coercions which are not straight forward, where hProp should be less of an issue
   #-coerce : ∀{ℓ x y} → ∀{p q} {R : x # y → Type ℓ} → R p → R q
   #-coerce {ℓ} {x} {y} {p} {q} {R} rp = transport (cong R (#-isprop x y p q))rp 
-  
+
+  #-coerceₚ : ∀{ℓ x y} → ∀{p q} {R : [ x #ₚ y ] → Type ℓ} → R p → R q
+  #-coerceₚ {ℓ} {x} {y} {p} {q} {R} rp = transport (cong R (#-isprop x y p q)) rp
+
   field
     _+_ _·_ : F → F → F
     _⁻¹ᶠ    : (x : F) → {{ x # 0f }} → F
@@ -57,8 +71,13 @@ record PoorField : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
     1#0'    : 1f # 0f
 
     -- maybe there is some clever way to define _⁻¹ᶠ in a way where it accepts different proofs
-    _⁻¹ᶠ'   : (x : F) → {{ x # 0f }} → F
-    ·-rinv' : (x : F) → (p : x # 0f) → x · (_⁻¹ᶠ x {{p}}) ≡ 1f
+    _⁻¹ᶠ'   : (x : F) → {{ [ x #ₚ 0f ] }} → F
+    ·-rinv' : (x : F) → (p : [ x #ₚ 0f ]) → x · (_⁻¹ᶠ' x {{p}}) ≡ 1f
+    
+    1#0ₚ     : [ 1f #ₚ 0f ]
+    1#0ₚ'    : [ 1f #ₚ 0f ]
+
+    _⁻¹ᶠ''   : (x : F) → {{ [ x #ₚ 0f ] }} → F
 
   -- infix  9 _⁻¹ᶠ
   -- infixl 7 _·_
@@ -77,7 +96,7 @@ module test-hProp (PF : PoorField {ℓ} {ℓ'}) where
   -- ERROR:
   -- PoorField.1#0' /= PoorField.1#0
   -- when checking that the expression 1#0' has type fst #-rel 1f 0f
-  test1 = ·-rinv 1f {! 1#0'!}
+  test1 = ·-rinv 1f ( #-coerceₚ {_} {1f} {0f} {_} {_} {_} 1#0')
 
   -- #-coerce seems to have troubles resolving the R
   test2 : let instance _ = 1#0 in 1f · (1f ⁻¹ᶠ) ≡ 1f
@@ -92,6 +111,13 @@ module test-hProp (PF : PoorField {ℓ} {ℓ'}) where
   test3 = #-coerce {R = λ r → 1f · (_⁻¹ᶠ 1f {{r}}) ≡ 1f} (·-rinv 1f 1#0')
 
   -- a different "result" of this consideration might be that Goals involving hProp-instances need to be formulated in a different way
+
+  test4 : let instance _ = 1#0ₚ in 1f · (1f ⁻¹ᶠ') ≡ 1f
+  test4 =   ·-rinv' 1f ( #-coerceₚ' 1#0ₚ' {{{!!}}} )
+
+  test5 : let instance _ = 1#0ₚ in 1f · (1f ⁻¹ᶠ') ≡ 1f
+  test5 with 1#0ₚ' | path-to-id {ℓ'} {x = 1#0ₚ} {y = 1#0ₚ'} (#-isprop 1f 0f 1#0ₚ 1#0ₚ')
+  ... | .(PoorField.1#0ₚ PF) | reflₚ = {! ·-rinv' 1f 1#0ₚ' !}
 
 -- when using Prop this would be less of an issue
 -- but how does it interact with the hProp based cubical library?

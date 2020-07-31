@@ -835,7 +835,7 @@ module Lemma-4-1-11 (AOF : AlmostOrderedField {ℓ} {ℓ'}) where
   module Test3 where
     module AOFM = AlmostOrderedField AOF
     import Cubical.Structures.Ring
-    open Cubical.Structures.Ring.Theory (record {AOFM}) -- NOTE: this does not work
+    open Cubical.Structures.Ring.Theory (record {AOFM})
 
     -- Have: (x : AOFM.Carrier) → AOFM.0f AOFM.· x ≡ AOFM.0f
     _ = {! 0-leftNullifies !}
