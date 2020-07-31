@@ -305,8 +305,20 @@ record OrderedField : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
     ≤-isPreorder : IsPreorder _≤_
     ≤-isPreorder = ≤-isPreorder' {_<_ = _<_} {<-isStrictPartialOrder}
 
+-- Definition 4.3.1.
+-- A morphism from an ordered field (F, 0F , 1F , +F , ·F , minF , maxF , <F )
+--              to an ordered field (G, 0G , 1G , +G , ·G , minG , maxG , <G )
+-- is a map f : F → G such that
+-- 1. f is a morphism of rings,
+-- 2. f reflects < in the sense that for every x, y : F
+--    f (x) <G f (y) ⇒ x <F y.
 
-record IsRingHom
+-- NOTE: see Cubical.Structures.Group.Morphism
+--       and Cubical.Structures.Group.MorphismProperties
+
+-- open import Cubical.Structures.Group.Morphism
+
+record IsRingMor
   {ℓ ℓ'}
   (F : Ring {ℓ}) (G : Ring {ℓ'})
   (f : (Ring.Carrier F) → (Ring.Carrier G)) : Type (ℓ-max ℓ ℓ')
@@ -318,7 +330,7 @@ record IsRingHom
     preserves-· : ∀ a b → f (a F.· b) ≡ f a G.· f b
     perserves-1 : f F.1r ≡ G.1r
 
-record IsOrderedFieldHom
+record IsOrderedFieldMor
   {ℓ ℓ' ℓₚ ℓₚ'} -- NOTE: this is a lot of levels. Can we get rid of some of these?
   (F : OrderedField {ℓ} {ℓₚ}) (G : OrderedField {ℓ'} {ℓₚ'})
   -- (let module F = OrderedField F) -- NOTE: `let` is not allowed in a telescope
@@ -328,16 +340,17 @@ record IsOrderedFieldHom
   module F = OrderedField F
   module G = OrderedField G
   field
-    isRingHom : IsRingHom (record {F}) (record {G}) f
+    isRingMor : IsRingMor (record {F}) (record {G}) f
     reflects-< : ∀ x y → f x G.< f y → x F.< y
   -- NOTE: for more properties, see https://en.wikipedia.org/wiki/Ring_homomorphism#Properties
 
-record OrderedFieldHom {ℓ ℓ' ℓₚ ℓₚ'} (F : OrderedField {ℓ} {ℓₚ}) (G : OrderedField {ℓ'} {ℓₚ'}) : Type (ℓ-max (ℓ-max ℓ ℓ') (ℓ-max ℓₚ ℓₚ')) where
-  constructor grouphom
+record OrderedFieldMor {ℓ ℓ' ℓₚ ℓₚ'} (F : OrderedField {ℓ} {ℓₚ}) (G : OrderedField {ℓ'} {ℓₚ'}) : Type (ℓ-max (ℓ-max ℓ ℓ') (ℓ-max ℓₚ ℓₚ')) where
+  constructor orderedfieldmor
   module F = OrderedField F
   module G = OrderedField G
   field
     fun : F.Carrier → G.Carrier
-    isOrderedFieldHom : IsOrderedFieldHom F G fun
+    isOrderedFieldMor : IsOrderedFieldMor F G fun
 
 -- Remark 4.3.2. The contrapositive of reflecting < means preserving ≤.
+
