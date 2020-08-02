@@ -11,7 +11,7 @@ private
 open import Cubical.Foundations.Everything renaming (_⁻¹ to _⁻¹ᵖ; assoc to ∙-assoc)
 open import Cubical.Structures.CommRing
 open import Cubical.Relation.Nullary.Base -- ¬_
-open import Cubical.Relation.Binary.Base
+open import Cubical.Relation.Binary.Base -- Rel
 open import Cubical.Data.Sum.Base renaming (_⊎_ to infixr 4 _⊎_)
 open import Cubical.Data.Sigma.Base renaming (_×_ to infixr 4 _×_)
 open import Cubical.Data.Empty renaming (elim to ⊥-elim) -- `⊥` and `elim`
@@ -322,3 +322,42 @@ module _ (OF : OrderedField {ℓ} {ℓ'}) where
     -- definition of completeness ought to be amended [80].
     
     -- NOTE: now we're back to https://github.com/agda/cubical/issues/286 ?
+
+
+-- Auke would send an email to Ayberk Tosun and Martin Escardo
+-- I could prepare a PR for the cubical standard library
+-- the cubical standard library does not supersede the standard library
+--   using setoids need not to be a shortcoming but can be a concious decision
+-- Postulating the rationals as an ordered field for which there exists a unique morphism to every other ordered field should be sufficient
+--   (we went a little bit into the coprime and quotient construction of the rational numbers)
+-- I can prepare some statements that I would like to formalize (with just guessing) to have a more concrete guidance for the necessary detail of a real number formulation
+-- the impredicative `--prop` is not equivalent to hProp
+--   therefore, one should make props explicit arguments or at least be aware of them at all times
+
+
+{-
+
+in a world where we "just have" real numbers in Agda, I would do the following:
+
+Adjoint theory
+  Vector space
+  normed space
+  Banach space
+  Inner Product space
+  unbounded Linear operator
+  adjoint linear operator
+  orthogonal decomposition of Banach spaces
+  inf-sup conditions
+  lax-milgram
+
+Local Multilinear Algebra
+  euclidean space
+  linear representation of hodge star
+  locally euclidean
+
+Global Multilinear Algebra
+  locally euclidean topological space
+  chart representation
+
+
+-}
