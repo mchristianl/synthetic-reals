@@ -352,5 +352,7 @@ record OrderedFieldMor {ℓ ℓ' ℓₚ ℓₚ'} (F : OrderedField {ℓ} {ℓₚ
     fun : F.Carrier → G.Carrier
     isOrderedFieldMor : IsOrderedFieldMor F G fun
 
+-- NOTE: f preserves P: P A ⇒ P (f A)
+--       f reflects  P: P (f A) ⇒ P A
 -- Remark 4.3.2. The contrapositive of reflecting < means preserving ≤.
 

@@ -23,18 +23,18 @@ record PoorField : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
     _·_  : Carrier → Carrier → Carrier
     -_   : Carrier → Carrier
     -- lattice
-    _<_  : Rel Carrier Carrier ℓ'
+    _<_  : Rel Carrier Carrier ℓ' -- stronger than _#_ and _≤_
     min  : Carrier → Carrier → Carrier
     max  : Carrier → Carrier → Carrier
     -- other
-    _≤_  : Rel Carrier Carrier ℓ'
-    ∣_∣ᶠ' : Carrier → Σ[ x ∈ Carrier ] 0f ≤ x
     _#_  : Rel Carrier Carrier ℓ'
+    _≤_  : Rel Carrier Carrier ℓ'
+    ∣_∣ᶠ' : Carrier → Σ[ x ∈ Carrier ] 0f ≤ x -- absolute value
     _⁻¹ᶠ : (x : Carrier) → {{x # 0f}} → Carrier
-    conj : Carrier → Carrier -- complex conjugation (only for ℂ, is the identity function on ℝ)
+    conj : Carrier → Carrier -- complex conjugation (only for ℂ; this is the identity function on ℝ)
     -- sqrt -- need that on ℝ₀⁺ to define a norm from an inner product
 
-  ∣_∣ᶠ : Carrier → Carrier
+  ∣_∣ᶠ : Carrier → Carrier -- NOTE: well, this should be "into" ℝ₀⁺
   ∣ x ∣ᶠ = fst (∣ x ∣ᶠ')
 
   _-_ : Carrier → Carrier → Carrier
@@ -59,6 +59,30 @@ record PoorField : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
 --         - the "core" of such a mechanism is to have a proper naming-scheme (because record-update basically just matches names)
 --       - "spontaneously enrich" some current context with a subset proof
 --         and then make use of the subset lemmas on elements of the "whole" set
+
+{- IDEA: for the organization of these definitions
+
+we might have some "ur"-reals
+  these are "the" "numbers"
+or even better: just "ur-numbers" to support projections from 𝕂 into ℝ₀⁺
+being part of some concrete number type is attached via a hidden instance-proof property
+  this should be similar to a typeclass mechanism in Coq or Isabelle/HOL
+  TODO: maybe, when re-reading their papers, it becomes apparent that this is how it's done in Hölzl 2013 and the Coq-Port of their work
+    because I remember them writing something like "this work makes heavy use of typeclasses"
+so we explicitly quantify over "numbers" and implicitly quantify over "properties"
+the available properties must have the same name in each different number type
+  that way we can make use of Agda's record update syntax
+  (well, there can be exceptions since it is possible to rename stuff on the fly, but it'd be more convenient if the names already match)
+we might decide NOT (!) to overload operations such as _<_ and similar
+  because having both overloaded - operations and numbers - is likely to generate resolving issues
+AND we must be very aware when a type depends on a hidden argument
+  because in that case, we need to add an explicit coercion to our result
+  so we just accept that "inconvenience" and embrace a style where these "important" arguments/instances are treated differently
+    especially they should not be used anonymously
+    and this might also embrace an anonymous-module style to create a scope that is shared by both: the declaration and the definition of something
+      This might look ugly at first but that's okay if it works out
+
+-}
 
 record IsℝField (PF : PoorField {ℓ} {ℓ'}) : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
   open PoorField PF
@@ -324,6 +348,8 @@ module _ (𝕂F : 𝕂Field {𝕂ℓ} {𝕂ℓ'}) where
     -- isMetric : IsMetric d
     -- isMetric = Lemma-1.lemma-1 𝕂F NVS
 
+  -- NOTE: there are a lot of properties for InnerProductSpaces: https://en.wikipedia.org/wiki/Inner_product_space#Norm
+
   record HilbertSpace : Type (ℓ-max (ℓ-suc ℓ) (ℓ-max 𝕂ℓ' 𝕂ℓ)) where
     field
       VS : VectorSpace 𝕂F {ℓ}
@@ -360,3 +386,29 @@ module _ (𝕂F : 𝕂Field {𝕂ℓ} {𝕂ℓ'}) where
 --   here, they start with topological spaces, where we start with the real numbers
 
 -- what about subspaces? How to formulate these?
+
+
+{-
+
+observed issues
+- subspaces
+- inclusions/coercions between different variants of "numbers"
+- conj
+- sqrt
+- topological spaces (do we need them after all?)
+  - can we follow "Hölzl 2013" ?
+- size issues:
+  the "amount" of ℓs is "high" and we are not ℓ-suc-ing to 𝕂ℓ and 𝕂ℓ'
+  but we are ℓ-suc-ing to ℓ in the definition of PoorField
+  so PoorField cannot be in ℓ-zero
+
+next-up
+- infimum and supremum on posets (and sub-posets / sub-lattices ?)
+  - we do only really need these on ℝ
+  - these do not necessarily exist in the subspace that we regard
+- morphisms on these spaces
+- (potentially) unbounded linear operators
+- algebraic and continuous dual spaces
+- Formulation of Riesz representation Theorem on Hilbert spaces
+
+-}
