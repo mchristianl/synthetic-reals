@@ -401,6 +401,7 @@ observed issues
   the "amount" of ℓs is "high" and we are not ℓ-suc-ing to 𝕂ℓ and 𝕂ℓ'
   but we are ℓ-suc-ing to ℓ in the definition of PoorField
   so PoorField cannot be in ℓ-zero
+- is IsCauchy defined for ε ∈ ℚ or for ε ∈ ℝ ?
 
 next-up
 - infimum and supremum on posets (and sub-posets / sub-lattices ?)
