@@ -20,6 +20,12 @@ open import Utils
 module Definitions where
   -- NOTE: one needs these "all-lowercase constructors" to make use of copatterns
 
+  _Preserves_⟶_ : ∀{Aℓ Bℓ ℓ ℓ'} {A : Type Aℓ} {B : Type Bℓ} → (A → B) → Rel A A ℓ → Rel B B ℓ' → Set _
+  f Preserves P ⟶ Q = ∀{x y} → P x y → Q (f x) (f y)
+  
+  _Reflects_⟶_ : ∀{Aℓ Bℓ ℓ ℓ'} {A : Type Aℓ} {B : Type Bℓ} → (A → B) → Rel A A ℓ → Rel B B ℓ' → Set _
+  f Reflects P ⟶ Q = ∀{x y} → Q (f x) (f y) → P x y
+
   -- Definition 4.1.4.
   -- - An apartness relation, denoted by #, is an irreflexive symmetric cotransitive relation.
   -- - A strict partial order, denoted by <, is an irreflexive transitive cotransitive relation.

@@ -1108,3 +1108,237 @@ lemma-4-1-12 {ℓ} {ℓ'} OF = let -- NOTE: for mentioning the ℓ and ℓ' and 
   ```
 - for some reason the instance resolution does only work in let-blocks
   I get a "Terms marked as eligible for instance search should end with a name, so 'instance' is ignored here. when checking the definition of my-instance"
+
+
+## "preserve" and "reflect"
+
+e.g. from http://www.mat.uc.pt/~mmc/courses/CategoryTheory.pdf
+>  A functor `F : A → B` preserves property (P) of  morphisms  (of  objects) if `F f` has that property whenever `f` has it
+>
+>  `[ P f ⇒ P (F f) ]`
+>
+>  A functor `F : A → C` reflects one property if `f` fulfils that property whenever `F f` does
+>
+>  `[ P (F f) ⇒ P f ]`
+
+```agda
+_Preserves_⟶_ : ∀{Aℓ Bℓ ℓ ℓ'} {A : Type Aℓ} {B : Type Bℓ} → (A → B) → Rel A A ℓ → Rel B B ℓ' → Set _
+f Preserves P ⟶ Q = ∀{x y} → P x y → Q (f x) (f y)
+
+_Reflects_⟶_ : ∀{Aℓ Bℓ ℓ ℓ'} {A : Type Aℓ} {B : Type Bℓ} → (A → B) → Rel A A ℓ → Rel B B ℓ' → Set _
+f Reflects P ⟶ Q = ∀{x y} → Q (f x) (f y) → P x y
+```
+
+there is from `Relation.Binary.Core`
+
+```agda
+  _Preserves_⟶_ : (A → B) → Rel A ℓ₁ → Rel B ℓ₂ → Set _
+  f Preserves P ⟶ Q = P =[ f ]⇒ Q
+```
+
+which is a synonym for `_=[_]⇒_`
+
+```agda
+  _=[_]⇒_ : Rel A ℓ₁ → (A → B) → Rel B ℓ₂ → Set _
+  P =[ f ]⇒ Q = P ⇒ (Q on f)
+```
+
+with `⇒`
+
+```agda
+  P ⇒ Q = ∀ {x y} → P x y → Q x y
+```
+
+and `_on_` from `Function.Base`
+
+```agda
+  _on_ : (B → B → C) → (A → B) → (A → A → C)
+  _*_ on f = λ x y → f x * f y
+```
+
+## ideas for the "number" module
+
+### naming scheme
+
+```
+ℕ ⁿ
+ℤ ᶻ
+ℚ ᶠ
+ℝ ʳ
+ℂ ᶜ
+
+𝕂 ᵏ
+
+𝕏₀⁺ᵏ
+```
+
+### notes
+
+coercion should preserve
+- identity: a ≡ b ⇔ coerce a ≡ coerce b
+- `_#_`, `_<_` and `_≤_`
+- min max and basically all other "operations"
+
+- so it is a Field-morphism
+- ..unless we are making use of ℂ which does not have the lattice properties
+- so, when we have a function like the inner product ⟨_,_⟩ : V → V → ℂ
+- which has the property that ⟨ x , x ⟩ ∈ ℝ, how do we formalize that?
+- well, we have for `z = ⟨ x , x ⟩` that `z ≡ conj z` and therefore `imag z ≡ 0`
+- so we might add `real` and `imag` to our ℂ and allow a coercion only when `imag z ≡ 0`
+
+generally we do not have back-inclusion
+
+the chain goes like ℕ ↪ ℤ ↪ ℚ ↪ ℝ ↪ ℂ
+
+ℕ, ℤ, ℚ and ℝ share `_+_`, `_·_`, the lattice-like parts `_<_`, `_≤_`, `_#_`, `min`, `max` and also `abs`
+
+
+```
+.....| ℕ ℤ ℚ ℝ ℂ | ℝ₀⁺ ℝ⁺ Finₖ
+-----|-----------|-------------
+0ᶠ   | ✓ ✓ ✓ ✓ ✓ | ✓   ✗   ✓
+1ᶠ   | ✓ ✓ ✓ ✓ ✓ | ✓   ✓   *
+_+_  | ✓ ✓ ✓ ✓ ✓ | ✓   ✓   p
+_-_  | p ✓ ✓ ✓ ✓ | p   p   p
+_·_  | ✓ ✓ ✓ ✓ ✓ | ✓   ✓   p
+_⁻¹  | ✗ ✗ * * * | *   ✓   ✗
+_<_  | ✓ ✓ ✓ ✓ ✗ | ✓   ✓   ✓
+_≤_  | ✓ ✓ ✓ ✓ ✗ | ✓   ✓   ✓
+_#_  | ✓ ✓ ✓ ✓ ✗ | ✓   ✓   ✓
+min  | ✓ ✓ ✓ ✓ ✗ | ✓   ✓   ✓
+max  | ✓ ✓ ✓ ✓ ✗ | ✓   ✓   ✓
+-----|-----------|-------------
+abs  | • ✓ ✓ ✓ ✓ | •   •   •
+sqrt | p p p * * | ✓   ✓   p
+conj | • • • • ✓ | •   •   •
+
+• = trivial
+✓ = total
+* = almost completely / special
+p = partial
+✗ = not available
+```
+
+- what about congruence classes (ℤ mod M)?
+- we might exclude ℂ from this coercion system, because they are too different since they are not an ordered field
+  - but we might have a separate just-field-coercion system that allows for 𝕂
+- the "usual" number domains are
+  - ℝ
+  - ℝ₀⁺ -- nonnegative
+  - ℝ⁺  -- nonnegative, nonzero
+  - ℚ
+  - ℚ₀⁺ -- nonnegative
+  - ℚ⁺  -- nonnegative, nonzero
+  - ℕ
+  - ℕ⁺  -- nonzero
+  - ℤ
+  - ℤ₀⁺ -- nonnegative
+  - ℤ⁺  -- nonnegative, nonzero
+  - ℂ
+  - ℂ⁺  -- nonzero
+  - 𝕂  -- ℂ or ℝ
+  - 𝕂⁺ -- nonzero
+
+- how to set up these injections?
+  - https://en.wikipedia.org/wiki/Inverse_function#Left_and_right_inverses
+    - A function f with a left inverse is necessarily injective.
+    - In classical mathematics, every injective function f with a nonempty domain necessarily has a left inverse;
+      - however, this may fail in constructive mathematics.
+    - For instance, a left inverse of the inclusion {0,1} → R of the two-element set in the reals violates indecomposability
+      - by giving a retraction of the real line to the set {0,1}.
+  - https://en.wikipedia.org/wiki/Indecomposability
+
+- partial morphisms
+  - e.g. for `x > 0` as a prerequisite for an inclusion to ℝ⁺
+    ```
+    (φ ↪ ℝ) ≅ ℝ⁺
+    Σ ℝ φ ≅ ℝ⁺
+    ```
+- Maybe we add a "new" Σ type with an implicit instance argument
+  - a function might suffice
+- we need the differing properties
+- but it is also somehow the definition of ℝ⁺
+- so can we "just" replace the carrier of ℝ⁺ to `Σ ℝ φ` ?
+  - or we define a subspace with an explicit inclusion anihilating these things
+- if we want to add 0ᶠ from ℝ to some x from ℝ⁺ (which does not contain 0ᶠ) then we might not want to have explicit inclusions
+  - `(x , 0 < x)`
+- More generally, it seems that we are tracking properties such as
+  - isNat isInt isRat isReal isNonnegative isNonzero
+- attached to the corresponding numbers
+- An inclusion into ℝ might not be necessary
+- we could do this with a small domain specific language / small coercion grammar
+
+### coercions
+
+```agda
+record Coercion' (Y : Type ℓ') (P : Y → Type ℓ'') {X : Type ℓ} (x : X) : Type (ℓ-max (ℓ-max ℓ ℓ') ℓ'') where
+  field
+    coerce' : Σ Y P
+
+instance
+  coerce-id' : {X : Type ℓ} {x : X} → Coercion' X (λ _ → Unit) {X = X} x
+  coerce-id' {x = x} = record { coerce' = x , tt }
+
+coerce : {X : Type ℓ} {Y : Type ℓ'} → (x : X) → {{c : Coercion' Y (λ _ → Y) x}}  → Y
+coerce = λ x ⦃ c ⦄ → fst (Coercion'.coerce' c)
+```
+
+- now the issue is, that while we can define operations that work on a general Number type with hidden instance arguments
+  - the output of such an operation still needs to be of "some" type
+- we cannot output the resulting number and an instance with its properties,
+  - at least not in a way where the instance is immediately taken up for instance serach
+  - e.g. in equational reasoning with `_≡⟨_⟩` which is a single term and cannot introduce additional instances mid-term
+- therefore these operations output
+
+### number hierarchy
+
+Frobenius theorem: The only finite-dimensional associative division algebras over the reals are
+- the reals themselves,
+- the complex numbers,
+- and the quaternions.
+
+"Nonzero ring" means "not the trivial ring, the ring with one element".
+
+- we have different "levels"
+  - Lattice
+    - `Finₖ ℕ ℤ ℚ ℚ₀⁺ ℚ⁺ ℝ ℝ₀⁺ ℝ⁺`
+  - OrderedCommSemiring (ring without additive inverse)
+    - `ℕ ℤ ℚ ℚ₀⁺ ℚ⁺ ℝ ℝ₀⁺ ℝ⁺`
+  - OrderedCommRing
+    - `ℤ ℚ ℝ`
+  - OrderedField (ring with multiplicative inverse for nonzero elements)
+    - `ℚ ℝ`
+- but we also have
+  - OrderedSemifield (no additive inverse, but multiplicative inverse for nonzero elements)
+    - `ℚ₀⁺ ℝ₀⁺`
+  - OrderedSemifieldWithoutZero (no additive inverse, no 0, all multiplicative inverses)
+    - `ℚ⁺ ℝ⁺`
+- for all x from a subspace of ℝ, it's "defining property" is that
+  - `Σ[ z ∈ 𝕏 ] 𝕏↪ℝ z ≡ x`
+- when we have a subspace like 𝕏₀⁺ then additionally we get
+  - `0f ≤ x`
+- and for 𝕏⁺ we get
+  - `0f < x`
+- for all these "levels" we have incusions 𝕏↪ℝ into ℝ
+  - an included element "carries" the missing properties
+
+### other approaches
+
+- reals in Coq
+  - https://arxiv.org/abs/0809.1644
+  - Kaliszyk, O'Connor 2009 - Computing with Classical Real Numbers
+  - Finally, the CReals structure is defined on top of the COrderedField structure. The full list of structures is given below.
+    ```
+    CSetoid    - constructive setoid
+    CSemiGroup - semi group
+    CMonoid    - monoid
+    CGroup     - group
+    CAbGroup   - Abelian group
+    CRing      - ring
+    CField     - field
+    COrdField  - ordered field
+    CReals     - real number structure
+    ```
+- https://perso.crans.org/cohen/CoqWS2018.pdf
+  - Cohen 2018 - Classical analysis with Coq
+  - .. has an overview of current implementations in different proof assistants
