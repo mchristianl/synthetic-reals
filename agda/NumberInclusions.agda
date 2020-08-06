@@ -114,3 +114,43 @@ record IsRFieldInclusion
     preserves-#   : ∀ x y →   x F.#   y → f x G.# f y
     reflects-#    : ∀ x y → f x G.# f y →   x F.#   y
     -- TODO: properties
+
+record Isℕ↪ℂ
+  {ℓ ℓ' ℓₚ ℓₚ'}
+  (F : ROrderedCommSemiring {ℓ} {ℓₚ}) (G : RField {ℓ'} {ℓₚ'})
+  (f : (ROrderedCommSemiring.Carrier F) → (RField.Carrier G)) : Type (ℓ-max (ℓ-max ℓ ℓ') (ℓ-max ℓₚ ℓₚ'))
+  where
+  private
+    module F = ROrderedCommSemiring F
+    module G = RField G
+  field
+    -- CommSemiringInclusion
+    preserves-0   :         f  F.0f       ≡ G.0f
+    preserves-1   :         f  F.1f       ≡ G.1f
+    preserves-+   : ∀ x y → f (x F.+ y)   ≡ f x G.+  f y
+    preserves-·   : ∀ x y → f (x F.· y)   ≡ f x G.·  f y
+    -- other
+    reflects-≡    : ∀ x y → f x   ≡ f y →   x ≡     y
+    preserves-#   : ∀ x y →   x F.#   y → f x G.# f y
+    reflects-#    : ∀ x y → f x G.# f y →   x F.#   y
+    -- TODO: properties
+
+record Isℤ↪ℂ
+  {ℓ ℓ' ℓₚ ℓₚ'}
+  (F : ROrderedCommRing {ℓ} {ℓₚ}) (G : RField {ℓ'} {ℓₚ'})
+  (f : (ROrderedCommRing.Carrier F) → (RField.Carrier G)) : Type (ℓ-max (ℓ-max ℓ ℓ') (ℓ-max ℓₚ ℓₚ'))
+  where
+  private
+    module F = ROrderedCommRing F
+    module G = RField G
+  field
+    -- CommSemiringInclusion
+    preserves-0   :         f  F.0f       ≡ G.0f
+    preserves-1   :         f  F.1f       ≡ G.1f
+    preserves-+   : ∀ x y → f (x F.+ y)   ≡ f x G.+  f y
+    preserves-·   : ∀ x y → f (x F.· y)   ≡ f x G.·  f y
+    -- other
+    reflects-≡    : ∀ x y → f x   ≡ f y →   x ≡     y
+    preserves-#   : ∀ x y →   x F.#   y → f x G.# f y
+    reflects-#    : ∀ x y → f x G.# f y →   x F.#   y
+    -- TODO: properties

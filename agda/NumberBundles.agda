@@ -84,6 +84,7 @@ record ROrderedField : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
     -- ROrderedField
     _⁻¹         : (x : Carrier) → {{ x # 0f }} → Carrier
     isROrderedField : IsROrderedField _<_ _≤_ _#_ min max 0f 1f _+_ _·_ -_ _⁻¹
+  open IsROrderedField isROrderedField public
 
 -- ℚ₀⁺ ℝ₀⁺
 record ROrderedSemifield : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
@@ -124,3 +125,5 @@ record RField : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
     -_          : Carrier → Carrier
     -- RField
     _⁻¹         : (x : Carrier) → {{ x # 0f }} → Carrier
+    isRField : IsRField _#_ 0f 1f _+_ _·_ -_ _⁻¹
+

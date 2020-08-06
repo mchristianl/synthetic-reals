@@ -101,7 +101,8 @@ _^ᶠ_ f zero x = x
 _^ᶠ_ f (suc zero) x = (f x) 
 _^ᶠ_ f (suc n) x = (f ^ᶠ n) (f x)
 
-pattern suc⁵ x = suc (suc (suc (suc (suc x))))
+private
+  pattern suc⁵ x = suc (suc (suc (suc (suc x))))
 
 NLE⁻¹ : Fin 5 → NumberLevel
 NLE⁻¹ (0 , p) = isNat
@@ -167,40 +168,40 @@ open import NumberBundles ℝℓ ℝℓ'
 
 -- NumberLevel interpretation
 Il : NumberLevel → Type ℝℓ
-Il isNat     = ℕCarrier
-Il isInt     = ℤCarrier
-Il isRat     = ℚCarrier
-Il isReal    = ℝCarrier
-Il isComplex = ℂCarrier
+Il isNat     = ℕ.ℕ
+Il isInt     = ℤ.ℤ
+Il isRat     = ℚ.ℚ
+Il isReal    = ℝ.ℝ
+Il isComplex = ℂ.ℂ
 
 -- PositivityLevel interpretation
 Ip : (nl : NumberLevel) → PositivityLevel → (x : Il nl) → Type ℝℓ'
 Ip isNat     ⁇x⁇ x =                                        Lift Unit
-Ip isNat     x#0 x = let open ROrderedCommSemiring ℕOCSR in ( x # 0f)
-Ip isNat     0≤x x = let open ROrderedCommSemiring ℕOCSR in (0f ≤  x)
-Ip isNat     0<x x = let open ROrderedCommSemiring ℕOCSR in (0f <  x)
-Ip isNat     x≤0 x = let open ROrderedCommSemiring ℕOCSR in ( x ≤ 0f)
+Ip isNat     x#0 x = let open ℕ.Bundle             ℕ.bundle in ( x # 0f)
+Ip isNat     0≤x x = let open ℕ.Bundle             ℕ.bundle in (0f ≤  x)
+Ip isNat     0<x x = let open ℕ.Bundle             ℕ.bundle in (0f <  x)
+Ip isNat     x≤0 x = let open ℕ.Bundle             ℕ.bundle in ( x ≤ 0f)
 Ip isNat     x<0 x =                                        Lift ⊥
 Ip isInt     ⁇x⁇ x =                                        Lift Unit
-Ip isInt     x#0 x = let open ROrderedCommRing     ℤOCR  in ( x # 0f)
-Ip isInt     0≤x x = let open ROrderedCommRing     ℤOCR  in (0f ≤  x)
-Ip isInt     0<x x = let open ROrderedCommRing     ℤOCR  in (0f <  x)
-Ip isInt     x≤0 x = let open ROrderedCommRing     ℤOCR  in ( x ≤ 0f)
-Ip isInt     x<0 x = let open ROrderedCommRing     ℤOCR  in ( x < 0f)
+Ip isInt     x#0 x = let open ROrderedCommRing     ℤ.Bundle in ( x # 0f)
+Ip isInt     0≤x x = let open ROrderedCommRing     ℤ.Bundle in (0f ≤  x)
+Ip isInt     0<x x = let open ROrderedCommRing     ℤ.Bundle in (0f <  x)
+Ip isInt     x≤0 x = let open ROrderedCommRing     ℤ.Bundle in ( x ≤ 0f)
+Ip isInt     x<0 x = let open ROrderedCommRing     ℤ.Bundle in ( x < 0f)
 Ip isRat     ⁇x⁇ x =                                        Lift Unit        
-Ip isRat     x#0 x = let open ROrderedField        ℚOF   in ( x # 0f)
-Ip isRat     0≤x x = let open ROrderedField        ℚOF   in (0f ≤  x)
-Ip isRat     0<x x = let open ROrderedField        ℚOF   in (0f <  x)
-Ip isRat     x≤0 x = let open ROrderedField        ℚOF   in ( x ≤ 0f)
-Ip isRat     x<0 x = let open ROrderedField        ℚOF   in ( x < 0f)
+Ip isRat     x#0 x = let open ROrderedField        ℚ.Bundle in ( x # 0f)
+Ip isRat     0≤x x = let open ROrderedField        ℚ.Bundle in (0f ≤  x)
+Ip isRat     0<x x = let open ROrderedField        ℚ.Bundle in (0f <  x)
+Ip isRat     x≤0 x = let open ROrderedField        ℚ.Bundle in ( x ≤ 0f)
+Ip isRat     x<0 x = let open ROrderedField        ℚ.Bundle in ( x < 0f)
 Ip isReal    ⁇x⁇ x =                                        Lift Unit 
-Ip isReal    x#0 x = let open ROrderedField        ℝOF   in ( x # 0f)
-Ip isReal    0≤x x = let open ROrderedField        ℝOF   in (0f ≤  x)
-Ip isReal    0<x x = let open ROrderedField        ℝOF   in (0f <  x)
-Ip isReal    x≤0 x = let open ROrderedField        ℝOF   in ( x ≤ 0f)
-Ip isReal    x<0 x = let open ROrderedField        ℝOF   in ( x < 0f)
+Ip isReal    x#0 x = let open ℝ.Bundle             ℝ.bundle in ( x # 0f)
+Ip isReal    0≤x x = let open ℝ.Bundle             ℝ.bundle in (0f ≤  x)
+Ip isReal    0<x x = let open ℝ.Bundle             ℝ.bundle in (0f <  x)
+Ip isReal    x≤0 x = let open ℝ.Bundle             ℝ.bundle in ( x ≤ 0f)
+Ip isReal    x<0 x = let open ℝ.Bundle             ℝ.bundle in ( x < 0f)
 Ip isComplex ⁇x⁇ x =                                        Lift Unit 
-Ip isComplex x#0 x = let open RField               ℂF    in ( x # 0f)
+Ip isComplex x#0 x = let open RField               ℂ.Bundle in ( x # 0f)
 Ip isComplex 0≤x x =                                        Lift ⊥
 Ip isComplex 0<x x =                                        Lift ⊥
 Ip isComplex x≤0 x =                                        Lift ⊥
@@ -209,6 +210,13 @@ Ip isComplex x<0 x =                                        Lift ⊥
 -- NumberProp interpretation
 In : NumberProp → Type (ℓ-max ℝℓ ℝℓ')
 In (level ,, positivity) = Σ (Il level) (Ip level positivity)
+
+data Number (p : NumberProp) : Type (ℓ-max ℝℓ ℝℓ') where
+  number : In p → Number p
+
+num : ∀{(l ,, p) : NumberProp} → Number (l ,, p) → Il l
+num (number p) = fst p
+
 
 -- common level
 Cl : (a : NumberLevel) → (b : NumberLevel) → NumberLevel -- Σ[ c ∈ NumberLevel ] a ≤ₙₗ c × b ≤ₙₗ c

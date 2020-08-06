@@ -29,9 +29,11 @@ open import NumberPostulates
 open import NumberStructures ℝℓ ℝℓ'
 open import NumberBundles    ℝℓ ℝℓ'
 open import NumberInclusions ℝℓ ℝℓ'
-open import NumberBlueprint  ℝℓ ℝℓ'
+open import NumberBlueprint
 
-ℝ↪ℝ : ℝCarrier → ℝCarrier
+open import NumberCoercions
+
+ℝ↪ℝ : ℝ.ℝ → ℝ.ℝ
 ℝ↪ℝ x = x
 
 {-
@@ -59,11 +61,6 @@ open import Data.Nat.Properties using (+-mono-<)
 k+x+sy≢x : ∀ k x y → ¬(k +ₙ (x +ₙ suc y) ≡ x)
 k+x+sy≢x k x y p = snotz $ sym (+-suc k y) ∙ inj-m+ {x} (+-assoc x k (suc y) ∙ (λ i → (+-comm x k) i +ₙ (suc y)) ∙ sym (+-assoc k x (suc y)) ∙ p ∙ sym (+-zero x))
 
-data Number (p : NumberProp) : Type (ℓ-max ℝℓ ℝℓ') where
-  number : In p → Number p
-
-num : ∀{(l ,, p) : NumberProp} → Number (l ,, p) → Il l
-num (number p) = fst p
 -- num {isNat     ,, p} (number (x , q)) = x
 -- num {isInt     ,, p} (number (x , q)) = x
 -- num {isRat     ,, p} (number (x , q)) = x
@@ -79,111 +76,26 @@ num (number p) = fst p
 --       `cong₂ _#_ refl x` and `cong₂ _#_ x refl` to this (together with `transport`)
 -- NOTE: maybe ℕ↪ℤ should be a postfix operation
 
+-- module _ where
+-- module ℕ' = ROrderedCommSemiring ℕ.Bundle
+-- module ℤ' = ROrderedCommRing     ℤ.Bundle
+-- module ℚ' = ROrderedField        ℚ.Bundle
+-- module ℝ' = ROrderedField        ℝ.Bundle
+-- module ℂ' = RField               ℂ.Bundle-- 
+
+  
+
+-- coerce-OCSR : ∀{l p} {ll : NumberLevel} {𝕏OCSR 𝕐OCSR : ROrderedCommSemiring {ℝℓ} {ℝℓ'}}
+--             → (x : Number (l ,, p))
+--             → {f : Il l → Il ll}
+--             → IsROrderedCommSemiringInclusion 𝕏OCSR 𝕐OCSR f
+--             → Ip ll p (f (num x))
+-- coerce-OCSR {l} {ll} {p} {𝕏OCSR} {𝕐OCSR} {f} (number (x , q)) = ?
+
 module _ where
-  module ℕ' = ROrderedCommSemiring ℕOCSR
-  module ℤ' = ROrderedCommRing     ℤOCR
-  module ℚ' = ROrderedField        ℚOF
-  module ℝ' = ROrderedField        ℝOF
-  module ℂ' = RField               ℂF
+  open ℕ.Translated
+  open ℤ.Translated
 
-  -- coerce-OCSR : ∀{l p} {ll : NumberLevel} {𝕏OCSR 𝕐OCSR : ROrderedCommSemiring {ℝℓ} {ℝℓ'}}
-  --             → (x : Number (l ,, p))
-  --             → {f : Il l → Il ll}
-  --             → IsROrderedCommSemiringInclusion 𝕏OCSR 𝕐OCSR f
-  --             → Ip ll p (f (num x))
-  -- coerce-OCSR {l} {ll} {p} {𝕏OCSR} {𝕐OCSR} {f} (number (x , q)) = ?
-
-  module _ where
-    open ℤ'
-    open IsROrderedCommSemiringInclusion ℕ↪ℤinc
-    private f = ℕ↪ℤ
-    coerce-ℕ↪ℤ : ∀{p} → (x : Number (isNat ,, p)) → Ip isInt p (ℕ↪ℤ (num x))
-    coerce-ℕ↪ℤ {⁇x⁇} (number (x , q)) = lift tt
-    coerce-ℕ↪ℤ {x#0} (number (x , q)) = transport (λ i → f x # preserves-0 i) (preserves-# _ _ q)
-    coerce-ℕ↪ℤ {0≤x} (number (x , q)) = transport (λ i → preserves-0 i ≤ f x) (preserves-≤ _ _ q)
-    coerce-ℕ↪ℤ {0<x} (number (x , q)) = transport (λ i → preserves-0 i < f x) (preserves-< _ _ q)
-    coerce-ℕ↪ℤ {x≤0} (number (x , q)) = transport (λ i → f x ≤ preserves-0 i) (preserves-≤ _ _ q)
-
-  module _ where
-    open ℚ'
-    open IsROrderedCommSemiringInclusion ℕ↪ℚinc
-    private f = ℕ↪ℚ
-    coerce-ℕ↪ℚ : ∀{p} → (x : Number (isNat ,, p)) → Ip isRat p (ℕ↪ℚ (num x))
-    coerce-ℕ↪ℚ {⁇x⁇} (number (x , q)) = lift tt
-    coerce-ℕ↪ℚ {x#0} (number (x , q)) = transport (λ i → f x # preserves-0 i) (preserves-# _ _ q) 
-    coerce-ℕ↪ℚ {0≤x} (number (x , q)) = transport (λ i → preserves-0 i ≤ f x) (preserves-≤ _ _ q) 
-    coerce-ℕ↪ℚ {0<x} (number (x , q)) = transport (λ i → preserves-0 i < f x) (preserves-< _ _ q) 
-    coerce-ℕ↪ℚ {x≤0} (number (x , q)) = transport (λ i → f x ≤ preserves-0 i) (preserves-≤ _ _ q)
-
-  module _ where
-    open ℝ'
-    open IsROrderedCommSemiringInclusion ℕ↪ℝinc
-    private f = ℕ↪ℝ
-    coerce-ℕ↪ℝ : ∀{p} → (x : Number (isNat ,, p)) → Ip isReal p (ℕ↪ℝ (num x))
-    coerce-ℕ↪ℝ {⁇x⁇} (number (x , q)) = lift tt
-    coerce-ℕ↪ℝ {x#0} (number (x , q)) = transport (λ i → f x # preserves-0 i) (preserves-# _ _ q)
-    coerce-ℕ↪ℝ {0≤x} (number (x , q)) = transport (λ i → preserves-0 i ≤ f x) (preserves-≤ _ _ q)
-    coerce-ℕ↪ℝ {0<x} (number (x , q)) = transport (λ i → preserves-0 i < f x) (preserves-< _ _ q)
-    coerce-ℕ↪ℝ {x≤0} (number (x , q)) = transport (λ i → f x ≤ preserves-0 i) (preserves-≤ _ _ q)
-
-  module _ where
-    open ℂ'
-    -- open IsRFieldInclusion ℕ↪ℝinc
-    private f = ℕ↪ℂ
-    coerce-ℕ↪ℂ : ∀{p} → (x : Number (isNat ,, p)) → Ip isComplex (availablePositivity isComplex p) (ℕ↪ℂ (num x))
-    coerce-ℕ↪ℂ {⁇x⁇} (number (x , q)) = lift tt
-    coerce-ℕ↪ℂ {x#0} (number (x , q)) = {!transport (λ i → f x # preserves-0 i) (preserves-# _ _ q)!}
-    coerce-ℕ↪ℂ {0≤x} (number (x , q)) = lift tt
-    coerce-ℕ↪ℂ {0<x} (number (x , q)) = {!!}
-    coerce-ℕ↪ℂ {x≤0} (number (x , q)) = lift tt
-
-  coerce-ℤ↪ℚ : ∀{p} → (x : Number (isInt ,, p)) → Ip isRat p (ℤ↪ℚ (num x))
-  coerce-ℤ↪ℚ {⁇x⁇} (number (x , q)) = lift tt
-  coerce-ℤ↪ℚ {x#0} (number (x , q)) = {!!}
-  coerce-ℤ↪ℚ {0≤x} (number (x , q)) = {!!}
-  coerce-ℤ↪ℚ {0<x} (number (x , q)) = {!!}
-  coerce-ℤ↪ℚ {x<0} (number (x , q)) = {!!}
-  coerce-ℤ↪ℚ {x≤0} (number (x , q)) = {!!}
-
-  coerce-ℤ↪ℝ : ∀{p} → (x : Number (isInt ,, p)) → Ip isReal p (ℤ↪ℝ (num x))
-  coerce-ℤ↪ℝ {⁇x⁇} (number (x , q)) = lift tt
-  coerce-ℤ↪ℝ {x#0} (number (x , q)) = {!!}
-  coerce-ℤ↪ℝ {0≤x} (number (x , q)) = {!!}
-  coerce-ℤ↪ℝ {0<x} (number (x , q)) = {!!}
-  coerce-ℤ↪ℝ {x<0} (number (x , q)) = {!!}
-  coerce-ℤ↪ℝ {x≤0} (number (x , q)) = {!!}
-
-  coerce-ℤ↪ℂ : ∀{p} → (x : Number (isInt ,, p)) → Ip isComplex p (ℤ↪ℂ (num x))
-  coerce-ℤ↪ℂ {⁇x⁇} (number (x , q)) = lift tt
-  coerce-ℤ↪ℂ {x#0} (number (x , q)) = {!!}
-  coerce-ℤ↪ℂ {0≤x} (number (x , q)) = {!!}
-  coerce-ℤ↪ℂ {0<x} (number (x , q)) = {!!}
-  coerce-ℤ↪ℂ {x<0} (number (x , q)) = {!!}
-  coerce-ℤ↪ℂ {x≤0} (number (x , q)) = {!!}
-
-  coerce-ℚ↪ℝ : ∀{p} → (x : Number (isRat ,, p)) → Ip isReal p (ℚ↪ℝ (num x))
-  coerce-ℚ↪ℝ {⁇x⁇} (number (x , q)) = lift tt
-  coerce-ℚ↪ℝ {x#0} (number (x , q)) = {!!}
-  coerce-ℚ↪ℝ {0≤x} (number (x , q)) = {!!}
-  coerce-ℚ↪ℝ {0<x} (number (x , q)) = {!!}
-  coerce-ℚ↪ℝ {x<0} (number (x , q)) = {!!}
-  coerce-ℚ↪ℝ {x≤0} (number (x , q)) = {!!}
-
-  coerce-ℚ↪ℂ : ∀{p} → (x : Number (isRat ,, p)) → Ip isComplex p (ℚ↪ℂ (num x))
-  coerce-ℚ↪ℂ {⁇x⁇} (number (x , q)) = lift tt
-  coerce-ℚ↪ℂ {x#0} (number (x , q)) = {!!}
-  coerce-ℚ↪ℂ {0≤x} (number (x , q)) = {!!}
-  coerce-ℚ↪ℂ {0<x} (number (x , q)) = {!!}
-  coerce-ℚ↪ℂ {x<0} (number (x , q)) = {!!}
-  coerce-ℚ↪ℂ {x≤0} (number (x , q)) = {!!}
-
-  coerce-ℝ↪ℂ : ∀{p} → (x : Number (isReal ,, p)) → Ip isComplex p (ℝ↪ℂ (num x))
-  coerce-ℝ↪ℂ {⁇x⁇} (number (x , q)) = lift tt
-  coerce-ℝ↪ℂ {x#0} (number (x , q)) = {!!}
-  coerce-ℝ↪ℂ {0≤x} (number (x , q)) = {!!}
-  coerce-ℝ↪ℂ {0<x} (number (x , q)) = {!!}
-  coerce-ℝ↪ℂ {x<0} (number (x , q)) = {!!}
-  coerce-ℝ↪ℂ {x≤0} (number (x , q)) = {!!}
 
 coerce : (from : NumberLevel)
        → (to   : NumberLevel)
@@ -224,6 +136,13 @@ coerce isComplex isReal (k , q) {p} x = ⊥-elim {A = λ _ → Number (isReal ,,
 ·-Types : NumberProp → NumberProp → NumberProp
 ·-Types (level₀ ,, pos₀) (level₁ ,, pos₁) =  (Cl level₀ level₁) ,, ·-Positivity pos₀ pos₁
 
+private
+  instance
+    z≤n' : ∀ {n}                 → zero  ≤ₙ n
+    z≤n' {n} = z≤n
+    s≤s' : ∀ {m n} {{m≤n : m ≤ₙ n}} → suc m ≤ₙ suc n
+    s≤s' {m} {n} {{m≤n}} = s≤s m≤n
+
 ⁻¹-Levels : (a : NumberLevel) → Σ[ b ∈ NumberLevel ] a ≤ₙₗ b
 ⁻¹-Levels isNat     = isRat     , it
 ⁻¹-Levels isInt     = isRat     , it
@@ -233,6 +152,14 @@ coerce isComplex isReal (k , q) {p} x = ⊥-elim {A = λ _ → Number (isReal ,,
 
 ⁻¹-Levels' : (a : NumberLevel) → NumberLevel
 ⁻¹-Levels' x = maxₙₗ' x isRat
+
+private
+  pattern X   = anyPositivity
+  pattern X⁺⁻ = isNonzero
+  pattern X₀⁺ = isNonnegative
+  pattern X⁺  = isPositive
+  pattern X⁻  = isNegative
+  pattern X₀⁻ = isNonpositive
 
 ⁻¹-Types : NumberProp → Maybe NumberProp
 ⁻¹-Types (level ,, X  ) = nothing
@@ -252,7 +179,6 @@ coerce isComplex isReal (k , q) {p} x = ⊥-elim {A = λ _ → Number (isReal ,,
 -Types (level ,, X⁺ ) = -Levels level ,, X⁻
 -Types (level ,, X⁻ ) = -Levels level ,, X⁺
 -Types (level ,, X₀⁻) = -Levels level ,, X₀⁺
-
 
 -- coerce : (level-from level-to : NumberLevel) → level-to ≤ₙₗ level-from → Il level-from → Il level-to
 -- coerce level-from level-to x = {!!}
