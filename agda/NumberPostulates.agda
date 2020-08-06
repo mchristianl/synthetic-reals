@@ -127,9 +127,7 @@ module ℕ where
   open import Agda.Builtin.Nat using () renaming (Nat to ℕ₀) public -- this makes ℕ₀ prettier in goals
   --ℕ₀ = Nat.ℕ
 
-module ℕⁿ where
-  -- open ℕ
-  open ℕ.Bundle ℕ.bundle
+module ℕⁿ = ℕ.Bundle
     renaming
     ( Carrier to ℕ
     ; _<_ to _<ⁿ_
@@ -142,9 +140,9 @@ module ℕⁿ where
     ; _+_ to _+ⁿ_
     ; _·_ to _·ⁿ_
     ; isROrderedCommSemiring to isROrderedCommSemiringⁿ
-    ) public
-  Carrier = ℕ
-  open import Agda.Builtin.Nat using () renaming (Nat to ℕ₀) public -- this makes ℕ₀ prettier in goals
+    )
+--  Carrier = ℕ
+--  open import Agda.Builtin.Nat using () renaming (Nat to ℕ₀) public -- this makes ℕ₀ prettier in goals
   
   
       
@@ -252,14 +250,14 @@ module Foo where
 -}
 
 module ℤ where
+  module Bundle = ROrderedCommRing     {ℝℓ} {ℝℓ'}
   postulate
-    Bundle  : ROrderedCommRing     {ℝℓ} {ℝℓ'}
+    bundle  : ROrderedCommRing     {ℝℓ} {ℝℓ'}
 
-  open ROrderedCommRing Bundle public
+  open Bundle bundle public
   ℤ = Carrier
   
-module ℤᶻ where
-  open ROrderedCommRing ℤ.Bundle
+module ℤᶻ = ℤ.Bundle
     renaming
     ( Carrier to ℤ
     ; _<_ to _<ᶻ_
@@ -273,43 +271,61 @@ module ℤᶻ where
     ; _·_ to _·ᶻ_
     ; -_  to -ᶻ_ 
     ; isROrderedCommRing to isROrderedCommRingᶻ
-    ) public
+    )
 
 module ℚ where
+  module Bundle = ROrderedField {ℝℓ} {ℝℓ'}
   postulate
-    Bundle   : ROrderedField        {ℝℓ} {ℝℓ'}
+    bundle   : ROrderedField        {ℝℓ} {ℝℓ'}
 
-  open ROrderedField Bundle public
+  open Bundle bundle public
   ℚ = Carrier
-  
-module ℚᶠ where
-  open ROrderedField ℚ.Bundle
-    renaming
-    ( Carrier to ℚ
-    ; _<_ to _<ᶠ_
-    ; _≤_ to _≤ᶠ_
-    ; _#_ to _#ᶠ_
-    ; min to minᶠ
-    ; max to maxᶠ
-    ; 0f  to 0ᶠ
-    ; 1f  to 1ᶠ
-    ; _+_ to _+ᶠ_
-    ; _·_ to _·ᶠ_
-    ; -_  to -ᶠ_ 
-    ; _⁻¹ to _⁻¹ᶠ
-    ; isROrderedField to isROrderedFieldᶠ
-    ) public
+
+-- NOTE: for removing an instance from an operation, it seem that we have to open that instance at the "call site"
+--       e.g. `_#_` from  `ROrderedField` get an additional argument `ℚ.bundle` to which instance it refers to
+--       so it becomes
+--         `ROrderedField._#_ ℚ.bundle (ℤ↪ℚ x) (ROrderedField.0f ℚ.bundle)`
+--       unfortunatelty this is displayed with `_#_` with infix notation in a confusing manner as
+--         `(ℚ.bundle ROrderedField.# ℤ↪ℚ x) (ROrderedField.0f ℚ.bundle)`
+--       so we need to state a
+--         `open ℚᶠ ℚ.bundle`
+--       to get a nice looking
+--          `ℤ↪ℚ x #ᶠ 0ᶠ`
+--       interestingly the `ℚ.bundle` needs to occur at the call-site
+--       when we define here 
+--         `module ℚᶠ = ℚ.Bundle ℚ.bundle`
+--       and then just call `open ℚᶠ` at the call site, this does not work out for hiding the `ℚ.bundle` in Have/Goal
+--       but luckily we can do the translation once in the "library" part and use the short idiom `open ℚᶠ ℚ.bundle` at the callsite
+-- NOTE: this also makes both the module ℤ and the type ℤ available which is possible in Agda
+--       i.e. ℤ refers to both and when using ℤ.something the module ℤ is meant
+--       this works out because modules are special "citizens" and cannot occur in places where variables occur and vice versa
+
+module ℚᶠ = ℚ.Bundle
+  renaming
+  ( Carrier to ℚ
+  ; _<_ to _<ᶠ_
+  ; _≤_ to _≤ᶠ_
+  ; _#_ to _#ᶠ_
+  ; min to minᶠ
+  ; max to maxᶠ
+  ; 0f  to 0ᶠ
+  ; 1f  to 1ᶠ
+  ; _+_ to _+ᶠ_
+  ; _·_ to _·ᶠ_
+  ; -_  to -ᶠ_ 
+  ; _⁻¹ to _⁻¹ᶠ
+  ; isROrderedField to isROrderedFieldᶠ
+  )
 
 module ℝ where
   module Bundle = ROrderedField {ℝℓ} {ℝℓ'}
   postulate
     bundle : ROrderedField {ℝℓ} {ℝℓ'}
 
-  open ROrderedField bundle public
+  open Bundle bundle public
   ℝ = Carrier
 
-module ℝʳ where
-  open ℝ.Bundle ℝ.bundle
+module ℝʳ = ℝ.Bundle
     renaming
     ( Carrier to ℝ
     ; _<_ to _<ʳ_
@@ -324,17 +340,17 @@ module ℝʳ where
     ; -_  to -ʳ_ 
     ; _⁻¹ to _⁻¹ʳ
     ; isROrderedField to isROrderedFieldʳ
-    ) public
+    )
 
 module ℂ where
+  module Bundle = RField               {ℝℓ} {ℝℓ'}
   postulate
-    Bundle    : RField               {ℝℓ} {ℝℓ'}
+    bundle    : RField               {ℝℓ} {ℝℓ'}
 
-  open RField Bundle public
+  open Bundle bundle public
   ℂ = Carrier
 
-module ℂᶜ where
-  open RField ℂ.Bundle
+module ℂᶜ = ℂ.Bundle
     renaming
     ( Carrier to ℂ
     ; _#_ to _#ᶜ_
@@ -345,38 +361,38 @@ module ℂᶜ where
     ; -_  to -ᶜ_
     ; _⁻¹ to _⁻¹ᶜ
     ; isRField to isRFieldᶜ
-    ) public
+    )
 
 postulate
   ℕ↪ℤ    : ℕ.ℕ → ℤ.ℤ
-  ℕ↪ℤinc : IsROrderedCommSemiringInclusion ℕ.bundle (record { ROrderedCommRing ℤ.Bundle }) ℕ↪ℤ
+  ℕ↪ℤinc : IsROrderedCommSemiringInclusion ℕ.bundle (record { ℤ.Bundle ℤ.bundle }) ℕ↪ℤ
 
   ℕ↪ℚ    : ℕ.ℕ → ℚ.ℚ
-  ℕ↪ℚinc : IsROrderedCommSemiringInclusion ℕ.bundle (record { ROrderedField ℚ.Bundle }) ℕ↪ℚ
+  ℕ↪ℚinc : IsROrderedCommSemiringInclusion ℕ.bundle (record { ℚ.Bundle ℚ.bundle }) ℕ↪ℚ
 
   ℕ↪ℂ    : ℕ.ℕ → ℂ.ℂ
-  ℕ↪ℂinc : Isℕ↪ℂ ℕ.bundle ℂ.Bundle ℕ↪ℂ
+  ℕ↪ℂinc : Isℕ↪ℂ ℕ.bundle ℂ.bundle ℕ↪ℂ
 
   ℕ↪ℝ    : ℕ.ℕ → ℝ.ℝ
   ℕ↪ℝinc : IsROrderedCommSemiringInclusion ℕ.bundle (record { ℝ.Bundle ℝ.bundle }) ℕ↪ℝ
 
   ℤ↪ℚ    : ℤ.ℤ → ℚ.ℚ
-  ℤ↪ℚinc : IsROrderedCommRingInclusion ℤ.Bundle (record { ROrderedField ℚ.Bundle }) ℤ↪ℚ
+  ℤ↪ℚinc : IsROrderedCommRingInclusion ℤ.bundle (record { ℚ.Bundle ℚ.bundle }) ℤ↪ℚ
 
   ℤ↪ℝ    : ℤ.ℤ → ℝ.ℝ
-  ℤ↪ℝinc : IsROrderedCommRingInclusion ℤ.Bundle (record { ℝ.Bundle ℝ.bundle }) ℤ↪ℝ
+  ℤ↪ℝinc : IsROrderedCommRingInclusion ℤ.bundle (record { ℝ.Bundle ℝ.bundle }) ℤ↪ℝ
 
   ℤ↪ℂ    : ℤ.ℤ → ℂ.ℂ
-  ℤ↪ℂinc : Isℤ↪ℂ ℤ.Bundle ℂ.Bundle ℤ↪ℂ
+  ℤ↪ℂinc : Isℤ↪ℂ ℤ.bundle ℂ.bundle ℤ↪ℂ
 
   ℚ↪ℝ    : ℚ.ℚ → ℝ.ℝ
-  ℚ↪ℝinc : IsROrderedFieldInclusion ℚ.Bundle (record { ℝ.Bundle ℝ.bundle }) ℚ↪ℝ
+  ℚ↪ℝinc : IsROrderedFieldInclusion ℚ.bundle (record { ℝ.Bundle ℝ.bundle }) ℚ↪ℝ
 
   ℚ↪ℂ    : ℚ.ℚ → ℂ.ℂ
-  ℚ↪ℂinc : IsRFieldInclusion (record { ROrderedField ℚ.Bundle }) (record { RField ℂ.Bundle }) ℚ↪ℂ
+  ℚ↪ℂinc : IsRFieldInclusion (record { ℚ.Bundle ℚ.bundle }) (record { ℂ.Bundle ℂ.bundle }) ℚ↪ℂ
 
   ℝ↪ℂ    : ℝ.ℝ → ℂ.ℂ
-  ℝ↪ℂinc : IsRFieldInclusion (record { ℝ.Bundle ℝ.bundle }) (record { RField ℂ.Bundle }) ℝ↪ℂ
+  ℝ↪ℂinc : IsRFieldInclusion (record { ℝ.Bundle ℝ.bundle }) (record { ℂ.Bundle ℂ.bundle }) ℝ↪ℂ
 
 {-
 module Translated where
