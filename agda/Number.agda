@@ -12,11 +12,16 @@ private
 open import Cubical.Foundations.Everything renaming (_⁻¹ to _⁻¹ᵖ; assoc to ∙-assoc)
 open import Cubical.Relation.Nullary.Base -- ¬_
 open import Cubical.Relation.Binary.Base -- Rel
-open import Data.Nat.Base using (ℕ) renaming (_≤_ to _≤ₙ_)
+
+-- open import Data.Nat.Base using (ℕ) renaming (_≤_ to _≤ₙ_)
+open import Cubical.Data.Nat using (ℕ; zero; suc) renaming (_+_ to _+ₙ_)
+open import Cubical.Data.Nat.Order renaming (zero-≤ to z≤n; suc-≤-suc to s≤s; _≤_ to _≤ₙ_; _<_ to _<ₙ_)
+
 open import Cubical.Data.Unit.Base -- Unit
 open import Cubical.Data.Empty -- ⊥
 open import Cubical.Data.Sum.Base renaming (_⊎_ to infixr 4 _⊎_)
 open import Cubical.Data.Sigma.Base renaming (_×_ to infixr 4 _×_)
+open import Cubical.Data.Empty renaming (elim to ⊥-elim) -- `⊥` and `elim`
 open import Cubical.Data.Maybe.Base
 
 -- open import Bundles
@@ -533,6 +538,29 @@ record RField : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
     -- RField
     _⁻¹         : (x : Carrier) → {{ x # 0f }} → Carrier
 
+record IsRFieldInclusion
+  {ℓ ℓ' ℓₚ ℓₚ'}
+  (F : RField {ℓ} {ℓₚ}) (G : RField {ℓ'} {ℓₚ'})
+  (f : (RField.Carrier F) → (RField.Carrier G)) : Type (ℓ-max (ℓ-max ℓ ℓ') (ℓ-max ℓₚ ℓₚ'))
+  where
+  private
+    module F = RField F
+    module G = RField G
+  field
+    -- CommSemiringInclusion
+    preserves-0   :         f  F.0f       ≡ G.0f
+    preserves-1   :         f  F.1f       ≡ G.1f
+    preserves-+   : ∀ x y → f (x F.+ y)   ≡ f x G.+  f y
+    preserves-·   : ∀ x y → f (x F.· y)   ≡ f x G.·  f y
+    -- other
+    reflects-≡    : ∀ x y → f x   ≡ f y →   x ≡     y
+    preserves-#   : ∀ x y →   x F.#   y → f x G.# f y
+    reflects-#    : ∀ x y → f x G.# f y →   x F.#   y
+    -- TODO: properties
+
+
+-- TODO: put these into a Postulates.agda module
+
 postulate
   ℕOCSR : ROrderedCommSemiring {ℝℓ} {ℝℓ'}
   ℤOCR  : ROrderedCommRing     {ℝℓ} {ℝℓ'}
@@ -548,14 +576,36 @@ postulate
 ℂCarrier = RField.Carrier ℂF
 
 postulate
+  ℕ↪ℤ    : ℕCarrier → ℤCarrier
+  ℕ↪ℤinc : IsROrderedCommSemiringInclusion ℕOCSR (record { ROrderedCommRing ℤOCR }) ℕ↪ℤ
+
+  ℕ↪ℚ    : ℕCarrier → ℚCarrier
+  ℕ↪ℚinc : IsROrderedCommSemiringInclusion ℕOCSR (record { ROrderedField ℚOF }) ℕ↪ℚ
+
+  ℕ↪ℂ    : ℕCarrier → ℂCarrier
+  ℕ↪ℂinc : IsRFieldInclusion (record { ROrderedCommSemiring ℕOCSR } ) (record { RField ℂF }) ℕ↪ℂ
+
   ℕ↪ℝ    : ℕCarrier → ℝCarrier
   ℕ↪ℝinc : IsROrderedCommSemiringInclusion ℕOCSR (record { ROrderedField ℝOF }) ℕ↪ℝ
+
+  ℤ↪ℚ    : ℤCarrier → ℚCarrier
+  ℤ↪ℚinc : IsROrderedCommRingInclusion ℤOCR (record { ROrderedField ℚOF }) ℤ↪ℚ
 
   ℤ↪ℝ    : ℤCarrier → ℝCarrier
   ℤ↪ℝinc : IsROrderedCommRingInclusion ℤOCR (record { ROrderedField ℝOF }) ℤ↪ℝ
 
+  ℤ↪ℂ    : ℤCarrier → ℂCarrier
+  -- ℤ↪ℂinc : IsRCommRingInclusion ℤOCR (record { RField ℂF }) ℤ↪ℂ
+
   ℚ↪ℝ    : ℚCarrier → ℝCarrier
   ℚ↪ℝinc : IsROrderedFieldInclusion ℚOF (record { ROrderedField ℝOF }) ℚ↪ℝ
+
+  ℚ↪ℂ    : ℚCarrier → ℂCarrier
+  ℚ↪ℂinc : IsRFieldInclusion (record { ROrderedField ℚOF }) (record { RField ℂF }) ℚ↪ℂ
+
+  ℝ↪ℂ    : ℝCarrier → ℂCarrier
+  ℝ↪ℂinc : IsRFieldInclusion (record { ROrderedField ℝOF }) (record { RField ℂF }) ℝ↪ℂ
+
 
 ℝ↪ℝ : ℝCarrier → ℝCarrier
 ℝ↪ℝ x = x
@@ -572,13 +622,126 @@ postulate
   -}
 
 module Numbers where
-  open import Agda.Builtin.Bool renaming (true to T; false to F)
+  open import Cubical.Data.Fin.Base
+  -- import Cubical.Data.Fin.Properties
+  open import Cubical.Data.Nat using (ℕ; zero; suc) renaming (_+_ to _+ₙ_)
+  open import Cubical.Data.Nat.Properties using (+-suc; injSuc; snotz; +-comm; +-assoc; +-zero; inj-m+)
+  open import Cubical.Data.Nat.Order renaming (zero-≤ to z≤n; suc-≤-suc to s≤s; _≤_ to _≤ₙ_; _<_ to _<ₙ_; _≟_ to _≟ₙ_)
+  -- open import Data.Nat.Base using (ℕ; z≤n; s≤s; zero; suc) renaming (_≤_ to _≤ₙ_; _<_ to _<ₙ_; _+_ to _+ₙ_)
+  open import Agda.Builtin.Bool renaming (true to TT; false to FF)
+  open import Function.Base using (it; _$_) -- instance search
+  import Cubical.Data.Fin.Properties
+  open import Data.Nat.Properties using (+-mono-<)
+
+  minₙ : ℕ → ℕ → ℕ
+  minₙ a b with a ≟ₙ b
+  ... | lt a<b = a 
+  ... | eq a≡b = a 
+  ... | gt b<a = b 
+
+  maxₙ : ℕ → ℕ → ℕ
+  maxₙ a b with a ≟ₙ b
+  ... | lt a<b = b
+  ... | eq a≡b = a
+  ... | gt b<a = a
+
+  private
+    instance
+      z≤n' : ∀ {n}                 → zero  ≤ₙ n
+      z≤n' {n} = z≤n
+      s≤s' : ∀ {m n} {{m≤n : m ≤ₙ n}} → suc m ≤ₙ suc n
+      s≤s' {m} {n} {{m≤n}} = s≤s m≤n
+
+  ¬1<0 : ¬(1 <ₙ 0)
+  ¬1<0 (k , p) = snotz (sym (+-suc k 1) ∙ p) 
+  --¬1<0 = λ ()
+
+  suc-preserves-<ₙ : ∀{x y} → x <ₙ y → suc x <ₙ suc y
+  suc-preserves-<ₙ {x} {y} p = s≤s p
+  suc-reflects-<ₙ : ∀{x y} → suc x <ₙ suc y → x <ₙ y
+  suc-reflects-<ₙ {x} {y} (k , p) = k , (injSuc (sym (+-suc k (suc x)) ∙ p))
+  -- suc-reflects-<ₙ {x} {y} (s≤s p) = p
+
+  ¬[k+x<k] : ∀ k x → ¬(k +ₙ x <ₙ k)
+  ¬[k+x<k] k x (z , p) = snotz $ sym $ inj-m+ {k} {0} (+-zero k ∙ sym p ∙ +-suc z (k +ₙ x) ∙ (λ i → suc (+-comm z (k +ₙ x) i)) ∙ (λ i → suc (+-assoc k x z (~ i))) ∙ sym (+-suc k (x +ₙ z)))
+  
+  -- ¬[k+x<k] (zero ) (zero )   = λ ()
+  -- ¬[k+x<k] (suc k) (zero ) p = ¬[k+x<k] _ _ (suc-reflects-<ₙ p)
+  -- ¬[k+x<k] (zero ) (suc x)   = λ ()
+  -- ¬[k+x<k] (suc k) (suc x) p = ¬[k+x<k] _ _ (suc-reflects-<ₙ p)
+
   data NumberLevel : Type where
     isNat     : NumberLevel
     isInt     : NumberLevel
     isRat     : NumberLevel
     isReal    : NumberLevel
-    isComplex : NumberLevel
+    isComplex : NumberLevel  
+
+  -- NumberLevelEnumeration
+  NLE' : NumberLevel → ℕ
+  NLE' isNat     = 0
+  NLE' isInt     = 1
+  NLE' isRat     = 2
+  NLE' isReal    = 3
+  NLE' isComplex = 4
+
+  NLE⁻¹' : ℕ → NumberLevel
+  NLE⁻¹' 0 = isNat
+  NLE⁻¹' 1 = isInt
+  NLE⁻¹' 2 = isRat
+  NLE⁻¹' 3 = isReal
+  NLE⁻¹' 4 = isComplex
+  NLE⁻¹' x = isComplex
+  -- NLE⁻¹' (suc⁵ fst₁) = isComplex
+
+  NLE : NumberLevel → Fin 5
+  NLE isNat     = 0 , it
+  NLE isInt     = 1 , it
+  NLE isRat     = 2 , it
+  NLE isReal    = 3 , it
+  NLE isComplex = 4 , it
+
+  _^ᶠ_ : ∀{A : Type ℓ} → (A → A) → ℕ → A → A
+  _^ᶠ_ f zero x = x
+  _^ᶠ_ f (suc zero) x = (f x) 
+  _^ᶠ_ f (suc n) x = (f ^ᶠ n) (f x)
+
+  pattern suc⁵ x = suc (suc (suc (suc (suc x))))
+
+  NLE⁻¹ : Fin 5 → NumberLevel
+  NLE⁻¹ (0 , p) = isNat
+  NLE⁻¹ (1 , p) = isInt
+  NLE⁻¹ (2 , p) = isRat
+  NLE⁻¹ (3 , p) = isReal
+  NLE⁻¹ (4 , p) = isComplex
+  NLE⁻¹ (suc⁵ fst₁ , p) = ⊥-elim {A =  λ _ → NumberLevel} $ ¬[k+x<k] 5 fst₁ p
+
+  NLE-id¹ : ∀ x → fst (NLE (NLE⁻¹ x)) ≡ fst x
+  NLE-id¹ (0 , p) = refl
+  NLE-id¹ (1 , p) = refl
+  NLE-id¹ (2 , p) = refl
+  NLE-id¹ (3 , p) = refl
+  NLE-id¹ (4 , p) = refl
+  NLE-id¹ (suc⁵ fst₁ , p) = ⊥-elim {A =  λ _ → fst (NLE (NLE⁻¹ (suc⁵ fst₁ , p))) ≡ suc⁵ fst₁} $ ¬[k+x<k] 5 fst₁ p
+
+  NLE-id² : ∀ x → NLE⁻¹ (NLE x) ≡ x
+  NLE-id² isNat     = refl 
+  NLE-id² isInt     = refl
+  NLE-id² isRat     = refl
+  NLE-id² isReal    = refl
+  NLE-id² isComplex = refl
+
+  _≤ₙₗ_ : NumberLevel → NumberLevel → Type
+  a ≤ₙₗ b = fst (NLE a) ≤ₙ fst (NLE b)
+
+  _≤ₙₗ'_ : NumberLevel → NumberLevel → Type
+  a ≤ₙₗ' b = (NLE' a) ≤ₙ (NLE' b)
+
+  minₙₗ' : NumberLevel → NumberLevel → NumberLevel
+  minₙₗ' a b = NLE⁻¹' (minₙ (NLE' a) (NLE' b))
+
+  maxₙₗ' : NumberLevel → NumberLevel → NumberLevel
+  maxₙₗ' a b = NLE⁻¹' (maxₙ (NLE' a) (NLE' b))
 
   data PositivityLevel : Type where
     anyPositivity : PositivityLevel
@@ -650,16 +813,17 @@ module Numbers where
   In (level ,, positivity) = Σ (Il level) (Ip level positivity)
 
   -- common level
-  Cl : NumberLevel → NumberLevel → NumberLevel
-  Cl _         isComplex = isComplex
-  Cl isComplex _         = isComplex
-  Cl _         isReal    = isReal
-  Cl isReal    _         = isReal
-  Cl _         isRat     = isRat
-  Cl isRat     _         = isRat
-  Cl _         isInt     = isInt
-  Cl isInt     _         = isInt
-  Cl isNat     isNat     = isNat
+  Cl : (a : NumberLevel) → (b : NumberLevel) → NumberLevel -- Σ[ c ∈ NumberLevel ] a ≤ₙₗ c × b ≤ₙₗ c
+  Cl a b = maxₙₗ' a b
+  -- Cl _         isComplex = isComplex
+  -- Cl isComplex _         = isComplex
+  -- Cl _         isReal    = isReal
+  -- Cl isReal    _         = isReal
+  -- Cl _         isRat     = isRat
+  -- Cl isRat     _         = isRat
+  -- Cl _         isInt     = isInt
+  -- Cl isInt     _         = isInt
+  -- Cl isNat     isNat     = isNat
 
   private
     pattern X   = anyPositivity
@@ -679,15 +843,17 @@ module Numbers where
   +-Positivity _   X   = X  
   +-Positivity X   _   = X  
   +-Positivity _   X⁺⁻ = X  
-  +-Positivity X⁺⁻ _   = X  
+  +-Positivity X⁺⁻ _   = X
+  -- clauses with same sign
   +-Positivity X₀⁺ X₀⁺ = X₀⁺ 
   +-Positivity X₀⁻ X₀⁻ = X₀⁻ 
   +-Positivity X₀⁺ X⁺  = X⁺  
   +-Positivity X⁺  X₀⁺ = X⁺  
   +-Positivity X⁺  X⁺  = X⁺  
   +-Positivity X₀⁻ X⁻  = X⁻ 
-  +-Positivity X⁻  X⁻  = X⁻  
-  -- remaining clauses
+  +-Positivity X⁻  X⁻  = X⁻
+  +-Positivity X⁻  X₀⁻ = X⁻
+  -- remaining clauses with alternating sign
   +-Positivity X₀⁻ X₀⁺ = X  
   +-Positivity X₀⁺ X₀⁻ = X  
   +-Positivity X⁻  X₀⁺ = X  
@@ -696,7 +862,6 @@ module Numbers where
   +-Positivity X⁺  X⁻  = X  
   +-Positivity X₀⁻ X⁺  = X  
   +-Positivity X⁺  X₀⁻ = X  
-  +-Positivity X⁻  X₀⁻ = X  
 
   ·-Positivity : PositivityLevel → PositivityLevel → PositivityLevel
   ·-Positivity _   X   = X  
@@ -705,55 +870,238 @@ module Numbers where
   ·-Positivity X⁺⁻ X₀⁺ = X
   ·-Positivity X₀⁻ X⁺⁻ = X 
   ·-Positivity X⁺⁻ X₀⁻ = X
-  
+  -- multiplying nonzero numbers gives a nonzero number
   ·-Positivity X⁺⁻ X⁺⁻ = X⁺⁻ 
   ·-Positivity X⁺  X⁺⁻ = X⁺⁻ 
   ·-Positivity X⁺⁻ X⁺  = X⁺⁻
   ·-Positivity X⁻  X⁺⁻ = X⁺⁻
   ·-Positivity X⁺⁻ X⁻  = X⁺⁻
-  
+  -- multiplying positive numbers gives a positive number
   ·-Positivity X₀⁺ X₀⁺ = X₀⁺ 
   ·-Positivity X₀⁺ X⁺  = X₀⁺ 
   ·-Positivity X⁺  X₀⁺ = X₀⁺ 
   ·-Positivity X⁺  X⁺  = X⁺
-
+  -- multiplying negative numbers gives a negative number
   ·-Positivity X₀⁻ X⁻  = X₀⁺
   ·-Positivity X⁻  X₀⁻ = X₀⁺
   ·-Positivity X₀⁻ X₀⁻ = X₀⁺  
   ·-Positivity X⁻  X⁻  = X⁺ 
-
+  -- multiplying a positive and a negative number gives a negative number
   ·-Positivity X⁻  X₀⁺ = X₀⁻
   ·-Positivity X₀⁺ X⁻  = X₀⁻
   ·-Positivity X₀⁻ X⁺  = X₀⁻
   ·-Positivity X⁺  X₀⁻ = X₀⁻
   ·-Positivity X₀⁻ X₀⁺ = X₀⁻
   ·-Positivity X₀⁺ X₀⁻ = X₀⁻
-
   ·-Positivity X⁻  X⁺  = X⁻ 
   ·-Positivity X⁺  X⁻  = X⁻
 
+  -- NOTE: well, for 15 allowed coercions, we might just enumerate them
+  --   unfortunately with overlapping patterns a style as in `Cl` is not possible
+  --   we need to explicitly write out all the 5×5 combinations
+  --   or, we implement a min operator which might work even with overlapping patterns
+
+  k+x+sy≢x : ∀ k x y → ¬(k +ₙ (x +ₙ suc y) ≡ x)
+  k+x+sy≢x k x y p = snotz $ sym (+-suc k y) ∙ inj-m+ {x} (+-assoc x k (suc y) ∙ (λ i → (+-comm x k) i +ₙ (suc y)) ∙ sym (+-assoc k x (suc y)) ∙ p ∙ sym (+-zero x))
+
+  data Number (p : NumberProp) : Type (ℓ-max ℝℓ ℝℓ') where
+    number : In p → Number p
+
+  num : ∀{(l ,, p) : NumberProp} → Number (l ,, p) → Il l
+  num (number p) = fst p
+  -- num {isNat     ,, p} (number (x , q)) = x
+  -- num {isInt     ,, p} (number (x , q)) = x
+  -- num {isRat     ,, p} (number (x , q)) = x
+  -- num {isReal    ,, p} (number (x , q)) = x
+  -- num {isComplex ,, p} (number (x , q)) = x
+
+  -- this narrows the to-be-preserved properties down to the properties that are available
+  -- it only affects ℂ where we do not have < and ≤
+  availablePositivity : NumberLevel → PositivityLevel → PositivityLevel
+  availablePositivity isNat      p  =  p
+  availablePositivity isInt      p  =  p
+  availablePositivity isRat      p  =  p
+  availablePositivity isReal     p  =  p
+  availablePositivity isComplex ⁇x⁇ = ⁇x⁇
+  availablePositivity isComplex x#0 = x#0
+  availablePositivity isComplex 0≤x = ⁇x⁇
+  availablePositivity isComplex 0<x = x#0
+  availablePositivity isComplex x<0 = x#0
+  availablePositivity isComplex x≤0 = ⁇x⁇
+
+  -- TODO: name this "inject" instead of "coerce"
+  -- TODO: make the module ℤ and the Carrier ℤ.ℤ
+  -- TODO: for a binary relation `a # b` it would be nice to have a way to compose ≡-pathes to the left and the right
+  --       similar to how ∙ can be used for pathes
+  --       this reasoning might extend to transitive relations
+  --       `cong₂ _#_ refl x` and `cong₂ _#_ x refl` to this (together with `transport`)
+  -- NOTE: maybe ℕ↪ℤ should be a postfix operation
+
+  module _ where
+    module ℕ' = ROrderedCommSemiring ℕOCSR
+    module ℤ' = ROrderedCommRing     ℤOCR
+    module ℚ' = ROrderedField        ℚOF
+    module ℝ' = ROrderedField        ℝOF
+    module ℂ' = RField               ℂF
+
+    -- coerce-OCSR : ∀{l p} {ll : NumberLevel} {𝕏OCSR 𝕐OCSR : ROrderedCommSemiring {ℝℓ} {ℝℓ'}}
+    --             → (x : Number (l ,, p))
+    --             → {f : Il l → Il ll}
+    --             → IsROrderedCommSemiringInclusion 𝕏OCSR 𝕐OCSR f
+    --             → Ip ll p (f (num x))
+    -- coerce-OCSR {l} {ll} {p} {𝕏OCSR} {𝕐OCSR} {f} (number (x , q)) = ?
+    
+    module _ where
+      open ℤ'
+      open IsROrderedCommSemiringInclusion ℕ↪ℤinc
+      private f = ℕ↪ℤ
+      coerce-ℕ↪ℤ : ∀{p} → (x : Number (isNat ,, p)) → Ip isInt p (ℕ↪ℤ (num x))
+      coerce-ℕ↪ℤ {⁇x⁇} (number (x , q)) = lift tt
+      coerce-ℕ↪ℤ {x#0} (number (x , q)) = transport (λ i → f x # preserves-0 i) (preserves-# _ _ q)
+      coerce-ℕ↪ℤ {0≤x} (number (x , q)) = transport (λ i → preserves-0 i ≤ f x) (preserves-≤ _ _ q)
+      coerce-ℕ↪ℤ {0<x} (number (x , q)) = transport (λ i → preserves-0 i < f x) (preserves-< _ _ q)
+      coerce-ℕ↪ℤ {x≤0} (number (x , q)) = transport (λ i → f x ≤ preserves-0 i) (preserves-≤ _ _ q)
+
+    module _ where
+      open ℚ'
+      open IsROrderedCommSemiringInclusion ℕ↪ℚinc
+      private f = ℕ↪ℚ
+      coerce-ℕ↪ℚ : ∀{p} → (x : Number (isNat ,, p)) → Ip isRat p (ℕ↪ℚ (num x))
+      coerce-ℕ↪ℚ {⁇x⁇} (number (x , q)) = lift tt
+      coerce-ℕ↪ℚ {x#0} (number (x , q)) = transport (λ i → f x # preserves-0 i) (preserves-# _ _ q) 
+      coerce-ℕ↪ℚ {0≤x} (number (x , q)) = transport (λ i → preserves-0 i ≤ f x) (preserves-≤ _ _ q) 
+      coerce-ℕ↪ℚ {0<x} (number (x , q)) = transport (λ i → preserves-0 i < f x) (preserves-< _ _ q) 
+      coerce-ℕ↪ℚ {x≤0} (number (x , q)) = transport (λ i → f x ≤ preserves-0 i) (preserves-≤ _ _ q)
+
+    module _ where
+      open ℝ'
+      open IsROrderedCommSemiringInclusion ℕ↪ℝinc
+      private f = ℕ↪ℝ
+      coerce-ℕ↪ℝ : ∀{p} → (x : Number (isNat ,, p)) → Ip isReal p (ℕ↪ℝ (num x))
+      coerce-ℕ↪ℝ {⁇x⁇} (number (x , q)) = lift tt
+      coerce-ℕ↪ℝ {x#0} (number (x , q)) = transport (λ i → f x # preserves-0 i) (preserves-# _ _ q)
+      coerce-ℕ↪ℝ {0≤x} (number (x , q)) = transport (λ i → preserves-0 i ≤ f x) (preserves-≤ _ _ q)
+      coerce-ℕ↪ℝ {0<x} (number (x , q)) = transport (λ i → preserves-0 i < f x) (preserves-< _ _ q)
+      coerce-ℕ↪ℝ {x≤0} (number (x , q)) = transport (λ i → f x ≤ preserves-0 i) (preserves-≤ _ _ q)
+
+    module _ where
+      open ℂ'
+      -- open IsRFieldInclusion ℕ↪ℝinc
+      private f = ℕ↪ℂ
+      coerce-ℕ↪ℂ : ∀{p} → (x : Number (isNat ,, p)) → Ip isComplex (availablePositivity isComplex p) (ℕ↪ℂ (num x))
+      coerce-ℕ↪ℂ {⁇x⁇} (number (x , q)) = lift tt
+      coerce-ℕ↪ℂ {x#0} (number (x , q)) = {!transport (λ i → f x # preserves-0 i) (preserves-# _ _ q)!}
+      coerce-ℕ↪ℂ {0≤x} (number (x , q)) = lift tt
+      coerce-ℕ↪ℂ {0<x} (number (x , q)) = {!!}
+      coerce-ℕ↪ℂ {x≤0} (number (x , q)) = lift tt
+
+    coerce-ℤ↪ℚ : ∀{p} → (x : Number (isInt ,, p)) → Ip isRat p (ℤ↪ℚ (num x))
+    coerce-ℤ↪ℚ {⁇x⁇} (number (x , q)) = lift tt
+    coerce-ℤ↪ℚ {x#0} (number (x , q)) = {!!}
+    coerce-ℤ↪ℚ {0≤x} (number (x , q)) = {!!}
+    coerce-ℤ↪ℚ {0<x} (number (x , q)) = {!!}
+    coerce-ℤ↪ℚ {x<0} (number (x , q)) = {!!}
+    coerce-ℤ↪ℚ {x≤0} (number (x , q)) = {!!}
+
+    coerce-ℤ↪ℝ : ∀{p} → (x : Number (isInt ,, p)) → Ip isReal p (ℤ↪ℝ (num x))
+    coerce-ℤ↪ℝ {⁇x⁇} (number (x , q)) = lift tt
+    coerce-ℤ↪ℝ {x#0} (number (x , q)) = {!!}
+    coerce-ℤ↪ℝ {0≤x} (number (x , q)) = {!!}
+    coerce-ℤ↪ℝ {0<x} (number (x , q)) = {!!}
+    coerce-ℤ↪ℝ {x<0} (number (x , q)) = {!!}
+    coerce-ℤ↪ℝ {x≤0} (number (x , q)) = {!!}
+
+    coerce-ℤ↪ℂ : ∀{p} → (x : Number (isInt ,, p)) → Ip isComplex p (ℤ↪ℂ (num x))
+    coerce-ℤ↪ℂ {⁇x⁇} (number (x , q)) = lift tt
+    coerce-ℤ↪ℂ {x#0} (number (x , q)) = {!!}
+    coerce-ℤ↪ℂ {0≤x} (number (x , q)) = {!!}
+    coerce-ℤ↪ℂ {0<x} (number (x , q)) = {!!}
+    coerce-ℤ↪ℂ {x<0} (number (x , q)) = {!!}
+    coerce-ℤ↪ℂ {x≤0} (number (x , q)) = {!!}
+
+    coerce-ℚ↪ℝ : ∀{p} → (x : Number (isRat ,, p)) → Ip isReal p (ℚ↪ℝ (num x))
+    coerce-ℚ↪ℝ {⁇x⁇} (number (x , q)) = lift tt
+    coerce-ℚ↪ℝ {x#0} (number (x , q)) = {!!}
+    coerce-ℚ↪ℝ {0≤x} (number (x , q)) = {!!}
+    coerce-ℚ↪ℝ {0<x} (number (x , q)) = {!!}
+    coerce-ℚ↪ℝ {x<0} (number (x , q)) = {!!}
+    coerce-ℚ↪ℝ {x≤0} (number (x , q)) = {!!}
+
+    coerce-ℚ↪ℂ : ∀{p} → (x : Number (isRat ,, p)) → Ip isComplex p (ℚ↪ℂ (num x))
+    coerce-ℚ↪ℂ {⁇x⁇} (number (x , q)) = lift tt
+    coerce-ℚ↪ℂ {x#0} (number (x , q)) = {!!}
+    coerce-ℚ↪ℂ {0≤x} (number (x , q)) = {!!}
+    coerce-ℚ↪ℂ {0<x} (number (x , q)) = {!!}
+    coerce-ℚ↪ℂ {x<0} (number (x , q)) = {!!}
+    coerce-ℚ↪ℂ {x≤0} (number (x , q)) = {!!}
+
+    coerce-ℝ↪ℂ : ∀{p} → (x : Number (isReal ,, p)) → Ip isComplex p (ℝ↪ℂ (num x))
+    coerce-ℝ↪ℂ {⁇x⁇} (number (x , q)) = lift tt
+    coerce-ℝ↪ℂ {x#0} (number (x , q)) = {!!}
+    coerce-ℝ↪ℂ {0≤x} (number (x , q)) = {!!}
+    coerce-ℝ↪ℂ {0<x} (number (x , q)) = {!!}
+    coerce-ℝ↪ℂ {x<0} (number (x , q)) = {!!}
+    coerce-ℝ↪ℂ {x≤0} (number (x , q)) = {!!}
+
+  coerce : (from : NumberLevel)
+         → (to   : NumberLevel)
+         → from ≤ₙₗ' to
+         → ∀{p}
+         → Number (from ,, availablePositivity from p)
+         → Number (to   ,, availablePositivity to   p)
+  coerce isNat     isNat     q {p} x = x 
+  coerce isNat     isInt     q {p} x = number (ℕ↪ℤ (num x) , coerce-ℕ↪ℤ x)
+  coerce isNat     isRat     q {p} x = {! ℕ↪ℚ !}
+  coerce isNat     isReal    q {p} x = {! ℕ↪ℝ !}
+  coerce isNat     isComplex q {p} x = {! ℕ↪ℂ !}
+  coerce isInt     isInt     q {p} x = x 
+  coerce isInt     isRat     q {p} x = {! ℤ↪ℚ !}
+  coerce isInt     isReal    q {p} x = {! ℤ↪ℝ !}
+  coerce isInt     isComplex q {p} x = {! ℤ↪ℂ !}
+  coerce isRat     isRat     q {p} x = x 
+  coerce isRat     isReal    q {p} x = {! ℚ↪ℝ !}
+  coerce isRat     isComplex q {p} x = {! ℚ↪ℂ !}
+  coerce isReal    isReal    q {p} x = x 
+  coerce isReal    isComplex q {p} x = {! ℝ↪ℂ !}
+  coerce isComplex isComplex q {p} x = x 
+  --coerce x         y         = nothing
+  coerce isInt     isNat  (k , q) {p} x = ⊥-elim {A = λ _ → Number (isNat  ,, p)} (k+x+sy≢x _ _ _ q)
+  coerce isRat     isNat  (k , q) {p} x = ⊥-elim {A = λ _ → Number (isNat  ,, p)} (k+x+sy≢x _ _ _ q)  
+  coerce isRat     isInt  (k , q) {p} x = ⊥-elim {A = λ _ → Number (isInt  ,, p)} (k+x+sy≢x _ _ _ q)
+  coerce isReal    isNat  (k , q) {p} x = ⊥-elim {A = λ _ → Number (isNat  ,, p)} (k+x+sy≢x _ _ _ q)
+  coerce isReal    isInt  (k , q) {p} x = ⊥-elim {A = λ _ → Number (isInt  ,, p)} (k+x+sy≢x _ _ _ q)
+  coerce isReal    isRat  (k , q) {p} x = ⊥-elim {A = λ _ → Number (isRat  ,, p)} (k+x+sy≢x _ _ _ q)
+  coerce isComplex isNat  (k , q) {p} x = ⊥-elim {A = λ _ → Number (isNat  ,, p)} (k+x+sy≢x _ _ _ q)
+  coerce isComplex isInt  (k , q) {p} x = ⊥-elim {A = λ _ → Number (isInt  ,, p)} (k+x+sy≢x _ _ _ q)
+  coerce isComplex isRat  (k , q) {p} x = ⊥-elim {A = λ _ → Number (isRat  ,, p)} (k+x+sy≢x _ _ _ q)
+  coerce isComplex isReal (k , q) {p} x = ⊥-elim {A = λ _ → Number (isReal ,, p)} (k+x+sy≢x _ _ _ q)
+
   +-Types : NumberProp → NumberProp → NumberProp
-  +-Types (level₀ ,, pos₀) (level₁ ,, pos₁) = Cl level₀ level₁ ,, +-Positivity pos₀ pos₁
+  +-Types (level₀ ,, pos₀) (level₁ ,, pos₁) = (Cl level₀ level₁) ,, +-Positivity pos₀ pos₁
 
   ·-Types : NumberProp → NumberProp → NumberProp
-  ·-Types (level₀ ,, pos₀) (level₁ ,, pos₁) = Cl level₀ level₁ ,, ·-Positivity pos₀ pos₁
+  ·-Types (level₀ ,, pos₀) (level₁ ,, pos₁) =  (Cl level₀ level₁) ,, ·-Positivity pos₀ pos₁
 
-  ⁻¹-Levels : NumberLevel → NumberLevel
-  ⁻¹-Levels isNat     = isRat
-  ⁻¹-Levels isInt     = isRat
-  ⁻¹-Levels isRat     = isRat
-  ⁻¹-Levels isReal    = isReal
-  ⁻¹-Levels isComplex = isComplex
+  ⁻¹-Levels : (a : NumberLevel) → Σ[ b ∈ NumberLevel ] a ≤ₙₗ b
+  ⁻¹-Levels isNat     = isRat     , it
+  ⁻¹-Levels isInt     = isRat     , it
+  ⁻¹-Levels isRat     = isRat     , it
+  ⁻¹-Levels isReal    = isReal    , it
+  ⁻¹-Levels isComplex = isComplex , it
+
+  ⁻¹-Levels' : (a : NumberLevel) → NumberLevel
+  ⁻¹-Levels' x = maxₙₗ' x isRat
   
   ⁻¹-Types : NumberProp → Maybe NumberProp
   ⁻¹-Types (level ,, X  ) = nothing
   ⁻¹-Types (level ,, X₀⁺) = nothing
   ⁻¹-Types (level ,, X₀⁻) = nothing
-  ⁻¹-Types (level ,, p  ) = just (⁻¹-Levels level ,, p)
+  ⁻¹-Types (level ,, p  ) = just (fst (⁻¹-Levels level) ,, p)
   
   -Levels : NumberLevel → NumberLevel
-  -Levels isNat = isInt
-  -Levels x     = x
+  -Levels x = minₙₗ' x isInt
+  -- -Levels isNat = isInt
+  -- -Levels x     = x
 
   -Types : NumberProp → NumberProp
   -Types (level ,, X  ) = -Levels level ,, X
@@ -763,18 +1111,19 @@ module Numbers where
   -Types (level ,, X⁻ ) = -Levels level ,, X⁺
   -Types (level ,, X₀⁻) = -Levels level ,, X₀⁺
 
-  data Number (p : NumberProp) : Type (ℓ-max ℝℓ ℝℓ') where
-    number : In p → Number p
 
-  num : ∀{(l ,, p) : NumberProp} → Number (l ,, p) → Il l
-  num {isNat     ,, p} (number (x , q)) = x
-  num {isInt     ,, p} (number (x , q)) = x
-  num {isRat     ,, p} (number (x , q)) = x
-  num {isReal    ,, p} (number (x , q)) = x
-  num {isComplex ,, p} (number (x , q)) = x
+  -- coerce : (level-from level-to : NumberLevel) → level-to ≤ₙₗ level-from → Il level-from → Il level-to
+  -- coerce level-from level-to x = {!!}
+  
+  --coerce : ∀{p} → (level-from level-to : NumberLevel) → level-from ≤ₙₗ' level-to → Number (level-from ,, p) → Number (level-to ,, p)
+  --coerce {p} level-from level-to l<l (number (x , q)) = {!!}
+
+  _+'_ : ∀{l p q} → Number (l ,, p) → Number (l ,, q) → Number (l ,, +-Positivity p q)
+  _+'_ a b = {!!}
 
   _+_ : ∀{p q} → Number p → Number q → Number (+-Types p q)
-  _+_ {xlevel ,, xpos} {ylevel ,, ypos} (number (x , xp)) (number (y , yp)) = {!!}
+  _+_ {xlevel ,, xpos} {ylevel ,, ypos} (number (x , xp)) (number (y , yp)) = number ({!!} , {!!})
+
 
 module _ where
   open ROrderedField ℝOF
@@ -819,7 +1168,7 @@ module _ where
   totype Tℝ⁺  = (x : ℝCarrier) → 0f < x
   
   +-table : NumberType → NumberType → NumberType
-  +-table x y = {!!}
+  +-table x y = y
 
 
 module GenericOperations where
@@ -906,8 +1255,8 @@ instance
   coerce-id' : {X : Type ℓ} {x : X} → Coercion' X (λ _ → Unit) {X = X} x
   coerce-id' {x = x} = record { coerce' = x , tt }
 
-coerce : {X : Type ℓ} {Y : Type ℓ'} → (x : X) → {{c : Coercion' Y {!!} x}}  → Y
-coerce = {!!}
+coerce : {X : Type ℓ} {Y : Type ℓ'} → (x : X) → {{c : Coercion' Y (λ _ → Y) x}}  → Y
+coerce = λ x ⦃ c ⦄ → fst (Coercion'.coerce' c)
 
 {-
 

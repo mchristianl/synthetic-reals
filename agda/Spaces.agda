@@ -403,6 +403,22 @@ observed issues
   so PoorField cannot be in ℓ-zero
 - is IsCauchy defined for ε ∈ ℚ or for ε ∈ ℝ ?
 
+in `Cubical.Data.Fin.Base` is written
+
+  Finite types.
+
+  Currently it is most convenient to define these as a subtype of the
+  natural numbers, because indexed inductive definitions don't behave
+  well with cubical Agda. This definition also has some more general
+  attractive properties, of course, such as easy conversion back to ℕ.
+
+and then they state
+
+  Fin : ℕ → Type₀
+  Fin n = Σ[ k ∈ ℕ ] k < n
+
+so Σ[ x ∈ 𝕏 ] (P x) kind of falls under what is called a "subtype"
+
 next-up
 - infimum and supremum on posets (and sub-posets / sub-lattices ?)
   - we do only really need these on ℝ
