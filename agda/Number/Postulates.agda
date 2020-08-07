@@ -2,7 +2,7 @@
 
 open import Agda.Primitive renaming (_⊔_ to ℓ-max; lsuc to ℓ-suc; lzero to ℓ-zero)
 
-module NumberPostulates where
+module Number.Postulates where
 
 private
   variable
@@ -28,9 +28,9 @@ open import Function.Base using (_∋_)
 postulate
   ℝℓ ℝℓ' : Level
 
-open import NumberStructures ℝℓ ℝℓ'
-open import NumberBundles    ℝℓ ℝℓ'
-open import NumberInclusions ℝℓ ℝℓ'
+open import Number.Structures ℝℓ ℝℓ'
+open import Number.Bundles    ℝℓ ℝℓ'
+open import Number.Inclusions ℝℓ ℝℓ'
 
 import MoreAlgebra
 
@@ -76,13 +76,9 @@ module ℕ* where
   -- NOTE: a prefix alo appears to a symbol in Have/Goal if the corresponding symbol is imported multiple times
   --       that can be checked with `C-c C-w` 
 
-  -- NOTE: an `abstract` here would blocks the inner inspection again
-  --       unfortunately we cannot "break" this on the "call site"
-  --       i.e. we cannot inspect or case-split into the inner structure of these definitions
-  --         but this is a necessity
-  --       on the other hand, we do want this to be short sometimes
-  --       "Abstract applies to only definitions like data definitions, record type definitions and function clauses."
-
+  -- module members are not normalized on `C-c` `C-.` (only after `C-u`-ing) which is helpful for not cluttering the Have/Goal with "implementation details" of the underlying Carrier type
+  -- but if we wanted to 
+  
   ℕ = Lift {ℓ-zero} {ℝℓ} Nat.ℕ
   Carrier = ℕ
   -- _<_ = Lift₂  {ℓ = ℝℓ} {ℓ' = ℝℓ'} Order._<_
@@ -112,6 +108,13 @@ module ℕ* where
     ; isROrderedCommSemiring = isROrderedCommSemiring
     })
   -}
+
+  -- NOTE: an `abstract` here would blocks the inner inspection again
+  --       unfortunately we cannot "break" this on the "call site"
+  --       i.e. we cannot inspect or case-split into the inner structure of these definitions
+  --         but this is a necessity
+  --       on the other hand, we do want this to be short sometimes
+  --       "Abstract applies to only definitions like data definitions, record type definitions and function clauses."
 
   bundle : Bundle
   bundle = (record

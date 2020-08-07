@@ -2,7 +2,7 @@
 
 open import Agda.Primitive renaming (_⊔_ to ℓ-max; lsuc to ℓ-suc; lzero to ℓ-zero)
 
-module NumberBlueprint where
+module Number.Blueprint where
 
 private
   variable
@@ -163,8 +163,8 @@ record NumberProp : Type where
 
 -- splitting this into a separate function to be able to make use of NumberLevel without inspecting PositivitLevel
 
-open import NumberPostulates
-open import NumberBundles ℝℓ ℝℓ'
+open import Number.Postulates
+open import Number.Bundles ℝℓ ℝℓ'
 
 -- NumberLevel interpretation
 Il : NumberLevel → Type ℝℓ

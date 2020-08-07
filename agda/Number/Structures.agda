@@ -2,7 +2,7 @@
 
 open import Agda.Primitive renaming (_⊔_ to ℓ-max; lsuc to ℓ-suc; lzero to ℓ-zero)
 
-module NumberStructures (ℝℓ ℝℓ' : Level) where
+module Number.Structures (ℝℓ ℝℓ' : Level) where
 
 private
   variable

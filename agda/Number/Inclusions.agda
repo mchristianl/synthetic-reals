@@ -2,7 +2,7 @@
 
 open import Agda.Primitive renaming (_⊔_ to ℓ-max; lsuc to ℓ-suc; lzero to ℓ-zero)
 
-module NumberInclusions (ℝℓ ℝℓ' : Level) where
+module Number.Inclusions (ℝℓ ℝℓ' : Level) where
 
 private
   variable
@@ -23,8 +23,8 @@ open import Cubical.Data.Sigma.Base renaming (_×_ to infixr 4 _×_)
 open import Cubical.Data.Empty renaming (elim to ⊥-elim) -- `⊥` and `elim`
 open import Cubical.Data.Maybe.Base
 
--- open import NumberStructures ℝℓ ℝℓ'
-open import NumberBundles ℝℓ ℝℓ'
+-- open import Number.Structures ℝℓ ℝℓ'
+open import Number.Bundles ℝℓ ℝℓ'
 
 -- Finₖ ℕ ℤ ℚ ℚ₀⁺ ℚ⁺ ℝ ℝ₀⁺ ℝ⁺
 record IsRLatticeInclusion

@@ -25,13 +25,13 @@ open import Cubical.Data.Maybe.Base
 
 -- open import Bundles
 
-open import NumberPostulates
-open import NumberStructures ℝℓ ℝℓ'
-open import NumberBundles    ℝℓ ℝℓ'
-open import NumberInclusions ℝℓ ℝℓ'
-open import NumberBlueprint
+open import Number.Postulates
+open import Number.Structures ℝℓ ℝℓ'
+open import Number.Bundles    ℝℓ ℝℓ'
+open import Number.Inclusions ℝℓ ℝℓ'
+open import Number.Blueprint
 
-open import NumberCoercions
+open import Number.Coercions
 
 ℝ↪ℝ : ℝ.ℝ → ℝ.ℝ
 ℝ↪ℝ x = x
@@ -92,9 +92,6 @@ k+x+sy≢x k x y p = snotz $ sym (+-suc k y) ∙ inj-m+ {x} (+-assoc x k (suc y)
 --             → Ip ll p (f (num x))
 -- coerce-OCSR {l} {ll} {p} {𝕏OCSR} {𝕐OCSR} {f} (number (x , q)) = ?
 
-module _ where
-  open ℕ.Translated
-  open ℤ.Translated
 
 
 coerce : (from : NumberLevel)
