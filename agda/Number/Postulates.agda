@@ -202,6 +202,8 @@ module ℕ* where
   _·_ = Bundle._·_ bundle
   isROrderedCommSemiring = Bundle.isROrderedCommSemiring bundle
 
+  open IsROrderedCommSemiring isROrderedCommSemiring public
+
   {-
   --open Bundle bundle hiding (_<_) public --  renaming (Carrier to ℕ) public
   -- open Module renaming (Carrier to ℕ) public
@@ -496,8 +498,8 @@ module ℂᶜ = ℂ.Bundle
     renaming
     ( Carrier to ℂ
     ; _#_ to _#ᶜ_
-    ; 0f  to 0fᶜ
-    ; 1f  to 1fᶜ
+    ; 0f  to 0ᶜ
+    ; 1f  to 1ᶜ
     ; _+_ to _+ᶜ_
     ; _·_ to _·ᶜ_
     ; -_  to -ᶜ_

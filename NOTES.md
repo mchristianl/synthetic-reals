@@ -197,6 +197,8 @@ Associative _∙_ = ∀ x y z → ((x ∙ y) ∙ z) ≈ (x ∙ (y ∙ z))
 
 we have the "left associated" term on the LHS and the "right associated" term
 
+NOTE: Generally, it seems a good convention that the order of parameters in the definition should match the left hand side. This makes it easier to determine which parameters need to be plugged into the definition when having a left hand side (e.g. with `_≡⟨_⟩` reasoning).
+
 there seems to be a convention that
 > "We will adopt the convention of denoting the level of the carrier set by ℓ₀ and the level of the relation result by ℓ₁."
 
@@ -241,7 +243,7 @@ propIsInitial I x y i {X} = res X i
     cp : (λ i → ∀ f → fp i ≡ f) [ cx ≡ cy ]
     cp = lemPropF prop _ _ fp
     res : (fx , cx) ≡ (fy , cy)
-    res i = fp i , cp i
+    res i = fp i , cp **
 ```
 
 ## using equivalences instead of `lemma` and `lemma-back`

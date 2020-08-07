@@ -27,7 +27,7 @@ open import Cubical.Data.Maybe.Base
 open import Cubical.Data.Fin.Base
 -- import Cubical.Data.Fin.Properties
 -- open import Cubical.Data.Nat using (ℕ; zero; suc) renaming (_+_ to _+ₙ_)
-open import Cubical.Data.Nat.Properties using (+-suc; injSuc; snotz; +-comm; +-assoc; +-zero; inj-m+)
+open import Cubical.Data.Nat.Properties -- using (+-suc; injSuc; snotz; +-comm; +-assoc; +-zero; inj-m+)
 open import Cubical.Data.Nat.Order renaming (zero-≤ to z≤n; suc-≤-suc to s≤s; _≤_ to _≤ₙ_; _<_ to _<ₙ_; _≟_ to _≟ₙ_)
 -- open import Data.Nat.Base using (ℕ; z≤n; s≤s; zero; suc) renaming (_≤_ to _≤ₙ_; _<_ to _<ₙ_; _+_ to _+ₙ_)
 open import Agda.Builtin.Bool renaming (true to TT; false to FF)
@@ -65,6 +65,33 @@ suc-reflects-<ₙ {x} {y} (k , p) = k , (injSuc (sym (+-suc k (suc x)) ∙ p))
 ¬[k+x<k] : ∀ k x → ¬(k +ₙ x <ₙ k)
 ¬[k+x<k] k x (z , p) = snotz $ sym $ inj-m+ {k} {0} (+-zero k ∙ sym p ∙ +-suc z (k +ₙ x) ∙ (λ i → suc (+-comm z (k +ₙ x) i)) ∙ (λ i → suc (+-assoc k x z (~ i))) ∙ sym (+-suc k (x +ₙ z)))
 
+import MoreLogic
+open MoreLogic.Reasoning
+
+<-asymₙ : ∀ a b → a <ₙ b → ¬(b <ₙ a)
+<-asymₙ a b (k , p) (l , q) = snotz $ inj-m+ {a} ((sym γ ∙ transport (λ i → l +ₙ suc (p (~ i)) ≡ a) q) ∙ sym (+-zero a))
+  where
+    γ = (
+      l +ₙ suc (k +ₙ suc a)   ≡⟨ ( λ i → l +ₙ suc (+-suc k a i)) ⟩
+      l +ₙ suc (suc (k +ₙ a)) ≡⟨ ( λ i → l +ₙ suc (suc (+-comm k a i)) ) ⟩
+      l +ₙ suc (suc (a +ₙ k)) ≡⟨ ( λ i → l +ₙ suc (+-suc a k (~ i))) ⟩
+      l +ₙ suc (a +ₙ suc k)   ≡⟨ ( λ i → l +ₙ (+-suc a (suc k) (~ i))) ⟩
+      l +ₙ (a +ₙ suc (suc k)) ≡⟨ +-assoc l a (suc (suc k)) ⟩
+      (l +ₙ a) +ₙ suc (suc k) ≡⟨ (λ i → +-comm l a i +ₙ suc (suc k) ) ⟩
+      (a +ₙ l) +ₙ suc (suc k) ≡⟨ sym $ +-assoc a l (suc (suc k)) ⟩
+      a +ₙ (l +ₙ suc (suc k)) ≡⟨ (λ i → a +ₙ +-suc l (suc k) i) ⟩
+      a +ₙ suc (l +ₙ suc k)   ∎)
+
+<>-implies-≡ₙ : ∀ a b → a ≤ₙ b → b ≤ₙ a → a ≡ b
+<>-implies-≡ₙ a b (n , p) (m , q) with m+n≡0→m≡0×n≡0 {m} {n} (m+n≡n→m≡0 γ)
+  where γ = sym (+-assoc m n a) ∙ (λ i → m +ₙ p i) ∙ q
+... | m≡0 , n≡0 = (λ i → n≡0 (~ i) +ₙ a) ∙ p
+
+-- with a ≟ₙ b
+-- ... | lt x = {! <-asymₙ !}
+-- ... | eq x = x
+-- ... | gt x = {!!}
+
 data NumberLevel : Type where
   isNat     : NumberLevel
   isInt     : NumberLevel
@@ -88,6 +115,13 @@ NLE⁻¹' 3 = isReal
 NLE⁻¹' 4 = isComplex
 NLE⁻¹' x = isComplex
 -- NLE⁻¹' (suc⁵ fst₁) = isComplex
+
+NLE-id²' : ∀ x → NLE⁻¹' (NLE' x) ≡ x
+NLE-id²' isNat     = refl 
+NLE-id²' isInt     = refl
+NLE-id²' isRat     = refl
+NLE-id²' isReal    = refl
+NLE-id²' isComplex = refl
 
 NLE : NumberLevel → Fin 5
 NLE isNat     = 0 , it
@@ -138,6 +172,33 @@ minₙₗ' a b = NLE⁻¹' (minₙ (NLE' a) (NLE' b))
 
 maxₙₗ' : NumberLevel → NumberLevel → NumberLevel
 maxₙₗ' a b = NLE⁻¹' (maxₙ (NLE' a) (NLE' b))
+
+≟ₙ-sym : ∀ a b → Trichotomy (NLE' a) (NLE' b) → Trichotomy (NLE' b) (NLE' a)
+≟ₙ-sym a b (lt x) = gt x
+≟ₙ-sym a b (eq x) = eq (sym x)
+≟ₙ-sym a b (gt x) = lt x
+
+max-symₙₗ : ∀ a b → maxₙₗ' a b ≡ maxₙₗ' b a
+max-symₙₗ a b with NLE' a ≟ₙ NLE' b | NLE' b ≟ₙ NLE' a
+... | lt x | lt y = ⊥-elim {A = λ _ → NLE⁻¹' (NLE' b) ≡ NLE⁻¹' (NLE' a)} $  <-asymₙ _ _ x y 
+... | lt x | eq y = refl
+... | lt x | gt y = refl
+... | eq x | lt y = refl
+... | eq x | eq y = cong NLE⁻¹' x
+... | eq x | gt y = cong NLE⁻¹' x
+... | gt x | lt y = refl
+... | gt x | eq y = sym (cong NLE⁻¹' y)
+... | gt x | gt y = ⊥-elim {A = λ _ → NLE⁻¹' (NLE' a) ≡ NLE⁻¹' (NLE' b)} $  <-asymₙ _ _ x y 
+
+max-implies-≤ₙₗ' : (a : NumberLevel) → (b : NumberLevel) → a ≤ₙₗ' maxₙₗ' a b
+max-implies-≤ₙₗ' a b with (NLE' a) ≟ (NLE' b)
+... | lt (x , p) =  suc x ,  sym (+-suc _ _)  ∙ p ∙ cong NLE' (sym (NLE-id²' b))
+... | eq x = 0 , sym (cong NLE' (NLE-id²' a) ∙ refl {x = NLE' a})
+... | gt x = 0 , sym (cong NLE' (NLE-id²' a) ∙ refl {x = NLE' a})
+
+max-implies-≤ₙₗ₂' : (a : NumberLevel) → (b : NumberLevel) → (a ≤ₙₗ' maxₙₗ' a b) × (b ≤ₙₗ' maxₙₗ' a b)
+max-implies-≤ₙₗ₂' a b = max-implies-≤ₙₗ' a b , transport (λ i → b ≤ₙₗ' max-symₙₗ b a i) (max-implies-≤ₙₗ' b a)
+
 
 data PositivityLevel : Type where
   anyPositivity : PositivityLevel
@@ -217,6 +278,11 @@ data Number (p : NumberProp) : Type (ℓ-max ℝℓ ℝℓ') where
 num : ∀{(l ,, p) : NumberProp} → Number (l ,, p) → Il l
 num (number p) = fst p
 
+prp : ∀{(l ,, p) : NumberProp} → (x : Number (l ,, p)) → Ip l p (num x)
+prp (number p) = snd p
+
+pop : ∀{p : NumberProp} → Number p → In p
+pop (number (x , p)) = x , p
 
 -- common level
 Cl : (a : NumberLevel) → (b : NumberLevel) → NumberLevel -- Σ[ c ∈ NumberLevel ] a ≤ₙₗ c × b ≤ₙₗ c
@@ -287,7 +353,7 @@ private
 ·-Positivity X₀⁺ X⁺  = X₀⁺ 
 ·-Positivity X⁺  X₀⁺ = X₀⁺ 
 ·-Positivity X⁺  X⁺  = X⁺
--- multiplying negative numbers gives a negative number
+-- multiplying negative numbers gives a positive number
 ·-Positivity X₀⁻ X⁻  = X₀⁺
 ·-Positivity X⁻  X₀⁻ = X₀⁺
 ·-Positivity X₀⁻ X₀⁻ = X₀⁺  
