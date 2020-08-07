@@ -13,7 +13,7 @@ open import Cubical.Relation.Nullary.Base -- ¬_
 open import Cubical.Relation.Binary.Base -- Rel
 
 -- open import Data.Nat.Base using (ℕ) renaming (_≤_ to _≤ₙ_)
-open import Cubical.Data.Nat using (ℕ; zero; suc) renaming (_+_ to _+ₙ_)
+open import Cubical.Data.Nat using (zero; suc) renaming (ℕ to ℕ₀; _+_ to _+ₙ_)
 open import Cubical.Data.Nat.Order renaming (zero-≤ to z≤n; suc-≤-suc to s≤s; _≤_ to _≤ₙ_; _<_ to _<ₙ_)
 
 open import Cubical.Data.Unit.Base -- Unit
@@ -26,7 +26,7 @@ open import Cubical.Data.Maybe.Base
 
 open import Cubical.Data.Fin.Base
 -- import Cubical.Data.Fin.Properties
-open import Cubical.Data.Nat using (ℕ; zero; suc) renaming (_+_ to _+ₙ_)
+-- open import Cubical.Data.Nat using (ℕ; zero; suc) renaming (_+_ to _+ₙ_)
 open import Cubical.Data.Nat.Properties using (+-suc; injSuc; snotz; +-comm; +-assoc; +-zero; inj-m+)
 open import Cubical.Data.Nat.Order renaming (zero-≤ to z≤n; suc-≤-suc to s≤s; _≤_ to _≤ₙ_; _<_ to _<ₙ_; _≟_ to _≟ₙ_)
 -- open import Data.Nat.Base using (ℕ; z≤n; s≤s; zero; suc) renaming (_≤_ to _≤ₙ_; _<_ to _<ₙ_; _+_ to _+ₙ_)
@@ -35,13 +35,13 @@ open import Function.Base using (it; _$_) -- instance search
 import Cubical.Data.Fin.Properties
 open import Data.Nat.Properties using (+-mono-<)
 
-minₙ : ℕ → ℕ → ℕ
+minₙ : ℕ₀ → ℕ₀ → ℕ₀
 minₙ a b with a ≟ₙ b
 ... | lt a<b = a 
 ... | eq a≡b = a 
 ... | gt b<a = b 
 
-maxₙ : ℕ → ℕ → ℕ
+maxₙ : ℕ₀ → ℕ₀ → ℕ₀
 maxₙ a b with a ≟ₙ b
 ... | lt a<b = b
 ... | eq a≡b = a
@@ -73,14 +73,14 @@ data NumberLevel : Type where
   isComplex : NumberLevel  
 
 -- NumberLevelEnumeration
-NLE' : NumberLevel → ℕ
+NLE' : NumberLevel → ℕ₀
 NLE' isNat     = 0
 NLE' isInt     = 1
 NLE' isRat     = 2
 NLE' isReal    = 3
 NLE' isComplex = 4
 
-NLE⁻¹' : ℕ → NumberLevel
+NLE⁻¹' : ℕ₀ → NumberLevel
 NLE⁻¹' 0 = isNat
 NLE⁻¹' 1 = isInt
 NLE⁻¹' 2 = isRat
@@ -96,7 +96,7 @@ NLE isRat     = 2 , it
 NLE isReal    = 3 , it
 NLE isComplex = 4 , it
 
-_^ᶠ_ : ∀{A : Type ℓ} → (A → A) → ℕ → A → A
+_^ᶠ_ : ∀{A : Type ℓ} → (A → A) → ℕ₀ → A → A
 _^ᶠ_ f zero x = x
 _^ᶠ_ f (suc zero) x = (f x) 
 _^ᶠ_ f (suc n) x = (f ^ᶠ n) (f x)
@@ -168,19 +168,19 @@ open import NumberBundles ℝℓ ℝℓ'
 
 -- NumberLevel interpretation
 Il : NumberLevel → Type ℝℓ
-Il isNat     = ℕ.ℕ
-Il isInt     = ℤ.ℤ
-Il isRat     = ℚ.ℚ
-Il isReal    = ℝ.ℝ
-Il isComplex = ℂ.ℂ
+Il isNat     = let open ℕ* in ℕ -- NOTE: this occurs in the Have/Goal
+Il isInt     = let open ℤ in ℤ --       so somehow the "amount of normalization" at the call site is inherited from the function (clause)
+Il isRat     = let open ℚ in ℚ --       the finding is, that to produce "nice" Goals,
+Il isReal    = let open ℝ in ℝ --         we need to create the same symbol-import-path in the definition clause
+Il isComplex = let open ℂ in ℂ --         that will also be present at the call site
 
 -- PositivityLevel interpretation
 Ip : (nl : NumberLevel) → PositivityLevel → (x : Il nl) → Type ℝℓ'
 Ip isNat     ⁇x⁇ x =                                        Lift Unit
-Ip isNat     x#0 x = let open ℕ.Bundle             ℕ.bundle in ( x # 0f)
-Ip isNat     0≤x x = let open ℕ.Bundle             ℕ.bundle in (0f ≤  x)
-Ip isNat     0<x x = let open ℕ.Bundle             ℕ.bundle in (0f <  x)
-Ip isNat     x≤0 x = let open ℕ.Bundle             ℕ.bundle in ( x ≤ 0f)
+Ip isNat     x#0 x = let open ℕ                             in ( x # 0f)
+Ip isNat     0≤x x = let open ℕ                             in (0f ≤  x)
+Ip isNat     0<x x = let open ℕ                             in (ℕ.0f < x) 
+Ip isNat     x≤0 x = let open ℕ                             in ( x ≤ 0f) 
 Ip isNat     x<0 x =                                        Lift ⊥
 Ip isInt     ⁇x⁇ x =                                        Lift Unit
 Ip isInt     x#0 x = let open ℤ.Bundle             ℤ.bundle in ( x # 0f)

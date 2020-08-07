@@ -23,6 +23,7 @@ open import Cubical.Data.Sum.Base renaming (_⊎_ to infixr 4 _⊎_)
 -- open import Cubical.Data.Empty renaming (elim to ⊥-elim) -- `⊥` and `elim`
 -- open import Cubical.Data.Maybe.Base
 open import Cubical.Relation.Binary.Base -- Rel
+open import Function.Base using (_∋_)
 
 postulate
   ℝℓ ℝℓ' : Level
@@ -41,7 +42,7 @@ Lift₂' : {A : Type₀} → (A → A → A) → (Lift {ℓ-zero} {ℓ} A) → (
 Lift₂' _•_ (lift x) (lift y) = lift (x • y)
 
 
-module ℕ where
+module ℕ* where
   import Cubical.Data.Nat as Nat --  using (ℕ; zero; suc) renaming (_+_ to _+ₙ_)
   import Cubical.Data.Nat.Order as Order -- renaming (zero-≤ to z≤n; suc-≤-suc to s≤s; _≤_ to _≤ₙ_; _<_ to _<ₙ_)
 
@@ -70,11 +71,51 @@ module ℕ where
   --         `Bundle = record { Module }`
   --       then, we can only inspect up to ℕ.Carrier and not further
   module Bundle = ROrderedCommSemiring {ℝℓ} {ℝℓ'}
+  Bundle = ROrderedCommSemiring {ℝℓ} {ℝℓ'}
 
-  bundle : ROrderedCommSemiring {ℝℓ} {ℝℓ'}
+  -- NOTE: a prefix alo appears to a symbol in Have/Goal if the corresponding symbol is imported multiple times
+  --       that can be checked with `C-c C-w` 
+
+  -- NOTE: an `abstract` here would blocks the inner inspection again
+  --       unfortunately we cannot "break" this on the "call site"
+  --       i.e. we cannot inspect or case-split into the inner structure of these definitions
+  --         but this is a necessity
+  --       on the other hand, we do want this to be short sometimes
+  --       "Abstract applies to only definitions like data definitions, record type definitions and function clauses."
+
+  ℕ = Lift {ℓ-zero} {ℝℓ} Nat.ℕ
+  Carrier = ℕ
+  -- _<_ = Lift₂  {ℓ = ℝℓ} {ℓ' = ℝℓ'} Order._<_
+  -- _≤_ = Lift₂  {ℓ = ℝℓ} {ℓ' = ℝℓ'} Order._≤_
+  -- _#_ = Lift₂  {ℓ = ℝℓ} {ℓ' = ℝℓ'} (MoreAlgebra.Definitions._#'_ { _<_ = Order._<_ })
+  -- min = Lift₂' {ℓ = ℝℓ}            Postulates.min
+  -- max = Lift₂' {ℓ = ℝℓ}            Postulates.max
+  -- 0f  = lift   {j = ℝℓ}            Nat.zero
+  -- 1f  = lift   {j = ℝℓ}            (Nat.suc Nat.zero)
+  -- _+_ = Lift₂' {ℓ = ℝℓ}            Nat._+_
+  -- _·_ = Lift₂' {ℓ = ℝℓ}            Nat._*_
+  -- isROrderedCommSemiring = Postulates.isROrderedCommSemiring
+
+  {-
+  bundle : Bundle
   bundle = (record
-  -- module Module = ROrderedCommSemiring (record
-    { Carrier = Lift {ℓ-zero} {ℝℓ} Nat.ℕ
+    { Carrier = Carrier
+    ; _<_ = _<_
+    ; _≤_ = _≤_
+    ; _#_ = _#_
+    ; min = min
+    ; max = max
+    ; 0f  = 0f 
+    ; 1f  = 1f 
+    ; _+_ = _+_
+    ; _·_ = _·_
+    ; isROrderedCommSemiring = isROrderedCommSemiring
+    })
+  -}
+
+  bundle : Bundle
+  bundle = (record
+    { Carrier = ℕ -- Lift {ℓ-zero} {ℝℓ} Nat.ℕ
     ; _<_ = Lift₂  Order._<_
     ; _≤_ = Lift₂  Order._≤_
     ; _#_ = Lift₂  (MoreAlgebra.Definitions._#'_ { _<_ = Order._<_ })
@@ -82,10 +123,28 @@ module ℕ where
     ; max = Lift₂' Postulates.max
     ; 0f  = lift   Nat.zero
     ; 1f  = lift   (Nat.suc Nat.zero)
-    ; _+_ = Lift₂' Nat._+_
+    ; _+_ = λ x y → Lift₂' Nat._+_ x y
     ; _·_ = Lift₂' Nat._*_
     ; isROrderedCommSemiring = Postulates.isROrderedCommSemiring
     })
+
+  {-
+  abstract
+    bundle' : Bundle
+    bundle' = (record
+      { Carrier = Lift {ℓ-zero} {ℝℓ} Nat.ℕ
+      ; _<_ = Lift₂  Order._<_
+      ; _≤_ = Lift₂  Order._≤_
+      ; _#_ = Lift₂  (MoreAlgebra.Definitions._#'_ { _<_ = Order._<_ })
+      ; min = Lift₂' Postulates.min
+      ; max = Lift₂' Postulates.max
+      ; 0f  = lift   Nat.zero
+      ; 1f  = lift   (Nat.suc Nat.zero)
+      ; _+_ = Lift₂' Nat._+_
+      ; _·_ = Lift₂' Nat._*_
+      ; isROrderedCommSemiring = Postulates.isROrderedCommSemiring
+      })
+  -}
 
   -- Bundle : ROrderedCommSemiring
   -- Bundle = record { Module }
@@ -120,16 +179,76 @@ module ℕ where
   --   open ROrderedCommSemiring Bundle public
   --   open import Agda.Builtin.Nat using () renaming (Nat to ℕ₀) public -- this makes ℕ₀ prettier in goals
 
-  open ROrderedCommSemiring bundle renaming (Carrier to ℕ) public
+  -- open Bundle bundle using () renaming (Carrier to ℕ) public
+  -- ℕ = Bundle.Carrier bundle
+
+  -- NOTE: for the non-operations 0f and 1f it does not matter,
+  --       but for the operations min, max, _+_ and _·_ we need this "roundabout" instead of a direct opening of `bundle`
+  --       this causes that the Have/Goal type of `x + y` is not immediately expanded but remains a nice `ℕ`
+  --       only after `C-u`-ing it gets normalized
+  -- NOTE: so although it looks a little ugly, we just write this out here again
+
+  _<_ = Bundle._<_ bundle
+  _≤_ = Bundle._≤_ bundle
+  _#_ = Bundle._#_ bundle
+  min = Bundle.min bundle
+  max = Bundle.max bundle
+  0f  = Bundle.0f  bundle
+  1f  = Bundle.1f  bundle
+  _+_ = Bundle._+_ bundle
+  _·_ = Bundle._·_ bundle
+  isROrderedCommSemiring = Bundle.isROrderedCommSemiring bundle
+
+  {-
+  --open Bundle bundle hiding (_<_) public --  renaming (Carrier to ℕ) public
   -- open Module renaming (Carrier to ℕ) public
-  Carrier = ℕ
+  ℕ = Bundle.Carrier bundle
+  -- Carrier = Bundle.Carrier bundle
+  _<_ = Bundle._<_ bundle
+  _≤_ = Bundle._≤_ bundle
+  _#_ = Bundle._#_ bundle
+  min = Bundle.min bundle
+  max = Bundle.max bundle
+  0f  = Bundle.0f  bundle
+  1f  = Bundle.1f  bundle
+  _+_ = Bundle._+_ bundle
+  _·_ = Bundle._·_ bundle
+  isROrderedCommSemiring = Bundle.isROrderedCommSemiring bundle
+  -}
+  
+  {-
+  Carrier = Lift {ℓ-zero} {ℝℓ} Nat.ℕ
+  isROrderedCommSemiring
+  -}
+
+  -- Carrier = ℕ
   -- ℕ = Carrier
   open import Agda.Builtin.Nat using () renaming (Nat to ℕ₀) public -- this makes ℕ₀ prettier in goals
+  -- import Agda.Builtin.Nat
+  -- ℕ₀ = Agda.Builtin.Nat.Nat
   --ℕ₀ = Nat.ℕ
 
-module ℕⁿ = ℕ.Bundle
+{-
+module ℕⁿ where
+  Carrierⁿ = ℕ.Carrier
+  _<ⁿ_ = ℕ._<_
+  _≤ⁿ_ = ℕ._≤_
+  _#ⁿ_ = ℕ._#_
+  minⁿ = ℕ.min
+  maxⁿ = ℕ.max
+  0ⁿ   = ℕ.0f 
+  1ⁿ   = ℕ.1f 
+  _+ⁿ_ = ℕ._+_
+  _·ⁿ_ = ℕ._·_
+  isROrderedCommSemiringⁿ = ℕ.isROrderedCommSemiring
+-}
+
+module ℕ = ℕ* hiding (ℕ; ℕ₀)
+
+module ℕⁿ = ℕ* -- .Bundle
+    -- hiding (ℕ)
     renaming
-    ( Carrier to ℕ
+    ( Carrier to Carrierⁿ
     ; _<_ to _<ⁿ_
     ; _≤_ to _≤ⁿ_
     ; _#_ to _#ⁿ_
@@ -141,6 +260,27 @@ module ℕⁿ = ℕ.Bundle
     ; _·_ to _·ⁿ_
     ; isROrderedCommSemiring to isROrderedCommSemiringⁿ
     )
+
+-- NOTE: this needs to come after ℕⁿ to have a the symbols in Have/Goal displayed with a ℕ-prefix instead of the ℕⁿ-prefix
+--       ... but this conflicts with a usage of
+--       - first, opening ℕⁿ
+--       - afterwards, optionally opening ℕ
+--       because after opening ℕⁿ things are still prefixed with ℕ.x
+--       so ℕⁿ somehow must be the last module that is stated
+-- module ℕ = ℕ' hiding (ℕ; ℕ₀)
+
+-- THESIS: so the order in which modules are stated/imported matters because only the last path will be displayed as "the" prefix in Have/Goal
+--         this means the prefix that is added to a symbol when it's module is not (!) opened
+--         so this affects symbols that are reachable via multiple "pathes"
+--           this is likely inherited from how the function clause definition's scope is created to the call-site
+--           so the function clause definition "decides" which path it means for which symbol
+--           this would make the prefix(-path) a property of the function clause definition
+--           and we can only "remove" parts of this path by opening modules
+--         when a symbols module is opened, then it is displayed in Have/Goal without a prefix
+--         when a symbols module is opened multiple times, then again a prefix is displayed because of ambiguity
+
+-- NOTE: so we might try again the variant with "global" ℕ ℤ ℚ ℝ and ℂ
+
 --  Carrier = ℕ
 --  open import Agda.Builtin.Nat using () renaming (Nat to ℕ₀) public -- this makes ℕ₀ prettier in goals
   
@@ -274,12 +414,12 @@ module ℤᶻ = ℤ.Bundle
     )
 
 module ℚ where
-  module Bundle = ROrderedField {ℝℓ} {ℝℓ'}
+  module Bundle = ROrderedField {ℝℓ} {ℝℓ'} renaming (Carrier to ℚ)
   postulate
     bundle   : ROrderedField        {ℝℓ} {ℝℓ'}
 
   open Bundle bundle public
-  ℚ = Carrier
+  Carrier = ℚ
 
 -- NOTE: for removing an instance from an operation, it seem that we have to open that instance at the "call site"
 --       e.g. `_#_` from  `ROrderedField` get an additional argument `ℚ.bundle` to which instance it refers to
@@ -302,8 +442,7 @@ module ℚ where
 
 module ℚᶠ = ℚ.Bundle
   renaming
-  ( Carrier to ℚ
-  ; _<_ to _<ᶠ_
+  ( _<_ to _<ᶠ_
   ; _≤_ to _≤ᶠ_
   ; _#_ to _#ᶠ_
   ; min to minᶠ
@@ -363,36 +502,40 @@ module ℂᶜ = ℂ.Bundle
     ; isRField to isRFieldᶜ
     )
 
-postulate
-  ℕ↪ℤ    : ℕ.ℕ → ℤ.ℤ
-  ℕ↪ℤinc : IsROrderedCommSemiringInclusion ℕ.bundle (record { ℤ.Bundle ℤ.bundle }) ℕ↪ℤ
 
-  ℕ↪ℚ    : ℕ.ℕ → ℚ.ℚ
-  ℕ↪ℚinc : IsROrderedCommSemiringInclusion ℕ.bundle (record { ℚ.Bundle ℚ.bundle }) ℕ↪ℚ
+module _ where
+  open ℕ* using (ℕ)
+  postulate
+    ℕ↪ℤ    : ℕ → ℤ.ℤ
+    ℕ↪ℤinc : IsROrderedCommSemiringInclusion ℕ.bundle (record { ℤ.Bundle ℤ.bundle }) ℕ↪ℤ
 
-  ℕ↪ℂ    : ℕ.ℕ → ℂ.ℂ
-  ℕ↪ℂinc : Isℕ↪ℂ ℕ.bundle ℂ.bundle ℕ↪ℂ
+    ℕ↪ℚ    : ℕ → ℚ.ℚ
+    ℕ↪ℚinc : IsROrderedCommSemiringInclusion ℕ.bundle (record { ℚ.Bundle ℚ.bundle }) ℕ↪ℚ
 
-  ℕ↪ℝ    : ℕ.ℕ → ℝ.ℝ
-  ℕ↪ℝinc : IsROrderedCommSemiringInclusion ℕ.bundle (record { ℝ.Bundle ℝ.bundle }) ℕ↪ℝ
+    ℕ↪ℂ    : ℕ → ℂ.ℂ
+    ℕ↪ℂinc : Isℕ↪ℂ ℕ.bundle ℂ.bundle ℕ↪ℂ
 
-  ℤ↪ℚ    : ℤ.ℤ → ℚ.ℚ
-  ℤ↪ℚinc : IsROrderedCommRingInclusion ℤ.bundle (record { ℚ.Bundle ℚ.bundle }) ℤ↪ℚ
+    ℕ↪ℝ    : ℕ → ℝ.ℝ
+    ℕ↪ℝinc : IsROrderedCommSemiringInclusion ℕ.bundle (record { ℝ.Bundle ℝ.bundle }) ℕ↪ℝ
 
-  ℤ↪ℝ    : ℤ.ℤ → ℝ.ℝ
-  ℤ↪ℝinc : IsROrderedCommRingInclusion ℤ.bundle (record { ℝ.Bundle ℝ.bundle }) ℤ↪ℝ
+    ℤ↪ℚ    : ℤ.ℤ → ℚ.ℚ
+    ℤ↪ℚinc : IsROrderedCommRingInclusion ℤ.bundle (record { ℚ.Bundle ℚ.bundle }) ℤ↪ℚ
 
-  ℤ↪ℂ    : ℤ.ℤ → ℂ.ℂ
-  ℤ↪ℂinc : Isℤ↪ℂ ℤ.bundle ℂ.bundle ℤ↪ℂ
+    ℤ↪ℝ    : ℤ.ℤ → ℝ.ℝ
+    ℤ↪ℝinc : IsROrderedCommRingInclusion ℤ.bundle (record { ℝ.Bundle ℝ.bundle }) ℤ↪ℝ
 
-  ℚ↪ℝ    : ℚ.ℚ → ℝ.ℝ
-  ℚ↪ℝinc : IsROrderedFieldInclusion ℚ.bundle (record { ℝ.Bundle ℝ.bundle }) ℚ↪ℝ
+    ℤ↪ℂ    : ℤ.ℤ → ℂ.ℂ
+    ℤ↪ℂinc : Isℤ↪ℂ ℤ.bundle ℂ.bundle ℤ↪ℂ
 
-  ℚ↪ℂ    : ℚ.ℚ → ℂ.ℂ
-  ℚ↪ℂinc : IsRFieldInclusion (record { ℚ.Bundle ℚ.bundle }) (record { ℂ.Bundle ℂ.bundle }) ℚ↪ℂ
+    ℚ↪ℝ    : ℚ.ℚ → ℝ.ℝ
+    ℚ↪ℝinc : IsROrderedFieldInclusion ℚ.bundle (record { ℝ.Bundle ℝ.bundle }) ℚ↪ℝ
 
-  ℝ↪ℂ    : ℝ.ℝ → ℂ.ℂ
-  ℝ↪ℂinc : IsRFieldInclusion (record { ℝ.Bundle ℝ.bundle }) (record { ℂ.Bundle ℂ.bundle }) ℝ↪ℂ
+    ℚ↪ℂ    : ℚ.ℚ → ℂ.ℂ
+    ℚ↪ℂinc : IsRFieldInclusion (record { ℚ.Bundle ℚ.bundle }) (record { ℂ.Bundle ℂ.bundle }) ℚ↪ℂ
+
+    ℝ↪ℂ    : ℝ.ℝ → ℂ.ℂ
+    ℝ↪ℂinc : IsRFieldInclusion (record { ℝ.Bundle ℝ.bundle }) (record { ℂ.Bundle ℂ.bundle }) ℝ↪ℂ
+
 
 {-
 module Translated where
@@ -401,4 +544,12 @@ module Translated where
   open ℚᶠ public
   open ℝʳ public
   open ℂᶜ public
+-}
+
+{-
+ℕ = ℕ.ℕ
+ℤ = ℤ.ℤ
+ℚ = ℚ.ℚ
+ℝ = ℝ.ℝ
+ℂ = ℂ.ℂ
 -}

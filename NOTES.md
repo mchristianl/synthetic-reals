@@ -200,7 +200,49 @@ we have the "left associated" term on the LHS and the "right associated" term
 there seems to be a convention that
 > "We will adopt the convention of denoting the level of the carrier set by ℓ₀ and the level of the relation result by ℓ₁."
 
+### more interesting conventions
 
+in the master thesis of Frederik Hanghøj Iversen https://fredefox.github.io/cat/Cat.Category.html
+
+```agda
+-- FIXME It seems counter-intuitive that the normal-form is on the
+-- right-hand-side.
+IsAssociative : Set (ℓa ⊔ ℓb)
+IsAssociative = ∀ {A B C D} {f : Arrow A B} {g : Arrow B C} {h : Arrow C D}
+   → h <<< (g <<< f) ≡ (h <<< g) <<< f
+```
+
+```agda
+-- Having two terminal objects induces an isomorphism between them - and
+-- because of univalence this is equivalent to equality.
+propTerminal : isProp Terminal
+propTerminal Xt Yt = res
+  where
+  open Σ Xt renaming (fst to X ; snd to Xit)
+  open Σ Yt renaming (fst to Y ; snd to Yit)
+  open Σ (Xit {Y}) renaming (fst to Y→X) using ()
+  open Σ (Yit {X}) renaming (fst to X→Y) using ()
+  ...
+  res : Xt ≡ Yt
+  res i = p0 i , p1 i
+```
+
+```agda
+propIsInitial : ∀ I → isProp (IsInitial I)
+propIsInitial I x y i {X} = res X i
+  where
+  module _ (X : Object) where
+    open Σ (x {X}) renaming (fst to fx ; snd to cx)
+    open Σ (y {X}) renaming (fst to fy ; snd to cy)
+    fp : fx ≡ fy
+    fp = cx fy
+    prop : (x : Arrow I X) → isProp (∀ f → x ≡ f)
+    prop x = propPi (λ y → arrowsAreSets x y)
+    cp : (λ i → ∀ f → fp i ≡ f) [ cx ≡ cy ]
+    cp = lemPropF prop _ _ fp
+    res : (fx , cx) ≡ (fy , cy)
+    res i = fp i , cp i
+```
 
 ## using equivalences instead of `lemma` and `lemma-back`
 

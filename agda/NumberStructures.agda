@@ -33,7 +33,9 @@ record IsRField {F : Type ℓ} (_#_ : Rel F F ℓ') (0f 1f : F) (_+_ _·_ : F �
 
 -- Finₖ ℕ ℤ ℚ ℚ₀⁺ ℚ⁺ ℝ ℝ₀⁺ ℝ⁺
 record IsRLattice {F : Type ℓ} (_<_ _≤_ _#_ : Rel F F ℓ') (min max : F → F → F) : Type (ℓ-max ℓ ℓ') where
-  -- TODO: properties
+  field
+    <-implies-# : ∀ x y → x < y → x # y
+    #-sym : ∀ x y → x # y → y # x
 
 -- ℕ ℤ ℚ ℚ₀⁺ ℚ⁺ ℝ ℝ₀⁺ ℝ⁺
 -- ring without additive inverse
