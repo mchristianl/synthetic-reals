@@ -125,7 +125,7 @@ module Coerce-ℕ↪ℤ where
   open IsROrderedCommSemiringInclusion ℕ↪ℤinc
   private f = ℕ↪ℤ
   abstract
-    coerce-ℕ↪ℤ : ∀{p} → (x : Number (isNat , p)) → Ip' isInt (coerce-PositivityLevel isNat isInt p) (ℕ↪ℤ (num x))
+    coerce-ℕ↪ℤ : ∀{p} → (x : Number (isNat , p)) → PositivityInterpretation isInt (coerce-PositivityLevel isNat isInt p) (ℕ↪ℤ (num x))
     coerce-ℕ↪ℤ {⁇x⁇} (number (x , q)) = lift tt
     coerce-ℕ↪ℤ {x#0} (number (x , q)) = transport (λ i → f x # preserves-0 i) (preserves-# _ _ q)
     coerce-ℕ↪ℤ {0≤x} (number (x , q)) = transport (λ i → preserves-0 i ≤ f x) (preserves-≤ _ _ q)
@@ -137,7 +137,7 @@ module Coerce-ℕ↪ℚ where
   open IsROrderedCommSemiringInclusion ℕ↪ℚinc
   private f = ℕ↪ℚ
   abstract
-    coerce-ℕ↪ℚ : ∀{p} → (x : Number (isNat , p)) → Ip' isRat (coerce-PositivityLevel isNat isRat p) (ℕ↪ℚ (num x))
+    coerce-ℕ↪ℚ : ∀{p} → (x : Number (isNat , p)) → PositivityInterpretation isRat (coerce-PositivityLevel isNat isRat p) (ℕ↪ℚ (num x))
     coerce-ℕ↪ℚ {⁇x⁇} (number (x , q)) = lift tt
     coerce-ℕ↪ℚ {x#0} (number (x , q)) = transport (λ i → f x # preserves-0 i) (preserves-# _ _ q) 
     coerce-ℕ↪ℚ {0≤x} (number (x , q)) = transport (λ i → preserves-0 i ≤ f x) (preserves-≤ _ _ q) 
@@ -149,7 +149,7 @@ module Coerce-ℕ↪ℝ where
   open IsROrderedCommSemiringInclusion ℕ↪ℝinc
   private f = ℕ↪ℝ
   abstract
-    coerce-ℕ↪ℝ : ∀{p} → (x : Number (isNat , p)) → Ip' isReal (coerce-PositivityLevel isNat isReal p) (ℕ↪ℝ (num x))
+    coerce-ℕ↪ℝ : ∀{p} → (x : Number (isNat , p)) → PositivityInterpretation isReal (coerce-PositivityLevel isNat isReal p) (ℕ↪ℝ (num x))
     coerce-ℕ↪ℝ {⁇x⁇} (number (x , q)) = lift tt
     coerce-ℕ↪ℝ {x#0} (number (x , q)) = transport (λ i → f x # preserves-0 i) (preserves-# _ _ q) 
     coerce-ℕ↪ℝ {0≤x} (number (x , q)) = transport (λ i → preserves-0 i ≤ f x) (preserves-≤ _ _ q)
@@ -161,7 +161,7 @@ module Coerce-ℕ↪ℂ where
   open Isℕ↪ℂ ℕ↪ℂinc
   private f = ℕ↪ℂ
   abstract
-    coerce-ℕ↪ℂ : ∀{p} → (x : Number (isNat , p)) → Ip' isComplex (coerce-PositivityLevel isNat isComplex p) (ℕ↪ℂ (num x))
+    coerce-ℕ↪ℂ : ∀{p} → (x : Number (isNat , p)) → PositivityInterpretation isComplex (coerce-PositivityLevel isNat isComplex p) (ℕ↪ℂ (num x))
     coerce-ℕ↪ℂ {⁇x⁇} (number (x , q)) = lift tt
     coerce-ℕ↪ℂ {x#0} (number (x , q)) = transport (λ i → f x # preserves-0 i) (preserves-# _ _ q)
     coerce-ℕ↪ℂ {0≤x} (number (x , q)) = lift tt
@@ -173,7 +173,7 @@ module Coerce-ℤ↪ℚ where
   open IsROrderedCommRingInclusion ℤ↪ℚinc
   private f = ℤ↪ℚ
   abstract
-    coerce-ℤ↪ℚ : ∀{p} → (x : Number (isInt , p)) → Ip' isRat (coerce-PositivityLevel isInt isRat p) (ℤ↪ℚ (num x))
+    coerce-ℤ↪ℚ : ∀{p} → (x : Number (isInt , p)) → PositivityInterpretation isRat (coerce-PositivityLevel isInt isRat p) (ℤ↪ℚ (num x))
     coerce-ℤ↪ℚ {⁇x⁇} (number (x , q)) = lift tt
     coerce-ℤ↪ℚ {x#0} (number (x , q)) = transport (λ i → f x # preserves-0 i) (preserves-# _ _ q) 
     coerce-ℤ↪ℚ {0≤x} (number (x , q)) = transport (λ i → preserves-0 i ≤ f x) (preserves-≤ _ _ q)
@@ -186,7 +186,7 @@ module Coerce-ℤ↪ℝ where
   open IsROrderedCommRingInclusion ℤ↪ℝinc
   private f = ℤ↪ℝ
   abstract
-    coerce-ℤ↪ℝ : ∀{p} → (x : Number (isInt , p)) → Ip' isReal (coerce-PositivityLevel isInt isReal p) (ℤ↪ℝ (num x))
+    coerce-ℤ↪ℝ : ∀{p} → (x : Number (isInt , p)) → PositivityInterpretation isReal (coerce-PositivityLevel isInt isReal p) (ℤ↪ℝ (num x))
     coerce-ℤ↪ℝ {⁇x⁇} (number (x , q)) = lift tt
     coerce-ℤ↪ℝ {x#0} (number (x , q)) = transport (λ i → f x # preserves-0 i) (preserves-# _ _ q)
     coerce-ℤ↪ℝ {0≤x} (number (x , q)) = transport (λ i → preserves-0 i ≤ f x) (preserves-≤ _ _ q)
@@ -199,7 +199,7 @@ module Coerce-ℤ↪ℂ where
   open Isℤ↪ℂ ℤ↪ℂinc
   private f = ℤ↪ℂ
   abstract
-    coerce-ℤ↪ℂ : ∀{p} → (x : Number (isInt , p)) → Ip' isComplex (coerce-PositivityLevel isInt isComplex p) (ℤ↪ℂ (num x))
+    coerce-ℤ↪ℂ : ∀{p} → (x : Number (isInt , p)) → PositivityInterpretation isComplex (coerce-PositivityLevel isInt isComplex p) (ℤ↪ℂ (num x))
     coerce-ℤ↪ℂ {⁇x⁇} (number (x , q)) = lift tt
     coerce-ℤ↪ℂ {x#0} (number (x , q)) = transport (λ i → f x # preserves-0 i) (preserves-# _ _ q)
     coerce-ℤ↪ℂ {0≤x} (number (x , q)) = lift tt
@@ -212,7 +212,7 @@ module Coerce-ℚ↪ℝ where
   open IsROrderedFieldInclusion ℚ↪ℝinc
   private f = ℚ↪ℝ
   abstract
-    coerce-ℚ↪ℝ : ∀{p} → (x : Number (isRat , p)) → Ip' isReal (coerce-PositivityLevel isRat isReal p) (ℚ↪ℝ (num x))
+    coerce-ℚ↪ℝ : ∀{p} → (x : Number (isRat , p)) → PositivityInterpretation isReal (coerce-PositivityLevel isRat isReal p) (ℚ↪ℝ (num x))
     coerce-ℚ↪ℝ {⁇x⁇} (number (x , q)) = lift tt
     coerce-ℚ↪ℝ {x#0} (number (x , q)) = transport (λ i → f x # preserves-0 i) (preserves-# _ _ q)
     coerce-ℚ↪ℝ {0≤x} (number (x , q)) = transport (λ i → preserves-0 i ≤ f x) (preserves-≤ _ _ q)
@@ -225,7 +225,7 @@ module Coerce-ℚ↪ℂ where
   open IsRFieldInclusion ℚ↪ℂinc
   private f = ℚ↪ℂ
   abstract
-    coerce-ℚ↪ℂ : ∀{p} → (x : Number (isRat , p)) → Ip' isComplex (coerce-PositivityLevel isRat isComplex p) (ℚ↪ℂ (num x))
+    coerce-ℚ↪ℂ : ∀{p} → (x : Number (isRat , p)) → PositivityInterpretation isComplex (coerce-PositivityLevel isRat isComplex p) (ℚ↪ℂ (num x))
     coerce-ℚ↪ℂ {⁇x⁇} (number (x , q)) = lift tt
     coerce-ℚ↪ℂ {x#0} (number (x , q)) = transport (λ i → f x # preserves-0 i) (preserves-# _ _ q)
     coerce-ℚ↪ℂ {0≤x} (number (x , q)) = lift tt
@@ -238,7 +238,7 @@ module Coerce-ℝ↪ℂ where
   open IsRFieldInclusion ℝ↪ℂinc
   private f = ℝ↪ℂ
   abstract
-    coerce-ℝ↪ℂ : ∀{p} → (x : Number (isReal , p)) → Ip' isComplex (coerce-PositivityLevel isReal isComplex p) (ℝ↪ℂ (num x))
+    coerce-ℝ↪ℂ : ∀{p} → (x : Number (isReal , p)) → PositivityInterpretation isComplex (coerce-PositivityLevel isReal isComplex p) (ℝ↪ℂ (num x))
     coerce-ℝ↪ℂ {⁇x⁇} (number (x , q)) = lift tt
     coerce-ℝ↪ℂ {x#0} (number (x , q)) = transport (λ i → f x # preserves-0 i) (preserves-# _ _ q)
     coerce-ℝ↪ℂ {0≤x} (number (x , q)) = lift tt

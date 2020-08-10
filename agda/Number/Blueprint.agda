@@ -153,70 +153,70 @@ a ≤ₙₗ b = fst (NLE a) ≤ₙ fst (NLE b)
 -}
 
 -- NumberLevelEnumeration
-NLE' : NumberLevel → ℕ₀
-NLE' isNat     = 0
-NLE' isInt     = 1
-NLE' isRat     = 2
-NLE' isReal    = 3
-NLE' isComplex = 4
+NLE : NumberLevel → ℕ₀
+NLE isNat     = 0
+NLE isInt     = 1
+NLE isRat     = 2
+NLE isReal    = 3
+NLE isComplex = 4
 
 -- inverse of NumberLevelEnumeration
-NLE⁻¹' : ℕ₀ → NumberLevel
-NLE⁻¹' 0 = isNat
-NLE⁻¹' 1 = isInt
-NLE⁻¹' 2 = isRat
-NLE⁻¹' 3 = isReal
-NLE⁻¹' 4 = isComplex
-NLE⁻¹' x = isComplex -- doesn't matter
--- NLE⁻¹' (suc⁵ fst₁) = isComplex
+NLE⁻¹ : ℕ₀ → NumberLevel
+NLE⁻¹ 0 = isNat
+NLE⁻¹ 1 = isInt
+NLE⁻¹ 2 = isRat
+NLE⁻¹ 3 = isReal
+NLE⁻¹ 4 = isComplex
+NLE⁻¹ x = isComplex -- doesn't matter
+-- NLE⁻¹ (suc⁵ fst₁) = isComplex
 
 -- proof of inversity
-NLE-id²' : ∀ x → NLE⁻¹' (NLE' x) ≡ x
-NLE-id²' isNat     = refl 
-NLE-id²' isInt     = refl
-NLE-id²' isRat     = refl
-NLE-id²' isReal    = refl
-NLE-id²' isComplex = refl
+NLE-id² : ∀ x → NLE⁻¹ (NLE x) ≡ x
+NLE-id² isNat     = refl 
+NLE-id² isInt     = refl
+NLE-id² isRat     = refl
+NLE-id² isReal    = refl
+NLE-id² isComplex = refl
 
 ------------8<-------------------------------------8<-----------------------------
 
 -- facts about `_≤ₙₗ_` which is lifted from `_≤ₙ_`
 -- TODO: when this turns out to be generally useful for "enumerations", then we might turn this into definitions for arbitrary `f` and `f⁻¹`
 
-_≤ₙₗ'_ : NumberLevel → NumberLevel → Type
-a ≤ₙₗ' b = (NLE' a) ≤ₙ (NLE' b)
+_≤ₙₗ_ : NumberLevel → NumberLevel → Type
+a ≤ₙₗ b = (NLE a) ≤ₙ (NLE b)
 
-minₙₗ' : NumberLevel → NumberLevel → NumberLevel
-minₙₗ' a b = NLE⁻¹' (minₙ (NLE' a) (NLE' b))
+minₙₗ : NumberLevel → NumberLevel → NumberLevel
+minₙₗ a b = NLE⁻¹ (minₙ (NLE a) (NLE b))
 
-maxₙₗ' : NumberLevel → NumberLevel → NumberLevel
-maxₙₗ' a b = NLE⁻¹' (maxₙ (NLE' a) (NLE' b))
+maxₙₗ : NumberLevel → NumberLevel → NumberLevel
+maxₙₗ a b = NLE⁻¹ (maxₙ (NLE a) (NLE b))
 
-≟ₙₗ-sym : ∀ a b → Trichotomy (NLE' a) (NLE' b) → Trichotomy (NLE' b) (NLE' a)
+≟ₙₗ-sym : ∀ a b → Trichotomy (NLE a) (NLE b) → Trichotomy (NLE b) (NLE a)
 ≟ₙₗ-sym a b (lt x) = gt x
 ≟ₙₗ-sym a b (eq x) = eq (sym x)
 ≟ₙₗ-sym a b (gt x) = lt x
 
-max-symₙₗ : ∀ a b → maxₙₗ' a b ≡ maxₙₗ' b a
-max-symₙₗ a b with NLE' a ≟ₙ NLE' b | NLE' b ≟ₙ NLE' a
-... | lt x | lt y = ⊥-elim {A = λ _ → NLE⁻¹' (NLE' b) ≡ NLE⁻¹' (NLE' a)} $  <-asymₙ _ _ x y 
+max-symₙₗ : ∀ a b → maxₙₗ a b ≡ maxₙₗ b a
+max-symₙₗ a b with NLE a ≟ₙ NLE b | NLE b ≟ₙ NLE a
+... | lt x | lt y = ⊥-elim {A = λ _ → NLE⁻¹ (NLE b) ≡ NLE⁻¹ (NLE a)} $  <-asymₙ _ _ x y 
 ... | lt x | eq y = refl
 ... | lt x | gt y = refl
 ... | eq x | lt y = refl
-... | eq x | eq y = cong NLE⁻¹' x
-... | eq x | gt y = cong NLE⁻¹' x
+... | eq x | eq y = cong NLE⁻¹ x
+... | eq x | gt y = cong NLE⁻¹ x
 ... | gt x | lt y = refl
-... | gt x | eq y = sym (cong NLE⁻¹' y)
-... | gt x | gt y = ⊥-elim {A = λ _ → NLE⁻¹' (NLE' a) ≡ NLE⁻¹' (NLE' b)} $  <-asymₙ _ _ x y 
+... | gt x | eq y = sym (cong NLE⁻¹ y)
+... | gt x | gt y = ⊥-elim {A = λ _ → NLE⁻¹ (NLE a) ≡ NLE⁻¹ (NLE b)} $  <-asymₙ _ _ x y 
 
-max-implies-≤ₙₗ' : (a : NumberLevel) → (b : NumberLevel) → a ≤ₙₗ' maxₙₗ' a b
-max-implies-≤ₙₗ' a b with (NLE' a) ≟ (NLE' b)
-... | lt (x , p) =  suc x ,  sym (+-suc _ _)  ∙ p ∙ cong NLE' (sym (NLE-id²' b))
-... | eq x = 0 , sym (cong NLE' (NLE-id²' a) ∙ refl {x = NLE' a})
-... | gt x = 0 , sym (cong NLE' (NLE-id²' a) ∙ refl {x = NLE' a})
+max-implies-≤ₙₗ : (a : NumberLevel) → (b : NumberLevel) → a ≤ₙₗ maxₙₗ a b
+max-implies-≤ₙₗ a b with (NLE a) ≟ (NLE b)
+... | lt (x , p) =  suc x ,  sym (+-suc _ _)  ∙ p ∙ cong NLE (sym (NLE-id² b))
+... | eq x = 0 , sym (cong NLE (NLE-id² a) ∙ refl {x = NLE a})
+... | gt x = 0 , sym (cong NLE (NLE-id² a) ∙ refl {x = NLE a})
 
-max-implies-≤ₙₗ₂' : (a : NumberLevel) → (b : NumberLevel) → (a ≤ₙₗ' maxₙₗ' a b) × (b ≤ₙₗ' maxₙₗ' a b)
-max-implies-≤ₙₗ₂' a b = max-implies-≤ₙₗ' a b , transport (λ i → b ≤ₙₗ' max-symₙₗ b a i) (max-implies-≤ₙₗ' b a)
+max-implies-≤ₙₗ₂ : (a : NumberLevel) → (b : NumberLevel) → (a ≤ₙₗ maxₙₗ a b) × (b ≤ₙₗ maxₙₗ a b)
+max-implies-≤ₙₗ₂ a b = max-implies-≤ₙₗ a b , transport (λ i → b ≤ₙₗ max-symₙₗ b a i) (max-implies-≤ₙₗ b a)
 
 ------------8<-------------------------------------8<-----------------------------
 
@@ -252,7 +252,7 @@ PositivityLevelType isRat     = PositivityLevelOrderedRing
 PositivityLevelType isReal    = PositivityLevelOrderedRing
 PositivityLevelType isComplex = PositivityLevelField
 
-NumberProp' = Σ NumberLevel PositivityLevelType
+NumberProp = Σ NumberLevel PositivityLevelType
 
 module PatternsType where
   -- ordered ring patterns
@@ -456,113 +456,113 @@ NumberLevelProplevel isRat     = ℚℓ'
 NumberLevelProplevel isReal    = ℝℓ'
 NumberLevelProplevel isComplex = ℂℓ'
 
-Il' : (x : NumberLevel) → Type (NumberLevelLevel x)
-Il' isNat     = let open ℕ* in ℕ₀
-Il' isInt     = let open ℤ  in ℤ
-Il' isRat     = let open ℚ  in ℚ
-Il' isReal    = let open ℝ  in ℝ
-Il' isComplex = let open ℂ  in ℂ
+NumberLevelInterpretation : (x : NumberLevel) → Type (NumberLevelLevel x)
+NumberLevelInterpretation isNat     = let open ℕ* in ℕ₀
+NumberLevelInterpretation isInt     = let open ℤ  in ℤ
+NumberLevelInterpretation isRat     = let open ℚ  in ℚ
+NumberLevelInterpretation isReal    = let open ℝ  in ℝ
+NumberLevelInterpretation isComplex = let open ℂ  in ℂ
 
 {-
-Il : NumberLevel → Type ℝℓ
-Il isNat     = let open ℕ* in ℕ -- NOTE: this occurs in the Have/Goal
-Il isInt     = let open ℤ in ℤ --       so somehow the "amount of normalization" at the call site is inherited from the function (clause)
-Il isRat     = let open ℚ in ℚ --       the finding is, that to produce "nice" Goals,
-Il isReal    = let open ℝ in ℝ --         we need to create the same symbol-import-path in the definition clause
-Il isComplex = let open ℂ in ℂ --         that will also be present at the call site
+NumberLevelInterpretation : NumberLevel → Type ℝℓ
+NumberLevelInterpretation isNat     = let open ℕ* in ℕ -- NOTE: this occurs in the Have/Goal
+NumberLevelInterpretation isInt     = let open ℤ in ℤ --       so somehow the "amount of normalization" at the call site is inherited from the function (clause)
+NumberLevelInterpretation isRat     = let open ℚ in ℚ --       the finding is, that to produce "nice" Goals,
+NumberLevelInterpretation isReal    = let open ℝ in ℝ --         we need to create the same symbol-import-path in the definition clause
+NumberLevelInterpretation isComplex = let open ℂ in ℂ --         that will also be present at the call site
 -}
 
 -- PositivityLevel interpretation
 
-Ip' : (nl : NumberLevel) → PositivityLevelType nl → (x : Il' nl) → Type (NumberLevelProplevel nl)
-Ip' isNat     ⁇x⁇ x =                                        Unit
-Ip' isNat     x#0 x = let open ℕ                             in ( x # 0f)
-Ip' isNat     0≤x x = let open ℕ                             in (0f ≤  x)
-Ip' isNat     0<x x = let open ℕ                             in (ℕ.0f < x) 
-Ip' isNat     x≤0 x = let open ℕ                             in ( x ≤ 0f) 
-Ip' isNat     x<0 x =                                        ⊥
-Ip' isInt     ⁇x⁇ x =                                        Lift Unit
-Ip' isInt     x#0 x = let open ℤ.Bundle             ℤ.bundle in ( x # 0f)
-Ip' isInt     0≤x x = let open ℤ.Bundle             ℤ.bundle in (0f ≤  x)
-Ip' isInt     0<x x = let open ℤ.Bundle             ℤ.bundle in (0f <  x)
-Ip' isInt     x≤0 x = let open ℤ.Bundle             ℤ.bundle in ( x ≤ 0f)
-Ip' isInt     x<0 x = let open ℤ.Bundle             ℤ.bundle in ( x < 0f)
-Ip' isRat     ⁇x⁇ x =                                        Lift Unit        
-Ip' isRat     x#0 x = let open ℚ.Bundle             ℚ.bundle in ( x # 0f)
-Ip' isRat     0≤x x = let open ℚ.Bundle             ℚ.bundle in (0f ≤  x)
-Ip' isRat     0<x x = let open ℚ.Bundle             ℚ.bundle in (0f <  x)
-Ip' isRat     x≤0 x = let open ℚ.Bundle             ℚ.bundle in ( x ≤ 0f)
-Ip' isRat     x<0 x = let open ℚ.Bundle             ℚ.bundle in ( x < 0f)
-Ip' isReal    ⁇x⁇ x =                                        Lift Unit 
-Ip' isReal    x#0 x = let open ℝ.Bundle             ℝ.bundle in ( x # 0f)
-Ip' isReal    0≤x x = let open ℝ.Bundle             ℝ.bundle in (0f ≤  x)
-Ip' isReal    0<x x = let open ℝ.Bundle             ℝ.bundle in (0f <  x)
-Ip' isReal    x≤0 x = let open ℝ.Bundle             ℝ.bundle in ( x ≤ 0f)
-Ip' isReal    x<0 x = let open ℝ.Bundle             ℝ.bundle in ( x < 0f)
-Ip' isComplex ⁇x⁇ x =                                        Lift Unit 
-Ip' isComplex x#0 x = let open ℂ.Bundle             ℂ.bundle in ( x # 0f)
+PositivityInterpretation : (nl : NumberLevel) → PositivityLevelType nl → (x : NumberLevelInterpretation nl) → Type (NumberLevelProplevel nl)
+PositivityInterpretation isNat     ⁇x⁇ x =                                        Unit
+PositivityInterpretation isNat     x#0 x = let open ℕ                             in ( x # 0f)
+PositivityInterpretation isNat     0≤x x = let open ℕ                             in (0f ≤  x)
+PositivityInterpretation isNat     0<x x = let open ℕ                             in (ℕ.0f < x) 
+PositivityInterpretation isNat     x≤0 x = let open ℕ                             in ( x ≤ 0f) 
+PositivityInterpretation isNat     x<0 x =                                        ⊥
+PositivityInterpretation isInt     ⁇x⁇ x =                                        Lift Unit
+PositivityInterpretation isInt     x#0 x = let open ℤ.Bundle             ℤ.bundle in ( x # 0f)
+PositivityInterpretation isInt     0≤x x = let open ℤ.Bundle             ℤ.bundle in (0f ≤  x)
+PositivityInterpretation isInt     0<x x = let open ℤ.Bundle             ℤ.bundle in (0f <  x)
+PositivityInterpretation isInt     x≤0 x = let open ℤ.Bundle             ℤ.bundle in ( x ≤ 0f)
+PositivityInterpretation isInt     x<0 x = let open ℤ.Bundle             ℤ.bundle in ( x < 0f)
+PositivityInterpretation isRat     ⁇x⁇ x =                                        Lift Unit        
+PositivityInterpretation isRat     x#0 x = let open ℚ.Bundle             ℚ.bundle in ( x # 0f)
+PositivityInterpretation isRat     0≤x x = let open ℚ.Bundle             ℚ.bundle in (0f ≤  x)
+PositivityInterpretation isRat     0<x x = let open ℚ.Bundle             ℚ.bundle in (0f <  x)
+PositivityInterpretation isRat     x≤0 x = let open ℚ.Bundle             ℚ.bundle in ( x ≤ 0f)
+PositivityInterpretation isRat     x<0 x = let open ℚ.Bundle             ℚ.bundle in ( x < 0f)
+PositivityInterpretation isReal    ⁇x⁇ x =                                        Lift Unit 
+PositivityInterpretation isReal    x#0 x = let open ℝ.Bundle             ℝ.bundle in ( x # 0f)
+PositivityInterpretation isReal    0≤x x = let open ℝ.Bundle             ℝ.bundle in (0f ≤  x)
+PositivityInterpretation isReal    0<x x = let open ℝ.Bundle             ℝ.bundle in (0f <  x)
+PositivityInterpretation isReal    x≤0 x = let open ℝ.Bundle             ℝ.bundle in ( x ≤ 0f)
+PositivityInterpretation isReal    x<0 x = let open ℝ.Bundle             ℝ.bundle in ( x < 0f)
+PositivityInterpretation isComplex ⁇x⁇ x =                                        Lift Unit 
+PositivityInterpretation isComplex x#0 x = let open ℂ.Bundle             ℂ.bundle in ( x # 0f)
 
 {-
-Ip : (nl : NumberLevel) → PositivityLevel → (x : Il nl) → Type ℝℓ'
-Ip isNat     ⁇x⁇ x =                                        Lift Unit
-Ip isNat     x#0 x = let open ℕ                             in ( x # 0f)
-Ip isNat     0≤x x = let open ℕ                             in (0f ≤  x)
-Ip isNat     0<x x = let open ℕ                             in (ℕ.0f < x) 
-Ip isNat     x≤0 x = let open ℕ                             in ( x ≤ 0f) 
-Ip isNat     x<0 x =                                        Lift ⊥
-Ip isInt     ⁇x⁇ x =                                        Lift Unit
-Ip isInt     x#0 x = let open ℤ.Bundle             ℤ.bundle in ( x # 0f)
-Ip isInt     0≤x x = let open ℤ.Bundle             ℤ.bundle in (0f ≤  x)
-Ip isInt     0<x x = let open ℤ.Bundle             ℤ.bundle in (0f <  x)
-Ip isInt     x≤0 x = let open ℤ.Bundle             ℤ.bundle in ( x ≤ 0f)
-Ip isInt     x<0 x = let open ℤ.Bundle             ℤ.bundle in ( x < 0f)
-Ip isRat     ⁇x⁇ x =                                        Lift Unit        
-Ip isRat     x#0 x = let open ℚ.Bundle             ℚ.bundle in ( x # 0f)
-Ip isRat     0≤x x = let open ℚ.Bundle             ℚ.bundle in (0f ≤  x)
-Ip isRat     0<x x = let open ℚ.Bundle             ℚ.bundle in (0f <  x)
-Ip isRat     x≤0 x = let open ℚ.Bundle             ℚ.bundle in ( x ≤ 0f)
-Ip isRat     x<0 x = let open ℚ.Bundle             ℚ.bundle in ( x < 0f)
-Ip isReal    ⁇x⁇ x =                                        Lift Unit 
-Ip isReal    x#0 x = let open ℝ.Bundle             ℝ.bundle in ( x # 0f)
-Ip isReal    0≤x x = let open ℝ.Bundle             ℝ.bundle in (0f ≤  x)
-Ip isReal    0<x x = let open ℝ.Bundle             ℝ.bundle in (0f <  x)
-Ip isReal    x≤0 x = let open ℝ.Bundle             ℝ.bundle in ( x ≤ 0f)
-Ip isReal    x<0 x = let open ℝ.Bundle             ℝ.bundle in ( x < 0f)
-Ip isComplex ⁇x⁇ x =                                        Lift Unit 
-Ip isComplex x#0 x = let open ℂ.Bundle             ℂ.bundle in ( x # 0f)
-Ip isComplex 0≤x x =                                        Lift ⊥
-Ip isComplex 0<x x =                                        Lift ⊥
-Ip isComplex x≤0 x =                                        Lift ⊥
-Ip isComplex x<0 x =                                        Lift ⊥
+PositivityInterpretation : (nl : NumberLevel) → PositivityLevel → (x : NumberLevelInterpretation nl) → Type ℝℓ'
+PositivityInterpretation isNat     ⁇x⁇ x =                                        Lift Unit
+PositivityInterpretation isNat     x#0 x = let open ℕ                             in ( x # 0f)
+PositivityInterpretation isNat     0≤x x = let open ℕ                             in (0f ≤  x)
+PositivityInterpretation isNat     0<x x = let open ℕ                             in (ℕ.0f < x) 
+PositivityInterpretation isNat     x≤0 x = let open ℕ                             in ( x ≤ 0f) 
+PositivityInterpretation isNat     x<0 x =                                        Lift ⊥
+PositivityInterpretation isInt     ⁇x⁇ x =                                        Lift Unit
+PositivityInterpretation isInt     x#0 x = let open ℤ.Bundle             ℤ.bundle in ( x # 0f)
+PositivityInterpretation isInt     0≤x x = let open ℤ.Bundle             ℤ.bundle in (0f ≤  x)
+PositivityInterpretation isInt     0<x x = let open ℤ.Bundle             ℤ.bundle in (0f <  x)
+PositivityInterpretation isInt     x≤0 x = let open ℤ.Bundle             ℤ.bundle in ( x ≤ 0f)
+PositivityInterpretation isInt     x<0 x = let open ℤ.Bundle             ℤ.bundle in ( x < 0f)
+PositivityInterpretation isRat     ⁇x⁇ x =                                        Lift Unit        
+PositivityInterpretation isRat     x#0 x = let open ℚ.Bundle             ℚ.bundle in ( x # 0f)
+PositivityInterpretation isRat     0≤x x = let open ℚ.Bundle             ℚ.bundle in (0f ≤  x)
+PositivityInterpretation isRat     0<x x = let open ℚ.Bundle             ℚ.bundle in (0f <  x)
+PositivityInterpretation isRat     x≤0 x = let open ℚ.Bundle             ℚ.bundle in ( x ≤ 0f)
+PositivityInterpretation isRat     x<0 x = let open ℚ.Bundle             ℚ.bundle in ( x < 0f)
+PositivityInterpretation isReal    ⁇x⁇ x =                                        Lift Unit 
+PositivityInterpretation isReal    x#0 x = let open ℝ.Bundle             ℝ.bundle in ( x # 0f)
+PositivityInterpretation isReal    0≤x x = let open ℝ.Bundle             ℝ.bundle in (0f ≤  x)
+PositivityInterpretation isReal    0<x x = let open ℝ.Bundle             ℝ.bundle in (0f <  x)
+PositivityInterpretation isReal    x≤0 x = let open ℝ.Bundle             ℝ.bundle in ( x ≤ 0f)
+PositivityInterpretation isReal    x<0 x = let open ℝ.Bundle             ℝ.bundle in ( x < 0f)
+PositivityInterpretation isComplex ⁇x⁇ x =                                        Lift Unit 
+PositivityInterpretation isComplex x#0 x = let open ℂ.Bundle             ℂ.bundle in ( x # 0f)
+PositivityInterpretation isComplex 0≤x x =                                        Lift ⊥
+PositivityInterpretation isComplex 0<x x =                                        Lift ⊥
+PositivityInterpretation isComplex x≤0 x =                                        Lift ⊥
+PositivityInterpretation isComplex x<0 x =                                        Lift ⊥
 -}
 
 -- NumberProp interpretation
-In' : ((l , p) : NumberProp') → Type (ℓ-max (NumberLevelLevel l) (NumberLevelProplevel l))
-In' (level , positivity) = Σ (Il' level) (Ip' level positivity) 
+NumberInterpretation : ((l , p) : NumberProp) → Type (ℓ-max (NumberLevelLevel l) (NumberLevelProplevel l))
+NumberInterpretation (level , positivity) = Σ (NumberLevelInterpretation level) (PositivityInterpretation level positivity) 
 
 {-
 In : NumberProp → Type (ℓ-max ℝℓ ℝℓ')
-In (level ,, positivity) = Σ (Il level) (Ip level positivity)
+In (level ,, positivity) = Σ (NumberLevelInterpretation level) (PositivityInterpretation level positivity)
 -}
 
 -- maybe it's better to name
 
-data Number (p : NumberProp') : Type (ℓ-max (NumberLevelLevel (fst p)) (NumberLevelProplevel (fst p))) where
-  number : In' p → Number p
+data Number (p : NumberProp) : Type (ℓ-max (NumberLevelLevel (fst p)) (NumberLevelProplevel (fst p))) where
+  number : NumberInterpretation p → Number p
   -- _,,_ : (Il' (fst p)) → (Ip' (fst p) (snd p)) → Number p
 
-num : ∀{(l , p) : NumberProp'} → Number (l , p) → Il' l
+num : ∀{(l , p) : NumberProp} → Number (l , p) → NumberLevelInterpretation l
 num (number p) = fst p
 
-prp : ∀{pp@(l , p) : NumberProp'} → (x : Number pp) → Ip' l p (num x)
+prp : ∀{pp@(l , p) : NumberProp} → (x : Number pp) → PositivityInterpretation l p (num x)
 prp (number p) = snd p
 
-pop : ∀{p : NumberProp'} → Number p → In' p
+pop : ∀{p : NumberProp} → Number p → NumberInterpretation p
 pop (number (x , p)) = x , p
 
 -- common level
 Cl : (a : NumberLevel) → (b : NumberLevel) → NumberLevel -- Σ[ c ∈ NumberLevel ] a ≤ₙₗ c × b ≤ₙₗ c
-Cl a b = maxₙₗ' a b
+Cl a b = maxₙₗ a b
 -- Cl _         isComplex = isComplex
 -- Cl isComplex _         = isComplex
 -- Cl _         isReal    = isReal

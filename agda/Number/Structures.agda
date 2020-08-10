@@ -44,6 +44,14 @@ record IsROrderedCommSemiring {F : Type ℓ} (_<_ _≤_ _#_ : Rel F F ℓ') (min
     isRLattice : IsRLattice _<_ _≤_ _#_ min max
     -- TODO: the following can be derived
     0<1 : 0f < 1f
+    +-<-<-implies-<ʳ : ∀ a b → 0f <  a → 0f <  b →    0f   < (a + b)
+    +-<-≤-implies-<ʳ : ∀ a b → 0f <  a → 0f ≤  b →    0f   < (a + b)
+    +-≤-<-implies-<ʳ : ∀ a b → 0f ≤  a → 0f <  b →    0f   < (a + b)
+    +-≤-≤-implies-≤ʳ : ∀ a b → 0f ≤  a → 0f ≤  b →    0f   ≤ (a + b)
+    +-<-<-implies-<ˡ : ∀ a b →  a < 0f →  b < 0f → (a + b) <    0f
+    +-<-≤-implies-<ˡ : ∀ a b →  a < 0f →  b ≤ 0f → (a + b) <    0f
+    +-≤-<-implies-<ˡ : ∀ a b →  a ≤ 0f →  b < 0f → (a + b) <    0f
+    +-≤-≤-implies-≤ˡ : ∀ a b →  a ≤ 0f →  b ≤ 0f → (a + b) ≤    0f
     
     -- TODO: properties
   open IsRLattice isRLattice public
