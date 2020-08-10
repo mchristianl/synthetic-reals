@@ -27,9 +27,9 @@ open import Function.Base using (_∋_)
 -- open import Bundles
 
 open import Number.Postulates
-open import Number.Structures ℝℓ ℝℓ'
-open import Number.Bundles    ℝℓ ℝℓ'
-open import Number.Inclusions ℝℓ ℝℓ'
+open import Number.Structures
+open import Number.Bundles
+open import Number.Inclusions
 open import Number.Blueprint
 
 open import Number.Coercions
@@ -99,8 +99,8 @@ coerce : (from : NumberLevel)
        → (to   : NumberLevel)
        → from ≤ₙₗ' to
        → ∀{p}
-       → Number (from ,, availablePositivity from p)
-       → Number (to   ,, availablePositivity to   p)
+       → Number (from , p)
+       → Number (to   , coerce-PositivityLevel from to p)
 coerce isNat     isNat     q {p} x = x 
 coerce isInt     isInt     q {p} x = x
 coerce isRat     isRat     q {p} x = x
@@ -117,23 +117,27 @@ coerce isRat     isReal    q {p} x = number (ℚ↪ℝ (num x) , coerce-ℚ↪�
 coerce isRat     isComplex q {p} x = number (ℚ↪ℂ (num x) , coerce-ℚ↪ℂ x)
 coerce isReal    isComplex q {p} x = number (ℝ↪ℂ (num x) , coerce-ℝ↪ℂ x)
 --coerce x         y         = nothing
-coerce isInt     isNat  (k , q) {p} x = ⊥-elim {A = λ _ → Number (isNat  ,, p)} (k+x+sy≢x _ _ _ q)
-coerce isRat     isNat  (k , q) {p} x = ⊥-elim {A = λ _ → Number (isNat  ,, p)} (k+x+sy≢x _ _ _ q)  
-coerce isRat     isInt  (k , q) {p} x = ⊥-elim {A = λ _ → Number (isInt  ,, p)} (k+x+sy≢x _ _ _ q)
-coerce isReal    isNat  (k , q) {p} x = ⊥-elim {A = λ _ → Number (isNat  ,, p)} (k+x+sy≢x _ _ _ q)
-coerce isReal    isInt  (k , q) {p} x = ⊥-elim {A = λ _ → Number (isInt  ,, p)} (k+x+sy≢x _ _ _ q)
-coerce isReal    isRat  (k , q) {p} x = ⊥-elim {A = λ _ → Number (isRat  ,, p)} (k+x+sy≢x _ _ _ q)
-coerce isComplex isNat  (k , q) {p} x = ⊥-elim {A = λ _ → Number (isNat  ,, p)} (k+x+sy≢x _ _ _ q)
-coerce isComplex isInt  (k , q) {p} x = ⊥-elim {A = λ _ → Number (isInt  ,, p)} (k+x+sy≢x _ _ _ q)
-coerce isComplex isRat  (k , q) {p} x = ⊥-elim {A = λ _ → Number (isRat  ,, p)} (k+x+sy≢x _ _ _ q)
-coerce isComplex isReal (k , q) {p} x = ⊥-elim {A = λ _ → Number (isReal ,, p)} (k+x+sy≢x _ _ _ q)
+coerce isInt     isNat  (k , q) {p} x = ⊥-elim {A = λ _ → Number (isNat  , p)} (k+x+sy≢x _ _ _ q)
+coerce isRat     isNat  (k , q) {p} x = ⊥-elim {A = λ _ → Number (isNat  , p)} (k+x+sy≢x _ _ _ q)  
+coerce isRat     isInt  (k , q) {p} x = ⊥-elim {A = λ _ → Number (isInt  , p)} (k+x+sy≢x _ _ _ q)
+coerce isReal    isNat  (k , q) {p} x = ⊥-elim {A = λ _ → Number (isNat  , p)} (k+x+sy≢x _ _ _ q)
+coerce isReal    isInt  (k , q) {p} x = ⊥-elim {A = λ _ → Number (isInt  , p)} (k+x+sy≢x _ _ _ q)
+coerce isReal    isRat  (k , q) {p} x = ⊥-elim {A = λ _ → Number (isRat  , p)} (k+x+sy≢x _ _ _ q)
+coerce isComplex isNat  (k , q) {p} x = ⊥-elim {A = λ _ → Number (isNat  , coerce-PositivityLevel isComplex isNat  p)} (k+x+sy≢x _ _ _ q)
+coerce isComplex isInt  (k , q) {p} x = ⊥-elim {A = λ _ → Number (isInt  , coerce-PositivityLevel isComplex isInt  p)} (k+x+sy≢x _ _ _ q)
+coerce isComplex isRat  (k , q) {p} x = ⊥-elim {A = λ _ → Number (isRat  , coerce-PositivityLevel isComplex isRat  p)} (k+x+sy≢x _ _ _ q)
+coerce isComplex isReal (k , q) {p} x = ⊥-elim {A = λ _ → Number (isReal , coerce-PositivityLevel isComplex isReal p)} (k+x+sy≢x _ _ _ q)
 
 
-+-Types : NumberProp → NumberProp → NumberProp
-+-Types (level₀ ,, pos₀) (level₁ ,, pos₁) =  (maxₙₗ' level₀ level₁) ,, +-Positivity pos₀ pos₁
++-Types : NumberProp' → NumberProp' → NumberProp'
++-Types (level₀ , pos₀) (level₁ , pos₁) =
+  let level  = maxₙₗ' level₀ level₁
+  in level , +-Positivityʰ level (coerce-PositivityLevel level₀ level pos₀) (coerce-PositivityLevel level₁ level pos₁)
 
-·-Types : NumberProp → NumberProp → NumberProp
-·-Types (level₀ ,, pos₀) (level₁ ,, pos₁) =  (maxₙₗ' level₀ level₁) ,, ·-Positivity pos₀ pos₁
+·-Types : NumberProp' → NumberProp' → NumberProp'
+·-Types (level₀ , pos₀) (level₁ , pos₁) =
+  let level  = maxₙₗ' level₀ level₁
+  in level , ·-Positivityʰ level (coerce-PositivityLevel level₀ level pos₀) (coerce-PositivityLevel level₁ level pos₁)
 
 private
   instance
@@ -142,16 +146,20 @@ private
     s≤s' : ∀ {m n} {{m≤n : m ≤ₙ n}} → suc m ≤ₙ suc n
     s≤s' {m} {n} {{m≤n}} = s≤s m≤n
 
-⁻¹-Levels : (a : NumberLevel) → Σ[ b ∈ NumberLevel ] a ≤ₙₗ b
+-- TODO: why does `it` not work here?
+⁻¹-Levels : (a : NumberLevel) → Σ[ b ∈ NumberLevel ] a ≤ₙₗ' b
 ⁻¹-Levels isNat     = isRat     , it
-⁻¹-Levels isInt     = isRat     , it
-⁻¹-Levels isRat     = isRat     , it
-⁻¹-Levels isReal    = isReal    , it
-⁻¹-Levels isComplex = isComplex , it
+⁻¹-Levels isInt     = isRat     , s≤s z≤n -- s≤s' {{z≤n'}}
+⁻¹-Levels isRat     = isRat     , s≤s (s≤s z≤n) 
+⁻¹-Levels isReal    = isReal    , s≤s (s≤s (s≤s z≤n)) -- it 
+⁻¹-Levels isComplex = isComplex , s≤s (s≤s (s≤s (s≤s z≤n))) 
 
 ⁻¹-Levels' : (a : NumberLevel) → NumberLevel
 ⁻¹-Levels' x = maxₙₗ' x isRat
 
+open PatternsType
+
+{-
 private
   pattern X   = anyPositivity
   pattern X⁺⁻ = isNonzero
@@ -159,12 +167,15 @@ private
   pattern X⁺  = isPositive
   pattern X⁻  = isNegative
   pattern X₀⁻ = isNonpositive
+-}
 
+{-
 ⁻¹-Types : NumberProp → Maybe NumberProp
 ⁻¹-Types (level ,, X  ) = nothing
 ⁻¹-Types (level ,, X₀⁺) = nothing
 ⁻¹-Types (level ,, X₀⁻) = nothing
 ⁻¹-Types (level ,, p  ) = just (fst (⁻¹-Levels level) ,, p)
+-}
 
 -- ∀{{ q : Unit }} → Number (level ,, X⁺⁻)
 -- ∀{{ q : Unit }} → Number (level ,, X⁺ )
@@ -176,37 +187,51 @@ open ℚᶠ ℚ.bundle
 open ℝʳ ℝ.bundle
 open ℂᶜ ℂ.bundle
 
+open PatternsType
 
-⁻¹-Types' : ∀{l p} → Number (l ,, p) → Type (ℓ-max ℝℓ ℝℓ')
-⁻¹-Types' {level    } {X⁺⁻} (number (x , p)) = ∀{{ q : Unit    }} → Number (level     ,, X⁺⁻)
-⁻¹-Types' {level    } {X⁺ } (number (x , p)) = ∀{{ q : Unit    }} → Number (level     ,, X⁺ )
-⁻¹-Types' {level    } {X⁻ } (number (x , p)) = ∀{{ q : Unit    }} → Number (level     ,, X⁻ )
-⁻¹-Types' {isNat    } {X  } (number (x , p)) = ∀{{ q : x #ⁿ 0ⁿ }} → Number (isNat     ,, X⁺⁻)
-⁻¹-Types' {isInt    } {X  } (number (x , p)) = ∀{{ q : x #ᶻ 0ᶻ }} → Number (isInt     ,, X⁺⁻)
-⁻¹-Types' {isRat    } {X  } (number (x , p)) = ∀{{ q : x #ᶠ 0ᶠ }} → Number (isRat     ,, X⁺⁻)
-⁻¹-Types' {isReal   } {X  } (number (x , p)) = ∀{{ q : x #ʳ 0ʳ }} → Number (isReal    ,, X⁺⁻)
-⁻¹-Types' {isComplex} {X  } (number (x , p)) = ∀{{ q : x #ᶜ 0ᶜ }} → Number (isComplex ,, X⁺⁻)
-⁻¹-Types' {isNat    } {X₀⁺} (number (x , p)) = ∀{{ q : x #ⁿ 0ⁿ }} → Number (isNat     ,, X⁺ )
-⁻¹-Types' {isInt    } {X₀⁺} (number (x , p)) = ∀{{ q : x #ᶻ 0ᶻ }} → Number (isInt     ,, X⁺ )
-⁻¹-Types' {isRat    } {X₀⁺} (number (x , p)) = ∀{{ q : x #ᶠ 0ᶠ }} → Number (isRat     ,, X⁺ )
-⁻¹-Types' {isReal   } {X₀⁺} (number (x , p)) = ∀{{ q : x #ʳ 0ʳ }} → Number (isReal    ,, X⁺ )
-⁻¹-Types' {isNat    } {X₀⁻} (number (x , p)) = ∀{{ q : x #ⁿ 0ⁿ }} → Number (isNat     ,, X⁻ )
-⁻¹-Types' {isInt    } {X₀⁻} (number (x , p)) = ∀{{ q : x #ᶻ 0ᶻ }} → Number (isInt     ,, X⁻ )
-⁻¹-Types' {isRat    } {X₀⁻} (number (x , p)) = ∀{{ q : x #ᶠ 0ᶠ }} → Number (isRat     ,, X⁻ )
-⁻¹-Types' {isReal   } {X₀⁻} (number (x , p)) = ∀{{ q : x #ʳ 0ʳ }} → Number (isReal    ,, X⁻ )
+-- ⁻¹-Typesᵒʳ : ∀{P@(l , p) : PositivityLevelOrderedRing} → Number P → Type (NumberLevelLevel l)
+-- ⁻¹-Typesᵒʳ {l , p} x = ?
+
+-- ⁻¹-Typesᶠ
+
+⁻¹-Types' : ∀{l p} → Number (l , p) → Type (NumberLevelLevel l)
+⁻¹-Types' {l} = {!!}
+
+{-
+⁻¹-Types' {level    } {X⁺⁻} (number (x , p)) = ∀{{ q : Unit    }} → Number (level     , X⁺⁻)
+⁻¹-Types' {level    } {X⁺ } (number (x , p)) = ∀{{ q : Unit    }} → Number (level     , X⁺ )
+⁻¹-Types' {level    } {X⁻ } (number (x , p)) = ∀{{ q : Unit    }} → Number (level     , X⁻ )
+⁻¹-Types' {isNat    } {X  } (number (x , p)) = ∀{{ q : x #ⁿ 0ⁿ }} → Number (isNat     , X⁺⁻)
+⁻¹-Types' {isInt    } {X  } (number (x , p)) = ∀{{ q : x #ᶻ 0ᶻ }} → Number (isInt     , X⁺⁻)
+⁻¹-Types' {isRat    } {X  } (number (x , p)) = ∀{{ q : x #ᶠ 0ᶠ }} → Number (isRat     , X⁺⁻)
+⁻¹-Types' {isReal   } {X  } (number (x , p)) = ∀{{ q : x #ʳ 0ʳ }} → Number (isReal    , X⁺⁻)
+⁻¹-Types' {isComplex} {X  } (number (x , p)) = ∀{{ q : x #ᶜ 0ᶜ }} → Number (isComplex , X⁺⁻)
+⁻¹-Types' {isNat    } {X₀⁺} (number (x , p)) = ∀{{ q : x #ⁿ 0ⁿ }} → Number (isNat     , X⁺ )
+⁻¹-Types' {isInt    } {X₀⁺} (number (x , p)) = ∀{{ q : x #ᶻ 0ᶻ }} → Number (isInt     , X⁺ )
+⁻¹-Types' {isRat    } {X₀⁺} (number (x , p)) = ∀{{ q : x #ᶠ 0ᶠ }} → Number (isRat     , X⁺ )
+⁻¹-Types' {isReal   } {X₀⁺} (number (x , p)) = ∀{{ q : x #ʳ 0ʳ }} → Number (isReal    , X⁺ )
+⁻¹-Types' {isNat    } {X₀⁻} (number (x , p)) = ∀{{ q : x #ⁿ 0ⁿ }} → Number (isNat     , X⁻ )
+⁻¹-Types' {isInt    } {X₀⁻} (number (x , p)) = ∀{{ q : x #ᶻ 0ᶻ }} → Number (isInt     , X⁻ )
+⁻¹-Types' {isRat    } {X₀⁻} (number (x , p)) = ∀{{ q : x #ᶠ 0ᶠ }} → Number (isRat     , X⁻ )
+⁻¹-Types' {isReal   } {X₀⁻} (number (x , p)) = ∀{{ q : x #ʳ 0ʳ }} → Number (isReal    , X⁻ )
+-}
 
 -Levels : NumberLevel → NumberLevel
 -Levels x = minₙₗ' x isInt
 -- -Levels isNat = isInt
 -- -Levels x     = x
 
--Types : NumberProp → NumberProp
--Types (level ,, X  ) = -Levels level ,, X
--Types (level ,, X⁺⁻) = -Levels level ,, X⁺⁻
--Types (level ,, X₀⁺) = -Levels level ,, X₀⁻
--Types (level ,, X⁺ ) = -Levels level ,, X⁻
--Types (level ,, X⁻ ) = -Levels level ,, X⁺
--Types (level ,, X₀⁻) = -Levels level ,, X₀⁺
+-Types : NumberProp' → NumberProp'
+-Types (l , p) = {!!}
+
+{-
+-Types (level , X  ) = -Levels level , X
+-Types (level , X⁺⁻) = -Levels level , X⁺⁻
+-Types (level , X₀⁺) = -Levels level , X₀⁻
+-Types (level , X⁺ ) = -Levels level , X⁻
+-Types (level , X⁻ ) = -Levels level , X⁺
+-Types (level , X₀⁻) = -Levels level , X₀⁺
+-}
 
 -- coerce : (level-from level-to : NumberLevel) → level-to ≤ₙₗ level-from → Il level-from → Il level-to
 -- coerce level-from level-to x = {!!}
@@ -218,140 +243,114 @@ open ℂᶜ ℂ.bundle
 
 _ = ( _,_ {B = λ x → Lift {j = ℝℓ'} (Σ[ z ∈ ℕ₀ ] z +ₙ 0 ≡ 1)} (lift {j = ℝℓ} 1) (lift {j = ℝℓ'} ( z≤n {1} )))  
 
-_+ʰⁿ_ : ∀{p q} → Number (isNat ,, availablePositivity isNat p) → Number (isNat ,, availablePositivity isNat q) → Number (isNat ,, +-Positivity p q)
-_+ʰⁿ_ {X  } {X  } (number (lift a , pa)) (number (lift b , pb)) = number (lift (a +ₙ b) , lift tt)
-_+ʰⁿ_ {X  } {X⁺⁻} (number (lift a , pa)) (number (lift b , pb)) = number (lift (a +ₙ b) , lift tt)
-_+ʰⁿ_ {X  } {X₀⁺} (number (lift a , pa)) (number (lift b , pb)) = number (lift (a +ₙ b) , lift tt)
-_+ʰⁿ_ {X  } {X⁺ } (number (lift a , pa)) (number (lift b , pb)) = number (lift (a +ₙ b) , lift tt)
-_+ʰⁿ_ {X  } {X₀⁻} (number (lift a , pa)) (number (lift b , pb)) = number (lift (a +ₙ b) , lift tt)
-_+ʰⁿ_ {X⁺⁻} {X  } (number (lift a , pa)) (number (lift b , pb)) = number (lift (a +ₙ b) , lift tt)
-_+ʰⁿ_ {X⁺⁻} {X⁺⁻} (number (lift a , pa)) (number (lift b , pb)) = number (lift (a +ₙ b) , lift tt)
-_+ʰⁿ_ {X⁺⁻} {X₀⁺} (number (lift a , pa)) (number (lift b , pb)) = number (lift (a +ₙ b) , lift tt)
-_+ʰⁿ_ {X⁺⁻} {X⁺ } (number (lift a , pa)) (number (lift b , pb)) = number (lift (a +ₙ b) , lift tt)
-_+ʰⁿ_ {X⁺⁻} {X₀⁻} (number (lift a , pa)) (number (lift b , pb)) = number (lift (a +ₙ b) , lift tt)
-_+ʰⁿ_ {X₀⁺} {X  } (number (lift a , pa)) (number (lift b , pb)) = number (lift (a +ₙ b) , lift tt)
-_+ʰⁿ_ {X₀⁺} {X⁺⁻} (number (lift a , pa)) (number (lift b , pb)) = number (lift (a +ₙ b) , lift tt)
-_+ʰⁿ_ {X₀⁺} {X₀⁺} (number (lift a , pa)) (number (lift b , pb)) = number (lift (a +ₙ b) , {!!}) -- 0 ≤ a → 0 ≤ b → 0 ≤ a + b
-_+ʰⁿ_ {X₀⁺} {X⁺ } (number (lift a , pa)) (number (lift b , pb)) = number (lift (a +ₙ b) , {!!}) -- 0 ≤ a → 0 < b → 0 < a + b
-_+ʰⁿ_ {X₀⁺} {X₀⁻} (number (lift a , pa)) (number (lift b , pb)) = number (lift (a +ₙ b) , lift tt)
-_+ʰⁿ_ {X⁺ } {X  } (number (lift a , pa)) (number (lift b , pb)) = number (lift (a +ₙ b) , lift tt)
-_+ʰⁿ_ {X⁺ } {X⁺⁻} (number (lift a , pa)) (number (lift b , pb)) = number (lift (a +ₙ b) , lift tt)
-_+ʰⁿ_ {X⁺ } {X₀⁺} (number (lift a , pa)) (number (lift b , pb)) = number (lift (a +ₙ b) , {!!}) -- 0 < a → 0 ≤ b → 0 < a + b
-_+ʰⁿ_ {X⁺ } {X⁺ } (number (lift a , pa)) (number (lift b , pb)) = number (lift (a +ₙ b) , {!!}) -- 0 < a → 0 < b → 0 < a + b
-_+ʰⁿ_ {X⁺ } {X₀⁻} (number (lift a , pa)) (number (lift b , pb)) = number (lift (a +ₙ b) , lift tt)
-_+ʰⁿ_ {X₀⁻} {X  } (number (lift a , pa)) (number (lift b , pb)) = number (lift (a +ₙ b) , lift tt)
-_+ʰⁿ_ {X₀⁻} {X⁺⁻} (number (lift a , pa)) (number (lift b , pb)) = number (lift (a +ₙ b) , lift tt)
-_+ʰⁿ_ {X₀⁻} {X₀⁺} (number (lift a , pa)) (number (lift b , pb)) = number (lift (a +ₙ b) , lift tt)
-_+ʰⁿ_ {X₀⁻} {X⁺ } (number (lift a , pa)) (number (lift b , pb)) = number (lift (a +ₙ b) , lift tt)
-_+ʰⁿ_ {X₀⁻} {X₀⁻} (number (lift a , pa)) (number (lift b , pb)) = number (lift (a +ₙ b) , {!!}) -- a ≤ 0 → b ≤ 0 → (a + b) ≤ 0
+_+ʰⁿ_ : ∀{p q} → (x : Number (isNat , p)) → (y : Number (isNat , q)) → Ip' isNat (+-Positivityʰ isNat p q) (num x +ⁿ num y)
+_+ʰⁿ_ {X  } {X  } (number (a , pa)) (number (b , pb)) = tt
+_+ʰⁿ_ {X  } {X⁺⁻} (number (a , pa)) (number (b , pb)) = tt
+_+ʰⁿ_ {X  } {X₀⁺} (number (a , pa)) (number (b , pb)) = tt
+_+ʰⁿ_ {X  } {X⁺ } (number (a , pa)) (number (b , pb)) = tt
+_+ʰⁿ_ {X  } {X₀⁻} (number (a , pa)) (number (b , pb)) = tt
+_+ʰⁿ_ {X⁺⁻} {X  } (number (a , pa)) (number (b , pb)) = tt
+_+ʰⁿ_ {X⁺⁻} {X⁺⁻} (number (a , pa)) (number (b , pb)) = tt
+_+ʰⁿ_ {X⁺⁻} {X₀⁺} (number (a , pa)) (number (b , pb)) = tt
+_+ʰⁿ_ {X⁺⁻} {X⁺ } (number (a , pa)) (number (b , pb)) = tt
+_+ʰⁿ_ {X⁺⁻} {X₀⁻} (number (a , pa)) (number (b , pb)) = tt
+_+ʰⁿ_ {X₀⁺} {X  } (number (a , pa)) (number (b , pb)) = tt
+_+ʰⁿ_ {X₀⁺} {X⁺⁻} (number (a , pa)) (number (b , pb)) = tt
+_+ʰⁿ_ {X₀⁺} {X₀⁺} (number (a , pa)) (number (b , pb)) = {!!} -- 0 ≤ a → 0 ≤ b → 0 ≤ a + b
+_+ʰⁿ_ {X₀⁺} {X⁺ } (number (a , pa)) (number (b , pb)) = {!!} -- 0 ≤ a → 0 < b → 0 < a + b
+_+ʰⁿ_ {X₀⁺} {X₀⁻} (number (a , pa)) (number (b , pb)) = tt
+_+ʰⁿ_ {X⁺ } {X  } (number (a , pa)) (number (b , pb)) = tt
+_+ʰⁿ_ {X⁺ } {X⁺⁻} (number (a , pa)) (number (b , pb)) = tt
+_+ʰⁿ_ {X⁺ } {X₀⁺} (number (a , pa)) (number (b , pb)) = {!!} -- 0 < a → 0 ≤ b → 0 < a + b
+_+ʰⁿ_ {X⁺ } {X⁺ } (number (a , pa)) (number (b , pb)) = {!!} -- 0 < a → 0 < b → 0 < a + b
+_+ʰⁿ_ {X⁺ } {X₀⁻} (number (a , pa)) (number (b , pb)) = tt
+_+ʰⁿ_ {X₀⁻} {X  } (number (a , pa)) (number (b , pb)) = tt
+_+ʰⁿ_ {X₀⁻} {X⁺⁻} (number (a , pa)) (number (b , pb)) = tt
+_+ʰⁿ_ {X₀⁻} {X₀⁺} (number (a , pa)) (number (b , pb)) = tt
+_+ʰⁿ_ {X₀⁻} {X⁺ } (number (a , pa)) (number (b , pb)) = tt
+_+ʰⁿ_ {X₀⁻} {X₀⁻} (number (a , pa)) (number (b , pb)) = {!!} -- a ≤ 0 → b ≤ 0 → (a + b) ≤ 0
 
-_+ʰᶻ_ : ∀{p q} → Number (isInt ,, availablePositivity isInt p) → Number (isInt ,, availablePositivity isInt q) → Number (isInt ,, +-Positivity p q)
+_+ʰᶻ_ : ∀{p q} → (x : Number (isInt , p)) → (y : Number (isInt , q)) → Ip' isInt (+-Positivityʰ isInt p q) (num x +ᶻ num y)
 _+ʰᶻ_ {p} {q} (number (a , pa)) (number (b , pb)) = {!!}
 
-_+ʰᶠ_ : ∀{p q} → Number (isRat ,, availablePositivity isRat p) → Number (isRat ,, availablePositivity isRat q) → Number (isRat ,, +-Positivity p q)
+_+ʰᶠ_ : ∀{p q} → (x : Number (isRat , p)) → (y : Number (isRat , q)) → Ip' isRat (+-Positivityʰ isRat p q) (num x +ᶠ num y)
 _+ʰᶠ_ {p} {q} (number (a , pa)) (number (b , pb)) = {!!}
 
-_+ʰʳ_ : ∀{p q} → Number (isReal ,, availablePositivity isReal p) → Number (isReal ,, availablePositivity isReal q) → Number (isReal ,, +-Positivity p q)
-_+ʰʳ_ {X  } {X  } (number (a , pa)) (number (b , pb)) = number (a +ʳ b , lift tt)
-_+ʰʳ_ {X  } {X⁺⁻} (number (a , pa)) (number (b , pb)) = number (a +ʳ b , lift tt)
-_+ʰʳ_ {X  } {X₀⁺} (number (a , pa)) (number (b , pb)) = number (a +ʳ b , lift tt)
-_+ʰʳ_ {X  } {X⁺ } (number (a , pa)) (number (b , pb)) = number (a +ʳ b , lift tt)
-_+ʰʳ_ {X  } {X⁻ } (number (a , pa)) (number (b , pb)) = number (a +ʳ b , lift tt)
-_+ʰʳ_ {X  } {X₀⁻} (number (a , pa)) (number (b , pb)) = number (a +ʳ b , lift tt)
-_+ʰʳ_ {X⁺⁻} {X  } (number (a , pa)) (number (b , pb)) = number (a +ʳ b , lift tt)
-_+ʰʳ_ {X⁺⁻} {X⁺⁻} (number (a , pa)) (number (b , pb)) = number (a +ʳ b , lift tt)
-_+ʰʳ_ {X⁺⁻} {X₀⁺} (number (a , pa)) (number (b , pb)) = number (a +ʳ b , lift tt)
-_+ʰʳ_ {X⁺⁻} {X⁺ } (number (a , pa)) (number (b , pb)) = number (a +ʳ b , lift tt)
-_+ʰʳ_ {X⁺⁻} {X⁻ } (number (a , pa)) (number (b , pb)) = number (a +ʳ b , lift tt)
-_+ʰʳ_ {X⁺⁻} {X₀⁻} (number (a , pa)) (number (b , pb)) = number (a +ʳ b , lift tt)
-_+ʰʳ_ {X₀⁺} {X  } (number (a , pa)) (number (b , pb)) = number (a +ʳ b , lift tt)
-_+ʰʳ_ {X₀⁺} {X⁺⁻} (number (a , pa)) (number (b , pb)) = number (a +ʳ b , lift tt)
-_+ʰʳ_ {X₀⁺} {X₀⁺} (number (a , pa)) (number (b , pb)) = number (a +ʳ b , {!!}) -- 0 ≤ a → 0 ≤ b → 0 ≤ a + b
-_+ʰʳ_ {X₀⁺} {X⁺ } (number (a , pa)) (number (b , pb)) = number (a +ʳ b , {!!}) -- 0 < a → 0 < b → 0 < a + b
-_+ʰʳ_ {X₀⁺} {X⁻ } (number (a , pa)) (number (b , pb)) = number (a +ʳ b , lift tt)
-_+ʰʳ_ {X₀⁺} {X₀⁻} (number (a , pa)) (number (b , pb)) = number (a +ʳ b , lift tt)
-_+ʰʳ_ {X⁺ } {X  } (number (a , pa)) (number (b , pb)) = number (a +ʳ b , lift tt)
-_+ʰʳ_ {X⁺ } {X⁺⁻} (number (a , pa)) (number (b , pb)) = number (a +ʳ b , lift tt)
-_+ʰʳ_ {X⁺ } {X₀⁺} (number (a , pa)) (number (b , pb)) = number (a +ʳ b , {!!}) -- 0 < a → 0 ≤ b → 0 < a + b
-_+ʰʳ_ {X⁺ } {X⁺ } (number (a , pa)) (number (b , pb)) = number (a +ʳ b , {!!}) -- 0 < a → 0 < b → 0 < a + b
-_+ʰʳ_ {X⁺ } {X⁻ } (number (a , pa)) (number (b , pb)) = number (a +ʳ b , lift tt)
-_+ʰʳ_ {X⁺ } {X₀⁻} (number (a , pa)) (number (b , pb)) = number (a +ʳ b , lift tt)
-_+ʰʳ_ {X⁻ } {X  } (number (a , pa)) (number (b , pb)) = number (a +ʳ b , lift tt)
-_+ʰʳ_ {X⁻ } {X⁺⁻} (number (a , pa)) (number (b , pb)) = number (a +ʳ b , lift tt)
-_+ʰʳ_ {X⁻ } {X₀⁺} (number (a , pa)) (number (b , pb)) = number (a +ʳ b , lift tt)
-_+ʰʳ_ {X⁻ } {X⁺ } (number (a , pa)) (number (b , pb)) = number (a +ʳ b , lift tt)
-_+ʰʳ_ {X⁻ } {X⁻ } (number (a , pa)) (number (b , pb)) = number (a +ʳ b , {!!}) -- a < 0 → b < 0 → (a + b) < 0
-_+ʰʳ_ {X⁻ } {X₀⁻} (number (a , pa)) (number (b , pb)) = number (a +ʳ b , {!!}) -- a < 0 → b ≤ 0 → (a + b) < 0
-_+ʰʳ_ {X₀⁻} {X  } (number (a , pa)) (number (b , pb)) = number (a +ʳ b , lift tt)
-_+ʰʳ_ {X₀⁻} {X⁺⁻} (number (a , pa)) (number (b , pb)) = number (a +ʳ b , lift tt)
-_+ʰʳ_ {X₀⁻} {X₀⁺} (number (a , pa)) (number (b , pb)) = number (a +ʳ b , lift tt)
-_+ʰʳ_ {X₀⁻} {X⁺ } (number (a , pa)) (number (b , pb)) = number (a +ʳ b , lift tt)
-_+ʰʳ_ {X₀⁻} {X⁻ } (number (a , pa)) (number (b , pb)) = number (a +ʳ b , {!!}) -- a ≤ 0 → b < 0 → (a + b) < 0
-_+ʰʳ_ {X₀⁻} {X₀⁻} (number (a , pa)) (number (b , pb)) = number (a +ʳ b , {!!}) -- a ≤ 0 → b ≤ 0 → (a + b) ≤ 0
+_+ʰʳ_ : ∀{p q} → (x : Number (isReal , p)) → (y : Number (isReal , q)) → Ip' isReal (+-Positivityʰ isReal p q) (num x +ʳ num y)
+_+ʰʳ_ {X  } {X  } (number (a , pa)) (number (b , pb)) = lift tt
+_+ʰʳ_ {X  } {X⁺⁻} (number (a , pa)) (number (b , pb)) = lift tt
+_+ʰʳ_ {X  } {X₀⁺} (number (a , pa)) (number (b , pb)) = lift tt
+_+ʰʳ_ {X  } {X⁺ } (number (a , pa)) (number (b , pb)) = lift tt
+_+ʰʳ_ {X  } {X⁻ } (number (a , pa)) (number (b , pb)) = lift tt
+_+ʰʳ_ {X  } {X₀⁻} (number (a , pa)) (number (b , pb)) = lift tt
+_+ʰʳ_ {X⁺⁻} {X  } (number (a , pa)) (number (b , pb)) = lift tt
+_+ʰʳ_ {X⁺⁻} {X⁺⁻} (number (a , pa)) (number (b , pb)) = lift tt
+_+ʰʳ_ {X⁺⁻} {X₀⁺} (number (a , pa)) (number (b , pb)) = lift tt
+_+ʰʳ_ {X⁺⁻} {X⁺ } (number (a , pa)) (number (b , pb)) = lift tt
+_+ʰʳ_ {X⁺⁻} {X⁻ } (number (a , pa)) (number (b , pb)) = lift tt
+_+ʰʳ_ {X⁺⁻} {X₀⁻} (number (a , pa)) (number (b , pb)) = lift tt
+_+ʰʳ_ {X₀⁺} {X  } (number (a , pa)) (number (b , pb)) = lift tt
+_+ʰʳ_ {X₀⁺} {X⁺⁻} (number (a , pa)) (number (b , pb)) = lift tt
+_+ʰʳ_ {X₀⁺} {X₀⁺} (number (a , pa)) (number (b , pb)) = {!!} -- 0 ≤ a → 0 ≤ b → 0 ≤ a + b
+_+ʰʳ_ {X₀⁺} {X⁺ } (number (a , pa)) (number (b , pb)) = {!!} -- 0 < a → 0 < b → 0 < a + b
+_+ʰʳ_ {X₀⁺} {X⁻ } (number (a , pa)) (number (b , pb)) = lift tt
+_+ʰʳ_ {X₀⁺} {X₀⁻} (number (a , pa)) (number (b , pb)) = lift tt
+_+ʰʳ_ {X⁺ } {X  } (number (a , pa)) (number (b , pb)) = lift tt
+_+ʰʳ_ {X⁺ } {X⁺⁻} (number (a , pa)) (number (b , pb)) = lift tt
+_+ʰʳ_ {X⁺ } {X₀⁺} (number (a , pa)) (number (b , pb)) = {!!} -- 0 < a → 0 ≤ b → 0 < a + b
+_+ʰʳ_ {X⁺ } {X⁺ } (number (a , pa)) (number (b , pb)) = {!!} -- 0 < a → 0 < b → 0 < a + b
+_+ʰʳ_ {X⁺ } {X⁻ } (number (a , pa)) (number (b , pb)) = lift tt
+_+ʰʳ_ {X⁺ } {X₀⁻} (number (a , pa)) (number (b , pb)) = lift tt
+_+ʰʳ_ {X⁻ } {X  } (number (a , pa)) (number (b , pb)) = lift tt
+_+ʰʳ_ {X⁻ } {X⁺⁻} (number (a , pa)) (number (b , pb)) = lift tt
+_+ʰʳ_ {X⁻ } {X₀⁺} (number (a , pa)) (number (b , pb)) = lift tt
+_+ʰʳ_ {X⁻ } {X⁺ } (number (a , pa)) (number (b , pb)) = lift tt
+_+ʰʳ_ {X⁻ } {X⁻ } (number (a , pa)) (number (b , pb)) = {!!} -- a < 0 → b < 0 → (a + b) < 0
+_+ʰʳ_ {X⁻ } {X₀⁻} (number (a , pa)) (number (b , pb)) = {!!} -- a < 0 → b ≤ 0 → (a + b) < 0
+_+ʰʳ_ {X₀⁻} {X  } (number (a , pa)) (number (b , pb)) = lift tt
+_+ʰʳ_ {X₀⁻} {X⁺⁻} (number (a , pa)) (number (b , pb)) = lift tt
+_+ʰʳ_ {X₀⁻} {X₀⁺} (number (a , pa)) (number (b , pb)) = lift tt
+_+ʰʳ_ {X₀⁻} {X⁺ } (number (a , pa)) (number (b , pb)) = lift tt
+_+ʰʳ_ {X₀⁻} {X⁻ } (number (a , pa)) (number (b , pb)) = {!!} -- a ≤ 0 → b < 0 → (a + b) < 0
+_+ʰʳ_ {X₀⁻} {X₀⁻} (number (a , pa)) (number (b , pb)) = {!!} -- a ≤ 0 → b ≤ 0 → (a + b) ≤ 0
 
-_+ʰᶜ_ : ∀{p q} → Number (isComplex ,, availablePositivity isComplex p) → Number (isComplex ,, availablePositivity isComplex q) → Number (isComplex ,, +-Positivity p q)
-_+ʰᶜ_ {X  } {X  } (number (a , pa)) (number (b , pb)) = number (a +ᶜ b , lift tt)
-_+ʰᶜ_ {X  } {X⁺⁻} (number (a , pa)) (number (b , pb)) = number (a +ᶜ b , lift tt)
-_+ʰᶜ_ {X  } {X₀⁺} (number (a , pa)) (number (b , pb)) = number (a +ᶜ b , lift tt)
-_+ʰᶜ_ {X  } {X⁺ } (number (a , pa)) (number (b , pb)) = number (a +ᶜ b , lift tt)
-_+ʰᶜ_ {X  } {X⁻ } (number (a , pa)) (number (b , pb)) = number (a +ᶜ b , lift tt)
-_+ʰᶜ_ {X  } {X₀⁻} (number (a , pa)) (number (b , pb)) = number (a +ᶜ b , lift tt)
-_+ʰᶜ_ {X⁺⁻} {X  } (number (a , pa)) (number (b , pb)) = number (a +ᶜ b , lift tt)
-_+ʰᶜ_ {X⁺⁻} {X⁺⁻} (number (a , pa)) (number (b , pb)) = number (a +ᶜ b , lift tt) 
-_+ʰᶜ_ {X⁺⁻} {X₀⁺} (number (a , pa)) (number (b , pb)) = number (a +ᶜ b , lift tt)
-_+ʰᶜ_ {X⁺⁻} {X⁺ } (number (a , pa)) (number (b , pb)) = number (a +ᶜ b , lift tt)
-_+ʰᶜ_ {X⁺⁻} {X⁻ } (number (a , pa)) (number (b , pb)) = number (a +ᶜ b , lift tt)
-_+ʰᶜ_ {X⁺⁻} {X₀⁻} (number (a , pa)) (number (b , pb)) = number (a +ᶜ b , lift tt)
-_+ʰᶜ_ {X₀⁺} {X  } (number (a , pa)) (number (b , pb)) = number (a +ᶜ b , lift tt)
-_+ʰᶜ_ {X₀⁺} {X⁺⁻} (number (a , pa)) (number (b , pb)) = number (a +ᶜ b , lift tt)
-_+ʰᶜ_ {X₀⁺} {X₀⁺} (number (a , pa)) (number (b , pb)) = number (a +ᶜ b , {!!}) -- ⊥
-_+ʰᶜ_ {X₀⁺} {X⁺ } (number (a , pa)) (number (b , pb)) = number (a +ᶜ b , {!!}) -- ⊥
-_+ʰᶜ_ {X₀⁺} {X⁻ } (number (a , pa)) (number (b , pb)) = number (a +ᶜ b , lift tt)
-_+ʰᶜ_ {X₀⁺} {X₀⁻} (number (a , pa)) (number (b , pb)) = number (a +ᶜ b , lift tt)
-_+ʰᶜ_ {X⁺ } {X  } (number (a , pa)) (number (b , pb)) = number (a +ᶜ b , lift tt)
-_+ʰᶜ_ {X⁺ } {X⁺⁻} (number (a , pa)) (number (b , pb)) = number (a +ᶜ b , lift tt)
-_+ʰᶜ_ {X⁺ } {X₀⁺} (number (a , pa)) (number (b , pb)) = number (a +ᶜ b , {!!}) -- ⊥
-_+ʰᶜ_ {X⁺ } {X⁺ } (number (a , pa)) (number (b , pb)) = number (a +ᶜ b , {!!}) -- ⊥
-_+ʰᶜ_ {X⁺ } {X⁻ } (number (a , pa)) (number (b , pb)) = number (a +ᶜ b , lift tt)
-_+ʰᶜ_ {X⁺ } {X₀⁻} (number (a , pa)) (number (b , pb)) = number (a +ᶜ b , lift tt)
-_+ʰᶜ_ {X⁻ } {X  } (number (a , pa)) (number (b , pb)) = number (a +ᶜ b , lift tt)
-_+ʰᶜ_ {X⁻ } {X⁺⁻} (number (a , pa)) (number (b , pb)) = number (a +ᶜ b , lift tt)
-_+ʰᶜ_ {X⁻ } {X₀⁺} (number (a , pa)) (number (b , pb)) = number (a +ᶜ b , lift tt)
-_+ʰᶜ_ {X⁻ } {X⁺ } (number (a , pa)) (number (b , pb)) = number (a +ᶜ b , lift tt)
-_+ʰᶜ_ {X⁻ } {X⁻ } (number (a , pa)) (number (b , pb)) = number (a +ᶜ b , {!!}) -- ⊥
-_+ʰᶜ_ {X⁻ } {X₀⁻} (number (a , pa)) (number (b , pb)) = number (a +ᶜ b , {!!}) -- ⊥
-_+ʰᶜ_ {X₀⁻} {X  } (number (a , pa)) (number (b , pb)) = number (a +ᶜ b , lift tt)
-_+ʰᶜ_ {X₀⁻} {X⁺⁻} (number (a , pa)) (number (b , pb)) = number (a +ᶜ b , lift tt)
-_+ʰᶜ_ {X₀⁻} {X₀⁺} (number (a , pa)) (number (b , pb)) = number (a +ᶜ b , lift tt)
-_+ʰᶜ_ {X₀⁻} {X⁺ } (number (a , pa)) (number (b , pb)) = number (a +ᶜ b , lift tt)
-_+ʰᶜ_ {X₀⁻} {X⁻ } (number (a , pa)) (number (b , pb)) = number (a +ᶜ b , {!!}) -- ⊥
-_+ʰᶜ_ {X₀⁻} {X₀⁻} (number (a , pa)) (number (b , pb)) = number (a +ᶜ b , {!!}) -- ⊥
+_+ʰᶜ_ : ∀{p q} → (x : Number (isComplex , p)) → (y : Number (isComplex , q)) → Ip' isComplex (+-Positivityʰ isComplex p q) (num x +ᶜ num y)
+_+ʰᶜ_ x y = lift tt
 
-_+ʰ_ : ∀{l p q} → Number (l ,, availablePositivity l p) → Number (l ,, availablePositivity l q) → Number (l ,, +-Positivity p q)
-_+ʰ_ {isNat    } x y = x +ʰⁿ y
-_+ʰ_ {isInt    } x y = x +ʰᶻ y
-_+ʰ_ {isRat    } x y = x +ʰᶠ y
-_+ʰ_ {isReal   } x y = x +ʰʳ y
-_+ʰ_ {isComplex} x y = x +ʰᶜ y
+_+ʰ_ : ∀{l p q} → Number (l , p) → Number (l , q) → Number (l , +-Positivityʰ l p q)
+_+ʰ_ {isNat    } x y = number (num x +ⁿ num y , x +ʰⁿ y)
+_+ʰ_ {isInt    } x y = number (num x +ᶻ num y , x +ʰᶻ y)
+_+ʰ_ {isRat    } x y = number (num x +ᶠ num y , x +ʰᶠ y)
+_+ʰ_ {isReal   } x y = number (num x +ʳ num y , x +ʰʳ y)
+_+ʰ_ {isComplex} x y = number (num x +ᶜ num y , x +ʰᶜ y)
 
-_+_ : ∀{Lx Ly Px Py}
-    → Number (Lx ,, availablePositivity Lx Px)
-    → Number (Ly ,, availablePositivity Ly Py)
-    → Number ((maxₙₗ' Lx Ly) ,, +-Positivity Px Py) --  (+-Types p q)
-_+_ {Lx} {Ly} {Px} {Py} x y =
-  let L = maxₙₗ' Lx Ly
-      (Lx≤L , Ly≤L) = max-implies-≤ₙₗ₂' Lx Ly
-  in coerce Lx L Lx≤L x +ʰ coerce Ly L Ly≤L y
+module _ {Lx Ly Px Py} (x : Number (Lx , Px)) (y : Number (Ly , Py)) where
+  private L = maxₙₗ' Lx Ly
+  _+_ : Number (L , +-Positivityʰ L (coerce-PositivityLevel Lx L Px) (coerce-PositivityLevel Ly L Py))
+  _+_ =
+    let (Lx≤L , Ly≤L) = max-implies-≤ₙₗ₂' Lx Ly
+    in coerce Lx L Lx≤L x +ʰ coerce Ly L Ly≤L y
 
--- pattern [ℝ₀⁺] = (isReal ,, X₀⁺)
-[ℝ₀⁺] = Number (isReal ,, X₀⁺)
+-- pattern [ℝ₀⁺] = (isReal , X₀⁺)
+[ℝ₀⁺] = Number (isReal , X₀⁺)
+[ℝ⁺] = Number (isReal , X⁺)
 
-{-# DISPLAY Number (isReal ,, X₀⁺) = [ℝ₀⁺] #-}
+-- {-# DISPLAY maxₙₗ' isReal isReal = isReal #-}
+{-# DISPLAY Number (isReal ,, isNonnegative) = [ℝ₀⁺] #-}
+{-# DISPLAY Number (isReal ,, isPositive) = [ℝ⁺] #-}
 
-test101 : Number (isNat ,, isPositive) → Number (isReal ,,  isNonnegative) → {!!}
-test101 n r with n + r
+[1ʳ] : [ℝ⁺]
+[1ʳ] = number (1ʳ , ℝ.0<1)
+
+-- NOTE: As-patterns (or @-patterns) go well with resolving things in our approach
+
+test101 : Number (isNat , isPositiveᵒʳ) → Number (isReal ,  isNonnegativeᵒʳ) → {!!}
+test101 n@(number (nn , np)) r@(number (rn , rp)) with n + r
 ... | number (fst₁ , snd₁) =
   let z = [ℝ₀⁺] ∋ r + r
+      zp = prp z
       x = num z
       xp = prp z
-  in {! prp z!}
+      y =  r + [1ʳ] 
+  in {!   !}
+

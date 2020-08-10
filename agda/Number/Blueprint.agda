@@ -1,4 +1,4 @@
-{-# OPTIONS --cubical --no-import-sorts #-}
+{-# OPTIONS --cubical --no-import-sorts --allow-unsolved-metas #-}
 
 open import Agda.Primitive renaming (_⊔_ to ℓ-max; lsuc to ℓ-suc; lzero to ℓ-zero)
 
@@ -35,6 +35,10 @@ open import Function.Base using (it; _$_) -- instance search
 import Cubical.Data.Fin.Properties
 open import Data.Nat.Properties using (+-mono-<)
 
+------------8<-------------------------------------8<-----------------------------
+
+-- facts about ℕ
+
 minₙ : ℕ₀ → ℕ₀ → ℕ₀
 minₙ a b with a ≟ₙ b
 ... | lt a<b = a 
@@ -47,7 +51,9 @@ maxₙ a b with a ≟ₙ b
 ... | eq a≡b = a
 ... | gt b<a = a
 
-private
+-- to make use of `it` to find proofs for `Fin k`:
+module FinInstances where
+  open import Function.Base using (it) public
   instance
     z≤n' : ∀ {n}                 → zero  ≤ₙ n
     z≤n' {n} = z≤n
@@ -87,10 +93,12 @@ open MoreLogic.Reasoning
   where γ = sym (+-assoc m n a) ∙ (λ i → m +ₙ p i) ∙ q
 ... | m≡0 , n≡0 = (λ i → n≡0 (~ i) +ₙ a) ∙ p
 
--- with a ≟ₙ b
--- ... | lt x = {! <-asymₙ !}
--- ... | eq x = x
--- ... | gt x = {!!}
+≟ₙ-sym : ∀ a b → Trichotomy a b → Trichotomy b a
+≟ₙ-sym a b (lt x) = gt x
+≟ₙ-sym a b (eq x) = eq (sym x)
+≟ₙ-sym a b (gt x) = lt x
+
+------------8<-------------------------------------8<-----------------------------
 
 data NumberLevel : Type where
   isNat     : NumberLevel
@@ -99,29 +107,7 @@ data NumberLevel : Type where
   isReal    : NumberLevel
   isComplex : NumberLevel  
 
--- NumberLevelEnumeration
-NLE' : NumberLevel → ℕ₀
-NLE' isNat     = 0
-NLE' isInt     = 1
-NLE' isRat     = 2
-NLE' isReal    = 3
-NLE' isComplex = 4
-
-NLE⁻¹' : ℕ₀ → NumberLevel
-NLE⁻¹' 0 = isNat
-NLE⁻¹' 1 = isInt
-NLE⁻¹' 2 = isRat
-NLE⁻¹' 3 = isReal
-NLE⁻¹' 4 = isComplex
-NLE⁻¹' x = isComplex
--- NLE⁻¹' (suc⁵ fst₁) = isComplex
-
-NLE-id²' : ∀ x → NLE⁻¹' (NLE' x) ≡ x
-NLE-id²' isNat     = refl 
-NLE-id²' isInt     = refl
-NLE-id²' isRat     = refl
-NLE-id²' isReal    = refl
-NLE-id²' isComplex = refl
+{- an approach to define the enumeration with `Fin k`
 
 NLE : NumberLevel → Fin 5
 NLE isNat     = 0 , it
@@ -164,6 +150,39 @@ NLE-id² isComplex = refl
 _≤ₙₗ_ : NumberLevel → NumberLevel → Type
 a ≤ₙₗ b = fst (NLE a) ≤ₙ fst (NLE b)
 
+-}
+
+-- NumberLevelEnumeration
+NLE' : NumberLevel → ℕ₀
+NLE' isNat     = 0
+NLE' isInt     = 1
+NLE' isRat     = 2
+NLE' isReal    = 3
+NLE' isComplex = 4
+
+-- inverse of NumberLevelEnumeration
+NLE⁻¹' : ℕ₀ → NumberLevel
+NLE⁻¹' 0 = isNat
+NLE⁻¹' 1 = isInt
+NLE⁻¹' 2 = isRat
+NLE⁻¹' 3 = isReal
+NLE⁻¹' 4 = isComplex
+NLE⁻¹' x = isComplex -- doesn't matter
+-- NLE⁻¹' (suc⁵ fst₁) = isComplex
+
+-- proof of inversity
+NLE-id²' : ∀ x → NLE⁻¹' (NLE' x) ≡ x
+NLE-id²' isNat     = refl 
+NLE-id²' isInt     = refl
+NLE-id²' isRat     = refl
+NLE-id²' isReal    = refl
+NLE-id²' isComplex = refl
+
+------------8<-------------------------------------8<-----------------------------
+
+-- facts about `_≤ₙₗ_` which is lifted from `_≤ₙ_`
+-- TODO: when this turns out to be generally useful for "enumerations", then we might turn this into definitions for arbitrary `f` and `f⁻¹`
+
 _≤ₙₗ'_ : NumberLevel → NumberLevel → Type
 a ≤ₙₗ' b = (NLE' a) ≤ₙ (NLE' b)
 
@@ -173,10 +192,10 @@ minₙₗ' a b = NLE⁻¹' (minₙ (NLE' a) (NLE' b))
 maxₙₗ' : NumberLevel → NumberLevel → NumberLevel
 maxₙₗ' a b = NLE⁻¹' (maxₙ (NLE' a) (NLE' b))
 
-≟ₙ-sym : ∀ a b → Trichotomy (NLE' a) (NLE' b) → Trichotomy (NLE' b) (NLE' a)
-≟ₙ-sym a b (lt x) = gt x
-≟ₙ-sym a b (eq x) = eq (sym x)
-≟ₙ-sym a b (gt x) = lt x
+≟ₙₗ-sym : ∀ a b → Trichotomy (NLE' a) (NLE' b) → Trichotomy (NLE' b) (NLE' a)
+≟ₙₗ-sym a b (lt x) = gt x
+≟ₙₗ-sym a b (eq x) = eq (sym x)
+≟ₙₗ-sym a b (gt x) = lt x
 
 max-symₙₗ : ∀ a b → maxₙₗ' a b ≡ maxₙₗ' b a
 max-symₙₗ a b with NLE' a ≟ₙ NLE' b | NLE' b ≟ₙ NLE' a
@@ -199,15 +218,204 @@ max-implies-≤ₙₗ' a b with (NLE' a) ≟ (NLE' b)
 max-implies-≤ₙₗ₂' : (a : NumberLevel) → (b : NumberLevel) → (a ≤ₙₗ' maxₙₗ' a b) × (b ≤ₙₗ' maxₙₗ' a b)
 max-implies-≤ₙₗ₂' a b = max-implies-≤ₙₗ' a b , transport (λ i → b ≤ₙₗ' max-symₙₗ b a i) (max-implies-≤ₙₗ' b a)
 
+------------8<-------------------------------------8<-----------------------------
 
+-- TODO: this needs to be dependent on NumberLevel
+--       it might be possible to use overlapping patterns to "hide" the dependent constructor
+
+{-
 data PositivityLevel : Type where
   anyPositivity : PositivityLevel
   isNonzero     : PositivityLevel
   isNonnegative : PositivityLevel
   isPositive    : PositivityLevel
   isNegative    : PositivityLevel
-  isNonpositive : PositivityLevel
+  isNonpositive : PositivityLevel  
+-}
 
+data PositivityLevelOrderedRing : Type where
+  anyPositivityᵒʳ : PositivityLevelOrderedRing
+  isNonzeroᵒʳ     : PositivityLevelOrderedRing
+  isNonnegativeᵒʳ : PositivityLevelOrderedRing
+  isPositiveᵒʳ    : PositivityLevelOrderedRing
+  isNegativeᵒʳ    : PositivityLevelOrderedRing
+  isNonpositiveᵒʳ : PositivityLevelOrderedRing
+
+data PositivityLevelField : Type where
+  anyPositivityᶠ : PositivityLevelField
+  isNonzeroᶠ     : PositivityLevelField
+
+PositivityLevelType : NumberLevel → Type
+PositivityLevelType isNat     = PositivityLevelOrderedRing
+PositivityLevelType isInt     = PositivityLevelOrderedRing
+PositivityLevelType isRat     = PositivityLevelOrderedRing
+PositivityLevelType isReal    = PositivityLevelOrderedRing
+PositivityLevelType isComplex = PositivityLevelField
+
+NumberProp' = Σ NumberLevel PositivityLevelType
+
+module PatternsType where
+  -- ordered ring patterns
+  pattern X   = anyPositivityᵒʳ
+  pattern X⁺⁻ = isNonzeroᵒʳ
+  pattern X₀⁺ = isNonnegativeᵒʳ
+  pattern X⁺  = isPositiveᵒʳ
+  pattern X⁻  = isNegativeᵒʳ
+  pattern X₀⁻ = isNonpositiveᵒʳ
+  -- field patterns (overlapping)
+  pattern X   = anyPositivityᶠ
+  pattern X⁺⁻ = isNonzeroᶠ
+
+module PatternsProp where
+  -- ordered ring patterns
+  pattern ⁇x⁇ = anyPositivityᵒʳ
+  pattern x#0 = isNonzeroᵒʳ
+  pattern 0≤x = isNonnegativeᵒʳ
+  pattern 0<x = isPositiveᵒʳ
+  pattern x<0 = isNegativeᵒʳ
+  pattern x≤0 = isNonpositiveᵒʳ
+  -- field patterns (overlapping)
+  pattern ⁇x⁇ = anyPositivityᶠ
+  pattern x#0 = isNonzeroᶠ
+
+{-
+
+tmp0 : PositivityLevelOrderedRing → {!!}
+-- C-c C-c expands to the original definition
+tmp0 anyPositivityᵒʳ = {!!}
+tmp0 isNonzeroᵒʳ     = {!!}
+tmp0 isNonnegativeᵒʳ = {!!}
+tmp0 isPositiveᵒʳ    = {!!}
+tmp0 isNegativeᵒʳ    = {!!}
+tmp0 isNonpositiveᵒʳ = {!!}
+
+open PatternsProp
+
+tmp1 : PositivityLevelOrderedRing → {!!}
+-- C-c C-c expands to patterns in PatternsProp
+tmp1 ⁇x⁇ = {!!}
+tmp1 x#0 = {!!}
+tmp1 0≤x = {!!}
+tmp1 0<x = {!!}
+tmp1 x<0 = {!!}
+tmp1 x≤0 = {!!}
+
+open PatternsType
+
+tmp2 : PositivityLevelOrderedRing → {!!}
+-- C-c C-c expands to patterns in PatternsType
+tmp2 X   = {!!}
+tmp2 X⁺⁻ = {!!}
+tmp2 X₀⁺ = {!!}
+tmp2 X⁺  = {!!}
+tmp2 X⁻  = {!!}
+tmp2 X₀⁻ = {!!}
+
+open PatternsProp
+
+tmp3 : PositivityLevelOrderedRing → {!!}
+-- C-c C-c still expands to patterns in PatternsType
+tmp3 X   = {!!}
+tmp3 X⁺⁻ = {!!}
+tmp3 X₀⁺ = {!!}
+tmp3 X⁺  = {!!}
+tmp3 X⁻  = {!!}
+tmp3 X₀⁻ = {!!}
+
+pattern ⁇x⁇ = anyPositivityᵒʳ
+pattern x#0 = isNonzeroᵒʳ
+pattern 0≤x = isNonnegativeᵒʳ
+pattern 0<x = isPositiveᵒʳ
+pattern x<0 = isNegativeᵒʳ
+pattern x≤0 = isNonpositiveᵒʳ
+pattern ⁇x⁇ = anyPositivityᶠ
+pattern x#0 = isNonzeroᶠ
+
+tmp4 : PositivityLevelOrderedRing → {!!}
+-- C-c C-c still expands to the lastly defined patterns
+tmp4 ⁇x⁇ = {!!}
+tmp4 x#0 = {!!}
+tmp4 0≤x = {!!}
+tmp4 0<x = {!!}
+tmp4 x<0 = {!!}
+tmp4 x≤0 = {!!}
+
+pattern X   = anyPositivityᵒʳ
+pattern X⁺⁻ = isNonzeroᵒʳ
+pattern X₀⁺ = isNonnegativeᵒʳ
+pattern X⁺  = isPositiveᵒʳ
+pattern X⁻  = isNegativeᵒʳ
+pattern X₀⁻ = isNonpositiveᵒʳ
+pattern X   = anyPositivityᶠ
+pattern X⁺⁻ = isNonzeroᶠ
+
+tmp5 : PositivityLevelOrderedRing → {!!}
+-- C-c C-c still expands to the lastly defined patterns
+tmp5 X = {!!}
+tmp5 X⁺⁻ = {!!}
+tmp5 X₀⁺ = {!!}
+tmp5 X⁺ = {!!}
+tmp5 X⁻ = {!!}
+tmp5 X₀⁻ = {!!}
+
+pattern ⁇x⁇ = anyPositivityᵒʳ
+pattern x#0 = isNonzeroᵒʳ
+pattern 0≤x = isNonnegativeᵒʳ
+pattern 0<x = isPositiveᵒʳ
+pattern x<0 = isNegativeᵒʳ
+pattern x≤0 = isNonpositiveᵒʳ
+pattern ⁇x⁇ = anyPositivityᶠ
+pattern x#0 = isNonzeroᶠ
+
+tmp6 : PositivityLevelOrderedRing → {!!}
+-- C-c C-c still expands to the lastly defined patterns
+tmp6 ⁇x⁇ = {!!}
+tmp6 x#0 = {!!}
+tmp6 0≤x = {!!}
+tmp6 0<x = {!!}
+tmp6 x<0 = {!!}
+tmp6 x≤0 = {!!}
+
+-- and so on...
+
+-}
+
+open PatternsProp
+
+coerce-PositivityLevel-OR2F : PositivityLevelOrderedRing → PositivityLevelField
+coerce-PositivityLevel-OR2F ⁇x⁇ = ⁇x⁇
+coerce-PositivityLevel-OR2F x#0 = x#0
+coerce-PositivityLevel-OR2F 0≤x = ⁇x⁇
+coerce-PositivityLevel-OR2F 0<x = x#0
+coerce-PositivityLevel-OR2F x<0 = x#0
+coerce-PositivityLevel-OR2F x≤0 = ⁇x⁇
+
+coerce-PositivityLevel-F2OR : PositivityLevelField → PositivityLevelOrderedRing
+coerce-PositivityLevel-F2OR ⁇x⁇ = ⁇x⁇
+coerce-PositivityLevel-F2OR x#0 = x#0
+
+coerce-PositivityLevel-OR2 : PositivityLevelOrderedRing → (to : NumberLevel) → PositivityLevelType to
+coerce-PositivityLevel-OR2 pl isNat     = pl
+coerce-PositivityLevel-OR2 pl isInt     = pl
+coerce-PositivityLevel-OR2 pl isRat     = pl
+coerce-PositivityLevel-OR2 pl isReal    = pl
+coerce-PositivityLevel-OR2 pl isComplex = coerce-PositivityLevel-OR2F pl
+
+coerce-PositivityLevel-F2 : PositivityLevelField → (to : NumberLevel) → PositivityLevelType to
+coerce-PositivityLevel-F2 pl isNat     = coerce-PositivityLevel-F2OR pl 
+coerce-PositivityLevel-F2 pl isInt     = coerce-PositivityLevel-F2OR pl 
+coerce-PositivityLevel-F2 pl isRat     = coerce-PositivityLevel-F2OR pl 
+coerce-PositivityLevel-F2 pl isReal    = coerce-PositivityLevel-F2OR pl 
+coerce-PositivityLevel-F2 pl isComplex = pl
+
+coerce-PositivityLevel : (from to : NumberLevel) → PositivityLevelType from → PositivityLevelType to
+coerce-PositivityLevel isNat     to x = coerce-PositivityLevel-OR2 x to
+coerce-PositivityLevel isInt     to x = coerce-PositivityLevel-OR2 x to
+coerce-PositivityLevel isRat     to x = coerce-PositivityLevel-OR2 x to
+coerce-PositivityLevel isReal    to x = coerce-PositivityLevel-OR2 x to
+coerce-PositivityLevel isComplex to x = coerce-PositivityLevel-F2  x to
+
+{-
 private
   pattern ⁇x⁇ = anyPositivity
   pattern x#0 = isNonzero
@@ -215,27 +423,86 @@ private
   pattern 0<x = isPositive
   pattern x<0 = isNegative
   pattern x≤0 = isNonpositive
+-}
 
+
+
+{-
 record NumberProp : Type where
   constructor _,,_
   field
-    level     : NumberLevel
+    level      : NumberLevel
     positivity : PositivityLevel
+-}
 
 -- splitting this into a separate function to be able to make use of NumberLevel without inspecting PositivitLevel
 
 open import Number.Postulates
-open import Number.Bundles ℝℓ ℝℓ'
+open import Number.Bundles
 
 -- NumberLevel interpretation
+
+NumberLevelLevel : NumberLevel → Level
+NumberLevelLevel isNat     = ℕℓ
+NumberLevelLevel isInt     = ℤℓ
+NumberLevelLevel isRat     = ℚℓ
+NumberLevelLevel isReal    = ℝℓ
+NumberLevelLevel isComplex = ℂℓ
+
+NumberLevelProplevel : NumberLevel → Level
+NumberLevelProplevel isNat     = ℕℓ'
+NumberLevelProplevel isInt     = ℤℓ'
+NumberLevelProplevel isRat     = ℚℓ'
+NumberLevelProplevel isReal    = ℝℓ'
+NumberLevelProplevel isComplex = ℂℓ'
+
+Il' : (x : NumberLevel) → Type (NumberLevelLevel x)
+Il' isNat     = let open ℕ* in ℕ₀
+Il' isInt     = let open ℤ  in ℤ
+Il' isRat     = let open ℚ  in ℚ
+Il' isReal    = let open ℝ  in ℝ
+Il' isComplex = let open ℂ  in ℂ
+
+{-
 Il : NumberLevel → Type ℝℓ
 Il isNat     = let open ℕ* in ℕ -- NOTE: this occurs in the Have/Goal
 Il isInt     = let open ℤ in ℤ --       so somehow the "amount of normalization" at the call site is inherited from the function (clause)
 Il isRat     = let open ℚ in ℚ --       the finding is, that to produce "nice" Goals,
 Il isReal    = let open ℝ in ℝ --         we need to create the same symbol-import-path in the definition clause
 Il isComplex = let open ℂ in ℂ --         that will also be present at the call site
+-}
 
 -- PositivityLevel interpretation
+
+Ip' : (nl : NumberLevel) → PositivityLevelType nl → (x : Il' nl) → Type (NumberLevelProplevel nl)
+Ip' isNat     ⁇x⁇ x =                                        Unit
+Ip' isNat     x#0 x = let open ℕ                             in ( x # 0f)
+Ip' isNat     0≤x x = let open ℕ                             in (0f ≤  x)
+Ip' isNat     0<x x = let open ℕ                             in (ℕ.0f < x) 
+Ip' isNat     x≤0 x = let open ℕ                             in ( x ≤ 0f) 
+Ip' isNat     x<0 x =                                        ⊥
+Ip' isInt     ⁇x⁇ x =                                        Lift Unit
+Ip' isInt     x#0 x = let open ℤ.Bundle             ℤ.bundle in ( x # 0f)
+Ip' isInt     0≤x x = let open ℤ.Bundle             ℤ.bundle in (0f ≤  x)
+Ip' isInt     0<x x = let open ℤ.Bundle             ℤ.bundle in (0f <  x)
+Ip' isInt     x≤0 x = let open ℤ.Bundle             ℤ.bundle in ( x ≤ 0f)
+Ip' isInt     x<0 x = let open ℤ.Bundle             ℤ.bundle in ( x < 0f)
+Ip' isRat     ⁇x⁇ x =                                        Lift Unit        
+Ip' isRat     x#0 x = let open ℚ.Bundle             ℚ.bundle in ( x # 0f)
+Ip' isRat     0≤x x = let open ℚ.Bundle             ℚ.bundle in (0f ≤  x)
+Ip' isRat     0<x x = let open ℚ.Bundle             ℚ.bundle in (0f <  x)
+Ip' isRat     x≤0 x = let open ℚ.Bundle             ℚ.bundle in ( x ≤ 0f)
+Ip' isRat     x<0 x = let open ℚ.Bundle             ℚ.bundle in ( x < 0f)
+Ip' isReal    ⁇x⁇ x =                                        Lift Unit 
+Ip' isReal    x#0 x = let open ℝ.Bundle             ℝ.bundle in ( x # 0f)
+Ip' isReal    0≤x x = let open ℝ.Bundle             ℝ.bundle in (0f ≤  x)
+Ip' isReal    0<x x = let open ℝ.Bundle             ℝ.bundle in (0f <  x)
+Ip' isReal    x≤0 x = let open ℝ.Bundle             ℝ.bundle in ( x ≤ 0f)
+Ip' isReal    x<0 x = let open ℝ.Bundle             ℝ.bundle in ( x < 0f)
+Ip' isComplex ⁇x⁇ x =                                        Lift Unit 
+Ip' isComplex x#0 x = let open ℂ.Bundle             ℂ.bundle in ( x # 0f)
+
+{-
 Ip : (nl : NumberLevel) → PositivityLevel → (x : Il nl) → Type ℝℓ'
 Ip isNat     ⁇x⁇ x =                                        Lift Unit
 Ip isNat     x#0 x = let open ℕ                             in ( x # 0f)
@@ -267,21 +534,30 @@ Ip isComplex 0≤x x =                                        Lift ⊥
 Ip isComplex 0<x x =                                        Lift ⊥
 Ip isComplex x≤0 x =                                        Lift ⊥
 Ip isComplex x<0 x =                                        Lift ⊥
+-}
 
 -- NumberProp interpretation
+In' : ((l , p) : NumberProp') → Type (ℓ-max (NumberLevelLevel l) (NumberLevelProplevel l))
+In' (level , positivity) = Σ (Il' level) (Ip' level positivity) 
+
+{-
 In : NumberProp → Type (ℓ-max ℝℓ ℝℓ')
 In (level ,, positivity) = Σ (Il level) (Ip level positivity)
+-}
 
-data Number (p : NumberProp) : Type (ℓ-max ℝℓ ℝℓ') where
-  number : In p → Number p
+-- maybe it's better to name
 
-num : ∀{(l ,, p) : NumberProp} → Number (l ,, p) → Il l
+data Number (p : NumberProp') : Type (ℓ-max (NumberLevelLevel (fst p)) (NumberLevelProplevel (fst p))) where
+  number : In' p → Number p
+  -- _,,_ : (Il' (fst p)) → (Ip' (fst p) (snd p)) → Number p
+
+num : ∀{(l , p) : NumberProp'} → Number (l , p) → Il' l
 num (number p) = fst p
 
-prp : ∀{(l ,, p) : NumberProp} → (x : Number (l ,, p)) → Ip l p (num x)
+prp : ∀{pp@(l , p) : NumberProp'} → (x : Number pp) → Ip' l p (num x)
 prp (number p) = snd p
 
-pop : ∀{p : NumberProp} → Number p → In p
+pop : ∀{p : NumberProp'} → Number p → In' p
 pop (number (x , p)) = x , p
 
 -- common level
@@ -297,6 +573,7 @@ Cl a b = maxₙₗ' a b
 -- Cl isInt     _         = isInt
 -- Cl isNat     isNat     = isNat
 
+{-
 private
   pattern X   = anyPositivity
   pattern X⁺⁻ = isNonzero
@@ -304,6 +581,7 @@ private
   pattern X⁺  = isPositive
   pattern X⁻  = isNegative
   pattern X₀⁻ = isNonpositive
+-}
 
 -- workflow:
 -- 1. split on the both positivities at once
@@ -311,6 +589,8 @@ private
 -- 3. check file
 -- 4. remove all unreachable clauses and goto 2.
 -- feel free to remove too many clauses and let agda display the missing ones
+
+{-
 +-Positivity : PositivityLevel → PositivityLevel → PositivityLevel
 +-Positivity _   X   = X  
 +-Positivity X   _   = X  
@@ -333,7 +613,7 @@ private
 +-Positivity X⁻  X⁺  = X  
 +-Positivity X⁺  X⁻  = X  
 +-Positivity X₀⁻ X⁺  = X  
-+-Positivity X⁺  X₀⁻ = X  
++-Positivity X⁺  X₀⁻ = X
 
 ·-Positivity : PositivityLevel → PositivityLevel → PositivityLevel
 ·-Positivity _   X   = X  
@@ -367,9 +647,11 @@ private
 ·-Positivity X₀⁺ X₀⁻ = X₀⁻
 ·-Positivity X⁻  X⁺  = X⁻ 
 ·-Positivity X⁺  X⁻  = X⁻
+-}
 
 -- this narrows the to-be-preserved properties down to the properties that are available
 -- it only affects ℂ where we do not have < and ≤
+{-
 availablePositivity : NumberLevel → PositivityLevel → PositivityLevel
 availablePositivity isNat      p  =  p
 availablePositivity isInt      p  =  p
@@ -381,5 +663,130 @@ availablePositivity isComplex 0≤x = ⁇x⁇
 availablePositivity isComplex 0<x = x#0
 availablePositivity isComplex x<0 = x#0
 availablePositivity isComplex x≤0 = ⁇x⁇
+-}
 
 
+{-
+private -- module Patterns where
+  pattern X   = anyPositivityᵒʳ
+  pattern X⁺⁻ = isNonzeroᵒʳ
+  pattern X₀⁺ = isNonnegativeᵒʳ
+  pattern X⁺  = isPositiveᵒʳ
+  pattern X⁻  = isNegativeᵒʳ
+  pattern X₀⁻ = isNonpositiveᵒʳ
+  -- overlapping
+  pattern X   = anyPositivityᶠ
+  pattern X⁺⁻ = isNonzeroᶠ
+-}
+
+open PatternsType
+
+-- workflow:
+-- 1. split on the both positivities at once
+-- 2. add a general clause on top
+-- 3. check file
+-- 4. remove all unreachable clauses and goto 2.
+-- feel free to remove too many clauses and let agda display the missing ones
++-Positivityᵒʳ : PositivityLevelOrderedRing → PositivityLevelOrderedRing → PositivityLevelOrderedRing
++-Positivityᵒʳ _   X   = X  
++-Positivityᵒʳ X   _   = X  
++-Positivityᵒʳ _   X⁺⁻ = X  
++-Positivityᵒʳ X⁺⁻ _   = X
+-- clauses with same sign
++-Positivityᵒʳ X₀⁺ X₀⁺ = X₀⁺ 
++-Positivityᵒʳ X₀⁻ X₀⁻ = X₀⁻ 
++-Positivityᵒʳ X₀⁺ X⁺  = X⁺  
++-Positivityᵒʳ X⁺  X₀⁺ = X⁺  
++-Positivityᵒʳ X⁺  X⁺  = X⁺  
++-Positivityᵒʳ X₀⁻ X⁻  = X⁻ 
++-Positivityᵒʳ X⁻  X⁻  = X⁻
++-Positivityᵒʳ X⁻  X₀⁻ = X⁻
+-- remaining clauses with alternating sign
++-Positivityᵒʳ X₀⁻ X₀⁺ = X  
++-Positivityᵒʳ X₀⁺ X₀⁻ = X  
++-Positivityᵒʳ X⁻  X₀⁺ = X  
++-Positivityᵒʳ X₀⁺ X⁻  = X  
++-Positivityᵒʳ X⁻  X⁺  = X  
++-Positivityᵒʳ X⁺  X⁻  = X  
++-Positivityᵒʳ X₀⁻ X⁺  = X  
++-Positivityᵒʳ X⁺  X₀⁻ = X
+
++-Positivityᶠ : PositivityLevelField → PositivityLevelField → PositivityLevelField
+-- positivity information is lost after _+_ on a field
++-Positivityᶠ x   y   = X
+
++-Positivityʰ : (l : NumberLevel) → PositivityLevelType l → PositivityLevelType l → PositivityLevelType l
++-Positivityʰ isNat     = +-Positivityᵒʳ
++-Positivityʰ isInt     = +-Positivityᵒʳ
++-Positivityʰ isRat     = +-Positivityᵒʳ
++-Positivityʰ isReal    = +-Positivityᵒʳ
++-Positivityʰ isComplex = +-Positivityᶠ
+
+·-Positivityᵒʳ : PositivityLevelOrderedRing → PositivityLevelOrderedRing → PositivityLevelOrderedRing
+·-Positivityᵒʳ _   X   = X  
+·-Positivityᵒʳ X   _   = X  
+·-Positivityᵒʳ X₀⁺ X⁺⁻ = X  
+·-Positivityᵒʳ X⁺⁻ X₀⁺ = X
+·-Positivityᵒʳ X₀⁻ X⁺⁻ = X 
+·-Positivityᵒʳ X⁺⁻ X₀⁻ = X
+-- multiplying nonzero numbers gives a nonzero number
+·-Positivityᵒʳ X⁺⁻ X⁺⁻ = X⁺⁻ 
+·-Positivityᵒʳ X⁺  X⁺⁻ = X⁺⁻ 
+·-Positivityᵒʳ X⁺⁻ X⁺  = X⁺⁻
+·-Positivityᵒʳ X⁻  X⁺⁻ = X⁺⁻
+·-Positivityᵒʳ X⁺⁻ X⁻  = X⁺⁻
+-- multiplying positive numbers gives a positive number
+·-Positivityᵒʳ X₀⁺ X₀⁺ = X₀⁺ 
+·-Positivityᵒʳ X₀⁺ X⁺  = X₀⁺ 
+·-Positivityᵒʳ X⁺  X₀⁺ = X₀⁺ 
+·-Positivityᵒʳ X⁺  X⁺  = X⁺
+-- multiplying negative numbers gives a positive number
+·-Positivityᵒʳ X₀⁻ X⁻  = X₀⁺
+·-Positivityᵒʳ X⁻  X₀⁻ = X₀⁺
+·-Positivityᵒʳ X₀⁻ X₀⁻ = X₀⁺  
+·-Positivityᵒʳ X⁻  X⁻  = X⁺ 
+-- multiplying a positive and a negative number gives a negative number
+·-Positivityᵒʳ X⁻  X₀⁺ = X₀⁻
+·-Positivityᵒʳ X₀⁺ X⁻  = X₀⁻
+·-Positivityᵒʳ X₀⁻ X⁺  = X₀⁻
+·-Positivityᵒʳ X⁺  X₀⁻ = X₀⁻
+·-Positivityᵒʳ X₀⁻ X₀⁺ = X₀⁻
+·-Positivityᵒʳ X₀⁺ X₀⁻ = X₀⁻
+·-Positivityᵒʳ X⁻  X⁺  = X⁻ 
+·-Positivityᵒʳ X⁺  X⁻  = X⁻
+
+·-Positivityᶠ : PositivityLevelField → PositivityLevelField → PositivityLevelField
+·-Positivityᶠ X   X   = X  
+·-Positivityᶠ X   X⁺⁻ = X
+·-Positivityᶠ X⁺⁻ X   = X
+-- multiplying nonzero numbers gives a nonzero number
+·-Positivityᶠ X⁺⁻ X⁺⁻ = X⁺⁻
+
+·-Positivityʰ : (l : NumberLevel) → PositivityLevelType l → PositivityLevelType l → PositivityLevelType l
+·-Positivityʰ isNat     = ·-Positivityᵒʳ
+·-Positivityʰ isInt     = ·-Positivityᵒʳ
+·-Positivityʰ isRat     = ·-Positivityᵒʳ
+·-Positivityʰ isReal    = ·-Positivityᵒʳ
+·-Positivityʰ isComplex = ·-Positivityᶠ
+
+
+{- NOTE: overlapping patterns makes this possible:
+
+_ : NumberProp'
+_ = isRat , X⁺⁻ 
+
+_ : NumberProp'
+_ = isComplex , X⁺⁻ 
+
+-}
+
+
+{-
+private
+  pattern X   = anyPositivity
+  pattern X⁺⁻ = isNonzero
+  pattern X₀⁺ = isNonnegative
+  pattern X⁺  = isPositive
+  pattern X⁻  = isNegative
+  pattern X₀⁻ = isNonpositive
+-}

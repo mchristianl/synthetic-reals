@@ -2,7 +2,7 @@
 
 open import Agda.Primitive renaming (_⊔_ to ℓ-max; lsuc to ℓ-suc; lzero to ℓ-zero)
 
-module Number.Structures (ℝℓ ℝℓ' : Level) where
+module Number.Structures where
 
 private
   variable
@@ -42,6 +42,9 @@ record IsRLattice {F : Type ℓ} (_<_ _≤_ _#_ : Rel F F ℓ') (min max : F →
 record IsROrderedCommSemiring {F : Type ℓ} (_<_ _≤_ _#_ : Rel F F ℓ') (min max : F → F → F) (0f 1f : F) (_+_ _·_ : F → F → F) : Type (ℓ-max ℓ ℓ') where
   field
     isRLattice : IsRLattice _<_ _≤_ _#_ min max
+    -- TODO: the following can be derived
+    0<1 : 0f < 1f
+    
     -- TODO: properties
   open IsRLattice isRLattice public
 

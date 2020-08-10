@@ -25,12 +25,18 @@ open import Cubical.Data.Sum.Base renaming (_⊎_ to infixr 4 _⊎_)
 open import Cubical.Relation.Binary.Base -- Rel
 open import Function.Base using (_∋_)
 
-postulate
-  ℝℓ ℝℓ' : Level
+ℕℓ  = ℓ-zero
+ℕℓ' = ℓ-zero
 
-open import Number.Structures ℝℓ ℝℓ'
-open import Number.Bundles    ℝℓ ℝℓ'
-open import Number.Inclusions ℝℓ ℝℓ'
+postulate  
+  ℤℓ ℤℓ' : Level
+  ℚℓ ℚℓ' : Level
+  ℝℓ ℝℓ' : Level
+  ℂℓ ℂℓ' : Level
+
+open import Number.Structures
+open import Number.Bundles   
+open import Number.Inclusions
 
 import MoreAlgebra
 
@@ -50,15 +56,15 @@ module ℕ* where
     postulate
       min max : Nat.ℕ → Nat.ℕ → Nat.ℕ
       isROrderedCommSemiring : IsROrderedCommSemiring
-        (Lift₂  {ℓ = ℝℓ} {ℓ' = ℝℓ'} Order._<_)
-        (Lift₂  {ℓ = ℝℓ} {ℓ' = ℝℓ'} Order._≤_)
-        (Lift₂  {ℓ = ℝℓ} {ℓ' = ℝℓ'} (MoreAlgebra.Definitions._#'_ {_<_ = Order._<_}))
-        (Lift₂' {ℓ = ℝℓ}            min)
-        (Lift₂' {ℓ = ℝℓ}            max)
-        (lift   {j = ℝℓ}           Nat.zero)
-        (lift   {j = ℝℓ}           1)
-        (Lift₂' {ℓ = ℝℓ}            Nat._+_)
-        (Lift₂' {ℓ = ℝℓ}            Nat._*_)
+        (Order._<_)
+        (Order._≤_)
+        ((MoreAlgebra.Definitions._#'_ {_<_ = Order._<_}))
+        (min)
+        (max)
+        (Nat.zero)
+        (1)
+        (Nat._+_)
+        (Nat._*_)
 
   -- NOTE: only when
   --       1. making an instance
@@ -70,8 +76,8 @@ module ℕ* where
   --         `Bundle : ROrderedCommSemiring`
   --         `Bundle = record { Module }`
   --       then, we can only inspect up to ℕ.Carrier and not further
-  module Bundle = ROrderedCommSemiring {ℝℓ} {ℝℓ'}
-  Bundle = ROrderedCommSemiring {ℝℓ} {ℝℓ'}
+  module Bundle = ROrderedCommSemiring {ℕℓ} {ℕℓ'}
+  Bundle = ROrderedCommSemiring {ℕℓ} {ℕℓ'}
 
   -- NOTE: a prefix alo appears to a symbol in Have/Goal if the corresponding symbol is imported multiple times
   --       that can be checked with `C-c C-w` 
@@ -79,7 +85,7 @@ module ℕ* where
   -- module members are not normalized on `C-c` `C-.` (only after `C-u`-ing) which is helpful for not cluttering the Have/Goal with "implementation details" of the underlying Carrier type
   -- but if we wanted to 
   
-  ℕ = Lift {ℓ-zero} {ℝℓ} Nat.ℕ
+  ℕ = Nat.ℕ
   Carrier = ℕ
   -- _<_ = Lift₂  {ℓ = ℝℓ} {ℓ' = ℝℓ'} Order._<_
   -- _≤_ = Lift₂  {ℓ = ℝℓ} {ℓ' = ℝℓ'} Order._≤_
@@ -119,15 +125,15 @@ module ℕ* where
   bundle : Bundle
   bundle = (record
     { Carrier = ℕ -- Lift {ℓ-zero} {ℝℓ} Nat.ℕ
-    ; _<_ = Lift₂  Order._<_
-    ; _≤_ = Lift₂  Order._≤_
-    ; _#_ = Lift₂  (MoreAlgebra.Definitions._#'_ { _<_ = Order._<_ })
-    ; min = Lift₂' Postulates.min
-    ; max = Lift₂' Postulates.max
-    ; 0f  = lift   Nat.zero
-    ; 1f  = lift   (Nat.suc Nat.zero)
-    ; _+_ = λ x y → Lift₂' Nat._+_ x y
-    ; _·_ = Lift₂' Nat._*_
+    ; _<_ = Order._<_
+    ; _≤_ = Order._≤_
+    ; _#_ = (MoreAlgebra.Definitions._#'_ { _<_ = Order._<_ })
+    ; min = Postulates.min
+    ; max = Postulates.max
+    ; 0f  = Nat.zero
+    ; 1f  = (Nat.suc Nat.zero)
+    ; _+_ = Nat._+_
+    ; _·_ = Nat._*_
     ; isROrderedCommSemiring = Postulates.isROrderedCommSemiring
     })
 
@@ -395,9 +401,9 @@ module Foo where
 -}
 
 module ℤ where
-  module Bundle = ROrderedCommRing     {ℝℓ} {ℝℓ'}
+  module Bundle = ROrderedCommRing     {ℤℓ} {ℤℓ'}
   postulate
-    bundle  : ROrderedCommRing     {ℝℓ} {ℝℓ'}
+    bundle  : ROrderedCommRing     {ℤℓ} {ℤℓ'}
 
   open Bundle bundle public
   ℤ = Carrier
@@ -419,9 +425,9 @@ module ℤᶻ = ℤ.Bundle
     )
 
 module ℚ where
-  module Bundle = ROrderedField {ℝℓ} {ℝℓ'} renaming (Carrier to ℚ)
+  module Bundle = ROrderedField {ℚℓ} {ℚℓ'} renaming (Carrier to ℚ)
   postulate
-    bundle   : ROrderedField        {ℝℓ} {ℝℓ'}
+    bundle   : ROrderedField        {ℚℓ} {ℚℓ'}
 
   open Bundle bundle public
   Carrier = ℚ
@@ -487,9 +493,9 @@ module ℝʳ = ℝ.Bundle
     )
 
 module ℂ where
-  module Bundle = RField               {ℝℓ} {ℝℓ'}
+  module Bundle = RField               {ℂℓ} {ℂℓ'}
   postulate
-    bundle    : RField               {ℝℓ} {ℝℓ'}
+    bundle    : RField               {ℂℓ} {ℂℓ'}
 
   open Bundle bundle public
   ℂ = Carrier
