@@ -100,16 +100,16 @@ open MoreLogic.Reasoning
 
 ------------8<-------------------------------------8<-----------------------------
 
-data NumberLevel : Type where
-  isNat     : NumberLevel
-  isInt     : NumberLevel
-  isRat     : NumberLevel
-  isReal    : NumberLevel
-  isComplex : NumberLevel  
+data NumberKind : Type where
+  isNat     : NumberKind
+  isInt     : NumberKind
+  isRat     : NumberKind
+  isReal    : NumberKind
+  isComplex : NumberKind  
 
 {- an approach to define the enumeration with `Fin k`
 
-NLE : NumberLevel → Fin 5
+NLE : NumberKind → Fin 5
 NLE isNat     = 0 , it
 NLE isInt     = 1 , it
 NLE isRat     = 2 , it
@@ -124,13 +124,13 @@ _^ᶠ_ f (suc n) x = (f ^ᶠ n) (f x)
 private
   pattern suc⁵ x = suc (suc (suc (suc (suc x))))
 
-NLE⁻¹ : Fin 5 → NumberLevel
+NLE⁻¹ : Fin 5 → NumberKind
 NLE⁻¹ (0 , p) = isNat
 NLE⁻¹ (1 , p) = isInt
 NLE⁻¹ (2 , p) = isRat
 NLE⁻¹ (3 , p) = isReal
 NLE⁻¹ (4 , p) = isComplex
-NLE⁻¹ (suc⁵ fst₁ , p) = ⊥-elim {A =  λ _ → NumberLevel} $ ¬[k+x<k] 5 fst₁ p
+NLE⁻¹ (suc⁵ fst₁ , p) = ⊥-elim {A =  λ _ → NumberKind} $ ¬[k+x<k] 5 fst₁ p
 
 NLE-id¹ : ∀ x → fst (NLE (NLE⁻¹ x)) ≡ fst x
 NLE-id¹ (0 , p) = refl
@@ -147,21 +147,21 @@ NLE-id² isRat     = refl
 NLE-id² isReal    = refl
 NLE-id² isComplex = refl
 
-_≤ₙₗ_ : NumberLevel → NumberLevel → Type
+_≤ₙₗ_ : NumberKind → NumberKind → Type
 a ≤ₙₗ b = fst (NLE a) ≤ₙ fst (NLE b)
 
 -}
 
--- NumberLevelEnumeration
-NLE : NumberLevel → ℕ₀
+-- NumberKindEnumeration
+NLE : NumberKind → ℕ₀
 NLE isNat     = 0
 NLE isInt     = 1
 NLE isRat     = 2
 NLE isReal    = 3
 NLE isComplex = 4
 
--- inverse of NumberLevelEnumeration
-NLE⁻¹ : ℕ₀ → NumberLevel
+-- inverse of NumberKindEnumeration
+NLE⁻¹ : ℕ₀ → NumberKind
 NLE⁻¹ 0 = isNat
 NLE⁻¹ 1 = isInt
 NLE⁻¹ 2 = isRat
@@ -183,13 +183,13 @@ NLE-id² isComplex = refl
 -- facts about `_≤ₙₗ_` which is lifted from `_≤ₙ_`
 -- TODO: when this turns out to be generally useful for "enumerations", then we might turn this into definitions for arbitrary `f` and `f⁻¹`
 
-_≤ₙₗ_ : NumberLevel → NumberLevel → Type
+_≤ₙₗ_ : NumberKind → NumberKind → Type
 a ≤ₙₗ b = (NLE a) ≤ₙ (NLE b)
 
-minₙₗ : NumberLevel → NumberLevel → NumberLevel
+minₙₗ : NumberKind → NumberKind → NumberKind
 minₙₗ a b = NLE⁻¹ (minₙ (NLE a) (NLE b))
 
-maxₙₗ : NumberLevel → NumberLevel → NumberLevel
+maxₙₗ : NumberKind → NumberKind → NumberKind
 maxₙₗ a b = NLE⁻¹ (maxₙ (NLE a) (NLE b))
 
 ≟ₙₗ-sym : ∀ a b → Trichotomy (NLE a) (NLE b) → Trichotomy (NLE b) (NLE a)
@@ -209,18 +209,18 @@ max-symₙₗ a b with NLE a ≟ₙ NLE b | NLE b ≟ₙ NLE a
 ... | gt x | eq y = sym (cong NLE⁻¹ y)
 ... | gt x | gt y = ⊥-elim {A = λ _ → NLE⁻¹ (NLE a) ≡ NLE⁻¹ (NLE b)} $  <-asymₙ _ _ x y 
 
-max-implies-≤ₙₗ : (a : NumberLevel) → (b : NumberLevel) → a ≤ₙₗ maxₙₗ a b
+max-implies-≤ₙₗ : (a : NumberKind) → (b : NumberKind) → a ≤ₙₗ maxₙₗ a b
 max-implies-≤ₙₗ a b with (NLE a) ≟ (NLE b)
 ... | lt (x , p) =  suc x ,  sym (+-suc _ _)  ∙ p ∙ cong NLE (sym (NLE-id² b))
 ... | eq x = 0 , sym (cong NLE (NLE-id² a) ∙ refl {x = NLE a})
 ... | gt x = 0 , sym (cong NLE (NLE-id² a) ∙ refl {x = NLE a})
 
-max-implies-≤ₙₗ₂ : (a : NumberLevel) → (b : NumberLevel) → (a ≤ₙₗ maxₙₗ a b) × (b ≤ₙₗ maxₙₗ a b)
+max-implies-≤ₙₗ₂ : (a : NumberKind) → (b : NumberKind) → (a ≤ₙₗ maxₙₗ a b) × (b ≤ₙₗ maxₙₗ a b)
 max-implies-≤ₙₗ₂ a b = max-implies-≤ₙₗ a b , transport (λ i → b ≤ₙₗ max-symₙₗ b a i) (max-implies-≤ₙₗ b a)
 
 ------------8<-------------------------------------8<-----------------------------
 
--- TODO: this needs to be dependent on NumberLevel
+-- TODO: this needs to be dependent on NumberKind
 --       it might be possible to use overlapping patterns to "hide" the dependent constructor
 
 {-
@@ -245,14 +245,14 @@ data PositivityLevelField : Type where
   anyPositivityᶠ : PositivityLevelField
   isNonzeroᶠ     : PositivityLevelField
 
-PositivityLevelType : NumberLevel → Type
+PositivityLevelType : NumberKind → Type
 PositivityLevelType isNat     = PositivityLevelOrderedRing
 PositivityLevelType isInt     = PositivityLevelOrderedRing
 PositivityLevelType isRat     = PositivityLevelOrderedRing
 PositivityLevelType isReal    = PositivityLevelOrderedRing
 PositivityLevelType isComplex = PositivityLevelField
 
-NumberProp = Σ NumberLevel PositivityLevelType
+NumberProp = Σ NumberKind PositivityLevelType
 
 module PatternsType where
   -- ordered ring patterns
@@ -394,21 +394,21 @@ coerce-PositivityLevel-F2OR : PositivityLevelField → PositivityLevelOrderedRin
 coerce-PositivityLevel-F2OR ⁇x⁇ = ⁇x⁇
 coerce-PositivityLevel-F2OR x#0 = x#0
 
-coerce-PositivityLevel-OR2 : PositivityLevelOrderedRing → (to : NumberLevel) → PositivityLevelType to
+coerce-PositivityLevel-OR2 : PositivityLevelOrderedRing → (to : NumberKind) → PositivityLevelType to
 coerce-PositivityLevel-OR2 pl isNat     = pl
 coerce-PositivityLevel-OR2 pl isInt     = pl
 coerce-PositivityLevel-OR2 pl isRat     = pl
 coerce-PositivityLevel-OR2 pl isReal    = pl
 coerce-PositivityLevel-OR2 pl isComplex = coerce-PositivityLevel-OR2F pl
 
-coerce-PositivityLevel-F2 : PositivityLevelField → (to : NumberLevel) → PositivityLevelType to
+coerce-PositivityLevel-F2 : PositivityLevelField → (to : NumberKind) → PositivityLevelType to
 coerce-PositivityLevel-F2 pl isNat     = coerce-PositivityLevel-F2OR pl 
 coerce-PositivityLevel-F2 pl isInt     = coerce-PositivityLevel-F2OR pl 
 coerce-PositivityLevel-F2 pl isRat     = coerce-PositivityLevel-F2OR pl 
 coerce-PositivityLevel-F2 pl isReal    = coerce-PositivityLevel-F2OR pl 
 coerce-PositivityLevel-F2 pl isComplex = pl
 
-coerce-PositivityLevel : (from to : NumberLevel) → PositivityLevelType from → PositivityLevelType to
+coerce-PositivityLevel : (from to : NumberKind) → PositivityLevelType from → PositivityLevelType to
 coerce-PositivityLevel isNat     to x = coerce-PositivityLevel-OR2 x to
 coerce-PositivityLevel isInt     to x = coerce-PositivityLevel-OR2 x to
 coerce-PositivityLevel isRat     to x = coerce-PositivityLevel-OR2 x to
@@ -431,50 +431,50 @@ private
 record NumberProp : Type where
   constructor _,,_
   field
-    level      : NumberLevel
+    level      : NumberKind
     positivity : PositivityLevel
 -}
 
--- splitting this into a separate function to be able to make use of NumberLevel without inspecting PositivitLevel
+-- splitting this into a separate function to be able to make use of NumberKind without inspecting PositivitLevel
 
 open import Number.Postulates
 open import Number.Bundles
 
--- NumberLevel interpretation
+-- NumberKind interpretation
 
-NumberLevelLevel : NumberLevel → Level
-NumberLevelLevel isNat     = ℕℓ
-NumberLevelLevel isInt     = ℤℓ
-NumberLevelLevel isRat     = ℚℓ
-NumberLevelLevel isReal    = ℝℓ
-NumberLevelLevel isComplex = ℂℓ
+NumberKindLevel : NumberKind → Level
+NumberKindLevel isNat     = ℕℓ
+NumberKindLevel isInt     = ℤℓ
+NumberKindLevel isRat     = ℚℓ
+NumberKindLevel isReal    = ℝℓ
+NumberKindLevel isComplex = ℂℓ
 
-NumberLevelProplevel : NumberLevel → Level
-NumberLevelProplevel isNat     = ℕℓ'
-NumberLevelProplevel isInt     = ℤℓ'
-NumberLevelProplevel isRat     = ℚℓ'
-NumberLevelProplevel isReal    = ℝℓ'
-NumberLevelProplevel isComplex = ℂℓ'
+NumberKindProplevel : NumberKind → Level
+NumberKindProplevel isNat     = ℕℓ'
+NumberKindProplevel isInt     = ℤℓ'
+NumberKindProplevel isRat     = ℚℓ'
+NumberKindProplevel isReal    = ℝℓ'
+NumberKindProplevel isComplex = ℂℓ'
 
-NumberLevelInterpretation : (x : NumberLevel) → Type (NumberLevelLevel x)
-NumberLevelInterpretation isNat     = let open ℕ* in ℕ₀
-NumberLevelInterpretation isInt     = let open ℤ  in ℤ
-NumberLevelInterpretation isRat     = let open ℚ  in ℚ
-NumberLevelInterpretation isReal    = let open ℝ  in ℝ
-NumberLevelInterpretation isComplex = let open ℂ  in ℂ
+NumberKindInterpretation : (x : NumberKind) → Type (NumberKindLevel x)
+NumberKindInterpretation isNat     = let open ℕ* in ℕ₀
+NumberKindInterpretation isInt     = let open ℤ  in ℤ
+NumberKindInterpretation isRat     = let open ℚ  in ℚ
+NumberKindInterpretation isReal    = let open ℝ  in ℝ
+NumberKindInterpretation isComplex = let open ℂ  in ℂ
 
 {-
-NumberLevelInterpretation : NumberLevel → Type ℝℓ
-NumberLevelInterpretation isNat     = let open ℕ* in ℕ -- NOTE: this occurs in the Have/Goal
-NumberLevelInterpretation isInt     = let open ℤ in ℤ --       so somehow the "amount of normalization" at the call site is inherited from the function (clause)
-NumberLevelInterpretation isRat     = let open ℚ in ℚ --       the finding is, that to produce "nice" Goals,
-NumberLevelInterpretation isReal    = let open ℝ in ℝ --         we need to create the same symbol-import-path in the definition clause
-NumberLevelInterpretation isComplex = let open ℂ in ℂ --         that will also be present at the call site
+NumberKindInterpretation : NumberKind → Type ℝℓ
+NumberKindInterpretation isNat     = let open ℕ* in ℕ -- NOTE: this occurs in the Have/Goal
+NumberKindInterpretation isInt     = let open ℤ in ℤ --       so somehow the "amount of normalization" at the call site is inherited from the function (clause)
+NumberKindInterpretation isRat     = let open ℚ in ℚ --       the finding is, that to produce "nice" Goals,
+NumberKindInterpretation isReal    = let open ℝ in ℝ --         we need to create the same symbol-import-path in the definition clause
+NumberKindInterpretation isComplex = let open ℂ in ℂ --         that will also be present at the call site
 -}
 
 -- PositivityLevel interpretation
 
-PositivityLevelInterpretation : (nl : NumberLevel) → PositivityLevelType nl → (x : NumberLevelInterpretation nl) → Type (NumberLevelProplevel nl)
+PositivityLevelInterpretation : (nl : NumberKind) → PositivityLevelType nl → (x : NumberKindInterpretation nl) → Type (NumberKindProplevel nl)
 PositivityLevelInterpretation isNat     ⁇x⁇ x =                                        Unit
 PositivityLevelInterpretation isNat     x#0 x = let open ℕ                             in ( x # 0f)
 PositivityLevelInterpretation isNat     0≤x x = let open ℕ                             in (0f ≤  x)
@@ -503,7 +503,7 @@ PositivityLevelInterpretation isComplex ⁇x⁇ x =                             
 PositivityLevelInterpretation isComplex x#0 x = let open ℂ.Bundle             ℂ.bundle in ( x # 0f)
 
 {-
-PositivityLevelInterpretation : (nl : NumberLevel) → PositivityLevel → (x : NumberLevelInterpretation nl) → Type ℝℓ'
+PositivityLevelInterpretation : (nl : NumberKind) → PositivityLevel → (x : NumberKindInterpretation nl) → Type ℝℓ'
 PositivityLevelInterpretation isNat     ⁇x⁇ x =                                        Lift Unit
 PositivityLevelInterpretation isNat     x#0 x = let open ℕ                             in ( x # 0f)
 PositivityLevelInterpretation isNat     0≤x x = let open ℕ                             in (0f ≤  x)
@@ -536,22 +536,25 @@ PositivityLevelInterpretation isComplex x≤0 x =                               
 PositivityLevelInterpretation isComplex x<0 x =                                        Lift ⊥
 -}
 
+NumberLevel : NumberKind → Level
+NumberLevel l = ℓ-max (NumberKindLevel l) (NumberKindProplevel l)
+
 -- NumberProp interpretation
-NumberInterpretation : ((l , p) : NumberProp) → Type (ℓ-max (NumberLevelLevel l) (NumberLevelProplevel l))
-NumberInterpretation (level , positivity) = Σ (NumberLevelInterpretation level) (PositivityLevelInterpretation level positivity) 
+NumberInterpretation : ((l , p) : NumberProp) → Type (NumberLevel l)
+NumberInterpretation (level , positivity) = Σ (NumberKindInterpretation level) (PositivityLevelInterpretation level positivity) 
 
 {-
 In : NumberProp → Type (ℓ-max ℝℓ ℝℓ')
-In (level ,, positivity) = Σ (NumberLevelInterpretation level) (PositivityLevelInterpretation level positivity)
+In (level ,, positivity) = Σ (NumberKindInterpretation level) (PositivityLevelInterpretation level positivity)
 -}
 
 -- maybe it's better to name
 
-data Number (p : NumberProp) : Type (ℓ-max (NumberLevelLevel (fst p)) (NumberLevelProplevel (fst p))) where
+data Number (p : NumberProp) : Type (NumberLevel (fst p)) where
   -- number : NumberInterpretation p → Number p
-  _,,_ : (x : NumberLevelInterpretation (fst p)) → (PositivityLevelInterpretation (fst p) (snd p) x) → Number p
+  _,,_ : (x : NumberKindInterpretation (fst p)) → (PositivityLevelInterpretation (fst p) (snd p) x) → Number p
 
-num : ∀{(l , p) : NumberProp} → Number (l , p) → NumberLevelInterpretation l
+num : ∀{(l , p) : NumberProp} → Number (l , p) → NumberKindInterpretation l
 num (p ,, q) = p
 
 prp : ∀{pp@(l , p) : NumberProp} → (x : Number pp) → PositivityLevelInterpretation l p (num x)
@@ -561,7 +564,7 @@ pop : ∀{p : NumberProp} → Number p → NumberInterpretation p
 pop (x ,, p) = x , p
 
 -- common level
-Cl : (a : NumberLevel) → (b : NumberLevel) → NumberLevel -- Σ[ c ∈ NumberLevel ] a ≤ₙₗ c × b ≤ₙₗ c
+Cl : (a : NumberKind) → (b : NumberKind) → NumberKind -- Σ[ c ∈ NumberKind ] a ≤ₙₗ c × b ≤ₙₗ c
 Cl a b = maxₙₗ a b
 -- Cl _         isComplex = isComplex
 -- Cl isComplex _         = isComplex
@@ -652,7 +655,7 @@ private
 -- this narrows the to-be-preserved properties down to the properties that are available
 -- it only affects ℂ where we do not have < and ≤
 {-
-availablePositivity : NumberLevel → PositivityLevel → PositivityLevel
+availablePositivity : NumberKind → PositivityLevel → PositivityLevel
 availablePositivity isNat      p  =  p
 availablePositivity isInt      p  =  p
 availablePositivity isRat      p  =  p
@@ -715,7 +718,7 @@ open PatternsType
 -- positivity information is lost after _+_ on a field
 +-Positivityᶠ x   y   = X
 
-+-Positivityʰ : (l : NumberLevel) → PositivityLevelType l → PositivityLevelType l → PositivityLevelType l
++-Positivityʰ : (l : NumberKind) → PositivityLevelType l → PositivityLevelType l → PositivityLevelType l
 +-Positivityʰ isNat     = +-Positivityᵒʳ
 +-Positivityʰ isInt     = +-Positivityᵒʳ
 +-Positivityʰ isRat     = +-Positivityᵒʳ
@@ -762,7 +765,7 @@ open PatternsType
 -- multiplying nonzero numbers gives a nonzero number
 ·-Positivityᶠ X⁺⁻ X⁺⁻ = X⁺⁻
 
-·-Positivityʰ : (l : NumberLevel) → PositivityLevelType l → PositivityLevelType l → PositivityLevelType l
+·-Positivityʰ : (l : NumberKind) → PositivityLevelType l → PositivityLevelType l → PositivityLevelType l
 ·-Positivityʰ isNat     = ·-Positivityᵒʳ
 ·-Positivityʰ isInt     = ·-Positivityᵒʳ
 ·-Positivityʰ isRat     = ·-Positivityᵒʳ

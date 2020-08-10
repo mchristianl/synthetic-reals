@@ -13,7 +13,6 @@ open import Cubical.Relation.Nullary.Base -- ¬_
 open import Cubical.Relation.Binary.Base -- Rel
 
 -- open import Data.Nat.Base using (ℕ) renaming (_≤_ to _≤ₙ_)
--- open import Cubical.Data.Nat using (ℕ; zero; suc) renaming (_+_ to _+ₙ_)
 -- open import Cubical.Data.Nat.Order renaming (zero-≤ to z≤n; suc-≤-suc to s≤s; _≤_ to _≤ₙ_; _<_ to _<ₙ_)
 
 open import Cubical.Data.Unit.Base -- Unit
@@ -22,6 +21,15 @@ open import Cubical.Data.Sum.Base renaming (_⊎_ to infixr 4 _⊎_)
 open import Cubical.Data.Sigma.Base renaming (_×_ to infixr 4 _×_)
 open import Cubical.Data.Empty renaming (elim to ⊥-elim) -- `⊥` and `elim`
 open import Cubical.Data.Maybe.Base
+
+module _ where
+  open import Cubical.Data.Nat using (ℕ; zero; suc) renaming (_+_ to _+ₙ_)
+  open import Cubical.Data.Nat.Properties using (+-suc; injSuc; snotz; +-comm; +-assoc; +-zero; inj-m+)
+  open import Function.Base using (_$_)
+
+  k+x+sy≢x : ∀ k x y → ¬(k +ₙ (x +ₙ suc y) ≡ x)
+  k+x+sy≢x k x y p = snotz $ sym (+-suc k y) ∙ inj-m+ {x} (+-assoc x k (suc y) ∙ (λ i → (+-comm x k) i +ₙ (suc y)) ∙ sym (+-assoc k x (suc y)) ∙ p ∙ sym (+-zero x))
+
 
 -- open import Bundles
 
@@ -246,6 +254,8 @@ module Coerce-ℝ↪ℂ where
     coerce-ℝ↪ℂ {x<0} (x ,, q) = transport (λ i → f x # preserves-0 i) (preserves-# _ _              (ℝ.<-implies-# _ _ q) )
     coerce-ℝ↪ℂ {x≤0} (x ,, q) = lift tt
 
+
+
 -- does this make anything faster?
 open Coerce-ℕ↪ℤ public
 open Coerce-ℕ↪ℚ public
@@ -257,3 +267,36 @@ open Coerce-ℤ↪ℂ public
 open Coerce-ℚ↪ℝ public
 open Coerce-ℚ↪ℂ public
 open Coerce-ℝ↪ℂ public
+
+coerce : (from : NumberKind)
+       → (to   : NumberKind)
+       → from ≤ₙₗ to
+       → ∀{p}
+       → Number (from , p)
+       → Number (to   , coerce-PositivityLevel from to p)
+coerce isNat     isNat     q {p} x = x 
+coerce isInt     isInt     q {p} x = x
+coerce isRat     isRat     q {p} x = x
+coerce isReal    isReal    q {p} x = x
+coerce isComplex isComplex q {p} x = x
+coerce isNat     isInt     q {p} x = (ℕ↪ℤ (num x) ,, coerce-ℕ↪ℤ x)
+coerce isNat     isRat     q {p} x = (ℕ↪ℚ (num x) ,, coerce-ℕ↪ℚ x)
+coerce isNat     isReal    q {p} x = (ℕ↪ℝ (num x) ,, coerce-ℕ↪ℝ x)
+coerce isNat     isComplex q {p} x = (ℕ↪ℂ (num x) ,, coerce-ℕ↪ℂ x)
+coerce isInt     isRat     q {p} x = (ℤ↪ℚ (num x) ,, coerce-ℤ↪ℚ x)
+coerce isInt     isReal    q {p} x = (ℤ↪ℝ (num x) ,, coerce-ℤ↪ℝ x)
+coerce isInt     isComplex q {p} x = (ℤ↪ℂ (num x) ,, coerce-ℤ↪ℂ x)
+coerce isRat     isReal    q {p} x = (ℚ↪ℝ (num x) ,, coerce-ℚ↪ℝ x)
+coerce isRat     isComplex q {p} x = (ℚ↪ℂ (num x) ,, coerce-ℚ↪ℂ x)
+coerce isReal    isComplex q {p} x = (ℝ↪ℂ (num x) ,, coerce-ℝ↪ℂ x)
+--coerce x         y         = nothing
+coerce isInt     isNat  (k , q) {p} x = ⊥-elim {A = λ _ → Number (isNat  , p)} (k+x+sy≢x _ _ _ q)
+coerce isRat     isNat  (k , q) {p} x = ⊥-elim {A = λ _ → Number (isNat  , p)} (k+x+sy≢x _ _ _ q)  
+coerce isRat     isInt  (k , q) {p} x = ⊥-elim {A = λ _ → Number (isInt  , p)} (k+x+sy≢x _ _ _ q)
+coerce isReal    isNat  (k , q) {p} x = ⊥-elim {A = λ _ → Number (isNat  , p)} (k+x+sy≢x _ _ _ q)
+coerce isReal    isInt  (k , q) {p} x = ⊥-elim {A = λ _ → Number (isInt  , p)} (k+x+sy≢x _ _ _ q)
+coerce isReal    isRat  (k , q) {p} x = ⊥-elim {A = λ _ → Number (isRat  , p)} (k+x+sy≢x _ _ _ q)
+coerce isComplex isNat  (k , q) {p} x = ⊥-elim {A = λ _ → Number (isNat  , coerce-PositivityLevel isComplex isNat  p)} (k+x+sy≢x _ _ _ q)
+coerce isComplex isInt  (k , q) {p} x = ⊥-elim {A = λ _ → Number (isInt  , coerce-PositivityLevel isComplex isInt  p)} (k+x+sy≢x _ _ _ q)
+coerce isComplex isRat  (k , q) {p} x = ⊥-elim {A = λ _ → Number (isRat  , coerce-PositivityLevel isComplex isRat  p)} (k+x+sy≢x _ _ _ q)
+coerce isComplex isReal (k , q) {p} x = ⊥-elim {A = λ _ → Number (isReal , coerce-PositivityLevel isComplex isReal p)} (k+x+sy≢x _ _ _ q)
