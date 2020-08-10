@@ -474,91 +474,91 @@ NumberLevelInterpretation isComplex = let open ℂ in ℂ --         that will a
 
 -- PositivityLevel interpretation
 
-PositivityInterpretation : (nl : NumberLevel) → PositivityLevelType nl → (x : NumberLevelInterpretation nl) → Type (NumberLevelProplevel nl)
-PositivityInterpretation isNat     ⁇x⁇ x =                                        Unit
-PositivityInterpretation isNat     x#0 x = let open ℕ                             in ( x # 0f)
-PositivityInterpretation isNat     0≤x x = let open ℕ                             in (0f ≤  x)
-PositivityInterpretation isNat     0<x x = let open ℕ                             in (ℕ.0f < x) 
-PositivityInterpretation isNat     x≤0 x = let open ℕ                             in ( x ≤ 0f) 
-PositivityInterpretation isNat     x<0 x =                                        ⊥
-PositivityInterpretation isInt     ⁇x⁇ x =                                        Lift Unit
-PositivityInterpretation isInt     x#0 x = let open ℤ.Bundle             ℤ.bundle in ( x # 0f)
-PositivityInterpretation isInt     0≤x x = let open ℤ.Bundle             ℤ.bundle in (0f ≤  x)
-PositivityInterpretation isInt     0<x x = let open ℤ.Bundle             ℤ.bundle in (0f <  x)
-PositivityInterpretation isInt     x≤0 x = let open ℤ.Bundle             ℤ.bundle in ( x ≤ 0f)
-PositivityInterpretation isInt     x<0 x = let open ℤ.Bundle             ℤ.bundle in ( x < 0f)
-PositivityInterpretation isRat     ⁇x⁇ x =                                        Lift Unit        
-PositivityInterpretation isRat     x#0 x = let open ℚ.Bundle             ℚ.bundle in ( x # 0f)
-PositivityInterpretation isRat     0≤x x = let open ℚ.Bundle             ℚ.bundle in (0f ≤  x)
-PositivityInterpretation isRat     0<x x = let open ℚ.Bundle             ℚ.bundle in (0f <  x)
-PositivityInterpretation isRat     x≤0 x = let open ℚ.Bundle             ℚ.bundle in ( x ≤ 0f)
-PositivityInterpretation isRat     x<0 x = let open ℚ.Bundle             ℚ.bundle in ( x < 0f)
-PositivityInterpretation isReal    ⁇x⁇ x =                                        Lift Unit 
-PositivityInterpretation isReal    x#0 x = let open ℝ.Bundle             ℝ.bundle in ( x # 0f)
-PositivityInterpretation isReal    0≤x x = let open ℝ.Bundle             ℝ.bundle in (0f ≤  x)
-PositivityInterpretation isReal    0<x x = let open ℝ.Bundle             ℝ.bundle in (0f <  x)
-PositivityInterpretation isReal    x≤0 x = let open ℝ.Bundle             ℝ.bundle in ( x ≤ 0f)
-PositivityInterpretation isReal    x<0 x = let open ℝ.Bundle             ℝ.bundle in ( x < 0f)
-PositivityInterpretation isComplex ⁇x⁇ x =                                        Lift Unit 
-PositivityInterpretation isComplex x#0 x = let open ℂ.Bundle             ℂ.bundle in ( x # 0f)
+PositivityLevelInterpretation : (nl : NumberLevel) → PositivityLevelType nl → (x : NumberLevelInterpretation nl) → Type (NumberLevelProplevel nl)
+PositivityLevelInterpretation isNat     ⁇x⁇ x =                                        Unit
+PositivityLevelInterpretation isNat     x#0 x = let open ℕ                             in ( x # 0f)
+PositivityLevelInterpretation isNat     0≤x x = let open ℕ                             in (0f ≤  x)
+PositivityLevelInterpretation isNat     0<x x = let open ℕ                             in (ℕ.0f < x) 
+PositivityLevelInterpretation isNat     x≤0 x = let open ℕ                             in ( x ≤ 0f) 
+PositivityLevelInterpretation isNat     x<0 x =                                        ⊥
+PositivityLevelInterpretation isInt     ⁇x⁇ x =                                        Lift Unit
+PositivityLevelInterpretation isInt     x#0 x = let open ℤ.Bundle             ℤ.bundle in ( x # 0f)
+PositivityLevelInterpretation isInt     0≤x x = let open ℤ.Bundle             ℤ.bundle in (0f ≤  x)
+PositivityLevelInterpretation isInt     0<x x = let open ℤ.Bundle             ℤ.bundle in (0f <  x)
+PositivityLevelInterpretation isInt     x≤0 x = let open ℤ.Bundle             ℤ.bundle in ( x ≤ 0f)
+PositivityLevelInterpretation isInt     x<0 x = let open ℤ.Bundle             ℤ.bundle in ( x < 0f)
+PositivityLevelInterpretation isRat     ⁇x⁇ x =                                        Lift Unit        
+PositivityLevelInterpretation isRat     x#0 x = let open ℚ.Bundle             ℚ.bundle in ( x # 0f)
+PositivityLevelInterpretation isRat     0≤x x = let open ℚ.Bundle             ℚ.bundle in (0f ≤  x)
+PositivityLevelInterpretation isRat     0<x x = let open ℚ.Bundle             ℚ.bundle in (0f <  x)
+PositivityLevelInterpretation isRat     x≤0 x = let open ℚ.Bundle             ℚ.bundle in ( x ≤ 0f)
+PositivityLevelInterpretation isRat     x<0 x = let open ℚ.Bundle             ℚ.bundle in ( x < 0f)
+PositivityLevelInterpretation isReal    ⁇x⁇ x =                                        Lift Unit 
+PositivityLevelInterpretation isReal    x#0 x = let open ℝ.Bundle             ℝ.bundle in ( x # 0f)
+PositivityLevelInterpretation isReal    0≤x x = let open ℝ.Bundle             ℝ.bundle in (0f ≤  x)
+PositivityLevelInterpretation isReal    0<x x = let open ℝ.Bundle             ℝ.bundle in (0f <  x)
+PositivityLevelInterpretation isReal    x≤0 x = let open ℝ.Bundle             ℝ.bundle in ( x ≤ 0f)
+PositivityLevelInterpretation isReal    x<0 x = let open ℝ.Bundle             ℝ.bundle in ( x < 0f)
+PositivityLevelInterpretation isComplex ⁇x⁇ x =                                        Lift Unit 
+PositivityLevelInterpretation isComplex x#0 x = let open ℂ.Bundle             ℂ.bundle in ( x # 0f)
 
 {-
-PositivityInterpretation : (nl : NumberLevel) → PositivityLevel → (x : NumberLevelInterpretation nl) → Type ℝℓ'
-PositivityInterpretation isNat     ⁇x⁇ x =                                        Lift Unit
-PositivityInterpretation isNat     x#0 x = let open ℕ                             in ( x # 0f)
-PositivityInterpretation isNat     0≤x x = let open ℕ                             in (0f ≤  x)
-PositivityInterpretation isNat     0<x x = let open ℕ                             in (ℕ.0f < x) 
-PositivityInterpretation isNat     x≤0 x = let open ℕ                             in ( x ≤ 0f) 
-PositivityInterpretation isNat     x<0 x =                                        Lift ⊥
-PositivityInterpretation isInt     ⁇x⁇ x =                                        Lift Unit
-PositivityInterpretation isInt     x#0 x = let open ℤ.Bundle             ℤ.bundle in ( x # 0f)
-PositivityInterpretation isInt     0≤x x = let open ℤ.Bundle             ℤ.bundle in (0f ≤  x)
-PositivityInterpretation isInt     0<x x = let open ℤ.Bundle             ℤ.bundle in (0f <  x)
-PositivityInterpretation isInt     x≤0 x = let open ℤ.Bundle             ℤ.bundle in ( x ≤ 0f)
-PositivityInterpretation isInt     x<0 x = let open ℤ.Bundle             ℤ.bundle in ( x < 0f)
-PositivityInterpretation isRat     ⁇x⁇ x =                                        Lift Unit        
-PositivityInterpretation isRat     x#0 x = let open ℚ.Bundle             ℚ.bundle in ( x # 0f)
-PositivityInterpretation isRat     0≤x x = let open ℚ.Bundle             ℚ.bundle in (0f ≤  x)
-PositivityInterpretation isRat     0<x x = let open ℚ.Bundle             ℚ.bundle in (0f <  x)
-PositivityInterpretation isRat     x≤0 x = let open ℚ.Bundle             ℚ.bundle in ( x ≤ 0f)
-PositivityInterpretation isRat     x<0 x = let open ℚ.Bundle             ℚ.bundle in ( x < 0f)
-PositivityInterpretation isReal    ⁇x⁇ x =                                        Lift Unit 
-PositivityInterpretation isReal    x#0 x = let open ℝ.Bundle             ℝ.bundle in ( x # 0f)
-PositivityInterpretation isReal    0≤x x = let open ℝ.Bundle             ℝ.bundle in (0f ≤  x)
-PositivityInterpretation isReal    0<x x = let open ℝ.Bundle             ℝ.bundle in (0f <  x)
-PositivityInterpretation isReal    x≤0 x = let open ℝ.Bundle             ℝ.bundle in ( x ≤ 0f)
-PositivityInterpretation isReal    x<0 x = let open ℝ.Bundle             ℝ.bundle in ( x < 0f)
-PositivityInterpretation isComplex ⁇x⁇ x =                                        Lift Unit 
-PositivityInterpretation isComplex x#0 x = let open ℂ.Bundle             ℂ.bundle in ( x # 0f)
-PositivityInterpretation isComplex 0≤x x =                                        Lift ⊥
-PositivityInterpretation isComplex 0<x x =                                        Lift ⊥
-PositivityInterpretation isComplex x≤0 x =                                        Lift ⊥
-PositivityInterpretation isComplex x<0 x =                                        Lift ⊥
+PositivityLevelInterpretation : (nl : NumberLevel) → PositivityLevel → (x : NumberLevelInterpretation nl) → Type ℝℓ'
+PositivityLevelInterpretation isNat     ⁇x⁇ x =                                        Lift Unit
+PositivityLevelInterpretation isNat     x#0 x = let open ℕ                             in ( x # 0f)
+PositivityLevelInterpretation isNat     0≤x x = let open ℕ                             in (0f ≤  x)
+PositivityLevelInterpretation isNat     0<x x = let open ℕ                             in (ℕ.0f < x) 
+PositivityLevelInterpretation isNat     x≤0 x = let open ℕ                             in ( x ≤ 0f) 
+PositivityLevelInterpretation isNat     x<0 x =                                        Lift ⊥
+PositivityLevelInterpretation isInt     ⁇x⁇ x =                                        Lift Unit
+PositivityLevelInterpretation isInt     x#0 x = let open ℤ.Bundle             ℤ.bundle in ( x # 0f)
+PositivityLevelInterpretation isInt     0≤x x = let open ℤ.Bundle             ℤ.bundle in (0f ≤  x)
+PositivityLevelInterpretation isInt     0<x x = let open ℤ.Bundle             ℤ.bundle in (0f <  x)
+PositivityLevelInterpretation isInt     x≤0 x = let open ℤ.Bundle             ℤ.bundle in ( x ≤ 0f)
+PositivityLevelInterpretation isInt     x<0 x = let open ℤ.Bundle             ℤ.bundle in ( x < 0f)
+PositivityLevelInterpretation isRat     ⁇x⁇ x =                                        Lift Unit        
+PositivityLevelInterpretation isRat     x#0 x = let open ℚ.Bundle             ℚ.bundle in ( x # 0f)
+PositivityLevelInterpretation isRat     0≤x x = let open ℚ.Bundle             ℚ.bundle in (0f ≤  x)
+PositivityLevelInterpretation isRat     0<x x = let open ℚ.Bundle             ℚ.bundle in (0f <  x)
+PositivityLevelInterpretation isRat     x≤0 x = let open ℚ.Bundle             ℚ.bundle in ( x ≤ 0f)
+PositivityLevelInterpretation isRat     x<0 x = let open ℚ.Bundle             ℚ.bundle in ( x < 0f)
+PositivityLevelInterpretation isReal    ⁇x⁇ x =                                        Lift Unit 
+PositivityLevelInterpretation isReal    x#0 x = let open ℝ.Bundle             ℝ.bundle in ( x # 0f)
+PositivityLevelInterpretation isReal    0≤x x = let open ℝ.Bundle             ℝ.bundle in (0f ≤  x)
+PositivityLevelInterpretation isReal    0<x x = let open ℝ.Bundle             ℝ.bundle in (0f <  x)
+PositivityLevelInterpretation isReal    x≤0 x = let open ℝ.Bundle             ℝ.bundle in ( x ≤ 0f)
+PositivityLevelInterpretation isReal    x<0 x = let open ℝ.Bundle             ℝ.bundle in ( x < 0f)
+PositivityLevelInterpretation isComplex ⁇x⁇ x =                                        Lift Unit 
+PositivityLevelInterpretation isComplex x#0 x = let open ℂ.Bundle             ℂ.bundle in ( x # 0f)
+PositivityLevelInterpretation isComplex 0≤x x =                                        Lift ⊥
+PositivityLevelInterpretation isComplex 0<x x =                                        Lift ⊥
+PositivityLevelInterpretation isComplex x≤0 x =                                        Lift ⊥
+PositivityLevelInterpretation isComplex x<0 x =                                        Lift ⊥
 -}
 
 -- NumberProp interpretation
 NumberInterpretation : ((l , p) : NumberProp) → Type (ℓ-max (NumberLevelLevel l) (NumberLevelProplevel l))
-NumberInterpretation (level , positivity) = Σ (NumberLevelInterpretation level) (PositivityInterpretation level positivity) 
+NumberInterpretation (level , positivity) = Σ (NumberLevelInterpretation level) (PositivityLevelInterpretation level positivity) 
 
 {-
 In : NumberProp → Type (ℓ-max ℝℓ ℝℓ')
-In (level ,, positivity) = Σ (NumberLevelInterpretation level) (PositivityInterpretation level positivity)
+In (level ,, positivity) = Σ (NumberLevelInterpretation level) (PositivityLevelInterpretation level positivity)
 -}
 
 -- maybe it's better to name
 
 data Number (p : NumberProp) : Type (ℓ-max (NumberLevelLevel (fst p)) (NumberLevelProplevel (fst p))) where
-  number : NumberInterpretation p → Number p
-  -- _,,_ : (Il' (fst p)) → (Ip' (fst p) (snd p)) → Number p
+  -- number : NumberInterpretation p → Number p
+  _,,_ : (x : NumberLevelInterpretation (fst p)) → (PositivityLevelInterpretation (fst p) (snd p) x) → Number p
 
 num : ∀{(l , p) : NumberProp} → Number (l , p) → NumberLevelInterpretation l
-num (number p) = fst p
+num (p ,, q) = p
 
-prp : ∀{pp@(l , p) : NumberProp} → (x : Number pp) → PositivityInterpretation l p (num x)
-prp (number p) = snd p
+prp : ∀{pp@(l , p) : NumberProp} → (x : Number pp) → PositivityLevelInterpretation l p (num x)
+prp (p ,, q) = q
 
 pop : ∀{p : NumberProp} → Number p → NumberInterpretation p
-pop (number (x , p)) = x , p
+pop (x ,, p) = x , p
 
 -- common level
 Cl : (a : NumberLevel) → (b : NumberLevel) → NumberLevel -- Σ[ c ∈ NumberLevel ] a ≤ₙₗ c × b ≤ₙₗ c

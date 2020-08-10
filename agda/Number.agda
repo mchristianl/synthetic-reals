@@ -62,11 +62,11 @@ open import Data.Nat.Properties using (+-mono-<)
 k+x+sy≢x : ∀ k x y → ¬(k +ₙ (x +ₙ suc y) ≡ x)
 k+x+sy≢x k x y p = snotz $ sym (+-suc k y) ∙ inj-m+ {x} (+-assoc x k (suc y) ∙ (λ i → (+-comm x k) i +ₙ (suc y)) ∙ sym (+-assoc k x (suc y)) ∙ p ∙ sym (+-zero x))
 
--- num {isNat     ,, p} (number (x , q)) = x
--- num {isInt     ,, p} (number (x , q)) = x
--- num {isRat     ,, p} (number (x , q)) = x
--- num {isReal    ,, p} (number (x , q)) = x
--- num {isComplex ,, p} (number (x , q)) = x
+-- num {isNat     ,, p} (x ,, q) = x
+-- num {isInt     ,, p} (x ,, q) = x
+-- num {isRat     ,, p} (x ,, q) = x
+-- num {isReal    ,, p} (x ,, q) = x
+-- num {isComplex ,, p} (x ,, q) = x
 
 
 -- TODO: name this "inject" instead of "coerce"
@@ -91,7 +91,7 @@ k+x+sy≢x k x y p = snotz $ sym (+-suc k y) ∙ inj-m+ {x} (+-assoc x k (suc y)
 --             → {f : Il l → Il ll}
 --             → IsROrderedCommSemiringInclusion 𝕏OCSR 𝕐OCSR f
 --             → Ip ll p (f (num x))
--- coerce-OCSR {l} {ll} {p} {𝕏OCSR} {𝕐OCSR} {f} (number (x , q)) = ?
+-- coerce-OCSR {l} {ll} {p} {𝕏OCSR} {𝕐OCSR} {f} (x ,, q) = ?
 
 
 
@@ -164,22 +164,22 @@ open PatternsType
 ⁻¹-Types' {l} = {!!}
 
 {-
-⁻¹-Types' {level    } {X⁺⁻} (number (x , p)) = ∀{{ q : Unit    }} → Number (level     , X⁺⁻)
-⁻¹-Types' {level    } {X⁺ } (number (x , p)) = ∀{{ q : Unit    }} → Number (level     , X⁺ )
-⁻¹-Types' {level    } {X⁻ } (number (x , p)) = ∀{{ q : Unit    }} → Number (level     , X⁻ )
-⁻¹-Types' {isNat    } {X  } (number (x , p)) = ∀{{ q : x #ⁿ 0ⁿ }} → Number (isNat     , X⁺⁻)
-⁻¹-Types' {isInt    } {X  } (number (x , p)) = ∀{{ q : x #ᶻ 0ᶻ }} → Number (isInt     , X⁺⁻)
-⁻¹-Types' {isRat    } {X  } (number (x , p)) = ∀{{ q : x #ᶠ 0ᶠ }} → Number (isRat     , X⁺⁻)
-⁻¹-Types' {isReal   } {X  } (number (x , p)) = ∀{{ q : x #ʳ 0ʳ }} → Number (isReal    , X⁺⁻)
-⁻¹-Types' {isComplex} {X  } (number (x , p)) = ∀{{ q : x #ᶜ 0ᶜ }} → Number (isComplex , X⁺⁻)
-⁻¹-Types' {isNat    } {X₀⁺} (number (x , p)) = ∀{{ q : x #ⁿ 0ⁿ }} → Number (isNat     , X⁺ )
-⁻¹-Types' {isInt    } {X₀⁺} (number (x , p)) = ∀{{ q : x #ᶻ 0ᶻ }} → Number (isInt     , X⁺ )
-⁻¹-Types' {isRat    } {X₀⁺} (number (x , p)) = ∀{{ q : x #ᶠ 0ᶠ }} → Number (isRat     , X⁺ )
-⁻¹-Types' {isReal   } {X₀⁺} (number (x , p)) = ∀{{ q : x #ʳ 0ʳ }} → Number (isReal    , X⁺ )
-⁻¹-Types' {isNat    } {X₀⁻} (number (x , p)) = ∀{{ q : x #ⁿ 0ⁿ }} → Number (isNat     , X⁻ )
-⁻¹-Types' {isInt    } {X₀⁻} (number (x , p)) = ∀{{ q : x #ᶻ 0ᶻ }} → Number (isInt     , X⁻ )
-⁻¹-Types' {isRat    } {X₀⁻} (number (x , p)) = ∀{{ q : x #ᶠ 0ᶠ }} → Number (isRat     , X⁻ )
-⁻¹-Types' {isReal   } {X₀⁻} (number (x , p)) = ∀{{ q : x #ʳ 0ʳ }} → Number (isReal    , X⁻ )
+⁻¹-Types' {level    } {X⁺⁻} (x ,, p) = ∀{{ q : Unit    }} → Number (level     , X⁺⁻)
+⁻¹-Types' {level    } {X⁺ } (x ,, p) = ∀{{ q : Unit    }} → Number (level     , X⁺ )
+⁻¹-Types' {level    } {X⁻ } (x ,, p) = ∀{{ q : Unit    }} → Number (level     , X⁻ )
+⁻¹-Types' {isNat    } {X  } (x ,, p) = ∀{{ q : x #ⁿ 0ⁿ }} → Number (isNat     , X⁺⁻)
+⁻¹-Types' {isInt    } {X  } (x ,, p) = ∀{{ q : x #ᶻ 0ᶻ }} → Number (isInt     , X⁺⁻)
+⁻¹-Types' {isRat    } {X  } (x ,, p) = ∀{{ q : x #ᶠ 0ᶠ }} → Number (isRat     , X⁺⁻)
+⁻¹-Types' {isReal   } {X  } (x ,, p) = ∀{{ q : x #ʳ 0ʳ }} → Number (isReal    , X⁺⁻)
+⁻¹-Types' {isComplex} {X  } (x ,, p) = ∀{{ q : x #ᶜ 0ᶜ }} → Number (isComplex , X⁺⁻)
+⁻¹-Types' {isNat    } {X₀⁺} (x ,, p) = ∀{{ q : x #ⁿ 0ⁿ }} → Number (isNat     , X⁺ )
+⁻¹-Types' {isInt    } {X₀⁺} (x ,, p) = ∀{{ q : x #ᶻ 0ᶻ }} → Number (isInt     , X⁺ )
+⁻¹-Types' {isRat    } {X₀⁺} (x ,, p) = ∀{{ q : x #ᶠ 0ᶠ }} → Number (isRat     , X⁺ )
+⁻¹-Types' {isReal   } {X₀⁺} (x ,, p) = ∀{{ q : x #ʳ 0ʳ }} → Number (isReal    , X⁺ )
+⁻¹-Types' {isNat    } {X₀⁻} (x ,, p) = ∀{{ q : x #ⁿ 0ⁿ }} → Number (isNat     , X⁻ )
+⁻¹-Types' {isInt    } {X₀⁻} (x ,, p) = ∀{{ q : x #ᶻ 0ᶻ }} → Number (isInt     , X⁻ )
+⁻¹-Types' {isRat    } {X₀⁻} (x ,, p) = ∀{{ q : x #ᶠ 0ᶠ }} → Number (isRat     , X⁻ )
+⁻¹-Types' {isReal   } {X₀⁻} (x ,, p) = ∀{{ q : x #ʳ 0ʳ }} → Number (isReal    , X⁻ )
 -}
 
 -Levels : NumberLevel → NumberLevel
@@ -203,7 +203,7 @@ open PatternsType
 -- coerce level-from level-to x = {!!}
 
 --coerce : ∀{p} → (level-from level-to : NumberLevel) → level-from ≤ₙₗ' level-to → Number (level-from ,, p) → Number (level-to ,, p)
---coerce {p} level-from level-to l<l (number (x , q)) = {!!}
+--coerce {p} level-from level-to l<l (x ,, q) = {!!}
 
 -- _ = number ( _,_ {B = λ x → Lift {j = ℝℓ'} (Σ ℕⁿ.ℕ₀ (λ z → z +ₙ ℕⁿ.ℕ₀.zero ≡ ℕⁿ.ℕ₀.suc ℕⁿ.ℕ₀.zero))}  (lift {j = ℝℓ} 1) (lift {j = ℝℓ'} ( z≤n {1} )))  
 
@@ -220,16 +220,16 @@ coerce isInt     isInt     q {p} x = x
 coerce isRat     isRat     q {p} x = x
 coerce isReal    isReal    q {p} x = x
 coerce isComplex isComplex q {p} x = x
-coerce isNat     isInt     q {p} x = number (ℕ↪ℤ (num x) , coerce-ℕ↪ℤ x)
-coerce isNat     isRat     q {p} x = number (ℕ↪ℚ (num x) , coerce-ℕ↪ℚ x)
-coerce isNat     isReal    q {p} x = number (ℕ↪ℝ (num x) , coerce-ℕ↪ℝ x)
-coerce isNat     isComplex q {p} x = number (ℕ↪ℂ (num x) , coerce-ℕ↪ℂ x)
-coerce isInt     isRat     q {p} x = number (ℤ↪ℚ (num x) , coerce-ℤ↪ℚ x)
-coerce isInt     isReal    q {p} x = number (ℤ↪ℝ (num x) , coerce-ℤ↪ℝ x)
-coerce isInt     isComplex q {p} x = number (ℤ↪ℂ (num x) , coerce-ℤ↪ℂ x)
-coerce isRat     isReal    q {p} x = number (ℚ↪ℝ (num x) , coerce-ℚ↪ℝ x)
-coerce isRat     isComplex q {p} x = number (ℚ↪ℂ (num x) , coerce-ℚ↪ℂ x)
-coerce isReal    isComplex q {p} x = number (ℝ↪ℂ (num x) , coerce-ℝ↪ℂ x)
+coerce isNat     isInt     q {p} x = (ℕ↪ℤ (num x) ,, coerce-ℕ↪ℤ x)
+coerce isNat     isRat     q {p} x = (ℕ↪ℚ (num x) ,, coerce-ℕ↪ℚ x)
+coerce isNat     isReal    q {p} x = (ℕ↪ℝ (num x) ,, coerce-ℕ↪ℝ x)
+coerce isNat     isComplex q {p} x = (ℕ↪ℂ (num x) ,, coerce-ℕ↪ℂ x)
+coerce isInt     isRat     q {p} x = (ℤ↪ℚ (num x) ,, coerce-ℤ↪ℚ x)
+coerce isInt     isReal    q {p} x = (ℤ↪ℝ (num x) ,, coerce-ℤ↪ℝ x)
+coerce isInt     isComplex q {p} x = (ℤ↪ℂ (num x) ,, coerce-ℤ↪ℂ x)
+coerce isRat     isReal    q {p} x = (ℚ↪ℝ (num x) ,, coerce-ℚ↪ℝ x)
+coerce isRat     isComplex q {p} x = (ℚ↪ℂ (num x) ,, coerce-ℚ↪ℂ x)
+coerce isReal    isComplex q {p} x = (ℝ↪ℂ (num x) ,, coerce-ℝ↪ℂ x)
 --coerce x         y         = nothing
 coerce isInt     isNat  (k , q) {p} x = ⊥-elim {A = λ _ → Number (isNat  , p)} (k+x+sy≢x _ _ _ q)
 coerce isRat     isNat  (k , q) {p} x = ⊥-elim {A = λ _ → Number (isNat  , p)} (k+x+sy≢x _ _ _ q)  
@@ -242,86 +242,86 @@ coerce isComplex isInt  (k , q) {p} x = ⊥-elim {A = λ _ → Number (isInt  , 
 coerce isComplex isRat  (k , q) {p} x = ⊥-elim {A = λ _ → Number (isRat  , coerce-PositivityLevel isComplex isRat  p)} (k+x+sy≢x _ _ _ q)
 coerce isComplex isReal (k , q) {p} x = ⊥-elim {A = λ _ → Number (isReal , coerce-PositivityLevel isComplex isReal p)} (k+x+sy≢x _ _ _ q)
 
-_+ʰⁿ_ : ∀{p q} → (x : Number (isNat , p)) → (y : Number (isNat , q)) → PositivityInterpretation isNat (+-Positivityʰ isNat p q) (num x +ⁿ num y)
-_+ʰⁿ_ {X  } {X  } (number (a , pa)) (number (b , pb)) = tt
-_+ʰⁿ_ {X  } {X⁺⁻} (number (a , pa)) (number (b , pb)) = tt
-_+ʰⁿ_ {X  } {X₀⁺} (number (a , pa)) (number (b , pb)) = tt
-_+ʰⁿ_ {X  } {X⁺ } (number (a , pa)) (number (b , pb)) = tt
-_+ʰⁿ_ {X  } {X₀⁻} (number (a , pa)) (number (b , pb)) = tt
-_+ʰⁿ_ {X⁺⁻} {X  } (number (a , pa)) (number (b , pb)) = tt
-_+ʰⁿ_ {X⁺⁻} {X⁺⁻} (number (a , pa)) (number (b , pb)) = tt
-_+ʰⁿ_ {X⁺⁻} {X₀⁺} (number (a , pa)) (number (b , pb)) = tt
-_+ʰⁿ_ {X⁺⁻} {X⁺ } (number (a , pa)) (number (b , pb)) = tt
-_+ʰⁿ_ {X⁺⁻} {X₀⁻} (number (a , pa)) (number (b , pb)) = tt
-_+ʰⁿ_ {X₀⁺} {X  } (number (a , pa)) (number (b , pb)) = tt
-_+ʰⁿ_ {X₀⁺} {X⁺⁻} (number (a , pa)) (number (b , pb)) = tt
-_+ʰⁿ_ {X₀⁺} {X₀⁺} (number (a , pa)) (number (b , pb)) = ℕ.+-≤-≤-implies-≤ʳ a b pa pb -- 0 ≤ a → 0 ≤ b → 0 ≤ a + b
-_+ʰⁿ_ {X₀⁺} {X⁺ } (number (a , pa)) (number (b , pb)) = ℕ.+-≤-<-implies-<ʳ a b pa pb -- 0 ≤ a → 0 < b → 0 < a + b
-_+ʰⁿ_ {X₀⁺} {X₀⁻} (number (a , pa)) (number (b , pb)) = tt
-_+ʰⁿ_ {X⁺ } {X  } (number (a , pa)) (number (b , pb)) = tt
-_+ʰⁿ_ {X⁺ } {X⁺⁻} (number (a , pa)) (number (b , pb)) = tt
-_+ʰⁿ_ {X⁺ } {X₀⁺} (number (a , pa)) (number (b , pb)) = ℕ.+-<-≤-implies-<ʳ a b pa pb -- 0 < a → 0 ≤ b → 0 < a + b
-_+ʰⁿ_ {X⁺ } {X⁺ } (number (a , pa)) (number (b , pb)) = ℕ.+-<-<-implies-<ʳ a b pa pb -- 0 < a → 0 < b → 0 < a + b
-_+ʰⁿ_ {X⁺ } {X₀⁻} (number (a , pa)) (number (b , pb)) = tt
-_+ʰⁿ_ {X₀⁻} {X  } (number (a , pa)) (number (b , pb)) = tt
-_+ʰⁿ_ {X₀⁻} {X⁺⁻} (number (a , pa)) (number (b , pb)) = tt
-_+ʰⁿ_ {X₀⁻} {X₀⁺} (number (a , pa)) (number (b , pb)) = tt
-_+ʰⁿ_ {X₀⁻} {X⁺ } (number (a , pa)) (number (b , pb)) = tt
-_+ʰⁿ_ {X₀⁻} {X₀⁻} (number (a , pa)) (number (b , pb)) = ℕ.+-≤-≤-implies-≤ˡ a b pa pb -- a ≤ 0 → b ≤ 0 → (a + b) ≤ 0
+_+ʰⁿ_ : ∀{p q} → (x : Number (isNat , p)) → (y : Number (isNat , q)) → PositivityLevelInterpretation isNat (+-Positivityʰ isNat p q) (num x +ⁿ num y)
+_+ʰⁿ_ {X  } {X  } (a ,, pa) (b ,, pb) = tt
+_+ʰⁿ_ {X  } {X⁺⁻} (a ,, pa) (b ,, pb) = tt
+_+ʰⁿ_ {X  } {X₀⁺} (a ,, pa) (b ,, pb) = tt
+_+ʰⁿ_ {X  } {X⁺ } (a ,, pa) (b ,, pb) = tt
+_+ʰⁿ_ {X  } {X₀⁻} (a ,, pa) (b ,, pb) = tt
+_+ʰⁿ_ {X⁺⁻} {X  } (a ,, pa) (b ,, pb) = tt
+_+ʰⁿ_ {X⁺⁻} {X⁺⁻} (a ,, pa) (b ,, pb) = tt
+_+ʰⁿ_ {X⁺⁻} {X₀⁺} (a ,, pa) (b ,, pb) = tt
+_+ʰⁿ_ {X⁺⁻} {X⁺ } (a ,, pa) (b ,, pb) = tt
+_+ʰⁿ_ {X⁺⁻} {X₀⁻} (a ,, pa) (b ,, pb) = tt
+_+ʰⁿ_ {X₀⁺} {X  } (a ,, pa) (b ,, pb) = tt
+_+ʰⁿ_ {X₀⁺} {X⁺⁻} (a ,, pa) (b ,, pb) = tt
+_+ʰⁿ_ {X₀⁺} {X₀⁺} (a ,, pa) (b ,, pb) = ℕ.+-≤-≤-implies-≤ʳ a b pa pb -- 0 ≤ a → 0 ≤ b → 0 ≤ a + b
+_+ʰⁿ_ {X₀⁺} {X⁺ } (a ,, pa) (b ,, pb) = ℕ.+-≤-<-implies-<ʳ a b pa pb -- 0 ≤ a → 0 < b → 0 < a + b
+_+ʰⁿ_ {X₀⁺} {X₀⁻} (a ,, pa) (b ,, pb) = tt
+_+ʰⁿ_ {X⁺ } {X  } (a ,, pa) (b ,, pb) = tt
+_+ʰⁿ_ {X⁺ } {X⁺⁻} (a ,, pa) (b ,, pb) = tt
+_+ʰⁿ_ {X⁺ } {X₀⁺} (a ,, pa) (b ,, pb) = ℕ.+-<-≤-implies-<ʳ a b pa pb -- 0 < a → 0 ≤ b → 0 < a + b
+_+ʰⁿ_ {X⁺ } {X⁺ } (a ,, pa) (b ,, pb) = ℕ.+-<-<-implies-<ʳ a b pa pb -- 0 < a → 0 < b → 0 < a + b
+_+ʰⁿ_ {X⁺ } {X₀⁻} (a ,, pa) (b ,, pb) = tt
+_+ʰⁿ_ {X₀⁻} {X  } (a ,, pa) (b ,, pb) = tt
+_+ʰⁿ_ {X₀⁻} {X⁺⁻} (a ,, pa) (b ,, pb) = tt
+_+ʰⁿ_ {X₀⁻} {X₀⁺} (a ,, pa) (b ,, pb) = tt
+_+ʰⁿ_ {X₀⁻} {X⁺ } (a ,, pa) (b ,, pb) = tt
+_+ʰⁿ_ {X₀⁻} {X₀⁻} (a ,, pa) (b ,, pb) = ℕ.+-≤-≤-implies-≤ˡ a b pa pb -- a ≤ 0 → b ≤ 0 → (a + b) ≤ 0
 
-_+ʰᶻ_ : ∀{p q} → (x : Number (isInt , p)) → (y : Number (isInt , q)) → PositivityInterpretation isInt (+-Positivityʰ isInt p q) (num x +ᶻ num y)
-_+ʰᶻ_ {p} {q} (number (a , pa)) (number (b , pb)) = {!!}
+_+ʰᶻ_ : ∀{p q} → (x : Number (isInt , p)) → (y : Number (isInt , q)) → PositivityLevelInterpretation isInt (+-Positivityʰ isInt p q) (num x +ᶻ num y)
+_+ʰᶻ_ {p} {q} (a ,, pa) (b ,, pb) = {!!}
 
-_+ʰᶠ_ : ∀{p q} → (x : Number (isRat , p)) → (y : Number (isRat , q)) → PositivityInterpretation isRat (+-Positivityʰ isRat p q) (num x +ᶠ num y)
-_+ʰᶠ_ {p} {q} (number (a , pa)) (number (b , pb)) = {!!}
+_+ʰᶠ_ : ∀{p q} → (x : Number (isRat , p)) → (y : Number (isRat , q)) → PositivityLevelInterpretation isRat (+-Positivityʰ isRat p q) (num x +ᶠ num y)
+_+ʰᶠ_ {p} {q} (a ,, pa) (b ,, pb) = {!!}
 
-_+ʰʳ_ : ∀{p q} → (x : Number (isReal , p)) → (y : Number (isReal , q)) → PositivityInterpretation isReal (+-Positivityʰ isReal p q) (num x +ʳ num y)
-_+ʰʳ_ {X  } {X  } (number (a , pa)) (number (b , pb)) = lift tt
-_+ʰʳ_ {X  } {X⁺⁻} (number (a , pa)) (number (b , pb)) = lift tt
-_+ʰʳ_ {X  } {X₀⁺} (number (a , pa)) (number (b , pb)) = lift tt
-_+ʰʳ_ {X  } {X⁺ } (number (a , pa)) (number (b , pb)) = lift tt
-_+ʰʳ_ {X  } {X⁻ } (number (a , pa)) (number (b , pb)) = lift tt
-_+ʰʳ_ {X  } {X₀⁻} (number (a , pa)) (number (b , pb)) = lift tt
-_+ʰʳ_ {X⁺⁻} {X  } (number (a , pa)) (number (b , pb)) = lift tt
-_+ʰʳ_ {X⁺⁻} {X⁺⁻} (number (a , pa)) (number (b , pb)) = lift tt
-_+ʰʳ_ {X⁺⁻} {X₀⁺} (number (a , pa)) (number (b , pb)) = lift tt
-_+ʰʳ_ {X⁺⁻} {X⁺ } (number (a , pa)) (number (b , pb)) = lift tt
-_+ʰʳ_ {X⁺⁻} {X⁻ } (number (a , pa)) (number (b , pb)) = lift tt
-_+ʰʳ_ {X⁺⁻} {X₀⁻} (number (a , pa)) (number (b , pb)) = lift tt
-_+ʰʳ_ {X₀⁺} {X  } (number (a , pa)) (number (b , pb)) = lift tt
-_+ʰʳ_ {X₀⁺} {X⁺⁻} (number (a , pa)) (number (b , pb)) = lift tt
-_+ʰʳ_ {X₀⁺} {X₀⁺} (number (a , pa)) (number (b , pb)) = ℝ.+-≤-≤-implies-≤ʳ a b pa pb -- 0 ≤ a → 0 ≤ b → 0 ≤ a + b
-_+ʰʳ_ {X₀⁺} {X⁺ } (number (a , pa)) (number (b , pb)) = ℝ.+-≤-<-implies-<ʳ a b pa pb -- 0 ≤ a → 0 < b → 0 < a + b
-_+ʰʳ_ {X₀⁺} {X⁻ } (number (a , pa)) (number (b , pb)) = lift tt
-_+ʰʳ_ {X₀⁺} {X₀⁻} (number (a , pa)) (number (b , pb)) = lift tt
-_+ʰʳ_ {X⁺ } {X  } (number (a , pa)) (number (b , pb)) = lift tt
-_+ʰʳ_ {X⁺ } {X⁺⁻} (number (a , pa)) (number (b , pb)) = lift tt
-_+ʰʳ_ {X⁺ } {X₀⁺} (number (a , pa)) (number (b , pb)) = ℝ.+-<-≤-implies-<ʳ a b pa pb -- 0 < a → 0 ≤ b → 0 < a + b
-_+ʰʳ_ {X⁺ } {X⁺ } (number (a , pa)) (number (b , pb)) = ℝ.+-<-<-implies-<ʳ a b pa pb -- 0 < a → 0 < b → 0 < a + b
-_+ʰʳ_ {X⁺ } {X⁻ } (number (a , pa)) (number (b , pb)) = lift tt
-_+ʰʳ_ {X⁺ } {X₀⁻} (number (a , pa)) (number (b , pb)) = lift tt
-_+ʰʳ_ {X⁻ } {X  } (number (a , pa)) (number (b , pb)) = lift tt
-_+ʰʳ_ {X⁻ } {X⁺⁻} (number (a , pa)) (number (b , pb)) = lift tt
-_+ʰʳ_ {X⁻ } {X₀⁺} (number (a , pa)) (number (b , pb)) = lift tt
-_+ʰʳ_ {X⁻ } {X⁺ } (number (a , pa)) (number (b , pb)) = lift tt
-_+ʰʳ_ {X⁻ } {X⁻ } (number (a , pa)) (number (b , pb)) = ℝ.+-<-<-implies-<ˡ a b pa pb -- a < 0 → b < 0 → (a + b) < 0
-_+ʰʳ_ {X⁻ } {X₀⁻} (number (a , pa)) (number (b , pb)) = ℝ.+-<-≤-implies-<ˡ a b pa pb -- a < 0 → b ≤ 0 → (a + b) < 0
-_+ʰʳ_ {X₀⁻} {X  } (number (a , pa)) (number (b , pb)) = lift tt
-_+ʰʳ_ {X₀⁻} {X⁺⁻} (number (a , pa)) (number (b , pb)) = lift tt
-_+ʰʳ_ {X₀⁻} {X₀⁺} (number (a , pa)) (number (b , pb)) = lift tt
-_+ʰʳ_ {X₀⁻} {X⁺ } (number (a , pa)) (number (b , pb)) = lift tt
-_+ʰʳ_ {X₀⁻} {X⁻ } (number (a , pa)) (number (b , pb)) = ℝ.+-≤-<-implies-<ˡ a b pa pb -- a ≤ 0 → b < 0 → (a + b) < 0
-_+ʰʳ_ {X₀⁻} {X₀⁻} (number (a , pa)) (number (b , pb)) = ℝ.+-≤-≤-implies-≤ˡ a b pa pb -- a ≤ 0 → b ≤ 0 → (a + b) ≤ 0    
+_+ʰʳ_ : ∀{p q} → (x : Number (isReal , p)) → (y : Number (isReal , q)) → PositivityLevelInterpretation isReal (+-Positivityʰ isReal p q) (num x +ʳ num y)
+_+ʰʳ_ {X  } {X  } (a ,, pa) (b ,, pb) = lift tt
+_+ʰʳ_ {X  } {X⁺⁻} (a ,, pa) (b ,, pb) = lift tt
+_+ʰʳ_ {X  } {X₀⁺} (a ,, pa) (b ,, pb) = lift tt
+_+ʰʳ_ {X  } {X⁺ } (a ,, pa) (b ,, pb) = lift tt
+_+ʰʳ_ {X  } {X⁻ } (a ,, pa) (b ,, pb) = lift tt
+_+ʰʳ_ {X  } {X₀⁻} (a ,, pa) (b ,, pb) = lift tt
+_+ʰʳ_ {X⁺⁻} {X  } (a ,, pa) (b ,, pb) = lift tt
+_+ʰʳ_ {X⁺⁻} {X⁺⁻} (a ,, pa) (b ,, pb) = lift tt
+_+ʰʳ_ {X⁺⁻} {X₀⁺} (a ,, pa) (b ,, pb) = lift tt
+_+ʰʳ_ {X⁺⁻} {X⁺ } (a ,, pa) (b ,, pb) = lift tt
+_+ʰʳ_ {X⁺⁻} {X⁻ } (a ,, pa) (b ,, pb) = lift tt
+_+ʰʳ_ {X⁺⁻} {X₀⁻} (a ,, pa) (b ,, pb) = lift tt
+_+ʰʳ_ {X₀⁺} {X  } (a ,, pa) (b ,, pb) = lift tt
+_+ʰʳ_ {X₀⁺} {X⁺⁻} (a ,, pa) (b ,, pb) = lift tt
+_+ʰʳ_ {X₀⁺} {X₀⁺} (a ,, pa) (b ,, pb) = ℝ.+-≤-≤-implies-≤ʳ a b pa pb -- 0 ≤ a → 0 ≤ b → 0 ≤ a + b
+_+ʰʳ_ {X₀⁺} {X⁺ } (a ,, pa) (b ,, pb) = ℝ.+-≤-<-implies-<ʳ a b pa pb -- 0 ≤ a → 0 < b → 0 < a + b
+_+ʰʳ_ {X₀⁺} {X⁻ } (a ,, pa) (b ,, pb) = lift tt
+_+ʰʳ_ {X₀⁺} {X₀⁻} (a ,, pa) (b ,, pb) = lift tt
+_+ʰʳ_ {X⁺ } {X  } (a ,, pa) (b ,, pb) = lift tt
+_+ʰʳ_ {X⁺ } {X⁺⁻} (a ,, pa) (b ,, pb) = lift tt
+_+ʰʳ_ {X⁺ } {X₀⁺} (a ,, pa) (b ,, pb) = ℝ.+-<-≤-implies-<ʳ a b pa pb -- 0 < a → 0 ≤ b → 0 < a + b
+_+ʰʳ_ {X⁺ } {X⁺ } (a ,, pa) (b ,, pb) = ℝ.+-<-<-implies-<ʳ a b pa pb -- 0 < a → 0 < b → 0 < a + b
+_+ʰʳ_ {X⁺ } {X⁻ } (a ,, pa) (b ,, pb) = lift tt
+_+ʰʳ_ {X⁺ } {X₀⁻} (a ,, pa) (b ,, pb) = lift tt
+_+ʰʳ_ {X⁻ } {X  } (a ,, pa) (b ,, pb) = lift tt
+_+ʰʳ_ {X⁻ } {X⁺⁻} (a ,, pa) (b ,, pb) = lift tt
+_+ʰʳ_ {X⁻ } {X₀⁺} (a ,, pa) (b ,, pb) = lift tt
+_+ʰʳ_ {X⁻ } {X⁺ } (a ,, pa) (b ,, pb) = lift tt
+_+ʰʳ_ {X⁻ } {X⁻ } (a ,, pa) (b ,, pb) = ℝ.+-<-<-implies-<ˡ a b pa pb -- a < 0 → b < 0 → (a + b) < 0
+_+ʰʳ_ {X⁻ } {X₀⁻} (a ,, pa) (b ,, pb) = ℝ.+-<-≤-implies-<ˡ a b pa pb -- a < 0 → b ≤ 0 → (a + b) < 0
+_+ʰʳ_ {X₀⁻} {X  } (a ,, pa) (b ,, pb) = lift tt
+_+ʰʳ_ {X₀⁻} {X⁺⁻} (a ,, pa) (b ,, pb) = lift tt
+_+ʰʳ_ {X₀⁻} {X₀⁺} (a ,, pa) (b ,, pb) = lift tt
+_+ʰʳ_ {X₀⁻} {X⁺ } (a ,, pa) (b ,, pb) = lift tt
+_+ʰʳ_ {X₀⁻} {X⁻ } (a ,, pa) (b ,, pb) = ℝ.+-≤-<-implies-<ˡ a b pa pb -- a ≤ 0 → b < 0 → (a + b) < 0
+_+ʰʳ_ {X₀⁻} {X₀⁻} (a ,, pa) (b ,, pb) = ℝ.+-≤-≤-implies-≤ˡ a b pa pb -- a ≤ 0 → b ≤ 0 → (a + b) ≤ 0    
 
-_+ʰᶜ_ : ∀{p q} → (x : Number (isComplex , p)) → (y : Number (isComplex , q)) → PositivityInterpretation isComplex (+-Positivityʰ isComplex p q) (num x +ᶜ num y)
+_+ʰᶜ_ : ∀{p q} → (x : Number (isComplex , p)) → (y : Number (isComplex , q)) → PositivityLevelInterpretation isComplex (+-Positivityʰ isComplex p q) (num x +ᶜ num y)
 _+ʰᶜ_ x y = lift tt
 
 _+ʰ_ : ∀{l p q} → Number (l , p) → Number (l , q) → Number (l , +-Positivityʰ l p q)
-_+ʰ_ {isNat    } x y = number (num x +ⁿ num y , x +ʰⁿ y)
-_+ʰ_ {isInt    } x y = number (num x +ᶻ num y , x +ʰᶻ y)
-_+ʰ_ {isRat    } x y = number (num x +ᶠ num y , x +ʰᶠ y)
-_+ʰ_ {isReal   } x y = number (num x +ʳ num y , x +ʰʳ y)
-_+ʰ_ {isComplex} x y = number (num x +ᶜ num y , x +ʰᶜ y)
+_+ʰ_ {isNat    } x y = (num x +ⁿ num y) ,, (x +ʰⁿ y)
+_+ʰ_ {isInt    } x y = (num x +ᶻ num y) ,, (x +ʰᶻ y)
+_+ʰ_ {isRat    } x y = (num x +ᶠ num y) ,, (x +ʰᶠ y)
+_+ʰ_ {isReal   } x y = (num x +ʳ num y) ,, (x +ʰʳ y)
+_+ʰ_ {isComplex} x y = (num x +ᶜ num y) ,, (x +ʰᶜ y)
 
 {- NOTE: this creates a weird Number.L in the Have/Goal display
 
@@ -389,21 +389,21 @@ _#_ {Lx} {Ly} {Px} {Py} x y =
 [ℝ₀⁺] = Number (isReal , isNonnegativeᵒʳ)
 [ℝ⁺]  = Number (isReal , isPositiveᵒʳ)
 [ℕ⁺]  = Number (isNat , isPositiveᵒʳ)
-[ℝ]  = Number (isReal , anyPositivityᵒʳ)
+[ℝ]   = Number (isReal , anyPositivityᵒʳ)
 
 -- {-# DISPLAY maxₙₗ' isReal isReal = isReal #-}
 {-# DISPLAY Number (isReal , isNonnegative) = [ℝ₀⁺] #-}
-{-# DISPLAY Number (isReal , isPositive) = [ℝ⁺] #-}
+{-# DISPLAY Number (isReal , isPositive)    = [ℝ⁺]  #-}
 
 [1ʳ] : [ℝ⁺]
-[1ʳ] = number (1ʳ , ℝ.0<1)
+[1ʳ] = 1ʳ ,, ℝ.0<1
 
 -- NOTE: As-patterns (or @-patterns) go well with resolving things in our approach
 
 -- test101 : Number (isNat , isPositiveᵒʳ) → Number (isReal ,  isNonnegativeᵒʳ) → {!!}
 test101 : [ℕ⁺] → [ℝ₀⁺] → [ℝ]
-test101 n@(number (nn , np)) r@(number (rn , rp)) with n + r
-... | number (fst₁ , snd₁) =
+test101 n@(nn ,, np) r@(rn ,, rp) with n + r
+... | (fst₁ ,, snd₁) =
   let z = [ℝ₀⁺] ∋ r + r
       zp = prp z
       x = num z
