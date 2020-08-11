@@ -49,7 +49,9 @@ Here, all `[…]` types are abbreviations for one single `Number` type family
 
 ```agda
 data Number (p : NumberProp) : Type (NumberLevel (fst p)) where
-  _,,_ : (x : NumberKindInterpretation (fst p)) → (PositivityLevelInterpretation (fst p) (snd p) x) → Number p
+  _,,_ : (x : NumberKindInterpretation (fst p))
+       → PositivityLevelInterpretation (fst p) (snd p) x
+       → Number p
 ```
 
 This allows to define the operations `_+_`, `-_`, `_·_`, `_⁻¹`, `_<_`, `_≤_` and `_#_` on the general `Number` type family in a way that it makes use of the specific operations for the underlying, concrete number type.

@@ -188,13 +188,18 @@ test201 n@(nn ,, np) r@(rn ,, rp) = let
    q' : typeOf q
    q' = qʳ ,, qp
 
+-- if the two parts of q and q' are in scope, then we get definitional equality
+   _ : q ≡ q'
+   _ = refl
+
 -- r is nonnegative from [ℝ₀⁺], [1ʳ] is positive from [ℝ⁺]
 -- and _+_ makes use of the fact that "positive + nonnegative = positive"
 -- y : [ℝ⁺]
 -- y = (rn +ʳ 1ʳ) ,, +-≤-<-implies-<ʳ rn 1ʳ rp 0<1
    y =  r + [1ʳ]
 
--- _+_ automatically coerces n from ℕ⁺ to ℝ⁺ and uses the fact that "positive + nonnegative = positive"
+-- _+_ automatically coerces n from ℕ⁺ to ℝ⁺
+-- and uses the fact that "positive + nonnegative = positive"
 -- n+r : [ℝ⁺]
 -- n+r = (ℕ↪ℝ nn +ʳ rn) ,, +-<-≤-implies-<ʳ (ℕ↪ℝ nn) rn (coerce-ℕ↪ℝ (nn ,, np)) rp
    n+r = n + r
@@ -209,7 +214,7 @@ test201 n@(nn ,, np) r@(rn ,, rp) = let
    pp'' = {!!}
    _ : (pp ≡ pp') × (pp ≡ pp'')
    _ = refl , refl
-   in {!    !}
+   in {!!}
 
 
 
