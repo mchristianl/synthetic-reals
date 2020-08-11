@@ -16,10 +16,10 @@ open import Number.Blueprint
 open import Number.Prettyprint
 
 open ℕⁿ
-open ℤᶻ ℤ.bundle
-open ℚᶠ ℚ.bundle
-open ℝʳ ℝ.bundle
-open ℂᶜ ℂ.bundle
+open ℤᶻ
+open ℚᶠ
+open ℝʳ
+open ℂᶜ
 
 number-≅-Σ : ∀{p} → Number p ≅ NumberInterpretation p
 number-≅-Σ = λ where

@@ -13,8 +13,8 @@ open import Cubical.Relation.Nullary.Base -- ¬_
 open import Cubical.Relation.Binary.Base -- Rel
 
 -- open import Data.Nat.Base using (ℕ) renaming (_≤_ to _≤ₙ_)
-open import Cubical.Data.Nat using (ℕ; zero; suc) renaming (_+_ to _+ₙ_)
-open import Cubical.Data.Nat.Order renaming (zero-≤ to z≤n; suc-≤-suc to s≤s; _≤_ to _≤ₙ_; _<_ to _<ₙ_)
+-- open import Cubical.Data.Nat using (ℕ; zero; suc) renaming (_+_ to _+ₙ_)
+-- open import Cubical.Data.Nat.Order renaming (zero-≤ to z≤n; suc-≤-suc to s≤s; _≤_ to _≤ₙ_; _<_ to _<ₙ_)
 
 open import Cubical.Data.Unit.Base -- Unit
 open import Cubical.Data.Empty -- ⊥
@@ -35,14 +35,14 @@ open import Number.Coercions
 
 open import Cubical.Data.Fin.Base
 -- import Cubical.Data.Fin.Properties
-open import Cubical.Data.Nat using (ℕ; zero; suc) renaming (_+_ to _+ₙ_)
-open import Cubical.Data.Nat.Properties using (+-suc; injSuc; snotz; +-comm; +-assoc; +-zero; inj-m+)
-open import Cubical.Data.Nat.Order renaming (zero-≤ to z≤n; suc-≤-suc to s≤s; _≤_ to _≤ₙ_; _<_ to _<ₙ_; _≟_ to _≟ₙ_)
+-- open import Cubical.Data.Nat using (ℕ; zero; suc) renaming (_+_ to _+ₙ_)
+-- open import Cubical.Data.Nat.Properties using (+-suc; injSuc; snotz; +-comm; +-assoc; +-zero; inj-m+)
+-- open import Cubical.Data.Nat.Order renaming (zero-≤ to z≤n; suc-≤-suc to s≤s; _≤_ to _≤ₙ_; _<_ to _<ₙ_; _≟_ to _≟ₙ_)
 -- open import Data.Nat.Base using (ℕ; z≤n; s≤s; zero; suc) renaming (_≤_ to _≤ₙ_; _<_ to _<ₙ_; _+_ to _+ₙ_)
-open import Agda.Builtin.Bool renaming (true to TT; false to FF)
+-- open import Agda.Builtin.Bool renaming (true to TT; false to FF)
 open import Function.Base using (it; _$_) -- instance search
-import Cubical.Data.Fin.Properties
-open import Data.Nat.Properties using (+-mono-<)
+-- import Cubical.Data.Fin.Properties
+-- open import Data.Nat.Properties using (+-mono-<)
 
 
 +-Types : NumberProp → NumberProp → NumberProp
@@ -93,31 +93,50 @@ open PatternsType
 ⁻¹-Types {isComplex} {X⁺⁻} (x ,, p) = ∀{{ q : Lift {j = NumberKindProplevel isComplex} Unit }} → Number (isComplex , X⁺⁻)
 
 _⁻¹ : ∀{l p} → (x : Number (l , p)) → ⁻¹-Types x
-_⁻¹ {isNat    } {X  } (x ,, q) {{h}} = let r = {!!} in _⁻¹ᶠ (ℕ↪ℚ x) {{r}} ,, {!!}
-_⁻¹ {isNat    } {X⁺⁻} (x ,, q) {{h}} = let r = {!!} in _⁻¹ᶠ (ℕ↪ℚ x) {{r}} ,, {!!}
-_⁻¹ {isNat    } {X₀⁺} (x ,, q) {{h}} = let r = {!!} in _⁻¹ᶠ (ℕ↪ℚ x) {{r}} ,, {!!}
-_⁻¹ {isNat    } {X⁺ } (x ,, q) {{h}} = let r = {!!} in _⁻¹ᶠ (ℕ↪ℚ x) {{r}} ,, {!!}
-_⁻¹ {isNat    } {X₀⁻} (x ,, q) {{h}} = let r = {!!} in _⁻¹ᶠ (ℕ↪ℚ x) {{r}} ,, {!!}
-_⁻¹ {isInt    } {X  } (x ,, q) {{h}} = let r = {!!} in _⁻¹ᶠ (ℤ↪ℚ x) {{r}} ,, {!!}
-_⁻¹ {isInt    } {X⁺⁻} (x ,, q) {{h}} = let r = {!!} in _⁻¹ᶠ (ℤ↪ℚ x) {{r}} ,, {!!}
-_⁻¹ {isInt    } {X₀⁺} (x ,, q) {{h}} = let r = {!!} in _⁻¹ᶠ (ℤ↪ℚ x) {{r}} ,, {!!}
-_⁻¹ {isInt    } {X⁺ } (x ,, q) {{h}} = let r = {!!} in _⁻¹ᶠ (ℤ↪ℚ x) {{r}} ,, {!!}
-_⁻¹ {isInt    } {X⁻ } (x ,, q) {{h}} = let r = {!!} in _⁻¹ᶠ (ℤ↪ℚ x) {{r}} ,, {!!}
-_⁻¹ {isInt    } {X₀⁻} (x ,, q) {{h}} = let r = {!!} in _⁻¹ᶠ (ℤ↪ℚ x) {{r}} ,, {!!}
-_⁻¹ {isRat    } {X  } (x ,, q) {{h}} = let r = {!!} in _⁻¹ᶠ      x  {{r}} ,, {!!}
-_⁻¹ {isRat    } {X⁺⁻} (x ,, q) {{h}} = let r = {!!} in _⁻¹ᶠ      x  {{r}} ,, {!!}
-_⁻¹ {isRat    } {X₀⁺} (x ,, q) {{h}} = let r = {!!} in _⁻¹ᶠ      x  {{r}} ,, {!!}
-_⁻¹ {isRat    } {X⁺ } (x ,, q) {{h}} = let r = {!!} in _⁻¹ᶠ      x  {{r}} ,, {!!}
-_⁻¹ {isRat    } {X⁻ } (x ,, q) {{h}} = let r = {!!} in _⁻¹ᶠ      x  {{r}} ,, {!!}
-_⁻¹ {isRat    } {X₀⁻} (x ,, q) {{h}} = let r = {!!} in _⁻¹ᶠ      x  {{r}} ,, {!!}
-_⁻¹ {isReal   } {X  } (x ,, q) {{h}} = let r = {!!} in _⁻¹ʳ      x  {{r}} ,, {!!}
-_⁻¹ {isReal   } {X⁺⁻} (x ,, q) {{h}} = let r = {!!} in _⁻¹ʳ      x  {{r}} ,, {!!}
-_⁻¹ {isReal   } {X₀⁺} (x ,, q) {{h}} = let r = {!!} in _⁻¹ʳ      x  {{r}} ,, {!!}
-_⁻¹ {isReal   } {X⁺ } (x ,, q) {{h}} = let r = {!!} in _⁻¹ʳ      x  {{r}} ,, {!!}
-_⁻¹ {isReal   } {X⁻ } (x ,, q) {{h}} = let r = {!!} in _⁻¹ʳ      x  {{r}} ,, {!!}
-_⁻¹ {isReal   } {X₀⁻} (x ,, q) {{h}} = let r = {!!} in _⁻¹ʳ      x  {{r}} ,, {!!}
-_⁻¹ {isComplex} {X  } (x ,, q) {{h}} = let r = {!!} in _⁻¹ᶜ      x  {{r}} ,, {!!}
-_⁻¹ {isComplex} {X⁺⁻} (x ,, q) {{h}} = let r = {!!} in _⁻¹ᶜ      x  {{r}} ,, {!!}
+
+_⁻¹ {isNat    } {X  } (x ,, q) {{h}} = let r = Isℕ↪ℚ.preserves-#0 ℕ↪ℚinc _ h in _⁻¹ᶠ (ℕ↪ℚ x) {{r}} ,, ℚ.⁻¹-preserves-#0 _ r
+_⁻¹ {isNat    } {X⁺⁻} (x ,, q) {{h}} = let r = Isℕ↪ℚ.preserves-#0 ℕ↪ℚinc _ q in _⁻¹ᶠ (ℕ↪ℚ x) {{r}} ,, ℚ.⁻¹-preserves-#0 _ r
+_⁻¹ {isNat    } {X₀⁺} (x ,, q) {{h}} = let p = Isℕ↪ℚ.preserves-0< ℕ↪ℚinc _ (ℕ.≤-#-implies-< _ _ q (ℕ.#-sym _ _ h))
+                                           r = Isℕ↪ℚ.preserves-#0 ℕ↪ℚinc _ h
+                                       in  _⁻¹ᶠ (ℕ↪ℚ x) {{r}} ,, ℚ.⁻¹-preserves-0< _ p r 
+_⁻¹ {isNat    } {X⁺ } (x ,, q) {{h}} = let p = Isℕ↪ℚ.preserves-0< ℕ↪ℚinc _ q
+                                           r = Isℕ↪ℚ.preserves-#0 ℕ↪ℚinc _ (ℕ.#-sym _ _ (ℕ.<-implies-# _ _ q))
+                                       in  _⁻¹ᶠ (ℕ↪ℚ x) {{r}} ,, ℚ.⁻¹-preserves-0< _ p r 
+_⁻¹ {isNat    } {X₀⁻} (x ,, q) {{h}} = let p = Isℕ↪ℚ.preserves-<0 ℕ↪ℚinc _ (ℕ.≤-#-implies-< _ _ q h)
+                                           r = Isℕ↪ℚ.preserves-#0 ℕ↪ℚinc _ h
+                                       in  _⁻¹ᶠ (ℕ↪ℚ x) {{r}} ,, ℚ.⁻¹-preserves-<0 _ p r
+
+_⁻¹ {isInt    } {X  } (x ,, q) {{h}} = let r = Isℤ↪ℚ.preserves-#0 ℤ↪ℚinc _ h in _⁻¹ᶠ (ℤ↪ℚ x) {{r}} ,, ℚ.⁻¹-preserves-#0 _ r
+_⁻¹ {isInt    } {X⁺⁻} (x ,, q) {{h}} = let r = Isℤ↪ℚ.preserves-#0 ℤ↪ℚinc _ q in _⁻¹ᶠ (ℤ↪ℚ x) {{r}} ,, ℚ.⁻¹-preserves-#0 _ r
+_⁻¹ {isInt    } {X₀⁺} (x ,, q) {{h}} = let p = Isℤ↪ℚ.preserves-0< ℤ↪ℚinc _ (ℤ.≤-#-implies-< _ _ q (ℤ.#-sym _ _ h))
+                                           r = Isℤ↪ℚ.preserves-#0 ℤ↪ℚinc _ h
+                                       in  _⁻¹ᶠ (ℤ↪ℚ x) {{r}} ,, ℚ.⁻¹-preserves-0< _ p r 
+_⁻¹ {isInt    } {X⁺ } (x ,, q) {{h}} = let p = Isℤ↪ℚ.preserves-0< ℤ↪ℚinc _ q
+                                           r = Isℤ↪ℚ.preserves-#0 ℤ↪ℚinc _ (ℤ.#-sym _ _ (ℤ.<-implies-# _ _ q))
+                                       in  _⁻¹ᶠ (ℤ↪ℚ x) {{r}} ,, ℚ.⁻¹-preserves-0< _ p r
+_⁻¹ {isInt    } {X⁻ } (x ,, q) {{h}} = let p = Isℤ↪ℚ.preserves-<0 ℤ↪ℚinc _ q
+                                           r = Isℤ↪ℚ.preserves-#0 ℤ↪ℚinc _ (ℤ.<-implies-# _ _ q)
+                                       in  _⁻¹ᶠ (ℤ↪ℚ x) {{r}} ,,  ℚ.⁻¹-preserves-<0 _ p r 
+_⁻¹ {isInt    } {X₀⁻} (x ,, q) {{h}} = let p = Isℤ↪ℚ.preserves-<0 ℤ↪ℚinc _ (ℤ.≤-#-implies-< _ _ q h)
+                                           r = Isℤ↪ℚ.preserves-#0 ℤ↪ℚinc _ h
+                                       in  _⁻¹ᶠ (ℤ↪ℚ x) {{r}} ,, ℚ.⁻¹-preserves-<0 _ p r
+
+_⁻¹ {isRat    } {X  } (x ,, q) {{h}} =  _⁻¹ᶠ x  {{h}} ,, ℚ.⁻¹-preserves-#0 x h
+_⁻¹ {isRat    } {X⁺⁻} (x ,, q) {{h}} =  _⁻¹ᶠ x  {{q}} ,, ℚ.⁻¹-preserves-#0 x q
+_⁻¹ {isRat    } {X₀⁺} (x ,, q) {{h}} =  _⁻¹ᶠ x  {{h}} ,, ℚ.⁻¹-preserves-0< x (ℚ.≤-#-implies-< _ _ q (ℚ.#-sym _ _ h)) h 
+_⁻¹ {isRat    } {X⁺ } (x ,, q) {{h}} = let r = ℚ.#-sym _ _ (ℚ.<-implies-# _ _ q) in _⁻¹ᶠ x  {{r}} ,,  ℚ.⁻¹-preserves-0< _ q r
+_⁻¹ {isRat    } {X⁻ } (x ,, q) {{h}} = let r = ℚ.<-implies-# _ _ q in _⁻¹ᶠ x  {{r}} ,, ℚ.⁻¹-preserves-<0 _ q r
+_⁻¹ {isRat    } {X₀⁻} (x ,, q) {{h}} =  _⁻¹ᶠ x  {{h}} ,,  ℚ.⁻¹-preserves-<0 x (ℚ.≤-#-implies-< _ _ q h) h
+
+_⁻¹ {isReal   } {X  } (x ,, q) {{h}} =  _⁻¹ʳ x  {{h}} ,, ℝ.⁻¹-preserves-#0 x h
+_⁻¹ {isReal   } {X⁺⁻} (x ,, q) {{h}} =  _⁻¹ʳ x  {{q}} ,, ℝ.⁻¹-preserves-#0 x q
+_⁻¹ {isReal   } {X₀⁺} (x ,, q) {{h}} =  _⁻¹ʳ x  {{h}} ,, ℝ.⁻¹-preserves-0< x (ℝ.≤-#-implies-< _ _ q (ℝ.#-sym _ _ h)) h 
+_⁻¹ {isReal   } {X⁺ } (x ,, q) {{h}} = let r = ℝ.#-sym _ _ (ℝ.<-implies-# _ _ q) in _⁻¹ʳ x {{r}} ,,  ℝ.⁻¹-preserves-0< _ q r
+_⁻¹ {isReal   } {X⁻ } (x ,, q) {{h}} = let r = ℝ.<-implies-# _ _ q in _⁻¹ʳ x  {{r}} ,, ℝ.⁻¹-preserves-<0 _ q r
+_⁻¹ {isReal   } {X₀⁻} (x ,, q) {{h}} =  _⁻¹ʳ      x  {{h}} ,, ℝ.⁻¹-preserves-<0 x (ℝ.≤-#-implies-< _ _ q h) h
+
+_⁻¹ {isComplex} {X  } (x ,, q) {{h}} =  _⁻¹ᶜ      x  {{h}} ,, ℂ.⁻¹-preserves-#0 x h
+_⁻¹ {isComplex} {X⁺⁻} (x ,, q) {{h}} =  _⁻¹ᶜ      x  {{q}} ,, ℂ.⁻¹-preserves-#0 x q
 
 
 -Types : ∀{l p} → Number (l , p) → Type (NumberLevel (maxₙₗ l isInt))

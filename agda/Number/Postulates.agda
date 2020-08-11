@@ -9,19 +9,6 @@ private
     ℓ ℓ' ℓ'' : Level
 
 open import Cubical.Foundations.Everything renaming (_⁻¹ to _⁻¹ᵖ; assoc to ∙-assoc)
-open import Cubical.Relation.Nullary.Base -- ¬_
-open import Cubical.Relation.Binary.Base -- Rel
-
--- open import Data.Nat.Base using (ℕ) renaming (_≤_ to _≤ₙ_)
--- open import Cubical.Data.Nat using (zero; suc) renaming (ℕ to Nat; _+_ to _+ₙ_)
--- open import Cubical.Data.Nat.Order renaming (zero-≤ to z≤n; suc-≤-suc to s≤s; _≤_ to _≤ₙ_; _<_ to _<ₙ_)
-
--- open import Cubical.Data.Unit.Base -- Unit
--- open import Cubical.Data.Empty -- ⊥
-open import Cubical.Data.Sum.Base renaming (_⊎_ to infixr 4 _⊎_)
--- open import Cubical.Data.Sigma.Base renaming (_×_ to infixr 4 _×_)
--- open import Cubical.Data.Empty renaming (elim to ⊥-elim) -- `⊥` and `elim`
--- open import Cubical.Data.Maybe.Base
 open import Cubical.Relation.Binary.Base -- Rel
 open import Function.Base using (_∋_)
 
@@ -36,7 +23,7 @@ postulate
 
 open import Number.Structures
 open import Number.Bundles   
-open import Number.Inclusions
+import Number.Inclusions
 
 import MoreAlgebra
 
@@ -44,9 +31,11 @@ module ℕ* where
   import Cubical.Data.Nat as Nat
   import Cubical.Data.Nat.Order as Order
 
+  open import Agda.Builtin.Nat using () renaming (Nat to ℕ) public
+
   module Postulates where
     postulate
-      min max : Nat.ℕ → Nat.ℕ → Nat.ℕ
+      min max : ℕ → ℕ → ℕ
       isROrderedCommSemiring : IsROrderedCommSemiring
         (Order._<_)
         (Order._≤_)
@@ -60,13 +49,12 @@ module ℕ* where
 
   module Bundle = ROrderedCommSemiring {ℕℓ} {ℕℓ'}
   Bundle = ROrderedCommSemiring {ℕℓ} {ℕℓ'}
-  
-  ℕ = Nat.ℕ
+
   Carrier = ℕ
 
   bundle : Bundle
   bundle = (record
-    { Carrier = ℕ -- Lift {ℓ-zero} {ℝℓ} Nat.ℕ
+    { Carrier = ℕ
     ; _<_ = Order._<_
     ; _≤_ = Order._≤_
     ; _#_ = (MoreAlgebra.Definitions._#'_ { _<_ = Order._<_ })
@@ -91,9 +79,8 @@ module ℕ* where
   isROrderedCommSemiring = Bundle.isROrderedCommSemiring bundle
 
   open IsROrderedCommSemiring isROrderedCommSemiring public
-  open import Agda.Builtin.Nat using () renaming (Nat to ℕ₀) public -- this makes ℕ₀ prettier in goals
 
-module ℕ  = ℕ* hiding (ℕ; ℕ₀)
+module ℕ  = ℕ* hiding (ℕ)
 module ℕⁿ = ℕ*
     renaming
     ( Carrier to Carrierⁿ
@@ -110,12 +97,40 @@ module ℕⁿ = ℕ*
     )
 
 module ℤ* where
+  module Postulates where
+    postulate
+      ℤ           : Type ℤℓ
+      _<_ _≤_ _#_ : Rel ℤ ℤ ℤℓ'
+      min max     : ℤ → ℤ → ℤ
+      0f 1f       : ℤ
+      _+_ _·_     : ℤ → ℤ → ℤ
+      -_          : ℤ → ℤ
+      isROrderedCommRing : IsROrderedCommRing _<_ _≤_ _#_ min max 0f 1f _+_ _·_ -_
+      
   module Bundle = ROrderedCommRing {ℤℓ} {ℤℓ'}
-  postulate
-    bundle : ROrderedCommRing {ℤℓ} {ℤℓ'}
+  Bundle = ROrderedCommRing {ℤℓ} {ℤℓ'}
+  
+  open Postulates public
+  
+  Carrier = ℤ
 
-  open Bundle bundle public
-  ℤ = Carrier
+  bundle : Bundle
+  bundle = (record
+    { Carrier = ℤ
+    ; _<_ = _<_
+    ; _≤_ = _≤_
+    ; _#_ = _#_
+    ; min = min
+    ; max = max
+    ; 0f  = 0f 
+    ; 1f  = 1f 
+    ; _+_ = _+_
+    ; _·_ = _·_
+    ; -_  = -_
+    ; isROrderedCommRing = isROrderedCommRing
+    })
+  
+  open IsROrderedCommRing isROrderedCommRing public
 
 module ℤ  = ℤ* hiding (ℤ)
 module ℤᶻ = ℤ
@@ -135,12 +150,42 @@ module ℤᶻ = ℤ
     )
 
 module ℚ* where
-  module Bundle = ROrderedField {ℚℓ} {ℚℓ'}
-  postulate
-    bundle : ROrderedField {ℚℓ} {ℚℓ'}
+  module Postulates where
+    postulate
+      ℚ           : Type ℚℓ
+      _<_ _≤_ _#_ : Rel ℚ ℚ ℚℓ'
+      min max     : ℚ → ℚ → ℚ
+      0f 1f       : ℚ
+      _+_ _·_     : ℚ → ℚ → ℚ
+      -_          : ℚ → ℚ
+      _⁻¹         : (x : ℚ) → {{ x # 0f }} → ℚ
+      isROrderedField : IsROrderedField _<_ _≤_ _#_ min max 0f 1f _+_ _·_ -_ _⁻¹
 
-  open Bundle bundle public
-  ℚ = Carrier
+  module Bundle = ROrderedField {ℚℓ} {ℚℓ'}
+  Bundle = ROrderedField {ℚℓ} {ℚℓ'}
+  
+  open Postulates public
+  
+  Carrier = ℚ
+
+  bundle : Bundle
+  bundle = (record
+    { Carrier = ℚ
+    ; _<_ = _<_
+    ; _≤_ = _≤_
+    ; _#_ = _#_
+    ; min = min
+    ; max = max
+    ; 0f  = 0f 
+    ; 1f  = 1f 
+    ; _+_ = _+_
+    ; _·_ = _·_
+    ; -_  = -_
+    ; _⁻¹ = _⁻¹
+    ; isROrderedField = isROrderedField
+    })
+
+  open IsROrderedField isROrderedField public
 
 module ℚ  = ℚ* hiding (ℚ)
 module ℚᶠ = ℚ*
@@ -161,12 +206,42 @@ module ℚᶠ = ℚ*
   )
 
 module ℝ* where
-  module Bundle = ROrderedField {ℝℓ} {ℝℓ'}
-  postulate
-    bundle : ROrderedField {ℝℓ} {ℝℓ'}
+  module Postulates where
+    postulate
+      ℝ           : Type ℝℓ
+      _<_ _≤_ _#_ : Rel ℝ ℝ ℝℓ'
+      min max     : ℝ → ℝ → ℝ
+      0f 1f       : ℝ
+      _+_ _·_     : ℝ → ℝ → ℝ
+      -_          : ℝ → ℝ
+      _⁻¹         : (x : ℝ) → {{ x # 0f }} → ℝ
+      isROrderedField : IsROrderedField _<_ _≤_ _#_ min max 0f 1f _+_ _·_ -_ _⁻¹
 
-  open Bundle bundle public
-  ℝ = Carrier
+  module Bundle = ROrderedField {ℝℓ} {ℝℓ'}
+  Bundle = ROrderedField {ℝℓ} {ℝℓ'}
+  
+  open Postulates public
+  
+  Carrier = ℝ
+
+  bundle : Bundle
+  bundle = (record
+    { Carrier = ℝ
+    ; _<_ = _<_
+    ; _≤_ = _≤_
+    ; _#_ = _#_
+    ; min = min
+    ; max = max
+    ; 0f  = 0f 
+    ; 1f  = 1f 
+    ; _+_ = _+_
+    ; _·_ = _·_
+    ; -_  = -_
+    ; _⁻¹ = _⁻¹
+    ; isROrderedField = isROrderedField
+    })
+
+  open IsROrderedField isROrderedField public
 
 module ℝ  = ℝ* hiding (ℝ)
 module ℝʳ = ℝ*
@@ -187,15 +262,40 @@ module ℝʳ = ℝ*
     )
 
 module ℂ* where
-  module Bundle = RField {ℂℓ} {ℂℓ'}
-  postulate
-    bundle : RField {ℂℓ} {ℂℓ'}
+  module Postulates where
+    postulate
+      ℂ           : Type ℂℓ
+      _#_         : Rel ℂ ℂ ℂℓ'
+      0f 1f       : ℂ
+      _+_ _·_     : ℂ → ℂ → ℂ
+      -_          : ℂ → ℂ
+      _⁻¹         : (x : ℂ) → {{ x # 0f }} → ℂ
+      isRField : IsRField _#_ 0f 1f _+_ _·_ -_ _⁻¹
 
-  open Bundle bundle public
-  ℂ = Carrier
+  module Bundle = RField {ℂℓ} {ℂℓ'}
+  Bundle = RField {ℂℓ} {ℂℓ'}
+
+  open Postulates public
+
+  Carrier = ℂ
+
+  bundle : Bundle
+  bundle = (record
+    { Carrier  = ℂ
+    ; _#_      = _#_
+    ; 0f       = 0f
+    ; 1f       = 1f
+    ; _+_      = _+_
+    ; _·_      = _·_
+    ; -_       = -_
+    ; _⁻¹      = _⁻¹
+    ; isRField = isRField
+    })
+
+  open IsRField isRField public
 
 module ℂ  = ℂ* hiding (ℂ)
-module ℂᶜ = ℂ
+module ℂᶜ = ℂ*
     renaming
     ( Carrier to Carrierᶜ
     ; _#_ to _#ᶜ_
@@ -207,6 +307,28 @@ module ℂᶜ = ℂ
     ; _⁻¹ to _⁻¹ᶜ
     ; isRField to isRFieldᶜ
     )
+
+Isℕ↪ℤ = Number.Inclusions.IsROrderedCommSemiringInclusion
+Isℕ↪ℚ = Number.Inclusions.IsROrderedCommSemiringInclusion
+Isℕ↪ℂ = Number.Inclusions.Isℕ↪ℂ
+Isℕ↪ℝ = Number.Inclusions.IsROrderedCommSemiringInclusion
+Isℤ↪ℚ = Number.Inclusions.IsROrderedCommRingInclusion
+Isℤ↪ℝ = Number.Inclusions.IsROrderedCommRingInclusion
+Isℤ↪ℂ = Number.Inclusions.Isℤ↪ℂ
+Isℚ↪ℝ = Number.Inclusions.IsROrderedFieldInclusion
+Isℚ↪ℂ = Number.Inclusions.IsRFieldInclusion
+Isℝ↪ℂ = Number.Inclusions.IsRFieldInclusion
+
+module Isℕ↪ℤ = Number.Inclusions.IsROrderedCommSemiringInclusion
+module Isℕ↪ℚ = Number.Inclusions.IsROrderedCommSemiringInclusion
+--module Isℕ↪ℂ = Number.Inclusions.Isℕ↪ℂ
+module Isℕ↪ℝ = Number.Inclusions.IsROrderedCommSemiringInclusion
+module Isℤ↪ℚ = Number.Inclusions.IsROrderedCommRingInclusion
+module Isℤ↪ℝ = Number.Inclusions.IsROrderedCommRingInclusion
+--module Isℤ↪ℂ = Number.Inclusions.Isℤ↪ℂ
+module Isℚ↪ℝ = Number.Inclusions.IsROrderedFieldInclusion
+module Isℚ↪ℂ = Number.Inclusions.IsRFieldInclusion
+module Isℝ↪ℂ = Number.Inclusions.IsRFieldInclusion
 
 module _ where
   open ℕ* using (ℕ)
@@ -226,13 +348,26 @@ module _ where
     ℚ↪ℂ : ℚ → ℂ
     ℝ↪ℂ : ℝ → ℂ
 
-    ℕ↪ℤinc : IsROrderedCommSemiringInclusion ℕ.bundle                       (record { ℤ.Bundle ℤ.bundle }) ℕ↪ℤ
-    ℕ↪ℚinc : IsROrderedCommSemiringInclusion ℕ.bundle                       (record { ℚ.Bundle ℚ.bundle }) ℕ↪ℚ
-    ℕ↪ℂinc : Isℕ↪ℂ                           ℕ.bundle                       ℂ.bundle                       ℕ↪ℂ
-    ℕ↪ℝinc : IsROrderedCommSemiringInclusion ℕ.bundle                       (record { ℝ.Bundle ℝ.bundle }) ℕ↪ℝ
-    ℤ↪ℚinc : IsROrderedCommRingInclusion     ℤ.bundle                       (record { ℚ.Bundle ℚ.bundle }) ℤ↪ℚ
-    ℤ↪ℝinc : IsROrderedCommRingInclusion     ℤ.bundle                       (record { ℝ.Bundle ℝ.bundle }) ℤ↪ℝ
-    ℤ↪ℂinc : Isℤ↪ℂ                           ℤ.bundle                       ℂ.bundle                       ℤ↪ℂ
-    ℚ↪ℝinc : IsROrderedFieldInclusion        ℚ.bundle                       (record { ℝ.Bundle ℝ.bundle }) ℚ↪ℝ
-    ℚ↪ℂinc : IsRFieldInclusion               (record { ℚ.Bundle ℚ.bundle }) (record { ℂ.Bundle ℂ.bundle }) ℚ↪ℂ
-    ℝ↪ℂinc : IsRFieldInclusion               (record { ℝ.Bundle ℝ.bundle }) (record { ℂ.Bundle ℂ.bundle }) ℝ↪ℂ
+    ℕ↪ℤinc : Isℕ↪ℤ (record {ℕ*}) (record {ℤ*}) ℕ↪ℤ
+    ℕ↪ℚinc : Isℕ↪ℚ (record {ℕ*}) (record {ℚ*}) ℕ↪ℚ
+    ℕ↪ℂinc : Isℕ↪ℂ (record {ℕ*}) (record {ℂ*}) ℕ↪ℂ
+    ℕ↪ℝinc : Isℕ↪ℝ (record {ℕ*}) (record {ℝ*}) ℕ↪ℝ
+    ℤ↪ℚinc : Isℤ↪ℚ (record {ℤ*}) (record {ℚ*}) ℤ↪ℚ
+    ℤ↪ℝinc : Isℤ↪ℝ (record {ℤ*}) (record {ℝ*}) ℤ↪ℝ
+    ℤ↪ℂinc : Isℤ↪ℂ (record {ℤ*}) (record {ℂ*}) ℤ↪ℂ
+    ℚ↪ℝinc : Isℚ↪ℝ (record {ℚ*}) (record {ℝ*}) ℚ↪ℝ
+    ℚ↪ℂinc : Isℚ↪ℂ (record {ℚ*}) (record {ℂ*}) ℚ↪ℂ
+    ℝ↪ℂinc : Isℝ↪ℂ (record {ℝ*}) (record {ℂ*}) ℝ↪ℂ
+
+    {-
+    ℕ↪ℤinc : Isℕ↪ℤ                    ℕ.bundle    (record { ℤ.Bundle ℤ.bundle }) ℕ↪ℤ
+    ℕ↪ℚinc : Isℕ↪ℚ                    ℕ.bundle    (record { ℚ.Bundle ℚ.bundle }) ℕ↪ℚ
+    ℕ↪ℂinc : Isℕ↪ℂ                    ℕ.bundle                       ℂ.bundle    ℕ↪ℂ
+    ℕ↪ℝinc : Isℕ↪ℝ                    ℕ.bundle    (record { ℝ.Bundle ℝ.bundle }) ℕ↪ℝ
+    ℤ↪ℚinc : Isℤ↪ℚ                    ℤ.bundle    (record { ℚ.Bundle ℚ.bundle }) ℤ↪ℚ
+    ℤ↪ℝinc : Isℤ↪ℝ                    ℤ.bundle    (record { ℝ.Bundle ℝ.bundle }) ℤ↪ℝ
+    ℤ↪ℂinc : Isℤ↪ℂ                    ℤ.bundle                       ℂ.bundle    ℤ↪ℂ
+    ℚ↪ℝinc : Isℚ↪ℝ                    ℚ.bundle    (record { ℝ.Bundle ℝ.bundle }) ℚ↪ℝ
+    ℚ↪ℂinc : Isℚ↪ℂ (record { ℚ.Bundle ℚ.bundle }) (record { ℂ.Bundle ℂ.bundle }) ℚ↪ℂ
+    ℝ↪ℂinc : Isℝ↪ℂ (record { ℝ.Bundle ℝ.bundle }) (record { ℂ.Bundle ℂ.bundle }) ℝ↪ℂ
+    -}

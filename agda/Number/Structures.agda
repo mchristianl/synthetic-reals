@@ -27,14 +27,16 @@ open import Cubical.Data.Maybe.Base
 record IsRField {F : Type ℓ} (_#_ : Rel F F ℓ') (0f 1f : F) (_+_ _·_ : F → F → F) (-_ : F → F) (_⁻¹ : (x : F) → {{ x # 0f }} → F) : Type (ℓ-max ℓ ℓ') where
   field
     +-assoc : ∀ x y z → (x + y) + z ≡ x + (y + z)
-    +-comm  : ∀ x y → x + y ≡ y + x
+    +-comm  : ∀ x y   →       x + y ≡ y + x
     distrib : ∀ x y z → (x + y) · z ≡ (x · z) + (y · z)
+    ⁻¹-preserves-#0 : ∀ x → (p : x # 0f) → _⁻¹ x {{p}} # 0f
     -- TODO: properties
 
 -- Finₖ ℕ ℤ ℚ ℚ₀⁺ ℚ⁺ ℝ ℝ₀⁺ ℝ⁺
 record IsRLattice {F : Type ℓ} (_<_ _≤_ _#_ : Rel F F ℓ') (min max : F → F → F) : Type (ℓ-max ℓ ℓ') where
   field
     <-implies-# : ∀ x y → x < y → x # y
+    ≤-#-implies-< : ∀ x y → x ≤ y → x # y → x < y
     #-sym : ∀ x y → x # y → y # x
 
 -- ℕ ℤ ℚ ℚ₀⁺ ℚ⁺ ℝ ℝ₀⁺ ℝ⁺
@@ -68,8 +70,13 @@ record IsROrderedField {F : Type ℓ} (_<_ _≤_ _#_ : Rel F F ℓ') (min max : 
   field
     isROrderedCommRing : IsROrderedCommRing _<_ _≤_ _#_ min max 0f 1f _+_ _·_ -_
     isRField           : IsRField _#_ 0f 1f _+_ _·_ -_ _⁻¹
+    
   open IsROrderedCommRing isROrderedCommRing public
   open IsRField isRField public
+
+  field
+    ⁻¹-preserves-<0 : ∀ x → (x < 0f) → (p : x # 0f) → _⁻¹ x {{p}} < 0f
+    ⁻¹-preserves-0< : ∀ x → (0f < x) → (p : x # 0f) → 0f < _⁻¹ x {{p}}
 
 -- ℚ₀⁺ ℝ₀⁺
 record IsROrderedSemifield {F : Type ℓ} (_<_ _≤_ _#_ : Rel F F ℓ') (min max : F → F → F) (0f 1f : F) (_+_ _·_ : F → F → F) (_⁻¹ : (x : F) → {{ x < 0f }} → F) : Type (ℓ-max ℓ ℓ') where
