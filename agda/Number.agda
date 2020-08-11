@@ -1,4 +1,4 @@
-{-# OPTIONS --cubical --no-import-sorts #-}
+{-# OPTIONS --cubical --no-import-sorts --allow-unsolved-metas #-}
 
 module Number where
 
@@ -134,36 +134,70 @@ private
 -- ∀{{ q : Unit }} → Number (level ,, X⁻ )
 
 -- pattern [ℝ₀⁺] = (isReal , X₀⁺)
-[ℝ₀⁺] = Number (isReal , isNonnegativeᵒʳ)
-[ℝ⁺]  = Number (isReal , isPositiveᵒʳ)
-[ℕ⁺]  = Number (isNat  , isPositiveᵒʳ)
-[ℝ]   = Number (isReal , anyPositivityᵒʳ)
+-- [ℝ₀⁺] = Number (isReal , isNonnegativeᵒʳ)
+-- [ℝ⁺]  = Number (isReal , isPositiveᵒʳ)
+-- [ℕ⁺]  = Number (isNat  , isPositiveᵒʳ)
+-- [ℝ]   = Number (isReal , anyPositivityᵒʳ)
+
+open import Number.Prettyprint
 
 -- {-# DISPLAY maxₙₗ' isReal isReal = isReal #-}
-{-# DISPLAY Number (isReal , isNonnegative) = [ℝ₀⁺] #-}
-{-# DISPLAY Number (isReal , isPositive)    = [ℝ⁺]  #-}
+-- {-# DISPLAY Number (isReal , isNonnegative) = [ℝ₀⁺] #-}
+-- {-# DISPLAY Number (isReal , isPositive)    = [ℝ⁺]  #-}
+
 
 [1ʳ] : [ℝ⁺]
 [1ʳ] = 1ʳ ,, ℝ.0<1
 
--- NOTE: As-patterns (or @-patterns) go well with resolving things in our approach
+
 
 -- test101 : Number (isNat , isPositiveᵒʳ) → Number (isReal ,  isNonnegativeᵒʳ) → {!!}
-test101 : [ℕ⁺] → [ℝ₀⁺] → [ℝ]
-test101 n@(nn ,, np) r@(rn ,, rp) with n + r
-... | (fst₁ ,, snd₁) =
-  let z = [ℝ₀⁺] ∋ r + r
-      zp = prp z
-      x = num z
-      xp = prp z
-      y =  r + [1ʳ]
-      pp : [1ʳ] < (r + [1ʳ])
-      pp = {!!}
-      pp' : 1ʳ <ʳ num (r + [1ʳ])
-      pp' = {!!}
-      pp'' : 1ʳ <ʳ (rn +ʳ 1ʳ)
-      pp'' = {!!}
-      _ : (pp ≡ pp') × (pp ≡ pp'')
-      _ = refl , refl
-      in {! y   !}
+
+
+test201 : [ℕ⁺] → [ℝ₀⁺] → [ℝ]
+-- As-patterns (or @-patterns) go well with resolving things in our approach
+test201 n@(nn ,, np) r@(rn ,, rp) = let
+-- generic operations are provided
+-- q : [ℕ⁺]
+-- z : [ℝ₀⁺]
+   q = n + n
+   z = r + r
+
+-- we can project-out the underlying number of a `Number` with `num`
+-- zʳ : ℝ
+   zʳ = num z
+
+-- and we can project-out the property of a `Number` with `prp`
+-- zp : 0ʳ ≤ʳ (rn +ʳ rn)
+   zp = prp z
+
+-- since the generic `_+_` makes use of `_+ʳ_` on ℝ, we get definitional equality
+   _ : zʳ ≡ rn +ʳ rn
+   _ = refl
+
+-- r is nonnegative from [ℝ₀⁺], [1ʳ] is positive from [ℝ⁺]
+-- and _+_ makes use of the fact that "positive + nonnegative = positive"
+-- y : [ℝ⁺]
+-- y = (rn +ʳ 1ʳ) ,, +-≤-<-implies-<ʳ rn 1ʳ rp 0<1
+   y =  r + [1ʳ]
+
+-- _+_ automatically coerces n from ℕ⁺ to ℝ⁺ and uses the fact that "positive + nonnegative = positive"
+-- n+r : [ℝ⁺]
+-- n+r = (ℕ↪ℝ nn +ʳ rn) ,, +-<-≤-implies-<ʳ (ℕ↪ℝ nn) rn (coerce-ℕ↪ℝ (nn ,, np)) rp
+   n+r = n + r
+
+-- generic relations like _<_ also make use of their underlying relations
+-- and therefore we also get definitional equality, no matter how the relation is stated
+   pp   : [1ʳ] <      (r  + [1ʳ])
+   pp   = {!!}
+   pp'  :  1ʳ  <ʳ num (r  + [1ʳ])
+   pp'  = {!!}
+   pp'' :  1ʳ  <ʳ     (rn +ʳ 1ʳ )
+   pp'' = {!!}
+   _ : (pp ≡ pp') × (pp ≡ pp'')
+   _ = refl , refl
+   in {!    !}
+
+
+
 

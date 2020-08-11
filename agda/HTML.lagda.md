@@ -29,3 +29,11 @@ extensions of `Cubical.Foundations.Logic` and similar things live in
 ```
 import MoreLogic
 ```
+
+and developments for "generic" numbers are
+
+```
+import Summary
+import Number
+```
+
