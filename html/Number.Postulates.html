@@ -1,0 +1,568 @@
+<!DOCTYPE HTML>
+<html><head><meta charset="utf-8"><title>Number.Postulates</title><link rel="stylesheet" href="Agda.css"></head><body><pre class="Agda"><a id="1" class="Symbol">{-#</a> <a id="5" class="Keyword">OPTIONS</a> <a id="13" class="Pragma">--cubical</a> <a id="23" class="Pragma">--no-import-sorts</a> <a id="41" class="Symbol">#-}</a>
+
+<a id="46" class="Keyword">open</a> <a id="51" class="Keyword">import</a> <a id="58" href="Agda.Primitive.html" class="Module">Agda.Primitive</a> <a id="73" class="Keyword">renaming</a> <a id="82" class="Symbol">(</a><a id="83" href="Agda.Primitive.html#736" class="Primitive Operator">_⊔_</a> <a id="87" class="Symbol">to</a> <a id="_⊔_"></a><a id="90" href="Number.Postulates.html#90" class="Primitive Operator">ℓ-max</a><a id="95" class="Symbol">;</a> <a id="97" href="Agda.Primitive.html#706" class="Primitive">lsuc</a> <a id="102" class="Symbol">to</a> <a id="lsuc"></a><a id="105" href="Number.Postulates.html#105" class="Primitive">ℓ-suc</a><a id="110" class="Symbol">;</a> <a id="112" href="Agda.Primitive.html#690" class="Primitive">lzero</a> <a id="118" class="Symbol">to</a> <a id="lzero"></a><a id="121" href="Number.Postulates.html#121" class="Primitive">ℓ-zero</a><a id="127" class="Symbol">)</a>
+
+<a id="130" class="Keyword">module</a> <a id="137" href="Number.Postulates.html" class="Module">Number.Postulates</a> <a id="155" class="Keyword">where</a>
+
+<a id="162" class="Keyword">private</a>
+  <a id="172" class="Keyword">variable</a>
+    <a id="185" href="Number.Postulates.html#185" class="Generalizable">ℓ</a> <a id="187" href="Number.Postulates.html#187" class="Generalizable">ℓ&#39;</a> <a id="190" href="Number.Postulates.html#190" class="Generalizable">ℓ&#39;&#39;</a> <a id="194" class="Symbol">:</a> <a id="196" href="Agda.Primitive.html#523" class="Postulate">Level</a>
+
+<a id="203" class="Keyword">open</a> <a id="208" class="Keyword">import</a> <a id="215" href="Cubical.Foundations.Everything.html" class="Module">Cubical.Foundations.Everything</a> <a id="246" class="Keyword">renaming</a> <a id="255" class="Symbol">(</a><a id="256" href="Cubical.Foundations.GroupoidLaws.html#311" class="Function Operator">_⁻¹</a> <a id="260" class="Symbol">to</a> <a id="GroupoidLaws._⁻¹"></a><a id="263" href="Number.Postulates.html#263" class="Function Operator">_⁻¹ᵖ</a><a id="267" class="Symbol">;</a> <a id="269" href="Cubical.Foundations.GroupoidLaws.html#2243" class="Function">assoc</a> <a id="275" class="Symbol">to</a> <a id="GroupoidLaws.assoc"></a><a id="278" href="Number.Postulates.html#278" class="Function">∙-assoc</a><a id="285" class="Symbol">)</a>
+<a id="287" class="Keyword">open</a> <a id="292" class="Keyword">import</a> <a id="299" href="Cubical.Relation.Nullary.Base.html" class="Module">Cubical.Relation.Nullary.Base</a> <a id="329" class="Comment">-- ¬_</a>
+<a id="335" class="Keyword">open</a> <a id="340" class="Keyword">import</a> <a id="347" href="Cubical.Relation.Binary.Base.html" class="Module">Cubical.Relation.Binary.Base</a> <a id="376" class="Comment">-- Rel</a>
+
+<a id="384" class="Comment">-- open import Data.Nat.Base using (ℕ) renaming (_≤_ to _≤ₙ_)</a>
+<a id="446" class="Comment">-- open import Cubical.Data.Nat using (zero; suc) renaming (ℕ to Nat; _+_ to _+ₙ_)</a>
+<a id="529" class="Comment">-- open import Cubical.Data.Nat.Order renaming (zero-≤ to z≤n; suc-≤-suc to s≤s; _≤_ to _≤ₙ_; _&lt;_ to _&lt;ₙ_)</a>
+
+<a id="637" class="Comment">-- open import Cubical.Data.Unit.Base -- Unit</a>
+<a id="683" class="Comment">-- open import Cubical.Data.Empty -- ⊥</a>
+<a id="722" class="Keyword">open</a> <a id="727" class="Keyword">import</a> <a id="734" href="Cubical.Data.Sum.Base.html" class="Module">Cubical.Data.Sum.Base</a> <a id="756" class="Keyword">renaming</a> <a id="765" class="Symbol">(</a><a id="766" href="Cubical.Data.Sum.Base.html#188" class="Datatype Operator">_⊎_</a> <a id="770" class="Symbol">to</a> <a id="773" class="Keyword">infixr</a> <a id="780" class="Number">4</a> <a id="Sum.Base._⊎_"></a><a id="782" href="Number.Postulates.html#782" class="Datatype Operator">_⊎_</a><a id="785" class="Symbol">)</a>
+<a id="787" class="Comment">-- open import Cubical.Data.Sigma.Base renaming (_×_ to infixr 4 _×_)</a>
+<a id="857" class="Comment">-- open import Cubical.Data.Empty renaming (elim to ⊥-elim) -- `⊥` and `elim`</a>
+<a id="935" class="Comment">-- open import Cubical.Data.Maybe.Base</a>
+<a id="974" class="Keyword">open</a> <a id="979" class="Keyword">import</a> <a id="986" href="Cubical.Relation.Binary.Base.html" class="Module">Cubical.Relation.Binary.Base</a> <a id="1015" class="Comment">-- Rel</a>
+<a id="1022" class="Keyword">open</a> <a id="1027" class="Keyword">import</a> <a id="1034" href="Function.Base.html" class="Module">Function.Base</a> <a id="1048" class="Keyword">using</a> <a id="1054" class="Symbol">(</a><a id="1055" href="Function.Base.html#4458" class="Function Operator">_∋_</a><a id="1058" class="Symbol">)</a>
+
+<a id="ℕℓ"></a><a id="1061" href="Number.Postulates.html#1061" class="Function">ℕℓ</a>  <a id="1065" class="Symbol">=</a> <a id="1067" href="Agda.Primitive.html#690" class="Primitive">ℓ-zero</a>
+<a id="ℕℓ&#39;"></a><a id="1074" href="Number.Postulates.html#1074" class="Function">ℕℓ&#39;</a> <a id="1078" class="Symbol">=</a> <a id="1080" href="Agda.Primitive.html#690" class="Primitive">ℓ-zero</a>
+
+<a id="1088" class="Keyword">postulate</a>  
+  <a id="ℤℓ"></a><a id="1102" href="Number.Postulates.html#1102" class="Postulate">ℤℓ</a> <a id="ℤℓ&#39;"></a><a id="1105" href="Number.Postulates.html#1105" class="Postulate">ℤℓ&#39;</a> <a id="1109" class="Symbol">:</a> <a id="1111" href="Agda.Primitive.html#523" class="Postulate">Level</a>
+  <a id="ℚℓ"></a><a id="1119" href="Number.Postulates.html#1119" class="Postulate">ℚℓ</a> <a id="ℚℓ&#39;"></a><a id="1122" href="Number.Postulates.html#1122" class="Postulate">ℚℓ&#39;</a> <a id="1126" class="Symbol">:</a> <a id="1128" href="Agda.Primitive.html#523" class="Postulate">Level</a>
+  <a id="ℝℓ"></a><a id="1136" href="Number.Postulates.html#1136" class="Postulate">ℝℓ</a> <a id="ℝℓ&#39;"></a><a id="1139" href="Number.Postulates.html#1139" class="Postulate">ℝℓ&#39;</a> <a id="1143" class="Symbol">:</a> <a id="1145" href="Agda.Primitive.html#523" class="Postulate">Level</a>
+  <a id="ℂℓ"></a><a id="1153" href="Number.Postulates.html#1153" class="Postulate">ℂℓ</a> <a id="ℂℓ&#39;"></a><a id="1156" href="Number.Postulates.html#1156" class="Postulate">ℂℓ&#39;</a> <a id="1160" class="Symbol">:</a> <a id="1162" href="Agda.Primitive.html#523" class="Postulate">Level</a>
+
+<a id="1169" class="Keyword">open</a> <a id="1174" class="Keyword">import</a> <a id="1181" href="Number.Structures.html" class="Module">Number.Structures</a>
+<a id="1199" class="Keyword">open</a> <a id="1204" class="Keyword">import</a> <a id="1211" href="Number.Bundles.html" class="Module">Number.Bundles</a>   
+<a id="1229" class="Keyword">open</a> <a id="1234" class="Keyword">import</a> <a id="1241" href="Number.Inclusions.html" class="Module">Number.Inclusions</a>
+
+<a id="1260" class="Keyword">import</a> <a id="1267" href="MoreAlgebra.html" class="Module">MoreAlgebra</a>
+
+
+<a id="Lift₂"></a><a id="1281" href="Number.Postulates.html#1281" class="Function">Lift₂</a> <a id="1287" class="Symbol">:</a> <a id="1289" class="Symbol">{</a><a id="1290" href="Number.Postulates.html#1290" class="Bound">A</a> <a id="1292" class="Symbol">:</a> <a id="1294" href="Agda.Primitive.html#326" class="Primitive">Type₀</a><a id="1299" class="Symbol">}</a> <a id="1301" class="Symbol">→</a> <a id="1303" href="Cubical.Relation.Binary.Base.html#341" class="Function">Rel</a> <a id="1307" href="Number.Postulates.html#1290" class="Bound">A</a> <a id="1309" href="Number.Postulates.html#1290" class="Bound">A</a> <a id="1311" href="Agda.Primitive.html#690" class="Primitive">ℓ-zero</a> <a id="1318" class="Symbol">→</a> <a id="1320" href="Cubical.Relation.Binary.Base.html#341" class="Function">Rel</a> <a id="1324" class="Symbol">(</a><a id="1325" href="Cubical.Foundations.Prelude.html#12828" class="Record">Lift</a> <a id="1330" class="Symbol">{</a><a id="1331" href="Agda.Primitive.html#690" class="Primitive">ℓ-zero</a><a id="1337" class="Symbol">}</a> <a id="1339" class="Symbol">{</a><a id="1340" href="Number.Postulates.html#185" class="Generalizable">ℓ</a><a id="1341" class="Symbol">}</a> <a id="1343" href="Number.Postulates.html#1290" class="Bound">A</a><a id="1344" class="Symbol">)</a> <a id="1346" class="Symbol">(</a><a id="1347" href="Cubical.Foundations.Prelude.html#12828" class="Record">Lift</a> <a id="1352" class="Symbol">{</a><a id="1353" href="Agda.Primitive.html#690" class="Primitive">ℓ-zero</a><a id="1359" class="Symbol">}</a> <a id="1361" class="Symbol">{</a><a id="1362" href="Number.Postulates.html#185" class="Generalizable">ℓ</a><a id="1363" class="Symbol">}</a> <a id="1365" href="Number.Postulates.html#1290" class="Bound">A</a><a id="1366" class="Symbol">)</a> <a id="1368" href="Number.Postulates.html#187" class="Generalizable">ℓ&#39;</a>
+<a id="1371" href="Number.Postulates.html#1281" class="Function">Lift₂</a> <a id="1377" href="Number.Postulates.html#1377" class="Bound Operator">_•_</a> <a id="1381" class="Symbol">(</a><a id="1382" href="Cubical.Foundations.Prelude.html#12891" class="InductiveConstructor">lift</a> <a id="1387" href="Number.Postulates.html#1387" class="Bound">x</a><a id="1388" class="Symbol">)</a> <a id="1390" class="Symbol">(</a><a id="1391" href="Cubical.Foundations.Prelude.html#12891" class="InductiveConstructor">lift</a> <a id="1396" href="Number.Postulates.html#1396" class="Bound">y</a><a id="1397" class="Symbol">)</a> <a id="1399" class="Symbol">=</a> <a id="1401" href="Cubical.Foundations.Prelude.html#12828" class="Record">Lift</a> <a id="1406" class="Symbol">(</a><a id="1407" href="Number.Postulates.html#1387" class="Bound">x</a> <a id="1409" href="Number.Postulates.html#1377" class="Bound Operator">•</a> <a id="1411" href="Number.Postulates.html#1396" class="Bound">y</a><a id="1412" class="Symbol">)</a>
+
+<a id="Lift₂&#39;"></a><a id="1415" href="Number.Postulates.html#1415" class="Function">Lift₂&#39;</a> <a id="1422" class="Symbol">:</a> <a id="1424" class="Symbol">{</a><a id="1425" href="Number.Postulates.html#1425" class="Bound">A</a> <a id="1427" class="Symbol">:</a> <a id="1429" href="Agda.Primitive.html#326" class="Primitive">Type₀</a><a id="1434" class="Symbol">}</a> <a id="1436" class="Symbol">→</a> <a id="1438" class="Symbol">(</a><a id="1439" href="Number.Postulates.html#1425" class="Bound">A</a> <a id="1441" class="Symbol">→</a> <a id="1443" href="Number.Postulates.html#1425" class="Bound">A</a> <a id="1445" class="Symbol">→</a> <a id="1447" href="Number.Postulates.html#1425" class="Bound">A</a><a id="1448" class="Symbol">)</a> <a id="1450" class="Symbol">→</a> <a id="1452" class="Symbol">(</a><a id="1453" href="Cubical.Foundations.Prelude.html#12828" class="Record">Lift</a> <a id="1458" class="Symbol">{</a><a id="1459" href="Agda.Primitive.html#690" class="Primitive">ℓ-zero</a><a id="1465" class="Symbol">}</a> <a id="1467" class="Symbol">{</a><a id="1468" href="Number.Postulates.html#185" class="Generalizable">ℓ</a><a id="1469" class="Symbol">}</a> <a id="1471" href="Number.Postulates.html#1425" class="Bound">A</a><a id="1472" class="Symbol">)</a> <a id="1474" class="Symbol">→</a> <a id="1476" class="Symbol">(</a><a id="1477" href="Cubical.Foundations.Prelude.html#12828" class="Record">Lift</a> <a id="1482" class="Symbol">{</a><a id="1483" href="Agda.Primitive.html#690" class="Primitive">ℓ-zero</a><a id="1489" class="Symbol">}</a> <a id="1491" class="Symbol">{</a><a id="1492" href="Number.Postulates.html#185" class="Generalizable">ℓ</a><a id="1493" class="Symbol">}</a> <a id="1495" href="Number.Postulates.html#1425" class="Bound">A</a><a id="1496" class="Symbol">)</a> <a id="1498" class="Symbol">→</a> <a id="1500" class="Symbol">(</a><a id="1501" href="Cubical.Foundations.Prelude.html#12828" class="Record">Lift</a> <a id="1506" class="Symbol">{</a><a id="1507" href="Agda.Primitive.html#690" class="Primitive">ℓ-zero</a><a id="1513" class="Symbol">}</a> <a id="1515" class="Symbol">{</a><a id="1516" href="Number.Postulates.html#185" class="Generalizable">ℓ</a><a id="1517" class="Symbol">}</a> <a id="1519" href="Number.Postulates.html#1425" class="Bound">A</a><a id="1520" class="Symbol">)</a>
+<a id="1522" href="Number.Postulates.html#1415" class="Function">Lift₂&#39;</a> <a id="1529" href="Number.Postulates.html#1529" class="Bound Operator">_•_</a> <a id="1533" class="Symbol">(</a><a id="1534" href="Cubical.Foundations.Prelude.html#12891" class="InductiveConstructor">lift</a> <a id="1539" href="Number.Postulates.html#1539" class="Bound">x</a><a id="1540" class="Symbol">)</a> <a id="1542" class="Symbol">(</a><a id="1543" href="Cubical.Foundations.Prelude.html#12891" class="InductiveConstructor">lift</a> <a id="1548" href="Number.Postulates.html#1548" class="Bound">y</a><a id="1549" class="Symbol">)</a> <a id="1551" class="Symbol">=</a> <a id="1553" href="Cubical.Foundations.Prelude.html#12891" class="InductiveConstructor">lift</a> <a id="1558" class="Symbol">(</a><a id="1559" href="Number.Postulates.html#1539" class="Bound">x</a> <a id="1561" href="Number.Postulates.html#1529" class="Bound Operator">•</a> <a id="1563" href="Number.Postulates.html#1548" class="Bound">y</a><a id="1564" class="Symbol">)</a>
+
+
+<a id="1568" class="Keyword">module</a> <a id="ℕ*"></a><a id="1575" href="Number.Postulates.html#1575" class="Module">ℕ*</a> <a id="1578" class="Keyword">where</a>
+  <a id="1586" class="Keyword">import</a> <a id="1593" href="Cubical.Data.Nat.html" class="Module">Cubical.Data.Nat</a> <a id="1610" class="Symbol">as</a> <a id="1613" class="Module">Nat</a> <a id="1617" class="Comment">--  using (ℕ; zero; suc) renaming (_+_ to _+ₙ_)</a>
+  <a id="1667" class="Keyword">import</a> <a id="1674" href="Cubical.Data.Nat.Order.html" class="Module">Cubical.Data.Nat.Order</a> <a id="1697" class="Symbol">as</a> <a id="1700" class="Module">Order</a> <a id="1706" class="Comment">-- renaming (zero-≤ to z≤n; suc-≤-suc to s≤s; _≤_ to _≤ₙ_; _&lt;_ to _&lt;ₙ_)</a>
+
+  <a id="1781" class="Keyword">module</a> <a id="Postulates"></a><a id="1788" href="Number.Postulates.html#1788" class="Module">Postulates</a> <a id="1799" class="Keyword">where</a>
+    <a id="1809" class="Keyword">postulate</a>
+      <a id="ℕ*.Postulates.min"></a><a id="1825" href="Number.Postulates.html#1825" class="Postulate">min</a> <a id="ℕ*.Postulates.max"></a><a id="1829" href="Number.Postulates.html#1829" class="Postulate">max</a> <a id="1833" class="Symbol">:</a> <a id="1835" href="Agda.Builtin.Nat.html#192" class="Datatype">Nat.ℕ</a> <a id="1841" class="Symbol">→</a> <a id="1843" href="Agda.Builtin.Nat.html#192" class="Datatype">Nat.ℕ</a> <a id="1849" class="Symbol">→</a> <a id="1851" href="Agda.Builtin.Nat.html#192" class="Datatype">Nat.ℕ</a>
+      <a id="ℕ*.Postulates.isROrderedCommSemiring"></a><a id="1863" href="Number.Postulates.html#1863" class="Postulate">isROrderedCommSemiring</a> <a id="1886" class="Symbol">:</a> <a id="1888" href="Number.Structures.html#1571" class="Record">IsROrderedCommSemiring</a>
+        <a id="1919" class="Symbol">(</a><a id="1920" href="Cubical.Data.Nat.Order.html#554" class="Function Operator">Order._&lt;_</a><a id="1929" class="Symbol">)</a>
+        <a id="1939" class="Symbol">(</a><a id="1940" href="Cubical.Data.Nat.Order.html#504" class="Function Operator">Order._≤_</a><a id="1949" class="Symbol">)</a>
+        <a id="1959" class="Symbol">((</a><a id="1961" href="MoreAlgebra.html#2745" class="Function Operator">MoreAlgebra.Definitions._#&#39;_</a> <a id="1990" class="Symbol">{</a><a id="1991" class="Argument">_&lt;_</a> <a id="1995" class="Symbol">=</a> <a id="1997" href="Cubical.Data.Nat.Order.html#554" class="Function Operator">Order._&lt;_</a><a id="2006" class="Symbol">}))</a>
+        <a id="2018" class="Symbol">(</a><a id="2019" href="Number.Postulates.html#1825" class="Postulate">min</a><a id="2022" class="Symbol">)</a>
+        <a id="2032" class="Symbol">(</a><a id="2033" href="Number.Postulates.html#1829" class="Postulate">max</a><a id="2036" class="Symbol">)</a>
+        <a id="2046" class="Symbol">(</a><a id="2047" href="Agda.Builtin.Nat.html#210" class="InductiveConstructor">Nat.zero</a><a id="2055" class="Symbol">)</a>
+        <a id="2065" class="Symbol">(</a><a id="2066" class="Number">1</a><a id="2067" class="Symbol">)</a>
+        <a id="2077" class="Symbol">(</a><a id="2078" href="Agda.Builtin.Nat.html#325" class="Primitive Operator">Nat._+_</a><a id="2085" class="Symbol">)</a>
+        <a id="2095" class="Symbol">(</a><a id="2096" href="Agda.Builtin.Nat.html#528" class="Primitive Operator">Nat._*_</a><a id="2103" class="Symbol">)</a>
+
+  <a id="2108" class="Comment">-- NOTE: only when</a>
+  <a id="2129" class="Comment">--       1. making an instance</a>
+  <a id="2162" class="Comment">--       2. opening the instance</a>
+  <a id="2197" class="Comment">--       we get the possibility to inspect their inner definition</a>
+  <a id="2265" class="Comment">--       this is not possible when defining a module first with</a>
+  <a id="2331" class="Comment">--         `module Module = ROrderedCommSemiring (record {...})`</a>
+  <a id="2398" class="Comment">--       and then making an instance out of it with</a>
+  <a id="2452" class="Comment">--         `Bundle : ROrderedCommSemiring`</a>
+  <a id="2497" class="Comment">--         `Bundle = record { Module }`</a>
+  <a id="2539" class="Comment">--       then, we can only inspect up to ℕ.Carrier and not further</a>
+  <a id="2608" class="Keyword">module</a> <a id="Bundle"></a><a id="2615" href="Number.Postulates.html#2615" class="Module">Bundle</a> <a id="2622" class="Symbol">=</a> <a id="2624" href="Number.Bundles.html#1359" class="Module">ROrderedCommSemiring</a> <a id="2645" class="Symbol">{</a><a id="2646" href="Number.Postulates.html#1061" class="Function">ℕℓ</a><a id="2648" class="Symbol">}</a> <a id="2650" class="Symbol">{</a><a id="2651" href="Number.Postulates.html#1074" class="Function">ℕℓ&#39;</a><a id="2654" class="Symbol">}</a>
+  <a id="ℕ*.Bundle"></a><a id="2658" href="Number.Postulates.html#2658" class="Function">Bundle</a> <a id="2665" class="Symbol">=</a> <a id="2667" href="Number.Bundles.html#1359" class="Record">ROrderedCommSemiring</a> <a id="2688" class="Symbol">{</a><a id="2689" href="Number.Postulates.html#1061" class="Function">ℕℓ</a><a id="2691" class="Symbol">}</a> <a id="2693" class="Symbol">{</a><a id="2694" href="Number.Postulates.html#1074" class="Function">ℕℓ&#39;</a><a id="2697" class="Symbol">}</a>
+
+  <a id="2702" class="Comment">-- NOTE: a prefix alo appears to a symbol in Have/Goal if the corresponding symbol is imported multiple times</a>
+  <a id="2814" class="Comment">--       that can be checked with `C-c C-w` </a>
+
+  <a id="2862" class="Comment">-- module members are not normalized on `C-c` `C-.` (only after `C-u`-ing) which is helpful for not cluttering the Have/Goal with &quot;implementation details&quot; of the underlying Carrier type</a>
+  <a id="3050" class="Comment">-- but if we wanted to </a>
+  
+  <a id="ℕ*.ℕ"></a><a id="3079" href="Number.Postulates.html#3079" class="Function">ℕ</a> <a id="3081" class="Symbol">=</a> <a id="3083" href="Agda.Builtin.Nat.html#192" class="Datatype">Nat.ℕ</a>
+  <a id="ℕ*.Carrier"></a><a id="3091" href="Number.Postulates.html#3091" class="Function">Carrier</a> <a id="3099" class="Symbol">=</a> <a id="3101" href="Number.Postulates.html#3079" class="Function">ℕ</a>
+  <a id="3105" class="Comment">-- _&lt;_ = Lift₂  {ℓ = ℝℓ} {ℓ&#39; = ℝℓ&#39;} Order._&lt;_</a>
+  <a id="3153" class="Comment">-- _≤_ = Lift₂  {ℓ = ℝℓ} {ℓ&#39; = ℝℓ&#39;} Order._≤_</a>
+  <a id="3201" class="Comment">-- _#_ = Lift₂  {ℓ = ℝℓ} {ℓ&#39; = ℝℓ&#39;} (MoreAlgebra.Definitions._#&#39;_ { _&lt;_ = Order._&lt;_ })</a>
+  <a id="3290" class="Comment">-- min = Lift₂&#39; {ℓ = ℝℓ}            Postulates.min</a>
+  <a id="3343" class="Comment">-- max = Lift₂&#39; {ℓ = ℝℓ}            Postulates.max</a>
+  <a id="3396" class="Comment">-- 0f  = lift   {j = ℝℓ}            Nat.zero</a>
+  <a id="3443" class="Comment">-- 1f  = lift   {j = ℝℓ}            (Nat.suc Nat.zero)</a>
+  <a id="3500" class="Comment">-- _+_ = Lift₂&#39; {ℓ = ℝℓ}            Nat._+_</a>
+  <a id="3546" class="Comment">-- _·_ = Lift₂&#39; {ℓ = ℝℓ}            Nat._*_</a>
+  <a id="3592" class="Comment">-- isROrderedCommSemiring = Postulates.isROrderedCommSemiring</a>
+
+  <a id="3657" class="Comment">{-
+  bundle : Bundle
+  bundle = (record
+    { Carrier = Carrier
+    ; _&lt;_ = _&lt;_
+    ; _≤_ = _≤_
+    ; _#_ = _#_
+    ; min = min
+    ; max = max
+    ; 0f  = 0f 
+    ; 1f  = 1f 
+    ; _+_ = _+_
+    ; _·_ = _·_
+    ; isROrderedCommSemiring = isROrderedCommSemiring
+    })
+  -}</a>
+
+  <a id="3934" class="Comment">-- NOTE: an `abstract` here would blocks the inner inspection again</a>
+  <a id="4004" class="Comment">--       unfortunately we cannot &quot;break&quot; this on the &quot;call site&quot;</a>
+  <a id="4071" class="Comment">--       i.e. we cannot inspect or case-split into the inner structure of these definitions</a>
+  <a id="4165" class="Comment">--         but this is a necessity</a>
+  <a id="4202" class="Comment">--       on the other hand, we do want this to be short sometimes</a>
+  <a id="4270" class="Comment">--       &quot;Abstract applies to only definitions like data definitions, record type definitions and function clauses.&quot;</a>
+
+  <a id="ℕ*.bundle"></a><a id="4390" href="Number.Postulates.html#4390" class="Function">bundle</a> <a id="4397" class="Symbol">:</a> <a id="4399" href="Number.Postulates.html#2658" class="Function">Bundle</a>
+  <a id="4408" href="Number.Postulates.html#4390" class="Function">bundle</a> <a id="4415" class="Symbol">=</a> <a id="4417" class="Symbol">(</a><a id="4418" class="Keyword">record</a>
+    <a id="4429" class="Symbol">{</a> <a id="4431" href="Number.Bundles.html#1442" class="Field">Carrier</a> <a id="4439" class="Symbol">=</a> <a id="4441" href="Number.Postulates.html#3079" class="Function">ℕ</a> <a id="4443" class="Comment">-- Lift {ℓ-zero} {ℝℓ} Nat.ℕ</a>
+    <a id="4475" class="Symbol">;</a> <a id="4477" href="Number.Bundles.html#1467" class="Field Operator">_&lt;_</a> <a id="4481" class="Symbol">=</a> <a id="4483" href="Cubical.Data.Nat.Order.html#554" class="Function Operator">Order._&lt;_</a>
+    <a id="4497" class="Symbol">;</a> <a id="4499" href="Number.Bundles.html#1471" class="Field Operator">_≤_</a> <a id="4503" class="Symbol">=</a> <a id="4505" href="Cubical.Data.Nat.Order.html#504" class="Function Operator">Order._≤_</a>
+    <a id="4519" class="Symbol">;</a> <a id="4521" href="Number.Bundles.html#1475" class="Field Operator">_#_</a> <a id="4525" class="Symbol">=</a> <a id="4527" class="Symbol">(</a><a id="4528" href="MoreAlgebra.html#2745" class="Function Operator">MoreAlgebra.Definitions._#&#39;_</a> <a id="4557" class="Symbol">{</a> <a id="4559" class="Argument">_&lt;_</a> <a id="4563" class="Symbol">=</a> <a id="4565" href="Cubical.Data.Nat.Order.html#554" class="Function Operator">Order._&lt;_</a> <a id="4575" class="Symbol">})</a>
+    <a id="4582" class="Symbol">;</a> <a id="4584" href="Number.Bundles.html#1508" class="Field">min</a> <a id="4588" class="Symbol">=</a> <a id="4590" href="Number.Postulates.html#1825" class="Postulate">Postulates.min</a>
+    <a id="4609" class="Symbol">;</a> <a id="4611" href="Number.Bundles.html#1512" class="Field">max</a> <a id="4615" class="Symbol">=</a> <a id="4617" href="Number.Postulates.html#1829" class="Postulate">Postulates.max</a>
+    <a id="4636" class="Symbol">;</a> <a id="4638" href="Number.Bundles.html#1582" class="Field">0f</a>  <a id="4642" class="Symbol">=</a> <a id="4644" href="Agda.Builtin.Nat.html#210" class="InductiveConstructor">Nat.zero</a>
+    <a id="4657" class="Symbol">;</a> <a id="4659" href="Number.Bundles.html#1585" class="Field">1f</a>  <a id="4663" class="Symbol">=</a> <a id="4665" class="Symbol">(</a><a id="4666" href="Agda.Builtin.Nat.html#223" class="InductiveConstructor">Nat.suc</a> <a id="4674" href="Agda.Builtin.Nat.html#210" class="InductiveConstructor">Nat.zero</a><a id="4682" class="Symbol">)</a>
+    <a id="4688" class="Symbol">;</a> <a id="4690" href="Number.Bundles.html#1608" class="Field Operator">_+_</a> <a id="4694" class="Symbol">=</a> <a id="4696" href="Agda.Builtin.Nat.html#325" class="Primitive Operator">Nat._+_</a>
+    <a id="4708" class="Symbol">;</a> <a id="4710" href="Number.Bundles.html#1612" class="Field Operator">_·_</a> <a id="4714" class="Symbol">=</a> <a id="4716" href="Agda.Builtin.Nat.html#528" class="Primitive Operator">Nat._*_</a>
+    <a id="4728" class="Symbol">;</a> <a id="4730" href="Number.Bundles.html#1735" class="Field">isROrderedCommSemiring</a> <a id="4753" class="Symbol">=</a> <a id="4755" href="Number.Postulates.html#1863" class="Postulate">Postulates.isROrderedCommSemiring</a>
+    <a id="4793" class="Symbol">})</a>
+
+  <a id="4799" class="Comment">{-
+  abstract
+    bundle&#39; : Bundle
+    bundle&#39; = (record
+      { Carrier = Lift {ℓ-zero} {ℝℓ} Nat.ℕ
+      ; _&lt;_ = Lift₂  Order._&lt;_
+      ; _≤_ = Lift₂  Order._≤_
+      ; _#_ = Lift₂  (MoreAlgebra.Definitions._#&#39;_ { _&lt;_ = Order._&lt;_ })
+      ; min = Lift₂&#39; Postulates.min
+      ; max = Lift₂&#39; Postulates.max
+      ; 0f  = lift   Nat.zero
+      ; 1f  = lift   (Nat.suc Nat.zero)
+      ; _+_ = Lift₂&#39; Nat._+_
+      ; _·_ = Lift₂&#39; Nat._*_
+      ; isROrderedCommSemiring = Postulates.isROrderedCommSemiring
+      })
+  -}</a>
+
+  <a id="5317" class="Comment">-- Bundle : ROrderedCommSemiring</a>
+  <a id="5352" class="Comment">-- Bundle = record { Module }</a>
+
+  <a id="5385" class="Comment">{-
+  module Translated = ROrderedCommSemiring Bundle
+      renaming
+      ( Carrier to ℕ
+      ; _&lt;_ to _&lt;ⁿ_
+      ; _≤_ to _≤ⁿ_
+      ; _#_ to _#ⁿ_
+      ; min to minⁿ
+      ; max to maxⁿ
+      ; 0f  to 0ⁿ 
+      ; 1f  to 1ⁿ 
+      ; _+_ to _+ⁿ_
+      ; _·_ to _·ⁿ_
+      ; isROrderedCommSemiring to isROrderedCommSemiringⁿ
+      )
+  -}</a>
+
+  <a id="5726" class="Comment">{- NOTE
+  it seems that the last module which brings something into scope will be used on C-u C-c C-*
+  therefore, we have to open this module ℕ directly and not via a proxy-module called `Module` that lives inside of it
+  the &quot;translated&quot; module then is a separate one, which is just called ℕⁿ
+
+  this also applies to the &quot;call site&quot;, so when we are opening `Agda.Builtin.Nat` and we have not opened our own ℕ-module
+    then 2× and 0× `C-u` will display the used `Carrier` as `Nat`
+  -}</a>
+
+  <a id="6218" class="Comment">-- module Module where</a>
+  <a id="6243" class="Comment">--   open ROrderedCommSemiring Bundle public</a>
+  <a id="6290" class="Comment">--   open import Agda.Builtin.Nat using () renaming (Nat to ℕ₀) public -- this makes ℕ₀ prettier in goals</a>
+
+  <a id="6399" class="Comment">-- open Bundle bundle using () renaming (Carrier to ℕ) public</a>
+  <a id="6463" class="Comment">-- ℕ = Bundle.Carrier bundle</a>
+
+  <a id="6495" class="Comment">-- NOTE: for the non-operations 0f and 1f it does not matter,</a>
+  <a id="6559" class="Comment">--       but for the operations min, max, _+_ and _·_ we need this &quot;roundabout&quot; instead of a direct opening of `bundle`</a>
+  <a id="6681" class="Comment">--       this causes that the Have/Goal type of `x + y` is not immediately expanded but remains a nice `ℕ`</a>
+  <a id="6790" class="Comment">--       only after `C-u`-ing it gets normalized</a>
+  <a id="6841" class="Comment">-- NOTE: so although it looks a little ugly, we just write this out here again</a>
+
+  <a id="ℕ*._&lt;_"></a><a id="6923" href="Number.Postulates.html#6923" class="Function Operator">_&lt;_</a> <a id="6927" class="Symbol">=</a> <a id="6929" href="Number.Bundles.html#1467" class="Field Operator">Bundle._&lt;_</a> <a id="6940" href="Number.Postulates.html#4390" class="Function">bundle</a>
+  <a id="ℕ*._≤_"></a><a id="6949" href="Number.Postulates.html#6949" class="Function Operator">_≤_</a> <a id="6953" class="Symbol">=</a> <a id="6955" href="Number.Bundles.html#1471" class="Field Operator">Bundle._≤_</a> <a id="6966" href="Number.Postulates.html#4390" class="Function">bundle</a>
+  <a id="ℕ*._#_"></a><a id="6975" href="Number.Postulates.html#6975" class="Function Operator">_#_</a> <a id="6979" class="Symbol">=</a> <a id="6981" href="Number.Bundles.html#1475" class="Field Operator">Bundle._#_</a> <a id="6992" href="Number.Postulates.html#4390" class="Function">bundle</a>
+  <a id="ℕ*.min"></a><a id="7001" href="Number.Postulates.html#7001" class="Function">min</a> <a id="7005" class="Symbol">=</a> <a id="7007" href="Number.Bundles.html#1508" class="Field">Bundle.min</a> <a id="7018" href="Number.Postulates.html#4390" class="Function">bundle</a>
+  <a id="ℕ*.max"></a><a id="7027" href="Number.Postulates.html#7027" class="Function">max</a> <a id="7031" class="Symbol">=</a> <a id="7033" href="Number.Bundles.html#1512" class="Field">Bundle.max</a> <a id="7044" href="Number.Postulates.html#4390" class="Function">bundle</a>
+  <a id="ℕ*.0f"></a><a id="7053" href="Number.Postulates.html#7053" class="Function">0f</a>  <a id="7057" class="Symbol">=</a> <a id="7059" href="Number.Bundles.html#1582" class="Field">Bundle.0f</a>  <a id="7070" href="Number.Postulates.html#4390" class="Function">bundle</a>
+  <a id="ℕ*.1f"></a><a id="7079" href="Number.Postulates.html#7079" class="Function">1f</a>  <a id="7083" class="Symbol">=</a> <a id="7085" href="Number.Bundles.html#1585" class="Field">Bundle.1f</a>  <a id="7096" href="Number.Postulates.html#4390" class="Function">bundle</a>
+  <a id="ℕ*._+_"></a><a id="7105" href="Number.Postulates.html#7105" class="Function Operator">_+_</a> <a id="7109" class="Symbol">=</a> <a id="7111" href="Number.Bundles.html#1608" class="Field Operator">Bundle._+_</a> <a id="7122" href="Number.Postulates.html#4390" class="Function">bundle</a>
+  <a id="ℕ*._·_"></a><a id="7131" href="Number.Postulates.html#7131" class="Function Operator">_·_</a> <a id="7135" class="Symbol">=</a> <a id="7137" href="Number.Bundles.html#1612" class="Field Operator">Bundle._·_</a> <a id="7148" href="Number.Postulates.html#4390" class="Function">bundle</a>
+  <a id="ℕ*.isROrderedCommSemiring"></a><a id="7157" href="Number.Postulates.html#7157" class="Function">isROrderedCommSemiring</a> <a id="7180" class="Symbol">=</a> <a id="7182" href="Number.Bundles.html#1735" class="Field">Bundle.isROrderedCommSemiring</a> <a id="7212" href="Number.Postulates.html#4390" class="Function">bundle</a>
+
+  <a id="7222" class="Keyword">open</a> <a id="7227" href="Number.Structures.html#1571" class="Module">IsROrderedCommSemiring</a> <a id="7250" href="Number.Postulates.html#7157" class="Function">isROrderedCommSemiring</a> <a id="7273" class="Keyword">public</a>
+
+  <a id="7283" class="Comment">{-
+  --open Bundle bundle hiding (_&lt;_) public --  renaming (Carrier to ℕ) public
+  -- open Module renaming (Carrier to ℕ) public
+  ℕ = Bundle.Carrier bundle
+  -- Carrier = Bundle.Carrier bundle
+  _&lt;_ = Bundle._&lt;_ bundle
+  _≤_ = Bundle._≤_ bundle
+  _#_ = Bundle._#_ bundle
+  min = Bundle.min bundle
+  max = Bundle.max bundle
+  0f  = Bundle.0f  bundle
+  1f  = Bundle.1f  bundle
+  _+_ = Bundle._+_ bundle
+  _·_ = Bundle._·_ bundle
+  isROrderedCommSemiring = Bundle.isROrderedCommSemiring bundle
+  -}</a>
+  
+  <a id="7785" class="Comment">{-
+  Carrier = Lift {ℓ-zero} {ℝℓ} Nat.ℕ
+  isROrderedCommSemiring
+  -}</a>
+
+  <a id="7858" class="Comment">-- Carrier = ℕ</a>
+  <a id="7875" class="Comment">-- ℕ = Carrier</a>
+  <a id="7892" class="Keyword">open</a> <a id="7897" class="Keyword">import</a> <a id="7904" href="Agda.Builtin.Nat.html" class="Module">Agda.Builtin.Nat</a> <a id="7921" class="Keyword">using</a> <a id="7927" class="Symbol">()</a> <a id="7930" class="Keyword">renaming</a> <a id="7939" class="Symbol">(</a><a id="7940" href="Agda.Builtin.Nat.html#192" class="Datatype">Nat</a> <a id="7944" class="Symbol">to</a> <a id="Nat.Nat"></a><a id="7947" href="Number.Postulates.html#7947" class="Datatype">ℕ₀</a><a id="7949" class="Symbol">)</a> <a id="7951" class="Keyword">public</a> <a id="7958" class="Comment">-- this makes ℕ₀ prettier in goals</a>
+  <a id="7995" class="Comment">-- import Agda.Builtin.Nat</a>
+  <a id="8024" class="Comment">-- ℕ₀ = Agda.Builtin.Nat.Nat</a>
+  <a id="8055" class="Comment">--ℕ₀ = Nat.ℕ</a>
+
+<a id="8069" class="Comment">{-
+module ℕⁿ where
+  Carrierⁿ = ℕ.Carrier
+  _&lt;ⁿ_ = ℕ._&lt;_
+  _≤ⁿ_ = ℕ._≤_
+  _#ⁿ_ = ℕ._#_
+  minⁿ = ℕ.min
+  maxⁿ = ℕ.max
+  0ⁿ   = ℕ.0f 
+  1ⁿ   = ℕ.1f 
+  _+ⁿ_ = ℕ._+_
+  _·ⁿ_ = ℕ._·_
+  isROrderedCommSemiringⁿ = ℕ.isROrderedCommSemiring
+-}</a>
+
+<a id="8303" class="Keyword">module</a> <a id="ℕ"></a><a id="8310" href="Number.Postulates.html#8310" class="Module">ℕ</a> <a id="8312" class="Symbol">=</a> <a id="8314" href="Number.Postulates.html#1575" class="Module">ℕ*</a> <a id="8317" class="Keyword">hiding</a> <a id="8324" class="Symbol">(</a><a id="8325" href="Number.Postulates.html#3079" class="Function">ℕ</a><a id="8326" class="Symbol">;</a> <a id="8328" href="Number.Postulates.html#7947" class="Datatype">ℕ₀</a><a id="8330" class="Symbol">)</a>
+
+<a id="8333" class="Keyword">module</a> <a id="ℕⁿ"></a><a id="8340" href="Number.Postulates.html#8340" class="Module">ℕⁿ</a> <a id="8343" class="Symbol">=</a> <a id="8345" href="Number.Postulates.html#1575" class="Module">ℕ*</a> <a id="8348" class="Comment">-- .Bundle</a>
+    <a id="8363" class="Comment">-- hiding (ℕ)</a>
+    <a id="8381" class="Keyword">renaming</a>
+    <a id="8394" class="Symbol">(</a> <a id="8396" href="Number.Postulates.html#3091" class="Function">Carrier</a> <a id="8404" class="Symbol">to</a> <a id="ℕ*.Carrier"></a><a id="8407" href="Number.Postulates.html#8407" class="Function">Carrierⁿ</a>
+    <a id="8420" class="Symbol">;</a> <a id="8422" href="Number.Postulates.html#6923" class="Function Operator">_&lt;_</a> <a id="8426" class="Symbol">to</a> <a id="ℕ*._&lt;_"></a><a id="8429" href="Number.Postulates.html#8429" class="Function Operator">_&lt;ⁿ_</a>
+    <a id="8438" class="Symbol">;</a> <a id="8440" href="Number.Postulates.html#6949" class="Function Operator">_≤_</a> <a id="8444" class="Symbol">to</a> <a id="ℕ*._≤_"></a><a id="8447" href="Number.Postulates.html#8447" class="Function Operator">_≤ⁿ_</a>
+    <a id="8456" class="Symbol">;</a> <a id="8458" href="Number.Postulates.html#6975" class="Function Operator">_#_</a> <a id="8462" class="Symbol">to</a> <a id="ℕ*._#_"></a><a id="8465" href="Number.Postulates.html#8465" class="Function Operator">_#ⁿ_</a>
+    <a id="8474" class="Symbol">;</a> <a id="8476" href="Number.Postulates.html#7001" class="Function">min</a> <a id="8480" class="Symbol">to</a> <a id="ℕ*.min"></a><a id="8483" href="Number.Postulates.html#8483" class="Function">minⁿ</a>
+    <a id="8492" class="Symbol">;</a> <a id="8494" href="Number.Postulates.html#7027" class="Function">max</a> <a id="8498" class="Symbol">to</a> <a id="ℕ*.max"></a><a id="8501" href="Number.Postulates.html#8501" class="Function">maxⁿ</a>
+    <a id="8510" class="Symbol">;</a> <a id="8512" href="Number.Postulates.html#7053" class="Function">0f</a>  <a id="8516" class="Symbol">to</a> <a id="ℕ*.0f"></a><a id="8519" href="Number.Postulates.html#8519" class="Function">0ⁿ</a> 
+    <a id="8527" class="Symbol">;</a> <a id="8529" href="Number.Postulates.html#7079" class="Function">1f</a>  <a id="8533" class="Symbol">to</a> <a id="ℕ*.1f"></a><a id="8536" href="Number.Postulates.html#8536" class="Function">1ⁿ</a> 
+    <a id="8544" class="Symbol">;</a> <a id="8546" href="Number.Postulates.html#7105" class="Function Operator">_+_</a> <a id="8550" class="Symbol">to</a> <a id="ℕ*._+_"></a><a id="8553" href="Number.Postulates.html#8553" class="Function Operator">_+ⁿ_</a>
+    <a id="8562" class="Symbol">;</a> <a id="8564" href="Number.Postulates.html#7131" class="Function Operator">_·_</a> <a id="8568" class="Symbol">to</a> <a id="ℕ*._·_"></a><a id="8571" href="Number.Postulates.html#8571" class="Function Operator">_·ⁿ_</a>
+    <a id="8580" class="Symbol">;</a> <a id="8582" href="Number.Postulates.html#7157" class="Function">isROrderedCommSemiring</a> <a id="8605" class="Symbol">to</a> <a id="ℕ*.isROrderedCommSemiring"></a><a id="8608" href="Number.Postulates.html#8608" class="Function">isROrderedCommSemiringⁿ</a>
+    <a id="8636" class="Symbol">)</a>
+
+<a id="8639" class="Comment">-- NOTE: this needs to come after ℕⁿ to have a the symbols in Have/Goal displayed with a ℕ-prefix instead of the ℕⁿ-prefix</a>
+<a id="8762" class="Comment">--       ... but this conflicts with a usage of</a>
+<a id="8810" class="Comment">--       - first, opening ℕⁿ</a>
+<a id="8839" class="Comment">--       - afterwards, optionally opening ℕ</a>
+<a id="8883" class="Comment">--       because after opening ℕⁿ things are still prefixed with ℕ.x</a>
+<a id="8952" class="Comment">--       so ℕⁿ somehow must be the last module that is stated</a>
+<a id="9014" class="Comment">-- module ℕ = ℕ&#39; hiding (ℕ; ℕ₀)</a>
+
+<a id="9047" class="Comment">-- THESIS: so the order in which modules are stated/imported matters because only the last path will be displayed as &quot;the&quot; prefix in Have/Goal</a>
+<a id="9190" class="Comment">--         this means the prefix that is added to a symbol when it&#39;s module is not (!) opened</a>
+<a id="9284" class="Comment">--         so this affects symbols that are reachable via multiple &quot;pathes&quot;</a>
+<a id="9360" class="Comment">--           this is likely inherited from how the function clause definition&#39;s scope is created to the call-site</a>
+<a id="9474" class="Comment">--           so the function clause definition &quot;decides&quot; which path it means for which symbol</a>
+<a id="9568" class="Comment">--           this would make the prefix(-path) a property of the function clause definition</a>
+<a id="9660" class="Comment">--           and we can only &quot;remove&quot; parts of this path by opening modules</a>
+<a id="9736" class="Comment">--         when a symbols module is opened, then it is displayed in Have/Goal without a prefix</a>
+<a id="9831" class="Comment">--         when a symbols module is opened multiple times, then again a prefix is displayed because of ambiguity</a>
+
+<a id="9945" class="Comment">-- NOTE: so we might try again the variant with &quot;global&quot; ℕ ℤ ℚ ℝ and ℂ</a>
+
+<a id="10017" class="Comment">--  Carrier = ℕ</a>
+<a id="10033" class="Comment">--  open import Agda.Builtin.Nat using () renaming (Nat to ℕ₀) public -- this makes ℕ₀ prettier in goals</a>
+  
+  
+      
+  <a id="10153" class="Comment">{-
+  open ROrderedCommSemiring (record
+    { Carrier = Lift {ℓ-zero} {ℝℓ} Nat.ℕ
+    ; _&lt;_ = Lift₂  Order._&lt;_
+    ; _≤_ = Lift₂  Order._≤_
+    ; _#_ = Lift₂  (MoreAlgebra.Definitions._#&#39;_ { _&lt;_ = Order._&lt;_ })
+    ; min = Lift₂&#39; Postulates.min
+    ; max = Lift₂&#39; Postulates.max
+    ; 0f  = lift   Nat.zero
+    ; 1f  = lift   (Nat.suc Nat.zero)
+    ; _+_ = Lift₂&#39; Nat._+_
+    ; _·_ = Lift₂&#39; Nat._*_
+    ; isROrderedCommSemiring = Postulates.isROrderedCommSemiring
+    }) public
+
+  -- module Module     = ROrderedCommSemiring Bundle
+  Bundle : ROrderedCommSemiring
+  Bundle = 
+    ( record
+    { Carrier = Carrier
+    ; _&lt;_ = _&lt;_
+    ; _≤_ = _≤_
+    ; _#_ = _#_
+    ; min = min
+    ; max = max
+    ; 0f  = 0f 
+    ; 1f  = 1f 
+    ; _+_ = _+_
+    ; _·_ = _·_
+    ; isROrderedCommSemiring = isROrderedCommSemiring
+    } )
+  -}</a>
+
+  <a id="10977" class="Comment">{-
+  module Translated = ROrderedCommSemiring
+    ( record
+    { Carrier = Carrier
+    ; _&lt;_ = _&lt;_
+    ; _≤_ = _≤_
+    ; _#_ = _#_
+    ; min = min
+    ; max = max
+    ; 0f  = 0f 
+    ; 1f  = 1f 
+    ; _+_ = _+_
+    ; _·_ = _·_
+    ; isROrderedCommSemiring = isROrderedCommSemiring
+    } )
+    renaming
+    ( Carrier to ℕ
+    ; _&lt;_ to _&lt;ⁿ_
+    ; _≤_ to _≤ⁿ_
+    ; _#_ to _#ⁿ_
+    ; min to minⁿ
+    ; max to maxⁿ
+    ; 0f  to 0ⁿ 
+    ; 1f  to 1ⁿ 
+    ; _+_ to _+ⁿ_
+    ; _·_ to _·ⁿ_
+    ; isROrderedCommSemiring to isROrderedCommSemiringⁿ
+    )
+  module Module = ROrderedCommSemiring
+    ( record
+    { Carrier = Carrier
+    ; _&lt;_ = _&lt;_
+    ; _≤_ = _≤_
+    ; _#_ = _#_
+    ; min = min
+    ; max = max
+    ; 0f  = 0f 
+    ; 1f  = 1f 
+    ; _+_ = _+_
+    ; _·_ = _·_
+    ; isROrderedCommSemiring = isROrderedCommSemiring
+    } )
+  
+  open ROrderedCommSemiring (record
+    { Carrier = Lift {ℓ-zero} {ℝℓ} Nat.ℕ
+    ; _&lt;_ = Lift₂  Order._&lt;_
+    ; _≤_ = Lift₂  Order._≤_
+    ; _#_ = Lift₂  (MoreAlgebra.Definitions._#&#39;_ { _&lt;_ = Order._&lt;_ })
+    ; min = Lift₂&#39; Postulates.min
+    ; max = Lift₂&#39; Postulates.max
+    ; 0f  = lift   Nat.zero
+    ; 1f  = lift   (Nat.suc Nat.zero)
+    ; _+_ = Lift₂&#39; Nat._+_
+    ; _·_ = Lift₂&#39; Nat._*_
+    ; isROrderedCommSemiring = Postulates.isROrderedCommSemiring
+    }) renaming (Carrier to ℕ&#39;) public
+  -}</a>
+
+  
+
+<a id="12312" class="Comment">{-
+module Foo where
+  -- open import Agda.Builtin.Nat using () renaming (Nat to ℕ₀)
+  -- open ℕⁿ
+  open import Agda.Builtin.Nat using (Nat)
+  -- open ℕⁿ
+  -- open ROrderedCommSemiring ℕ.Bundle
+  _ =  {! ℕⁿ !}
+-}</a>
+
+<a id="12525" class="Keyword">module</a> <a id="ℤ"></a><a id="12532" href="Number.Postulates.html#12532" class="Module">ℤ</a> <a id="12534" class="Keyword">where</a>
+  <a id="12542" class="Keyword">module</a> <a id="Bundle"></a><a id="12549" href="Number.Postulates.html#12549" class="Module">Bundle</a> <a id="12556" class="Symbol">=</a> <a id="12558" href="Number.Bundles.html#1895" class="Module">ROrderedCommRing</a>     <a id="12579" class="Symbol">{</a><a id="12580" href="Number.Postulates.html#1102" class="Postulate">ℤℓ</a><a id="12582" class="Symbol">}</a> <a id="12584" class="Symbol">{</a><a id="12585" href="Number.Postulates.html#1105" class="Postulate">ℤℓ&#39;</a><a id="12588" class="Symbol">}</a>
+  <a id="12592" class="Keyword">postulate</a>
+    <a id="ℤ.bundle"></a><a id="12606" href="Number.Postulates.html#12606" class="Postulate">bundle</a>  <a id="12614" class="Symbol">:</a> <a id="12616" href="Number.Bundles.html#1895" class="Record">ROrderedCommRing</a>     <a id="12637" class="Symbol">{</a><a id="12638" href="Number.Postulates.html#1102" class="Postulate">ℤℓ</a><a id="12640" class="Symbol">}</a> <a id="12642" class="Symbol">{</a><a id="12643" href="Number.Postulates.html#1105" class="Postulate">ℤℓ&#39;</a><a id="12646" class="Symbol">}</a>
+
+  <a id="12651" class="Keyword">open</a> <a id="12656" href="Number.Postulates.html#12549" class="Module">Bundle</a> <a id="12663" href="Number.Postulates.html#12606" class="Postulate">bundle</a> <a id="12670" class="Keyword">public</a>
+  <a id="ℤ.ℤ"></a><a id="12679" href="Number.Postulates.html#12679" class="Function">ℤ</a> <a id="12681" class="Symbol">=</a> <a id="12683" href="Number.Bundles.html#1974" class="Function">Carrier</a>
+  
+<a id="12694" class="Keyword">module</a> <a id="ℤᶻ"></a><a id="12701" href="Number.Postulates.html#12701" class="Module">ℤᶻ</a> <a id="12704" class="Symbol">=</a> <a id="12706" href="Number.Postulates.html#12549" class="Module">ℤ.Bundle</a>
+    <a id="12719" class="Keyword">renaming</a>
+    <a id="12732" class="Symbol">(</a> <a id="12734" href="Number.Bundles.html#1974" class="Field">Carrier</a> <a id="12742" class="Symbol">to</a> <a id="ℤ.Bundle.Carrier"></a><a id="12745" href="Number.Postulates.html#12745" class="Field">ℤ</a>
+    <a id="12751" class="Symbol">;</a> <a id="12753" href="Number.Bundles.html#1999" class="Field Operator">_&lt;_</a> <a id="12757" class="Symbol">to</a> <a id="ℤ.Bundle._&lt;_"></a><a id="12760" href="Number.Postulates.html#12760" class="Field Operator">_&lt;ᶻ_</a>
+    <a id="12769" class="Symbol">;</a> <a id="12771" href="Number.Bundles.html#2003" class="Field Operator">_≤_</a> <a id="12775" class="Symbol">to</a> <a id="ℤ.Bundle._≤_"></a><a id="12778" href="Number.Postulates.html#12778" class="Field Operator">_≤ᶻ_</a>
+    <a id="12787" class="Symbol">;</a> <a id="12789" href="Number.Bundles.html#2007" class="Field Operator">_#_</a> <a id="12793" class="Symbol">to</a> <a id="ℤ.Bundle._#_"></a><a id="12796" href="Number.Postulates.html#12796" class="Field Operator">_#ᶻ_</a>
+    <a id="12805" class="Symbol">;</a> <a id="12807" href="Number.Bundles.html#2040" class="Field">min</a> <a id="12811" class="Symbol">to</a> <a id="ℤ.Bundle.min"></a><a id="12814" href="Number.Postulates.html#12814" class="Field">minᶻ</a>
+    <a id="12823" class="Symbol">;</a> <a id="12825" href="Number.Bundles.html#2044" class="Field">max</a> <a id="12829" class="Symbol">to</a> <a id="ℤ.Bundle.max"></a><a id="12832" href="Number.Postulates.html#12832" class="Field">maxᶻ</a>
+    <a id="12841" class="Symbol">;</a> <a id="12843" href="Number.Bundles.html#2114" class="Field">0f</a>  <a id="12847" class="Symbol">to</a> <a id="ℤ.Bundle.0f"></a><a id="12850" href="Number.Postulates.html#12850" class="Field">0ᶻ</a>
+    <a id="12857" class="Symbol">;</a> <a id="12859" href="Number.Bundles.html#2117" class="Field">1f</a>  <a id="12863" class="Symbol">to</a> <a id="ℤ.Bundle.1f"></a><a id="12866" href="Number.Postulates.html#12866" class="Field">1ᶻ</a>
+    <a id="12873" class="Symbol">;</a> <a id="12875" href="Number.Bundles.html#2140" class="Field Operator">_+_</a> <a id="12879" class="Symbol">to</a> <a id="ℤ.Bundle._+_"></a><a id="12882" href="Number.Postulates.html#12882" class="Field Operator">_+ᶻ_</a>
+    <a id="12891" class="Symbol">;</a> <a id="12893" href="Number.Bundles.html#2144" class="Field Operator">_·_</a> <a id="12897" class="Symbol">to</a> <a id="ℤ.Bundle._·_"></a><a id="12900" href="Number.Postulates.html#12900" class="Field Operator">_·ᶻ_</a>
+    <a id="12909" class="Symbol">;</a> <a id="12911" href="Number.Bundles.html#2210" class="Field Operator">-_</a>  <a id="12915" class="Symbol">to</a> <a id="ℤ.Bundle.-_"></a><a id="12918" href="Number.Postulates.html#12918" class="Field Operator">-ᶻ_</a> 
+    <a id="12927" class="Symbol">;</a> <a id="12929" href="Number.Bundles.html#2246" class="Field">isROrderedCommRing</a> <a id="12948" class="Symbol">to</a> <a id="ℤ.Bundle.isROrderedCommRing"></a><a id="12951" href="Number.Postulates.html#12951" class="Field">isROrderedCommRingᶻ</a>
+    <a id="12975" class="Symbol">)</a>
+
+<a id="12978" class="Keyword">module</a> <a id="ℚ"></a><a id="12985" href="Number.Postulates.html#12985" class="Module">ℚ</a> <a id="12987" class="Keyword">where</a>
+  <a id="12995" class="Keyword">module</a> <a id="Bundle"></a><a id="13002" href="Number.Postulates.html#13002" class="Module">Bundle</a> <a id="13009" class="Symbol">=</a> <a id="13011" href="Number.Bundles.html#2390" class="Module">ROrderedField</a> <a id="13025" class="Symbol">{</a><a id="13026" href="Number.Postulates.html#1119" class="Postulate">ℚℓ</a><a id="13028" class="Symbol">}</a> <a id="13030" class="Symbol">{</a><a id="13031" href="Number.Postulates.html#1122" class="Postulate">ℚℓ&#39;</a><a id="13034" class="Symbol">}</a> <a id="13036" class="Keyword">renaming</a> <a id="13045" class="Symbol">(</a><a id="13046" href="Number.Bundles.html#2466" class="Field">Carrier</a> <a id="13054" class="Symbol">to</a> <a id="ROrderedField.Carrier"></a><a id="13057" href="Number.Postulates.html#13057" class="Field">ℚ</a><a id="13058" class="Symbol">)</a>
+  <a id="13062" class="Keyword">postulate</a>
+    <a id="ℚ.bundle"></a><a id="13076" href="Number.Postulates.html#13076" class="Postulate">bundle</a>   <a id="13085" class="Symbol">:</a> <a id="13087" href="Number.Bundles.html#2390" class="Record">ROrderedField</a>        <a id="13108" class="Symbol">{</a><a id="13109" href="Number.Postulates.html#1119" class="Postulate">ℚℓ</a><a id="13111" class="Symbol">}</a> <a id="13113" class="Symbol">{</a><a id="13114" href="Number.Postulates.html#1122" class="Postulate">ℚℓ&#39;</a><a id="13117" class="Symbol">}</a>
+
+  <a id="13122" class="Keyword">open</a> <a id="13127" href="Number.Postulates.html#13002" class="Module">Bundle</a> <a id="13134" href="Number.Postulates.html#13076" class="Postulate">bundle</a> <a id="13141" class="Keyword">public</a>
+  <a id="ℚ.Carrier"></a><a id="13150" href="Number.Postulates.html#13150" class="Function">Carrier</a> <a id="13158" class="Symbol">=</a> <a id="13160" href="Number.Postulates.html#13057" class="Function">ℚ</a>
+
+<a id="13163" class="Comment">-- NOTE: for removing an instance from an operation, it seem that we have to open that instance at the &quot;call site&quot;</a>
+<a id="13278" class="Comment">--       e.g. `_#_` from  `ROrderedField` get an additional argument `ℚ.bundle` to which instance it refers to</a>
+<a id="13389" class="Comment">--       so it becomes</a>
+<a id="13412" class="Comment">--         `ROrderedField._#_ ℚ.bundle (ℤ↪ℚ x) (ROrderedField.0f ℚ.bundle)`</a>
+<a id="13488" class="Comment">--       unfortunatelty this is displayed with `_#_` with infix notation in a confusing manner as</a>
+<a id="13586" class="Comment">--         `(ℚ.bundle ROrderedField.# ℤ↪ℚ x) (ROrderedField.0f ℚ.bundle)`</a>
+<a id="13660" class="Comment">--       so we need to state a</a>
+<a id="13691" class="Comment">--         `open ℚᶠ ℚ.bundle`</a>
+<a id="13721" class="Comment">--       to get a nice looking</a>
+<a id="13752" class="Comment">--          `ℤ↪ℚ x #ᶠ 0ᶠ`</a>
+<a id="13778" class="Comment">--       interestingly the `ℚ.bundle` needs to occur at the call-site</a>
+<a id="13848" class="Comment">--       when we define here </a>
+<a id="13878" class="Comment">--         `module ℚᶠ = ℚ.Bundle ℚ.bundle`</a>
+<a id="13921" class="Comment">--       and then just call `open ℚᶠ` at the call site, this does not work out for hiding the `ℚ.bundle` in Have/Goal</a>
+<a id="14039" class="Comment">--       but luckily we can do the translation once in the &quot;library&quot; part and use the short idiom `open ℚᶠ ℚ.bundle` at the callsite</a>
+<a id="14172" class="Comment">-- NOTE: this also makes both the module ℤ and the type ℤ available which is possible in Agda</a>
+<a id="14266" class="Comment">--       i.e. ℤ refers to both and when using ℤ.something the module ℤ is meant</a>
+<a id="14346" class="Comment">--       this works out because modules are special &quot;citizens&quot; and cannot occur in places where variables occur and vice versa</a>
+
+<a id="14474" class="Keyword">module</a> <a id="ℚᶠ"></a><a id="14481" href="Number.Postulates.html#14481" class="Module">ℚᶠ</a> <a id="14484" class="Symbol">=</a> <a id="14486" href="Number.Postulates.html#13002" class="Module">ℚ.Bundle</a>
+  <a id="14497" class="Keyword">renaming</a>
+  <a id="14508" class="Symbol">(</a> <a id="14510" href="Number.Bundles.html#2491" class="Field Operator">_&lt;_</a> <a id="14514" class="Symbol">to</a> <a id="ℚ.Bundle._&lt;_"></a><a id="14517" href="Number.Postulates.html#14517" class="Field Operator">_&lt;ᶠ_</a>
+  <a id="14524" class="Symbol">;</a> <a id="14526" href="Number.Bundles.html#2495" class="Field Operator">_≤_</a> <a id="14530" class="Symbol">to</a> <a id="ℚ.Bundle._≤_"></a><a id="14533" href="Number.Postulates.html#14533" class="Field Operator">_≤ᶠ_</a>
+  <a id="14540" class="Symbol">;</a> <a id="14542" href="Number.Bundles.html#2499" class="Field Operator">_#_</a> <a id="14546" class="Symbol">to</a> <a id="ℚ.Bundle._#_"></a><a id="14549" href="Number.Postulates.html#14549" class="Field Operator">_#ᶠ_</a>
+  <a id="14556" class="Symbol">;</a> <a id="14558" href="Number.Bundles.html#2532" class="Field">min</a> <a id="14562" class="Symbol">to</a> <a id="ℚ.Bundle.min"></a><a id="14565" href="Number.Postulates.html#14565" class="Field">minᶠ</a>
+  <a id="14572" class="Symbol">;</a> <a id="14574" href="Number.Bundles.html#2536" class="Field">max</a> <a id="14578" class="Symbol">to</a> <a id="ℚ.Bundle.max"></a><a id="14581" href="Number.Postulates.html#14581" class="Field">maxᶠ</a>
+  <a id="14588" class="Symbol">;</a> <a id="14590" href="Number.Bundles.html#2606" class="Field">0f</a>  <a id="14594" class="Symbol">to</a> <a id="ℚ.Bundle.0f"></a><a id="14597" href="Number.Postulates.html#14597" class="Field">0ᶠ</a>
+  <a id="14602" class="Symbol">;</a> <a id="14604" href="Number.Bundles.html#2609" class="Field">1f</a>  <a id="14608" class="Symbol">to</a> <a id="ℚ.Bundle.1f"></a><a id="14611" href="Number.Postulates.html#14611" class="Field">1ᶠ</a>
+  <a id="14616" class="Symbol">;</a> <a id="14618" href="Number.Bundles.html#2632" class="Field Operator">_+_</a> <a id="14622" class="Symbol">to</a> <a id="ℚ.Bundle._+_"></a><a id="14625" href="Number.Postulates.html#14625" class="Field Operator">_+ᶠ_</a>
+  <a id="14632" class="Symbol">;</a> <a id="14634" href="Number.Bundles.html#2636" class="Field Operator">_·_</a> <a id="14638" class="Symbol">to</a> <a id="ℚ.Bundle._·_"></a><a id="14641" href="Number.Postulates.html#14641" class="Field Operator">_·ᶠ_</a>
+  <a id="14648" class="Symbol">;</a> <a id="14650" href="Number.Bundles.html#2702" class="Field Operator">-_</a>  <a id="14654" class="Symbol">to</a> <a id="ℚ.Bundle.-_"></a><a id="14657" href="Number.Postulates.html#14657" class="Field Operator">-ᶠ_</a> 
+  <a id="14664" class="Symbol">;</a> <a id="14666" href="Number.Bundles.html#2759" class="Field Operator">_⁻¹</a> <a id="14670" class="Symbol">to</a> <a id="ℚ.Bundle._⁻¹"></a><a id="14673" href="Number.Postulates.html#14673" class="Field Operator">_⁻¹ᶠ</a>
+  <a id="14680" class="Symbol">;</a> <a id="14682" href="Number.Bundles.html#2816" class="Field">isROrderedField</a> <a id="14698" class="Symbol">to</a> <a id="ℚ.Bundle.isROrderedField"></a><a id="14701" href="Number.Postulates.html#14701" class="Field">isROrderedFieldᶠ</a>
+  <a id="14720" class="Symbol">)</a>
+
+<a id="14723" class="Keyword">module</a> <a id="ℝ"></a><a id="14730" href="Number.Postulates.html#14730" class="Module">ℝ</a> <a id="14732" class="Keyword">where</a>
+  <a id="14740" class="Keyword">module</a> <a id="Bundle"></a><a id="14747" href="Number.Postulates.html#14747" class="Module">Bundle</a> <a id="14754" class="Symbol">=</a> <a id="14756" href="Number.Bundles.html#2390" class="Module">ROrderedField</a> <a id="14770" class="Symbol">{</a><a id="14771" href="Number.Postulates.html#1136" class="Postulate">ℝℓ</a><a id="14773" class="Symbol">}</a> <a id="14775" class="Symbol">{</a><a id="14776" href="Number.Postulates.html#1139" class="Postulate">ℝℓ&#39;</a><a id="14779" class="Symbol">}</a>
+  <a id="14783" class="Keyword">postulate</a>
+    <a id="ℝ.bundle"></a><a id="14797" href="Number.Postulates.html#14797" class="Postulate">bundle</a> <a id="14804" class="Symbol">:</a> <a id="14806" href="Number.Bundles.html#2390" class="Record">ROrderedField</a> <a id="14820" class="Symbol">{</a><a id="14821" href="Number.Postulates.html#1136" class="Postulate">ℝℓ</a><a id="14823" class="Symbol">}</a> <a id="14825" class="Symbol">{</a><a id="14826" href="Number.Postulates.html#1139" class="Postulate">ℝℓ&#39;</a><a id="14829" class="Symbol">}</a>
+
+  <a id="14834" class="Keyword">open</a> <a id="14839" href="Number.Postulates.html#14747" class="Module">Bundle</a> <a id="14846" href="Number.Postulates.html#14797" class="Postulate">bundle</a> <a id="14853" class="Keyword">public</a>
+  <a id="ℝ.ℝ"></a><a id="14862" href="Number.Postulates.html#14862" class="Function">ℝ</a> <a id="14864" class="Symbol">=</a> <a id="14866" href="Number.Bundles.html#2466" class="Function">Carrier</a>
+
+<a id="14875" class="Keyword">module</a> <a id="ℝʳ"></a><a id="14882" href="Number.Postulates.html#14882" class="Module">ℝʳ</a> <a id="14885" class="Symbol">=</a> <a id="14887" href="Number.Postulates.html#14747" class="Module">ℝ.Bundle</a>
+    <a id="14900" class="Keyword">renaming</a>
+    <a id="14913" class="Symbol">(</a> <a id="14915" href="Number.Bundles.html#2466" class="Field">Carrier</a> <a id="14923" class="Symbol">to</a> <a id="ℝ.Bundle.Carrier"></a><a id="14926" href="Number.Postulates.html#14926" class="Field">ℝ</a>
+    <a id="14932" class="Symbol">;</a> <a id="14934" href="Number.Bundles.html#2491" class="Field Operator">_&lt;_</a> <a id="14938" class="Symbol">to</a> <a id="ℝ.Bundle._&lt;_"></a><a id="14941" href="Number.Postulates.html#14941" class="Field Operator">_&lt;ʳ_</a>
+    <a id="14950" class="Symbol">;</a> <a id="14952" href="Number.Bundles.html#2495" class="Field Operator">_≤_</a> <a id="14956" class="Symbol">to</a> <a id="ℝ.Bundle._≤_"></a><a id="14959" href="Number.Postulates.html#14959" class="Field Operator">_≤ʳ_</a>
+    <a id="14968" class="Symbol">;</a> <a id="14970" href="Number.Bundles.html#2499" class="Field Operator">_#_</a> <a id="14974" class="Symbol">to</a> <a id="ℝ.Bundle._#_"></a><a id="14977" href="Number.Postulates.html#14977" class="Field Operator">_#ʳ_</a>
+    <a id="14986" class="Symbol">;</a> <a id="14988" href="Number.Bundles.html#2532" class="Field">min</a> <a id="14992" class="Symbol">to</a> <a id="ℝ.Bundle.min"></a><a id="14995" href="Number.Postulates.html#14995" class="Field">minʳ</a>
+    <a id="15004" class="Symbol">;</a> <a id="15006" href="Number.Bundles.html#2536" class="Field">max</a> <a id="15010" class="Symbol">to</a> <a id="ℝ.Bundle.max"></a><a id="15013" href="Number.Postulates.html#15013" class="Field">maxʳ</a>
+    <a id="15022" class="Symbol">;</a> <a id="15024" href="Number.Bundles.html#2606" class="Field">0f</a>  <a id="15028" class="Symbol">to</a> <a id="ℝ.Bundle.0f"></a><a id="15031" href="Number.Postulates.html#15031" class="Field">0ʳ</a>
+    <a id="15038" class="Symbol">;</a> <a id="15040" href="Number.Bundles.html#2609" class="Field">1f</a>  <a id="15044" class="Symbol">to</a> <a id="ℝ.Bundle.1f"></a><a id="15047" href="Number.Postulates.html#15047" class="Field">1ʳ</a>
+    <a id="15054" class="Symbol">;</a> <a id="15056" href="Number.Bundles.html#2632" class="Field Operator">_+_</a> <a id="15060" class="Symbol">to</a> <a id="ℝ.Bundle._+_"></a><a id="15063" href="Number.Postulates.html#15063" class="Field Operator">_+ʳ_</a>
+    <a id="15072" class="Symbol">;</a> <a id="15074" href="Number.Bundles.html#2636" class="Field Operator">_·_</a> <a id="15078" class="Symbol">to</a> <a id="ℝ.Bundle._·_"></a><a id="15081" href="Number.Postulates.html#15081" class="Field Operator">_·ʳ_</a>
+    <a id="15090" class="Symbol">;</a> <a id="15092" href="Number.Bundles.html#2702" class="Field Operator">-_</a>  <a id="15096" class="Symbol">to</a> <a id="ℝ.Bundle.-_"></a><a id="15099" href="Number.Postulates.html#15099" class="Field Operator">-ʳ_</a> 
+    <a id="15108" class="Symbol">;</a> <a id="15110" href="Number.Bundles.html#2759" class="Field Operator">_⁻¹</a> <a id="15114" class="Symbol">to</a> <a id="ℝ.Bundle._⁻¹"></a><a id="15117" href="Number.Postulates.html#15117" class="Field Operator">_⁻¹ʳ</a>
+    <a id="15126" class="Symbol">;</a> <a id="15128" href="Number.Bundles.html#2816" class="Field">isROrderedField</a> <a id="15144" class="Symbol">to</a> <a id="ℝ.Bundle.isROrderedField"></a><a id="15147" href="Number.Postulates.html#15147" class="Field">isROrderedFieldʳ</a>
+    <a id="15168" class="Symbol">)</a>
+
+<a id="15171" class="Keyword">module</a> <a id="ℂ"></a><a id="15178" href="Number.Postulates.html#15178" class="Module">ℂ</a> <a id="15180" class="Keyword">where</a>
+  <a id="15188" class="Keyword">module</a> <a id="Bundle"></a><a id="15195" href="Number.Postulates.html#15195" class="Module">Bundle</a> <a id="15202" class="Symbol">=</a> <a id="15204" href="Number.Bundles.html#3859" class="Module">RField</a>               <a id="15225" class="Symbol">{</a><a id="15226" href="Number.Postulates.html#1153" class="Postulate">ℂℓ</a><a id="15228" class="Symbol">}</a> <a id="15230" class="Symbol">{</a><a id="15231" href="Number.Postulates.html#1156" class="Postulate">ℂℓ&#39;</a><a id="15234" class="Symbol">}</a>
+  <a id="15238" class="Keyword">postulate</a>
+    <a id="ℂ.bundle"></a><a id="15252" href="Number.Postulates.html#15252" class="Postulate">bundle</a>    <a id="15262" class="Symbol">:</a> <a id="15264" href="Number.Bundles.html#3859" class="Record">RField</a>               <a id="15285" class="Symbol">{</a><a id="15286" href="Number.Postulates.html#1153" class="Postulate">ℂℓ</a><a id="15288" class="Symbol">}</a> <a id="15290" class="Symbol">{</a><a id="15291" href="Number.Postulates.html#1156" class="Postulate">ℂℓ&#39;</a><a id="15294" class="Symbol">}</a>
+
+  <a id="15299" class="Keyword">open</a> <a id="15304" href="Number.Postulates.html#15195" class="Module">Bundle</a> <a id="15311" href="Number.Postulates.html#15252" class="Postulate">bundle</a> <a id="15318" class="Keyword">public</a>
+  <a id="ℂ.ℂ"></a><a id="15327" href="Number.Postulates.html#15327" class="Function">ℂ</a> <a id="15329" class="Symbol">=</a> <a id="15331" href="Number.Bundles.html#3912" class="Function">Carrier</a>
+
+<a id="15340" class="Keyword">module</a> <a id="ℂᶜ"></a><a id="15347" href="Number.Postulates.html#15347" class="Module">ℂᶜ</a> <a id="15350" class="Symbol">=</a> <a id="15352" href="Number.Postulates.html#15195" class="Module">ℂ.Bundle</a>
+    <a id="15365" class="Keyword">renaming</a>
+    <a id="15378" class="Symbol">(</a> <a id="15380" href="Number.Bundles.html#3912" class="Field">Carrier</a> <a id="15388" class="Symbol">to</a> <a id="ℂ.Bundle.Carrier"></a><a id="15391" href="Number.Postulates.html#15391" class="Field">ℂ</a>
+    <a id="15397" class="Symbol">;</a> <a id="15399" href="Number.Bundles.html#3937" class="Field Operator">_#_</a> <a id="15403" class="Symbol">to</a> <a id="ℂ.Bundle._#_"></a><a id="15406" href="Number.Postulates.html#15406" class="Field Operator">_#ᶜ_</a>
+    <a id="15415" class="Symbol">;</a> <a id="15417" href="Number.Bundles.html#3991" class="Field">0f</a>  <a id="15421" class="Symbol">to</a> <a id="ℂ.Bundle.0f"></a><a id="15424" href="Number.Postulates.html#15424" class="Field">0ᶜ</a>
+    <a id="15431" class="Symbol">;</a> <a id="15433" href="Number.Bundles.html#3994" class="Field">1f</a>  <a id="15437" class="Symbol">to</a> <a id="ℂ.Bundle.1f"></a><a id="15440" href="Number.Postulates.html#15440" class="Field">1ᶜ</a>
+    <a id="15447" class="Symbol">;</a> <a id="15449" href="Number.Bundles.html#4017" class="Field Operator">_+_</a> <a id="15453" class="Symbol">to</a> <a id="ℂ.Bundle._+_"></a><a id="15456" href="Number.Postulates.html#15456" class="Field Operator">_+ᶜ_</a>
+    <a id="15465" class="Symbol">;</a> <a id="15467" href="Number.Bundles.html#4021" class="Field Operator">_·_</a> <a id="15471" class="Symbol">to</a> <a id="ℂ.Bundle._·_"></a><a id="15474" href="Number.Postulates.html#15474" class="Field Operator">_·ᶜ_</a>
+    <a id="15483" class="Symbol">;</a> <a id="15485" href="Number.Bundles.html#4080" class="Field Operator">-_</a>  <a id="15489" class="Symbol">to</a> <a id="ℂ.Bundle.-_"></a><a id="15492" href="Number.Postulates.html#15492" class="Field Operator">-ᶜ_</a>
+    <a id="15500" class="Symbol">;</a> <a id="15502" href="Number.Bundles.html#4130" class="Field Operator">_⁻¹</a> <a id="15506" class="Symbol">to</a> <a id="ℂ.Bundle._⁻¹"></a><a id="15509" href="Number.Postulates.html#15509" class="Field Operator">_⁻¹ᶜ</a>
+    <a id="15518" class="Symbol">;</a> <a id="15520" href="Number.Bundles.html#4187" class="Field">isRField</a> <a id="15529" class="Symbol">to</a> <a id="ℂ.Bundle.isRField"></a><a id="15532" href="Number.Postulates.html#15532" class="Field">isRFieldᶜ</a>
+    <a id="15546" class="Symbol">)</a>
+
+
+<a id="15550" class="Keyword">module</a> <a id="15557" href="Number.Postulates.html#15557" class="Module">_</a> <a id="15559" class="Keyword">where</a>
+  <a id="15567" class="Keyword">open</a> <a id="15572" href="Number.Postulates.html#1575" class="Module">ℕ*</a> <a id="15575" class="Keyword">using</a> <a id="15581" class="Symbol">(</a><a id="15582" href="Number.Postulates.html#3079" class="Function">ℕ</a><a id="15583" class="Symbol">)</a>
+  <a id="15587" class="Keyword">postulate</a>
+    <a id="15601" href="Number.Postulates.html#15601" class="Postulate">ℕ↪ℤ</a>    <a id="15608" class="Symbol">:</a> <a id="15610" href="Number.Postulates.html#3079" class="Function">ℕ</a> <a id="15612" class="Symbol">→</a> <a id="15614" href="Number.Postulates.html#12679" class="Function">ℤ.ℤ</a>
+    <a id="15622" href="Number.Postulates.html#15622" class="Postulate">ℕ↪ℤinc</a> <a id="15629" class="Symbol">:</a> <a id="15631" href="Number.Inclusions.html#1947" class="Record">IsROrderedCommSemiringInclusion</a> <a id="15663" href="Number.Postulates.html#4390" class="Function">ℕ.bundle</a> <a id="15672" class="Symbol">(</a><a id="15673" class="Keyword">record</a> <a id="15680" class="Symbol">{</a> <a id="15682" href="Number.Postulates.html#15682" class="Module">ℤ.Bundle</a> <a id="15691" href="Number.Postulates.html#12606" class="Postulate">ℤ.bundle</a> <a id="15700" class="Symbol">})</a> <a id="15703" href="Number.Postulates.html#15601" class="Postulate">ℕ↪ℤ</a>
+
+    <a id="15712" href="Number.Postulates.html#15712" class="Postulate">ℕ↪ℚ</a>    <a id="15719" class="Symbol">:</a> <a id="15721" href="Number.Postulates.html#3079" class="Function">ℕ</a> <a id="15723" class="Symbol">→</a> <a id="15725" href="Number.Postulates.html#13057" class="Function">ℚ.ℚ</a>
+    <a id="15733" href="Number.Postulates.html#15733" class="Postulate">ℕ↪ℚinc</a> <a id="15740" class="Symbol">:</a> <a id="15742" href="Number.Inclusions.html#1947" class="Record">IsROrderedCommSemiringInclusion</a> <a id="15774" href="Number.Postulates.html#4390" class="Function">ℕ.bundle</a> <a id="15783" class="Symbol">(</a><a id="15784" class="Keyword">record</a> <a id="15791" class="Symbol">{</a> <a id="15793" href="Number.Postulates.html#15793" class="Module">ℚ.Bundle</a> <a id="15802" href="Number.Postulates.html#13076" class="Postulate">ℚ.bundle</a> <a id="15811" class="Symbol">})</a> <a id="15814" href="Number.Postulates.html#15712" class="Postulate">ℕ↪ℚ</a>
+
+    <a id="15823" href="Number.Postulates.html#15823" class="Postulate">ℕ↪ℂ</a>    <a id="15830" class="Symbol">:</a> <a id="15832" href="Number.Postulates.html#3079" class="Function">ℕ</a> <a id="15834" class="Symbol">→</a> <a id="15836" href="Number.Postulates.html#15327" class="Function">ℂ.ℂ</a>
+    <a id="15844" href="Number.Postulates.html#15844" class="Postulate">ℕ↪ℂinc</a> <a id="15851" class="Symbol">:</a> <a id="15853" href="Number.Inclusions.html#4487" class="Record">Isℕ↪ℂ</a> <a id="15859" href="Number.Postulates.html#4390" class="Function">ℕ.bundle</a> <a id="15868" href="Number.Postulates.html#15252" class="Postulate">ℂ.bundle</a> <a id="15877" href="Number.Postulates.html#15823" class="Postulate">ℕ↪ℂ</a>
+
+    <a id="15886" href="Number.Postulates.html#15886" class="Postulate">ℕ↪ℝ</a>    <a id="15893" class="Symbol">:</a> <a id="15895" href="Number.Postulates.html#3079" class="Function">ℕ</a> <a id="15897" class="Symbol">→</a> <a id="15899" href="Number.Postulates.html#14862" class="Function">ℝ.ℝ</a>
+    <a id="15907" href="Number.Postulates.html#15907" class="Postulate">ℕ↪ℝinc</a> <a id="15914" class="Symbol">:</a> <a id="15916" href="Number.Inclusions.html#1947" class="Record">IsROrderedCommSemiringInclusion</a> <a id="15948" href="Number.Postulates.html#4390" class="Function">ℕ.bundle</a> <a id="15957" class="Symbol">(</a><a id="15958" class="Keyword">record</a> <a id="15965" class="Symbol">{</a> <a id="15967" href="Number.Postulates.html#15967" class="Module">ℝ.Bundle</a> <a id="15976" href="Number.Postulates.html#14797" class="Postulate">ℝ.bundle</a> <a id="15985" class="Symbol">})</a> <a id="15988" href="Number.Postulates.html#15886" class="Postulate">ℕ↪ℝ</a>
+
+    <a id="15997" href="Number.Postulates.html#15997" class="Postulate">ℤ↪ℚ</a>    <a id="16004" class="Symbol">:</a> <a id="16006" href="Number.Postulates.html#12679" class="Function">ℤ.ℤ</a> <a id="16010" class="Symbol">→</a> <a id="16012" href="Number.Postulates.html#13057" class="Function">ℚ.ℚ</a>
+    <a id="16020" href="Number.Postulates.html#16020" class="Postulate">ℤ↪ℚinc</a> <a id="16027" class="Symbol">:</a> <a id="16029" href="Number.Inclusions.html#2649" class="Record">IsROrderedCommRingInclusion</a> <a id="16057" href="Number.Postulates.html#12606" class="Postulate">ℤ.bundle</a> <a id="16066" class="Symbol">(</a><a id="16067" class="Keyword">record</a> <a id="16074" class="Symbol">{</a> <a id="16076" href="Number.Postulates.html#16076" class="Module">ℚ.Bundle</a> <a id="16085" href="Number.Postulates.html#13076" class="Postulate">ℚ.bundle</a> <a id="16094" class="Symbol">})</a> <a id="16097" href="Number.Postulates.html#15997" class="Postulate">ℤ↪ℚ</a>
+
+    <a id="16106" href="Number.Postulates.html#16106" class="Postulate">ℤ↪ℝ</a>    <a id="16113" class="Symbol">:</a> <a id="16115" href="Number.Postulates.html#12679" class="Function">ℤ.ℤ</a> <a id="16119" class="Symbol">→</a> <a id="16121" href="Number.Postulates.html#14862" class="Function">ℝ.ℝ</a>
+    <a id="16129" href="Number.Postulates.html#16129" class="Postulate">ℤ↪ℝinc</a> <a id="16136" class="Symbol">:</a> <a id="16138" href="Number.Inclusions.html#2649" class="Record">IsROrderedCommRingInclusion</a> <a id="16166" href="Number.Postulates.html#12606" class="Postulate">ℤ.bundle</a> <a id="16175" class="Symbol">(</a><a id="16176" class="Keyword">record</a> <a id="16183" class="Symbol">{</a> <a id="16185" href="Number.Postulates.html#16185" class="Module">ℝ.Bundle</a> <a id="16194" href="Number.Postulates.html#14797" class="Postulate">ℝ.bundle</a> <a id="16203" class="Symbol">})</a> <a id="16206" href="Number.Postulates.html#16106" class="Postulate">ℤ↪ℝ</a>
+
+    <a id="16215" href="Number.Postulates.html#16215" class="Postulate">ℤ↪ℂ</a>    <a id="16222" class="Symbol">:</a> <a id="16224" href="Number.Postulates.html#12679" class="Function">ℤ.ℤ</a> <a id="16228" class="Symbol">→</a> <a id="16230" href="Number.Postulates.html#15327" class="Function">ℂ.ℂ</a>
+    <a id="16238" href="Number.Postulates.html#16238" class="Postulate">ℤ↪ℂinc</a> <a id="16245" class="Symbol">:</a> <a id="16247" href="Number.Inclusions.html#5212" class="Record">Isℤ↪ℂ</a> <a id="16253" href="Number.Postulates.html#12606" class="Postulate">ℤ.bundle</a> <a id="16262" href="Number.Postulates.html#15252" class="Postulate">ℂ.bundle</a> <a id="16271" href="Number.Postulates.html#16215" class="Postulate">ℤ↪ℂ</a>
+
+    <a id="16280" href="Number.Postulates.html#16280" class="Postulate">ℚ↪ℝ</a>    <a id="16287" class="Symbol">:</a> <a id="16289" href="Number.Postulates.html#13057" class="Function">ℚ.ℚ</a> <a id="16293" class="Symbol">→</a> <a id="16295" href="Number.Postulates.html#14862" class="Function">ℝ.ℝ</a>
+    <a id="16303" href="Number.Postulates.html#16303" class="Postulate">ℚ↪ℝinc</a> <a id="16310" class="Symbol">:</a> <a id="16312" href="Number.Inclusions.html#3215" class="Record">IsROrderedFieldInclusion</a> <a id="16337" href="Number.Postulates.html#13076" class="Postulate">ℚ.bundle</a> <a id="16346" class="Symbol">(</a><a id="16347" class="Keyword">record</a> <a id="16354" class="Symbol">{</a> <a id="16356" href="Number.Postulates.html#16356" class="Module">ℝ.Bundle</a> <a id="16365" href="Number.Postulates.html#14797" class="Postulate">ℝ.bundle</a> <a id="16374" class="Symbol">})</a> <a id="16377" href="Number.Postulates.html#16280" class="Postulate">ℚ↪ℝ</a>
+
+    <a id="16386" href="Number.Postulates.html#16386" class="Postulate">ℚ↪ℂ</a>    <a id="16393" class="Symbol">:</a> <a id="16395" href="Number.Postulates.html#13057" class="Function">ℚ.ℚ</a> <a id="16399" class="Symbol">→</a> <a id="16401" href="Number.Postulates.html#15327" class="Function">ℂ.ℂ</a>
+    <a id="16409" href="Number.Postulates.html#16409" class="Postulate">ℚ↪ℂinc</a> <a id="16416" class="Symbol">:</a> <a id="16418" href="Number.Inclusions.html#3792" class="Record">IsRFieldInclusion</a> <a id="16436" class="Symbol">(</a><a id="16437" class="Keyword">record</a> <a id="16444" class="Symbol">{</a> <a id="16446" href="Number.Postulates.html#16446" class="Module">ℚ.Bundle</a> <a id="16455" href="Number.Postulates.html#13076" class="Postulate">ℚ.bundle</a> <a id="16464" class="Symbol">})</a> <a id="16467" class="Symbol">(</a><a id="16468" class="Keyword">record</a> <a id="16475" class="Symbol">{</a> <a id="16477" href="Number.Postulates.html#16477" class="Module">ℂ.Bundle</a> <a id="16486" href="Number.Postulates.html#15252" class="Postulate">ℂ.bundle</a> <a id="16495" class="Symbol">})</a> <a id="16498" href="Number.Postulates.html#16386" class="Postulate">ℚ↪ℂ</a>
+
+    <a id="16507" href="Number.Postulates.html#16507" class="Postulate">ℝ↪ℂ</a>    <a id="16514" class="Symbol">:</a> <a id="16516" href="Number.Postulates.html#14862" class="Function">ℝ.ℝ</a> <a id="16520" class="Symbol">→</a> <a id="16522" href="Number.Postulates.html#15327" class="Function">ℂ.ℂ</a>
+    <a id="16530" href="Number.Postulates.html#16530" class="Postulate">ℝ↪ℂinc</a> <a id="16537" class="Symbol">:</a> <a id="16539" href="Number.Inclusions.html#3792" class="Record">IsRFieldInclusion</a> <a id="16557" class="Symbol">(</a><a id="16558" class="Keyword">record</a> <a id="16565" class="Symbol">{</a> <a id="16567" href="Number.Postulates.html#16567" class="Module">ℝ.Bundle</a> <a id="16576" href="Number.Postulates.html#14797" class="Postulate">ℝ.bundle</a> <a id="16585" class="Symbol">})</a> <a id="16588" class="Symbol">(</a><a id="16589" class="Keyword">record</a> <a id="16596" class="Symbol">{</a> <a id="16598" href="Number.Postulates.html#16598" class="Module">ℂ.Bundle</a> <a id="16607" href="Number.Postulates.html#15252" class="Postulate">ℂ.bundle</a> <a id="16616" class="Symbol">})</a> <a id="16619" href="Number.Postulates.html#16507" class="Postulate">ℝ↪ℂ</a>
+
+
+<a id="16625" class="Comment">{-
+module Translated where
+  open ℕⁿ public
+  open ℤᶻ public
+  open ℚᶠ public
+  open ℝʳ public
+  open ℂᶜ public
+-}</a>
+
+<a id="16741" class="Comment">{-
+ℕ = ℕ.ℕ
+ℤ = ℤ.ℤ
+ℚ = ℚ.ℚ
+ℝ = ℝ.ℝ
+ℂ = ℂ.ℂ
+-}</a>
+</pre></body></html>

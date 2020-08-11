@@ -24,3 +24,8 @@ extensions of `Cubical.Foundations.Logic` and similar things live in
 
 <pre class="Agda"><a id="782" class="Keyword">import</a> <a id="789" href="MoreLogic.html" class="Module">MoreLogic</a>
 </pre>
+and developments for "generic" numbers are
+
+<pre class="Agda"><a id="852" class="Keyword">import</a> <a id="859" href="Summary.html" class="Module">Summary</a>
+<a id="867" class="Keyword">import</a> <a id="874" href="Number.html" class="Module">Number</a>
+</pre>
