@@ -49,7 +49,9 @@ Here, all `[…]` types are abbreviations for one single `Number` type family
 
 ```agda
 data Number (p : NumberProp) : Type (NumberLevel (fst p)) where
-  _,,_ : (x : NumberKindInterpretation (fst p)) → (PositivityLevelInterpretation (fst p) (snd p) x) → Number p
+  _,,_ : (x : NumberKindInterpretation (fst p))
+       → PositivityLevelInterpretation (fst p) (snd p) x
+       → Number p
 ```
 
 This allows to define the operations `_+_`, `-_`, `_·_`, `_⁻¹`, `_<_`, `_≤_` and `_#_` on the general `Number` type family in a way that it makes use of the specific operations for the underlying, concrete number type.
@@ -76,13 +78,26 @@ test201 n@(nn ,, np) r@(rn ,, rp) = let
    _ : zʳ ≡ rn +ʳ rn
    _ = refl
 
+-- we can turn a generic number into a Σ pair with `pop`
+-- qʳ   : ℕ₀
+-- qʳ   = nn +ⁿ nn
+-- qp   : 0ⁿ <ⁿ (nn +ⁿ nn)
+-- qp   = +-<-<-implies-<ʳ nn nn np np
+   (qʳ , qp) = pop q
+
+-- and we can create a number with `_,,_`
+-- this needs some type annotation for help
+   q' : typeOf q
+   q' = qʳ ,, qp
+
 -- r is nonnegative from [ℝ₀⁺], [1ʳ] is positive from [ℝ⁺]
 -- and _+_ makes use of the fact that "positive + nonnegative = positive"
 -- y : [ℝ⁺]
 -- y = (rn +ʳ 1ʳ) ,, +-≤-<-implies-<ʳ rn 1ʳ rp 0<1
    y =  r + [1ʳ]
 
--- _+_ automatically coerces n from ℕ⁺ to ℝ⁺ and uses the fact that "positive + nonnegative = positive"
+-- _+_ automatically coerces n from ℕ⁺ to ℝ⁺
+-- and uses the fact that "positive + nonnegative = positive"
 -- n+r : [ℝ⁺]
 -- n+r = (ℕ↪ℝ nn +ʳ rn) ,, +-<-≤-implies-<ʳ (ℕ↪ℝ nn) rn (coerce-ℕ↪ℝ (nn ,, np)) rp
    n+r = n + r
@@ -98,4 +113,30 @@ test201 n@(nn ,, np) r@(rn ,, rp) = let
    _ : (pp ≡ pp') × (pp ≡ pp'')
    _ = refl , refl
    in {!!}
+```
+
+The coercions rely on inclusions between ℕ, ℤ, ℚ, ℝ and ℂ
+
+```agda
+ℕ↪ℤ : ℕ → ℤ
+ℕ↪ℚ : ℕ → ℚ
+ℕ↪ℂ : ℕ → ℂ
+ℕ↪ℝ : ℕ → ℝ
+ℤ↪ℚ : ℤ → ℚ
+ℤ↪ℝ : ℤ → ℝ
+ℤ↪ℂ : ℤ → ℂ
+ℚ↪ℝ : ℚ → ℝ
+ℚ↪ℂ : ℚ → ℂ
+ℝ↪ℂ : ℝ → ℂ
+
+ℕ↪ℤinc : IsROrderedCommSemiringInclusion ℕ.bundle                       (record { ℤ.Bundle ℤ.bundle }) ℕ↪ℤ
+ℕ↪ℚinc : IsROrderedCommSemiringInclusion ℕ.bundle                       (record { ℚ.Bundle ℚ.bundle }) ℕ↪ℚ
+ℕ↪ℂinc : Isℕ↪ℂ                           ℕ.bundle                       ℂ.bundle                       ℕ↪ℂ
+ℕ↪ℝinc : IsROrderedCommSemiringInclusion ℕ.bundle                       (record { ℝ.Bundle ℝ.bundle }) ℕ↪ℝ
+ℤ↪ℚinc : IsROrderedCommRingInclusion     ℤ.bundle                       (record { ℚ.Bundle ℚ.bundle }) ℤ↪ℚ
+ℤ↪ℝinc : IsROrderedCommRingInclusion     ℤ.bundle                       (record { ℝ.Bundle ℝ.bundle }) ℤ↪ℝ
+ℤ↪ℂinc : Isℤ↪ℂ                           ℤ.bundle                       ℂ.bundle                       ℤ↪ℂ
+ℚ↪ℝinc : IsROrderedFieldInclusion        ℚ.bundle                       (record { ℝ.Bundle ℝ.bundle }) ℚ↪ℝ
+ℚ↪ℂinc : IsRFieldInclusion               (record { ℚ.Bundle ℚ.bundle }) (record { ℂ.Bundle ℂ.bundle }) ℚ↪ℂ
+ℝ↪ℂinc : IsRFieldInclusion               (record { ℝ.Bundle ℝ.bundle }) (record { ℂ.Bundle ℂ.bundle }) ℝ↪ℂ
 ```

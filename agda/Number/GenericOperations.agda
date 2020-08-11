@@ -48,18 +48,18 @@ open import Data.Nat.Properties using (+-mono-<)
 +-Types : NumberProp → NumberProp → NumberProp
 +-Types (level₀ , pos₀) (level₁ , pos₁) =
   let level  = maxₙₗ level₀ level₁
-  in level , +-Positivityʰ level (coerce-PositivityLevel level₀ level pos₀) (coerce-PositivityLevel level₁ level pos₁)
+  in level , +-Positivityʰ level (coerce-PositivityKind level₀ level pos₀) (coerce-PositivityKind level₁ level pos₁)
 
 ·-Types : NumberProp → NumberProp → NumberProp
 ·-Types (level₀ , pos₀) (level₁ , pos₁) =
   let level  = maxₙₗ level₀ level₁
-  in level , ·-Positivityʰ level (coerce-PositivityLevel level₀ level pos₀) (coerce-PositivityLevel level₁ level pos₁)
+  in level , ·-Positivityʰ level (coerce-PositivityKind level₀ level pos₀) (coerce-PositivityKind level₁ level pos₁)
 
 open ℕⁿ
-open ℤᶻ ℤ.bundle
-open ℚᶠ ℚ.bundle
-open ℝʳ ℝ.bundle
-open ℂᶜ ℂ.bundle
+open ℤᶻ
+open ℚᶠ
+open ℝʳ
+open ℂᶜ
 
 open PatternsType
 
@@ -178,7 +178,7 @@ _⁻¹ {isComplex} {X⁺⁻} (x ,, q) {{h}} = let r = {!!} in _⁻¹ᶜ      x  
 -_ {isComplex} {X  } (x ,, p) = (-ᶜ x) ,, {!!}
 -_ {isComplex} {X⁺⁻} (x ,, p) = (-ᶜ x) ,, {!!}
 
-_+ʰⁿ_ : ∀{p q} → (x : Number (isNat , p)) → (y : Number (isNat , q)) → PositivityLevelInterpretation isNat (+-Positivityʰ isNat p q) (num x +ⁿ num y)
+_+ʰⁿ_ : ∀{p q} → (x : Number (isNat , p)) → (y : Number (isNat , q)) → PositivityKindInterpretation isNat (+-Positivityʰ isNat p q) (num x +ⁿ num y)
 _+ʰⁿ_ {X  } {X  } (a ,, pa) (b ,, pb) = tt
 _+ʰⁿ_ {X  } {X⁺⁻} (a ,, pa) (b ,, pb) = tt
 _+ʰⁿ_ {X  } {X₀⁺} (a ,, pa) (b ,, pb) = tt
@@ -205,13 +205,13 @@ _+ʰⁿ_ {X₀⁻} {X₀⁺} (a ,, pa) (b ,, pb) = tt
 _+ʰⁿ_ {X₀⁻} {X⁺ } (a ,, pa) (b ,, pb) = tt
 _+ʰⁿ_ {X₀⁻} {X₀⁻} (a ,, pa) (b ,, pb) = ℕ.+-≤-≤-implies-≤ˡ a b pa pb -- a ≤ 0 → b ≤ 0 → (a + b) ≤ 0
 
-_+ʰᶻ_ : ∀{p q} → (x : Number (isInt , p)) → (y : Number (isInt , q)) → PositivityLevelInterpretation isInt (+-Positivityʰ isInt p q) (num x +ᶻ num y)
+_+ʰᶻ_ : ∀{p q} → (x : Number (isInt , p)) → (y : Number (isInt , q)) → PositivityKindInterpretation isInt (+-Positivityʰ isInt p q) (num x +ᶻ num y)
 _+ʰᶻ_ {p} {q} (a ,, pa) (b ,, pb) = {!!}
 
-_+ʰᶠ_ : ∀{p q} → (x : Number (isRat , p)) → (y : Number (isRat , q)) → PositivityLevelInterpretation isRat (+-Positivityʰ isRat p q) (num x +ᶠ num y)
+_+ʰᶠ_ : ∀{p q} → (x : Number (isRat , p)) → (y : Number (isRat , q)) → PositivityKindInterpretation isRat (+-Positivityʰ isRat p q) (num x +ᶠ num y)
 _+ʰᶠ_ {p} {q} (a ,, pa) (b ,, pb) = {!!}
 
-_+ʰʳ_ : ∀{p q} → (x : Number (isReal , p)) → (y : Number (isReal , q)) → PositivityLevelInterpretation isReal (+-Positivityʰ isReal p q) (num x +ʳ num y)
+_+ʰʳ_ : ∀{p q} → (x : Number (isReal , p)) → (y : Number (isReal , q)) → PositivityKindInterpretation isReal (+-Positivityʰ isReal p q) (num x +ʳ num y)
 _+ʰʳ_ {X  } {X  } (a ,, pa) (b ,, pb) = lift tt
 _+ʰʳ_ {X  } {X⁺⁻} (a ,, pa) (b ,, pb) = lift tt
 _+ʰʳ_ {X  } {X₀⁺} (a ,, pa) (b ,, pb) = lift tt
@@ -249,7 +249,7 @@ _+ʰʳ_ {X₀⁻} {X⁺ } (a ,, pa) (b ,, pb) = lift tt
 _+ʰʳ_ {X₀⁻} {X⁻ } (a ,, pa) (b ,, pb) = ℝ.+-≤-<-implies-<ˡ a b pa pb -- a ≤ 0 → b < 0 → (a + b) < 0
 _+ʰʳ_ {X₀⁻} {X₀⁻} (a ,, pa) (b ,, pb) = ℝ.+-≤-≤-implies-≤ˡ a b pa pb -- a ≤ 0 → b ≤ 0 → (a + b) ≤ 0    
 
-_+ʰᶜ_ : ∀{p q} → (x : Number (isComplex , p)) → (y : Number (isComplex , q)) → PositivityLevelInterpretation isComplex (+-Positivityʰ isComplex p q) (num x +ᶜ num y)
+_+ʰᶜ_ : ∀{p q} → (x : Number (isComplex , p)) → (y : Number (isComplex , q)) → PositivityKindInterpretation isComplex (+-Positivityʰ isComplex p q) (num x +ᶜ num y)
 _+ʰᶜ_ x y = lift tt
 
 _+ʰ_ : ∀{l p q} → Number (l , p) → Number (l , q) → Number (l , +-Positivityʰ l p q)
@@ -263,7 +263,7 @@ _+ʰ_ {isComplex} x y = (num x +ᶜ num y) ,, (x +ʰᶜ y)
 
 module _ {Lx Ly Px Py} (x : Number (Lx , Px)) (y : Number (Ly , Py)) where
   private L = maxₙₗ' Lx Ly
-  _+_ : Number (L , +-Positivityʰ L (coerce-PositivityLevel Lx L Px) (coerce-PositivityLevel Ly L Py))
+  _+_ : Number (L , +-Positivityʰ L (coerce-PositivityKind Lx L Px) (coerce-PositivityKind Ly L Py))
   _+_ =
     let (Lx≤L , Ly≤L) = max-implies-≤ₙₗ₂' Lx Ly
     in coerce Lx L Lx≤L x +ʰ coerce Ly L Ly≤L y
@@ -271,7 +271,7 @@ module _ {Lx Ly Px Py} (x : Number (Lx , Px)) (y : Number (Ly , Py)) where
 
 _+_ : ∀{Lx Ly Px Py} → (x : Number (Lx , Px)) (y : Number (Ly , Py))
     → let L = maxₙₗ Lx Ly
-      in Number (L , +-Positivityʰ L (coerce-PositivityLevel Lx L Px) (coerce-PositivityLevel Ly L Py))
+      in Number (L , +-Positivityʰ L (coerce-PositivityKind Lx L Px) (coerce-PositivityKind Ly L Py))
 _+_ {Lx} {Ly} {Px} {Py} x y =
   let L = maxₙₗ Lx Ly
       (Lx≤L , Ly≤L) = max-implies-≤ₙₗ₂ Lx Ly

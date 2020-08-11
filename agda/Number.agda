@@ -153,6 +153,7 @@ open import Number.Prettyprint
 
 -- test101 : Number (isNat , isPositiveᵒʳ) → Number (isReal ,  isNonnegativeᵒʳ) → {!!}
 
+open import Function.Base using (typeOf)
 
 test201 : [ℕ⁺] → [ℝ₀⁺] → [ℝ]
 -- As-patterns (or @-patterns) go well with resolving things in our approach
@@ -175,13 +176,30 @@ test201 n@(nn ,, np) r@(rn ,, rp) = let
    _ : zʳ ≡ rn +ʳ rn
    _ = refl
 
+-- we can turn a generic number into a Σ pair with `pop`
+-- qʳ   : ℕ₀
+-- qʳ   = nn +ⁿ nn
+-- qp   : 0ⁿ <ⁿ (nn +ⁿ nn)
+-- qp   = +-<-<-implies-<ʳ nn nn np np
+   (qʳ , qp) = pop q
+
+-- and we can create a number with `_,,_`
+-- this needs some type annotation for help
+   q' : typeOf q
+   q' = qʳ ,, qp
+
+-- if the two parts of q and q' are in scope, then we get definitional equality
+   _ : q ≡ q'
+   _ = refl
+
 -- r is nonnegative from [ℝ₀⁺], [1ʳ] is positive from [ℝ⁺]
 -- and _+_ makes use of the fact that "positive + nonnegative = positive"
 -- y : [ℝ⁺]
 -- y = (rn +ʳ 1ʳ) ,, +-≤-<-implies-<ʳ rn 1ʳ rp 0<1
    y =  r + [1ʳ]
 
--- _+_ automatically coerces n from ℕ⁺ to ℝ⁺ and uses the fact that "positive + nonnegative = positive"
+-- _+_ automatically coerces n from ℕ⁺ to ℝ⁺
+-- and uses the fact that "positive + nonnegative = positive"
 -- n+r : [ℝ⁺]
 -- n+r = (ℕ↪ℝ nn +ʳ rn) ,, +-<-≤-implies-<ʳ (ℕ↪ℝ nn) rn (coerce-ℕ↪ℝ (nn ,, np)) rp
    n+r = n + r
@@ -196,7 +214,7 @@ test201 n@(nn ,, np) r@(rn ,, rp) = let
    pp'' = {!!}
    _ : (pp ≡ pp') × (pp ≡ pp'')
    _ = refl , refl
-   in {!    !}
+   in {!!}
 
 
 
