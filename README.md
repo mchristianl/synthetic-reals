@@ -76,6 +76,18 @@ test201 n@(nn ,, np) r@(rn ,, rp) = let
    _ : zʳ ≡ rn +ʳ rn
    _ = refl
 
+-- we can turn a generic number into a Σ pair with `pop`
+-- qʳ   : ℕ₀
+-- qʳ   = nn +ⁿ nn
+-- qp   : 0ⁿ <ⁿ (nn +ⁿ nn)
+-- qp   = +-<-<-implies-<ʳ nn nn np np
+   (qʳ , qp) = pop q
+
+-- and we can create a number with `_,,_`
+-- this needs some type annotation for help
+   q' : typeOf q
+   q' = qʳ ,, qp
+
 -- r is nonnegative from [ℝ₀⁺], [1ʳ] is positive from [ℝ⁺]
 -- and _+_ makes use of the fact that "positive + nonnegative = positive"
 -- y : [ℝ⁺]
