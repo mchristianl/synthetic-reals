@@ -96,7 +96,8 @@ test201 n@(nn ,, np) r@(rn ,, rp) = let
 -- y = (rn +ʳ 1ʳ) ,, +-≤-<-implies-<ʳ rn 1ʳ rp 0<1
    y =  r + [1ʳ]
 
--- _+_ automatically coerces n from ℕ⁺ to ℝ⁺ and uses the fact that "positive + nonnegative = positive"
+-- _+_ automatically coerces n from ℕ⁺ to ℝ⁺
+-- and uses the fact that "positive + nonnegative = positive"
 -- n+r : [ℝ⁺]
 -- n+r = (ℕ↪ℝ nn +ʳ rn) ,, +-<-≤-implies-<ʳ (ℕ↪ℝ nn) rn (coerce-ℕ↪ℝ (nn ,, np)) rp
    n+r = n + r
@@ -112,4 +113,30 @@ test201 n@(nn ,, np) r@(rn ,, rp) = let
    _ : (pp ≡ pp') × (pp ≡ pp'')
    _ = refl , refl
    in {!!}
+```
+
+The coercions rely on inclusions between ℕ, ℤ, ℚ, ℝ and ℂ
+
+```agda
+ℕ↪ℤ : ℕ → ℤ
+ℕ↪ℚ : ℕ → ℚ
+ℕ↪ℂ : ℕ → ℂ
+ℕ↪ℝ : ℕ → ℝ
+ℤ↪ℚ : ℤ → ℚ
+ℤ↪ℝ : ℤ → ℝ
+ℤ↪ℂ : ℤ → ℂ
+ℚ↪ℝ : ℚ → ℝ
+ℚ↪ℂ : ℚ → ℂ
+ℝ↪ℂ : ℝ → ℂ
+
+ℕ↪ℤinc : IsROrderedCommSemiringInclusion ℕ.bundle                       (record { ℤ.Bundle ℤ.bundle }) ℕ↪ℤ
+ℕ↪ℚinc : IsROrderedCommSemiringInclusion ℕ.bundle                       (record { ℚ.Bundle ℚ.bundle }) ℕ↪ℚ
+ℕ↪ℂinc : Isℕ↪ℂ                           ℕ.bundle                       ℂ.bundle                       ℕ↪ℂ
+ℕ↪ℝinc : IsROrderedCommSemiringInclusion ℕ.bundle                       (record { ℝ.Bundle ℝ.bundle }) ℕ↪ℝ
+ℤ↪ℚinc : IsROrderedCommRingInclusion     ℤ.bundle                       (record { ℚ.Bundle ℚ.bundle }) ℤ↪ℚ
+ℤ↪ℝinc : IsROrderedCommRingInclusion     ℤ.bundle                       (record { ℝ.Bundle ℝ.bundle }) ℤ↪ℝ
+ℤ↪ℂinc : Isℤ↪ℂ                           ℤ.bundle                       ℂ.bundle                       ℤ↪ℂ
+ℚ↪ℝinc : IsROrderedFieldInclusion        ℚ.bundle                       (record { ℝ.Bundle ℝ.bundle }) ℚ↪ℝ
+ℚ↪ℂinc : IsRFieldInclusion               (record { ℚ.Bundle ℚ.bundle }) (record { ℂ.Bundle ℂ.bundle }) ℚ↪ℂ
+ℝ↪ℂinc : IsRFieldInclusion               (record { ℝ.Bundle ℝ.bundle }) (record { ℂ.Bundle ℂ.bundle }) ℝ↪ℂ
 ```
