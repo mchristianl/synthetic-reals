@@ -35,10 +35,10 @@ open import Number.Coercions
 open import Number.GenericOperations
 
 open ℕⁿ
-open ℤᶻ ℤ.bundle
-open ℚᶠ ℚ.bundle
-open ℝʳ ℝ.bundle
-open ℂᶜ ℂ.bundle
+open ℤᶻ
+open ℚᶠ
+open ℝʳ
+open ℂᶜ
 
 
 open import Cubical.Data.Fin.Base
