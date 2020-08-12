@@ -12,92 +12,89 @@
 <a id="215" class="Keyword">open</a> <a id="220" class="Keyword">import</a> <a id="227" href="Cubical.Foundations.Everything.html" class="Module">Cubical.Foundations.Everything</a> <a id="258" class="Keyword">renaming</a> <a id="267" class="Symbol">(</a><a id="268" href="Cubical.Foundations.GroupoidLaws.html#311" class="Function Operator">_⁻¹</a> <a id="272" class="Symbol">to</a> <a id="Foundations.GroupoidLaws._⁻¹"></a><a id="275" href="Number.html#275" class="Function Operator">_⁻¹ᵖ</a><a id="279" class="Symbol">;</a> <a id="281" href="Cubical.Foundations.GroupoidLaws.html#2243" class="Function">assoc</a> <a id="287" class="Symbol">to</a> <a id="Foundations.GroupoidLaws.assoc"></a><a id="290" href="Number.html#290" class="Function">∙-assoc</a><a id="297" class="Symbol">)</a>
 <a id="299" class="Keyword">open</a> <a id="304" class="Keyword">import</a> <a id="311" href="Cubical.Relation.Nullary.Base.html" class="Module">Cubical.Relation.Nullary.Base</a> <a id="341" class="Comment">-- ¬_</a>
 <a id="347" class="Keyword">open</a> <a id="352" class="Keyword">import</a> <a id="359" href="Cubical.Relation.Binary.Base.html" class="Module">Cubical.Relation.Binary.Base</a> <a id="388" class="Comment">-- Rel</a>
+<a id="395" class="Keyword">open</a> <a id="400" class="Keyword">import</a> <a id="407" href="Cubical.Data.Unit.Base.html" class="Module">Cubical.Data.Unit.Base</a> <a id="430" class="Comment">-- Unit</a>
+<a id="438" class="Keyword">open</a> <a id="443" class="Keyword">import</a> <a id="450" href="Cubical.Data.Empty.html" class="Module">Cubical.Data.Empty</a> <a id="469" class="Comment">-- ⊥</a>
+<a id="474" class="Keyword">open</a> <a id="479" class="Keyword">import</a> <a id="486" href="Cubical.Data.Sum.Base.html" class="Module">Cubical.Data.Sum.Base</a> <a id="508" class="Keyword">renaming</a> <a id="517" class="Symbol">(</a><a id="518" href="Cubical.Data.Sum.Base.html#188" class="Datatype Operator">_⊎_</a> <a id="522" class="Symbol">to</a> <a id="525" class="Keyword">infixr</a> <a id="532" class="Number">4</a> <a id="Data.Sum.Base._⊎_"></a><a id="534" href="Number.html#534" class="Datatype Operator">_⊎_</a><a id="537" class="Symbol">)</a>
+<a id="539" class="Keyword">open</a> <a id="544" class="Keyword">import</a> <a id="551" href="Cubical.Data.Sigma.Base.html" class="Module">Cubical.Data.Sigma.Base</a> <a id="575" class="Keyword">renaming</a> <a id="584" class="Symbol">(</a><a id="585" href="Cubical.Data.Sigma.Base.html#489" class="Function Operator">_×_</a> <a id="589" class="Symbol">to</a> <a id="592" class="Keyword">infixr</a> <a id="599" class="Number">4</a> <a id="Data.Sigma.Base._×_"></a><a id="601" href="Number.html#601" class="Function Operator">_×_</a><a id="604" class="Symbol">)</a>
+<a id="606" class="Keyword">open</a> <a id="611" class="Keyword">import</a> <a id="618" href="Cubical.Data.Empty.html" class="Module">Cubical.Data.Empty</a> <a id="637" class="Keyword">renaming</a> <a id="646" class="Symbol">(</a><a id="647" href="Cubical.Data.Empty.Base.html#190" class="Function">elim</a> <a id="652" class="Symbol">to</a> <a id="Data.Empty.Base.elim"></a><a id="655" href="Number.html#655" class="Function">⊥-elim</a><a id="661" class="Symbol">)</a> <a id="663" class="Comment">-- `⊥` and `elim`</a>
+<a id="681" class="Keyword">open</a> <a id="686" class="Keyword">import</a> <a id="693" href="Function.Base.html" class="Module">Function.Base</a> <a id="707" class="Keyword">using</a> <a id="713" class="Symbol">(</a><a id="714" href="Function.Base.html#4708" class="Function">it</a><a id="716" class="Symbol">;</a> <a id="718" href="Function.Base.html#4458" class="Function Operator">_∋_</a><a id="721" class="Symbol">;</a> <a id="723" href="Function.Base.html#1577" class="Function Operator">_$_</a><a id="726" class="Symbol">)</a>
 
-<a id="396" class="Comment">-- open import Data.Nat.Base using (ℕ) renaming (_≤_ to _≤ₙ_)</a>
-<a id="458" class="Keyword">open</a> <a id="463" class="Keyword">import</a> <a id="470" href="Cubical.Data.Nat.html" class="Module">Cubical.Data.Nat</a> <a id="487" class="Keyword">using</a> <a id="493" class="Symbol">(</a><a id="494" href="Agda.Builtin.Nat.html#192" class="Datatype">ℕ</a><a id="495" class="Symbol">;</a> <a id="497" href="Agda.Builtin.Nat.html#210" class="InductiveConstructor">zero</a><a id="501" class="Symbol">;</a> <a id="503" href="Agda.Builtin.Nat.html#223" class="InductiveConstructor">suc</a><a id="506" class="Symbol">)</a> <a id="508" class="Keyword">renaming</a> <a id="517" class="Symbol">(</a><a id="518" href="Agda.Builtin.Nat.html#325" class="Primitive Operator">_+_</a> <a id="522" class="Symbol">to</a> <a id="Builtin.Nat._+_"></a><a id="525" href="Number.html#525" class="Primitive Operator">_+ₙ_</a><a id="529" class="Symbol">)</a>
-<a id="531" class="Keyword">open</a> <a id="536" class="Keyword">import</a> <a id="543" href="Cubical.Data.Nat.Order.html" class="Module">Cubical.Data.Nat.Order</a> <a id="566" class="Keyword">renaming</a> <a id="575" class="Symbol">(</a><a id="576" href="Cubical.Data.Nat.Order.html#1004" class="Function">zero-≤</a> <a id="583" class="Symbol">to</a> <a id="Data.Nat.Order.zero-≤"></a><a id="586" href="Number.html#586" class="Function">z≤n</a><a id="589" class="Symbol">;</a> <a id="591" href="Cubical.Data.Nat.Order.html#1046" class="Function">suc-≤-suc</a> <a id="601" class="Symbol">to</a> <a id="Data.Nat.Order.suc-≤-suc"></a><a id="604" href="Number.html#604" class="Function">s≤s</a><a id="607" class="Symbol">;</a> <a id="609" href="Cubical.Data.Nat.Order.html#504" class="Function Operator">_≤_</a> <a id="613" class="Symbol">to</a> <a id="Data.Nat.Order._≤_"></a><a id="616" href="Number.html#616" class="Function Operator">_≤ₙ_</a><a id="620" class="Symbol">;</a> <a id="622" href="Cubical.Data.Nat.Order.html#554" class="Function Operator">_&lt;_</a> <a id="626" class="Symbol">to</a> <a id="Data.Nat.Order._&lt;_"></a><a id="629" href="Number.html#629" class="Function Operator">_&lt;ₙ_</a><a id="633" class="Symbol">)</a>
+<a id="729" class="Comment">-- open import Data.Nat.Base using (ℕ) renaming (_≤_ to _≤ₙ_)</a>
+<a id="791" class="Comment">-- open import Cubical.Data.Nat using (ℕ; zero; suc) renaming (_+_ to _+ₙ_)</a>
+<a id="867" class="Comment">-- open import Cubical.Data.Nat.Order renaming (zero-≤ to z≤n; suc-≤-suc to s≤s; _≤_ to _≤ₙ_; _&lt;_ to _&lt;ₙ_)</a>
+<a id="974" class="Comment">-- open import Cubical.Data.Fin.Base</a>
+<a id="1011" class="Comment">-- import Cubical.Data.Fin.Properties</a>
+<a id="1049" class="Comment">-- open import Cubical.Data.Nat using (ℕ; zero; suc) renaming (_+_ to _+ₙ_)</a>
+<a id="1125" class="Comment">-- open import Cubical.Data.Nat.Properties using (+-suc; injSuc; snotz; +-comm; +-assoc; +-zero; inj-m+)</a>
+<a id="1230" class="Comment">-- open import Cubical.Data.Nat.Order renaming (zero-≤ to z≤n; suc-≤-suc to s≤s; _≤_ to _≤ₙ_; _&lt;_ to _&lt;ₙ_; _≟_ to _≟ₙ_)</a>
+<a id="1350" class="Comment">-- open import Data.Nat.Base using (ℕ; z≤n; s≤s; zero; suc) renaming (_≤_ to _≤ₙ_; _&lt;_ to _&lt;ₙ_; _+_ to _+ₙ_)</a>
+<a id="1459" class="Comment">-- open import Agda.Builtin.Bool renaming (true to TT; false to FF)</a>
+<a id="1527" class="Comment">-- import Cubical.Data.Fin.Properties</a>
+<a id="1565" class="Comment">-- open import Data.Nat.Properties using (+-mono-&lt;)</a>
 
-<a id="636" class="Keyword">open</a> <a id="641" class="Keyword">import</a> <a id="648" href="Cubical.Data.Unit.Base.html" class="Module">Cubical.Data.Unit.Base</a> <a id="671" class="Comment">-- Unit</a>
-<a id="679" class="Keyword">open</a> <a id="684" class="Keyword">import</a> <a id="691" href="Cubical.Data.Empty.html" class="Module">Cubical.Data.Empty</a> <a id="710" class="Comment">-- ⊥</a>
-<a id="715" class="Keyword">open</a> <a id="720" class="Keyword">import</a> <a id="727" href="Cubical.Data.Sum.Base.html" class="Module">Cubical.Data.Sum.Base</a> <a id="749" class="Keyword">renaming</a> <a id="758" class="Symbol">(</a><a id="759" href="Cubical.Data.Sum.Base.html#188" class="Datatype Operator">_⊎_</a> <a id="763" class="Symbol">to</a> <a id="766" class="Keyword">infixr</a> <a id="773" class="Number">4</a> <a id="Data.Sum.Base._⊎_"></a><a id="775" href="Number.html#775" class="Datatype Operator">_⊎_</a><a id="778" class="Symbol">)</a>
-<a id="780" class="Keyword">open</a> <a id="785" class="Keyword">import</a> <a id="792" href="Cubical.Data.Sigma.Base.html" class="Module">Cubical.Data.Sigma.Base</a> <a id="816" class="Keyword">renaming</a> <a id="825" class="Symbol">(</a><a id="826" href="Cubical.Data.Sigma.Base.html#489" class="Function Operator">_×_</a> <a id="830" class="Symbol">to</a> <a id="833" class="Keyword">infixr</a> <a id="840" class="Number">4</a> <a id="Data.Sigma.Base._×_"></a><a id="842" href="Number.html#842" class="Function Operator">_×_</a><a id="845" class="Symbol">)</a>
-<a id="847" class="Keyword">open</a> <a id="852" class="Keyword">import</a> <a id="859" href="Cubical.Data.Empty.html" class="Module">Cubical.Data.Empty</a> <a id="878" class="Keyword">renaming</a> <a id="887" class="Symbol">(</a><a id="888" href="Cubical.Data.Empty.Base.html#190" class="Function">elim</a> <a id="893" class="Symbol">to</a> <a id="Data.Empty.Base.elim"></a><a id="896" href="Number.html#896" class="Function">⊥-elim</a><a id="902" class="Symbol">)</a> <a id="904" class="Comment">-- `⊥` and `elim`</a>
-<a id="922" class="Keyword">open</a> <a id="927" class="Keyword">import</a> <a id="934" href="Cubical.Data.Maybe.Base.html" class="Module">Cubical.Data.Maybe.Base</a>
-<a id="958" class="Keyword">open</a> <a id="963" class="Keyword">import</a> <a id="970" href="Function.Base.html" class="Module">Function.Base</a> <a id="984" class="Keyword">using</a> <a id="990" class="Symbol">(</a><a id="991" href="Function.Base.html#4458" class="Function Operator">_∋_</a><a id="994" class="Symbol">)</a>
+<a id="1618" class="Comment">-- open import Bundles</a>
 
-<a id="997" class="Comment">-- open import Bundles</a>
+<a id="1642" class="Keyword">open</a> <a id="1647" class="Keyword">import</a> <a id="1654" href="Number.Postulates.html" class="Module">Number.Postulates</a>
+<a id="1672" class="Keyword">open</a> <a id="1677" class="Keyword">import</a> <a id="1684" href="Number.Structures.html" class="Module">Number.Structures</a>
+<a id="1702" class="Keyword">open</a> <a id="1707" class="Keyword">import</a> <a id="1714" href="Number.Bundles.html" class="Module">Number.Bundles</a>
+<a id="1729" class="Keyword">open</a> <a id="1734" class="Keyword">import</a> <a id="1741" href="Number.Inclusions.html" class="Module">Number.Inclusions</a>
+<a id="1759" class="Keyword">open</a> <a id="1764" class="Keyword">import</a> <a id="1771" href="Number.Base.html" class="Module">Number.Base</a>
+<a id="1783" class="Keyword">open</a> <a id="1788" class="Keyword">import</a> <a id="1795" href="Number.Coercions.html" class="Module">Number.Coercions</a>
+<a id="1812" class="Keyword">open</a> <a id="1817" class="Keyword">import</a> <a id="1824" href="Number.Operations.html" class="Module">Number.Operations</a>
 
-<a id="1021" class="Keyword">open</a> <a id="1026" class="Keyword">import</a> <a id="1033" href="Number.Postulates.html" class="Module">Number.Postulates</a>
-<a id="1051" class="Keyword">open</a> <a id="1056" class="Keyword">import</a> <a id="1063" href="Number.Structures.html" class="Module">Number.Structures</a>
-<a id="1081" class="Keyword">open</a> <a id="1086" class="Keyword">import</a> <a id="1093" href="Number.Bundles.html" class="Module">Number.Bundles</a>
-<a id="1108" class="Keyword">open</a> <a id="1113" class="Keyword">import</a> <a id="1120" href="Number.Inclusions.html" class="Module">Number.Inclusions</a>
-<a id="1138" class="Keyword">open</a> <a id="1143" class="Keyword">import</a> <a id="1150" href="Number.Blueprint.html" class="Module">Number.Blueprint</a>
-<a id="1167" class="Keyword">open</a> <a id="1172" class="Keyword">import</a> <a id="1179" href="Number.Coercions.html" class="Module">Number.Coercions</a>
-<a id="1196" class="Keyword">open</a> <a id="1201" class="Keyword">import</a> <a id="1208" href="Number.GenericOperations.html" class="Module">Number.GenericOperations</a>
-
-<a id="1234" class="Keyword">open</a> <a id="1239" href="Number.Postulates.html#2730" class="Module">ℕⁿ</a>
-<a id="1242" class="Keyword">open</a> <a id="1247" href="Number.Postulates.html#3192" class="Module">ℤᶻ</a>
-<a id="1250" class="Keyword">open</a> <a id="1255" href="Number.Postulates.html#3655" class="Module">ℚᶠ</a>
-<a id="1258" class="Keyword">open</a> <a id="1263" href="Number.Postulates.html#4101" class="Module">ℝʳ</a>
-<a id="1266" class="Keyword">open</a> <a id="1271" href="Number.Postulates.html#4563" class="Module">ℂᶜ</a>
-
-
-<a id="1276" class="Keyword">open</a> <a id="1281" class="Keyword">import</a> <a id="1288" href="Cubical.Data.Fin.Base.html" class="Module">Cubical.Data.Fin.Base</a>
-<a id="1310" class="Comment">-- import Cubical.Data.Fin.Properties</a>
-<a id="1348" class="Keyword">open</a> <a id="1353" class="Keyword">import</a> <a id="1360" href="Cubical.Data.Nat.html" class="Module">Cubical.Data.Nat</a> <a id="1377" class="Keyword">using</a> <a id="1383" class="Symbol">(</a><a id="1384" href="Agda.Builtin.Nat.html#192" class="Datatype">ℕ</a><a id="1385" class="Symbol">;</a> <a id="1387" href="Agda.Builtin.Nat.html#210" class="InductiveConstructor">zero</a><a id="1391" class="Symbol">;</a> <a id="1393" href="Agda.Builtin.Nat.html#223" class="InductiveConstructor">suc</a><a id="1396" class="Symbol">)</a> <a id="1398" class="Keyword">renaming</a> <a id="1407" class="Symbol">(</a><a id="1408" href="Agda.Builtin.Nat.html#325" class="Primitive Operator">_+_</a> <a id="1412" class="Symbol">to</a> <a id="Builtin.Nat._+_"></a><a id="1415" href="Number.html#1415" class="Primitive Operator">_+ₙ_</a><a id="1419" class="Symbol">)</a>
-<a id="1421" class="Keyword">open</a> <a id="1426" class="Keyword">import</a> <a id="1433" href="Cubical.Data.Nat.Properties.html" class="Module">Cubical.Data.Nat.Properties</a> <a id="1461" class="Keyword">using</a> <a id="1467" class="Symbol">(</a><a id="1468" href="Cubical.Data.Nat.Properties.html#1126" class="Function">+-suc</a><a id="1473" class="Symbol">;</a> <a id="1475" href="Cubical.Data.Nat.Properties.html#530" class="Function">injSuc</a><a id="1481" class="Symbol">;</a> <a id="1483" href="Cubical.Data.Nat.Properties.html#471" class="Function">snotz</a><a id="1488" class="Symbol">;</a> <a id="1490" href="Cubical.Data.Nat.Properties.html#1229" class="Function">+-comm</a><a id="1496" class="Symbol">;</a> <a id="1498" href="Cubical.Data.Nat.Properties.html#1370" class="Function">+-assoc</a><a id="1505" class="Symbol">;</a> <a id="1507" href="Cubical.Data.Nat.Properties.html#1044" class="Function">+-zero</a><a id="1513" class="Symbol">;</a> <a id="1515" href="Cubical.Data.Nat.Properties.html#1491" class="Function">inj-m+</a><a id="1521" class="Symbol">)</a>
-<a id="1523" class="Keyword">open</a> <a id="1528" class="Keyword">import</a> <a id="1535" href="Cubical.Data.Nat.Order.html" class="Module">Cubical.Data.Nat.Order</a> <a id="1558" class="Keyword">renaming</a> <a id="1567" class="Symbol">(</a><a id="1568" href="Cubical.Data.Nat.Order.html#1004" class="Function">zero-≤</a> <a id="1575" class="Symbol">to</a> <a id="Data.Nat.Order.zero-≤"></a><a id="1578" href="Number.html#1578" class="Function">z≤n</a><a id="1581" class="Symbol">;</a> <a id="1583" href="Cubical.Data.Nat.Order.html#1046" class="Function">suc-≤-suc</a> <a id="1593" class="Symbol">to</a> <a id="Data.Nat.Order.suc-≤-suc"></a><a id="1596" href="Number.html#1596" class="Function">s≤s</a><a id="1599" class="Symbol">;</a> <a id="1601" href="Cubical.Data.Nat.Order.html#504" class="Function Operator">_≤_</a> <a id="1605" class="Symbol">to</a> <a id="Data.Nat.Order._≤_"></a><a id="1608" href="Number.html#1608" class="Function Operator">_≤ₙ_</a><a id="1612" class="Symbol">;</a> <a id="1614" href="Cubical.Data.Nat.Order.html#554" class="Function Operator">_&lt;_</a> <a id="1618" class="Symbol">to</a> <a id="Data.Nat.Order._&lt;_"></a><a id="1621" href="Number.html#1621" class="Function Operator">_&lt;ₙ_</a><a id="1625" class="Symbol">;</a> <a id="1627" href="Cubical.Data.Nat.Order.html#4156" class="Function Operator">_≟_</a> <a id="1631" class="Symbol">to</a> <a id="Data.Nat.Order._≟_"></a><a id="1634" href="Number.html#1634" class="Function Operator">_≟ₙ_</a><a id="1638" class="Symbol">)</a>
-<a id="1640" class="Comment">-- open import Data.Nat.Base using (ℕ; z≤n; s≤s; zero; suc) renaming (_≤_ to _≤ₙ_; _&lt;_ to _&lt;ₙ_; _+_ to _+ₙ_)</a>
-<a id="1749" class="Keyword">open</a> <a id="1754" class="Keyword">import</a> <a id="1761" href="Agda.Builtin.Bool.html" class="Module">Agda.Builtin.Bool</a> <a id="1779" class="Keyword">renaming</a> <a id="1788" class="Symbol">(</a><a id="1789" href="Agda.Builtin.Bool.html#188" class="InductiveConstructor">true</a> <a id="1794" class="Symbol">to</a> <a id="Builtin.Bool.Bool.true"></a><a id="1797" href="Number.html#1797" class="InductiveConstructor">TT</a><a id="1799" class="Symbol">;</a> <a id="1801" href="Agda.Builtin.Bool.html#182" class="InductiveConstructor">false</a> <a id="1807" class="Symbol">to</a> <a id="Builtin.Bool.Bool.false"></a><a id="1810" href="Number.html#1810" class="InductiveConstructor">FF</a><a id="1812" class="Symbol">)</a>
-<a id="1814" class="Keyword">open</a> <a id="1819" class="Keyword">import</a> <a id="1826" href="Function.Base.html" class="Module">Function.Base</a> <a id="1840" class="Keyword">using</a> <a id="1846" class="Symbol">(</a><a id="1847" href="Function.Base.html#4708" class="Function">it</a><a id="1849" class="Symbol">;</a> <a id="1851" href="Function.Base.html#1577" class="Function Operator">_$_</a><a id="1854" class="Symbol">)</a> <a id="1856" class="Comment">-- instance search</a>
-<a id="1875" class="Keyword">import</a> <a id="1882" href="Cubical.Data.Fin.Properties.html" class="Module">Cubical.Data.Fin.Properties</a>
-<a id="1910" class="Keyword">open</a> <a id="1915" class="Keyword">import</a> <a id="1922" href="Data.Nat.Properties.html" class="Module">Data.Nat.Properties</a> <a id="1942" class="Keyword">using</a> <a id="1948" class="Symbol">(</a><a id="1949" href="Data.Nat.Properties.html#17258" class="Function">+-mono-&lt;</a><a id="1957" class="Symbol">)</a>
-
-<a id="1960" class="Comment">-- NOTE: well, for 15 allowed coercions, we might just enumerate them</a>
-<a id="2030" class="Comment">--   unfortunately with overlapping patterns a style as in `Cl` is not possible</a>
-<a id="2110" class="Comment">--   we need to explicitly write out all the 5×5 combinations</a>
-<a id="2172" class="Comment">--   or, we implement a min operator which might work even with overlapping patterns</a>
-
-<a id="2258" class="Comment">-- num {isNat     ,, p} (x ,, q) = x</a>
-<a id="2295" class="Comment">-- num {isInt     ,, p} (x ,, q) = x</a>
-<a id="2332" class="Comment">-- num {isRat     ,, p} (x ,, q) = x</a>
-<a id="2369" class="Comment">-- num {isReal    ,, p} (x ,, q) = x</a>
-<a id="2406" class="Comment">-- num {isComplex ,, p} (x ,, q) = x</a>
+<a id="1843" class="Keyword">open</a> <a id="1848" href="Number.Postulates.html#2072" class="Module">ℕⁿ</a>
+<a id="1851" class="Keyword">open</a> <a id="1856" href="Number.Postulates.html#3143" class="Module">ℤᶻ</a>
+<a id="1859" class="Keyword">open</a> <a id="1864" href="Number.Postulates.html#4257" class="Module">ℚᶠ</a>
+<a id="1867" class="Keyword">open</a> <a id="1872" href="Number.Postulates.html#5353" class="Module">ℝʳ</a>
+<a id="1875" class="Keyword">open</a> <a id="1880" href="Number.Postulates.html#6343" class="Module">ℂᶜ</a>
 
 
-<a id="2445" class="Comment">-- TODO: name this &quot;inject&quot; instead of &quot;coerce&quot;</a>
-<a id="2493" class="Comment">-- TODO: make the module ℤ and the Carrier ℤ.ℤ</a>
-<a id="2540" class="Comment">-- TODO: for a binary relation `a # b` it would be nice to have a way to compose ≡-pathes to the left and the right</a>
-<a id="2656" class="Comment">--       similar to how ∙ can be used for pathes</a>
-<a id="2705" class="Comment">--       this reasoning might extend to transitive relations</a>
-<a id="2766" class="Comment">--       `cong₂ _#_ refl x` and `cong₂ _#_ x refl` to this (together with `transport`)</a>
-<a id="2853" class="Comment">-- NOTE: maybe ℕ↪ℤ should be a postfix operation</a>
+<a id="1885" class="Comment">-- NOTE: well, for 15 allowed coercions, we might just enumerate them</a>
+<a id="1955" class="Comment">--   unfortunately with overlapping patterns a style as in `Cl` is not possible</a>
+<a id="2035" class="Comment">--   we need to explicitly write out all the 5×5 combinations</a>
+<a id="2097" class="Comment">--   or, we implement a min operator which might work even with overlapping patterns</a>
 
-<a id="2903" class="Comment">-- module _ where</a>
-<a id="2921" class="Comment">-- module ℕ&#39; = ROrderedCommSemiring ℕ.Bundle</a>
-<a id="2966" class="Comment">-- module ℤ&#39; = ROrderedCommRing     ℤ.Bundle</a>
-<a id="3011" class="Comment">-- module ℚ&#39; = ROrderedField        ℚ.Bundle</a>
-<a id="3056" class="Comment">-- module ℝ&#39; = ROrderedField        ℝ.Bundle</a>
-<a id="3101" class="Comment">-- module ℂ&#39; = RField               ℂ.Bundle-- </a>
+<a id="2183" class="Comment">-- num {isNat     ,, p} (x ,, q) = x</a>
+<a id="2220" class="Comment">-- num {isInt     ,, p} (x ,, q) = x</a>
+<a id="2257" class="Comment">-- num {isRat     ,, p} (x ,, q) = x</a>
+<a id="2294" class="Comment">-- num {isReal    ,, p} (x ,, q) = x</a>
+<a id="2331" class="Comment">-- num {isComplex ,, p} (x ,, q) = x</a>
+
+
+<a id="2370" class="Comment">-- TODO: name this &quot;inject&quot; instead of &quot;coerce&quot;</a>
+<a id="2418" class="Comment">-- TODO: make the module ℤ and the Carrier ℤ.ℤ</a>
+<a id="2465" class="Comment">-- TODO: for a binary relation `a # b` it would be nice to have a way to compose ≡-pathes to the left and the right</a>
+<a id="2581" class="Comment">--       similar to how ∙ can be used for pathes</a>
+<a id="2630" class="Comment">--       this reasoning might extend to transitive relations</a>
+<a id="2691" class="Comment">--       `cong₂ _#_ refl x` and `cong₂ _#_ x refl` to this (together with `transport`)</a>
+<a id="2778" class="Comment">-- NOTE: maybe ℕ↪ℤ should be a postfix operation</a>
+
+<a id="2828" class="Comment">-- module _ where</a>
+<a id="2846" class="Comment">-- module ℕ&#39; = ROrderedCommSemiring ℕ.Bundle</a>
+<a id="2891" class="Comment">-- module ℤ&#39; = ROrderedCommRing     ℤ.Bundle</a>
+<a id="2936" class="Comment">-- module ℚ&#39; = ROrderedField        ℚ.Bundle</a>
+<a id="2981" class="Comment">-- module ℝ&#39; = ROrderedField        ℝ.Bundle</a>
+<a id="3026" class="Comment">-- module ℂ&#39; = RField               ℂ.Bundle-- </a>
 
   
 
-<a id="3154" class="Comment">-- coerce-OCSR : ∀{l p} {ll : NumberKind} {𝕏OCSR 𝕐OCSR : ROrderedCommSemiring {ℝℓ} {ℝℓ&#39;}}</a>
-<a id="3244" class="Comment">--             → (x : Number (l ,, p))</a>
-<a id="3283" class="Comment">--             → {f : Il l → Il ll}</a>
-<a id="3319" class="Comment">--             → IsROrderedCommSemiringInclusion 𝕏OCSR 𝕐OCSR f</a>
-<a id="3382" class="Comment">--             → Ip ll p (f (num x))</a>
-<a id="3419" class="Comment">-- coerce-OCSR {l} {ll} {p} {𝕏OCSR} {𝕐OCSR} {f} (x ,, q) = ?</a>
+<a id="3079" class="Comment">-- coerce-OCSR : ∀{l p} {ll : NumberKind} {𝕏OCSR 𝕐OCSR : ROrderedCommSemiring {ℝℓ} {ℝℓ&#39;}}</a>
+<a id="3169" class="Comment">--             → (x : Number (l ,, p))</a>
+<a id="3208" class="Comment">--             → {f : Il l → Il ll}</a>
+<a id="3244" class="Comment">--             → IsROrderedCommSemiringInclusion 𝕏OCSR 𝕐OCSR f</a>
+<a id="3307" class="Comment">--             → Ip ll p (f (num x))</a>
+<a id="3344" class="Comment">-- coerce-OCSR {l} {ll} {p} {𝕏OCSR} {𝕐OCSR} {f} (x ,, q) = ?</a>
 
+<a id="3406" class="Comment">{-
+private
+  instance
+    z≤n&#39; : ∀ {n}                 → zero  ≤ₙ n
+    z≤n&#39; {n} = z≤n
+    s≤s&#39; : ∀ {m n} {{m≤n : m ≤ₙ n}} → suc m ≤ₙ suc n
+    s≤s&#39; {m} {n} {{m≤n}} = s≤s m≤n
+-}</a>
 
-<a id="3482" class="Keyword">private</a>
-  <a id="3492" class="Keyword">instance</a>
-    <a id="z≤n&#39;"></a><a id="3505" href="Number.html#3505" class="Function">z≤n&#39;</a> <a id="3510" class="Symbol">:</a> <a id="3512" class="Symbol">∀</a> <a id="3514" class="Symbol">{</a><a id="3515" href="Number.html#3515" class="Bound">n</a><a id="3516" class="Symbol">}</a>                 <a id="3534" class="Symbol">→</a> <a id="3536" href="Agda.Builtin.Nat.html#210" class="InductiveConstructor">zero</a>  <a id="3542" href="Number.html#616" class="Function Operator">≤ₙ</a> <a id="3545" href="Number.html#3515" class="Bound">n</a>
-    <a id="3551" href="Number.html#3505" class="Function">z≤n&#39;</a> <a id="3556" class="Symbol">{</a><a id="3557" href="Number.html#3557" class="Bound">n</a><a id="3558" class="Symbol">}</a> <a id="3560" class="Symbol">=</a> <a id="3562" href="Number.html#586" class="Function">z≤n</a>
-    <a id="s≤s&#39;"></a><a id="3570" href="Number.html#3570" class="Function">s≤s&#39;</a> <a id="3575" class="Symbol">:</a> <a id="3577" class="Symbol">∀</a> <a id="3579" class="Symbol">{</a><a id="3580" href="Number.html#3580" class="Bound">m</a> <a id="3582" href="Number.html#3582" class="Bound">n</a><a id="3583" class="Symbol">}</a> <a id="3585" class="Symbol">{{</a><a id="3587" href="Number.html#3587" class="Bound">m≤n</a> <a id="3591" class="Symbol">:</a> <a id="3593" href="Number.html#3580" class="Bound">m</a> <a id="3595" href="Number.html#616" class="Function Operator">≤ₙ</a> <a id="3598" href="Number.html#3582" class="Bound">n</a><a id="3599" class="Symbol">}}</a> <a id="3602" class="Symbol">→</a> <a id="3604" href="Agda.Builtin.Nat.html#223" class="InductiveConstructor">suc</a> <a id="3608" href="Number.html#3580" class="Bound">m</a> <a id="3610" href="Number.html#616" class="Function Operator">≤ₙ</a> <a id="3613" href="Agda.Builtin.Nat.html#223" class="InductiveConstructor">suc</a> <a id="3617" href="Number.html#3582" class="Bound">n</a>
-    <a id="3623" href="Number.html#3570" class="Function">s≤s&#39;</a> <a id="3628" class="Symbol">{</a><a id="3629" href="Number.html#3629" class="Bound">m</a><a id="3630" class="Symbol">}</a> <a id="3632" class="Symbol">{</a><a id="3633" href="Number.html#3633" class="Bound">n</a><a id="3634" class="Symbol">}</a> <a id="3636" class="Symbol">{{</a><a id="3638" href="Number.html#3638" class="Bound">m≤n</a><a id="3641" class="Symbol">}}</a> <a id="3644" class="Symbol">=</a> <a id="3646" href="Number.html#604" class="Function">s≤s</a> <a id="3650" href="Number.html#3638" class="Bound">m≤n</a>
-
-<a id="3655" class="Comment">{-
+<a id="3585" class="Comment">{-
 -- TODO: why does `it` not work here?
 ⁻¹-Levels : (a : NumberKind) → Σ[ b ∈ NumberKind ] a ≤ₙₗ b
 ⁻¹-Levels isNat     = isRat     , z≤n -- it
@@ -110,9 +107,9 @@
 ⁻¹-Levels&#39; x = maxₙₗ x isRat
 -}</a>
 
-<a id="4106" class="Keyword">open</a> <a id="4111" href="Number.Blueprint.html#2238" class="Module">PatternsType</a>
+<a id="4036" class="Keyword">open</a> <a id="4041" href="Number.Base.html#2233" class="Module">PatternsType</a>
 
-<a id="4125" class="Comment">{-
+<a id="4055" class="Comment">{-
 private
   pattern X   = anyPositivity
   pattern X⁺⁻ = isNonzero
@@ -122,7 +119,7 @@ private
   pattern X₀⁻ = isNonpositive
 -}</a>
 
-<a id="4310" class="Comment">{-
+<a id="4240" class="Comment">{-
 ⁻¹-Types : NumberProp → Maybe NumberProp
 ⁻¹-Types (level ,, X  ) = nothing
 ⁻¹-Types (level ,, X₀⁺) = nothing
@@ -130,94 +127,103 @@ private
 ⁻¹-Types (level ,, p  ) = just (fst (⁻¹-Levels level) ,, p)
 -}</a>
 
-<a id="4520" class="Comment">-- ∀{{ q : Unit }} → Number (level ,, X⁺⁻)</a>
-<a id="4563" class="Comment">-- ∀{{ q : Unit }} → Number (level ,, X⁺ )</a>
-<a id="4606" class="Comment">-- ∀{{ q : Unit }} → Number (level ,, X⁻ )</a>
+<a id="4450" class="Comment">-- ∀{{ q : Unit }} → Number (level ,, X⁺⁻)</a>
+<a id="4493" class="Comment">-- ∀{{ q : Unit }} → Number (level ,, X⁺ )</a>
+<a id="4536" class="Comment">-- ∀{{ q : Unit }} → Number (level ,, X⁻ )</a>
 
-<a id="4650" class="Comment">-- pattern [ℝ₀⁺] = (isReal , X₀⁺)</a>
-<a id="4684" class="Comment">-- [ℝ₀⁺] = Number (isReal , isNonnegativeᵒʳ)</a>
-<a id="4729" class="Comment">-- [ℝ⁺]  = Number (isReal , isPositiveᵒʳ)</a>
-<a id="4771" class="Comment">-- [ℕ⁺]  = Number (isNat  , isPositiveᵒʳ)</a>
-<a id="4813" class="Comment">-- [ℝ]   = Number (isReal , anyPositivityᵒʳ)</a>
+<a id="4580" class="Comment">-- pattern [ℝ₀⁺] = (isReal , X₀⁺)</a>
+<a id="4614" class="Comment">-- [ℝ₀⁺] = Number (isReal , isNonnegativeᵒʳ)</a>
+<a id="4659" class="Comment">-- [ℝ⁺]  = Number (isReal , isPositiveᵒʳ)</a>
+<a id="4701" class="Comment">-- [ℕ⁺]  = Number (isNat  , isPositiveᵒʳ)</a>
+<a id="4743" class="Comment">-- [ℝ]   = Number (isReal , anyPositivityᵒʳ)</a>
 
-<a id="4859" class="Keyword">open</a> <a id="4864" class="Keyword">import</a> <a id="4871" href="Number.Prettyprint.html" class="Module">Number.Prettyprint</a>
+<a id="4789" class="Keyword">open</a> <a id="4794" class="Keyword">import</a> <a id="4801" href="Number.Prettyprint.html" class="Module">Number.Prettyprint</a>
 
-<a id="4891" class="Comment">-- {-# DISPLAY maxₙₗ&#39; isReal isReal = isReal #-}</a>
-<a id="4940" class="Comment">-- {-# DISPLAY Number (isReal , isNonnegative) = [ℝ₀⁺] #-}</a>
-<a id="4999" class="Comment">-- {-# DISPLAY Number (isReal , isPositive)    = [ℝ⁺]  #-}</a>
-
-
-<a id="[1ʳ]"></a><a id="5060" href="Number.html#5060" class="Function">[1ʳ]</a> <a id="5065" class="Symbol">:</a> <a id="5067" href="Number.Prettyprint.html#1075" class="Function">[ℝ⁺]</a>
-<a id="5072" href="Number.html#5060" class="Function">[1ʳ]</a> <a id="5077" class="Symbol">=</a> <a id="5079" href="Number.Postulates.html#4267" class="Function">1ʳ</a> <a id="5082" href="Number.Blueprint.html#8506" class="InductiveConstructor Operator">,,</a> <a id="5085" href="Number.Structures.html#1818" class="Function">ℝ.0&lt;1</a>
+<a id="4821" class="Comment">-- {-# DISPLAY maxₙₗ&#39; isReal isReal = isReal #-}</a>
+<a id="4870" class="Comment">-- {-# DISPLAY Number (isReal , isNonnegative) = [ℝ₀⁺] #-}</a>
+<a id="4929" class="Comment">-- {-# DISPLAY Number (isReal , isPositive)    = [ℝ⁺]  #-}</a>
 
 
-
-<a id="5094" class="Comment">-- test101 : Number (isNat , isPositiveᵒʳ) → Number (isReal ,  isNonnegativeᵒʳ) → {!!}</a>
-
-<a id="5182" class="Keyword">open</a> <a id="5187" class="Keyword">import</a> <a id="5194" href="Function.Base.html" class="Module">Function.Base</a> <a id="5208" class="Keyword">using</a> <a id="5214" class="Symbol">(</a><a id="5215" href="Function.Base.html#4590" class="Function">typeOf</a><a id="5221" class="Symbol">)</a>
-
-<a id="test201"></a><a id="5224" href="Number.html#5224" class="Function">test201</a> <a id="5232" class="Symbol">:</a> <a id="5234" href="Number.Prettyprint.html#310" class="Function">[ℕ⁺]</a> <a id="5239" class="Symbol">→</a> <a id="5241" href="Number.Prettyprint.html#1030" class="Function">[ℝ₀⁺]</a> <a id="5247" class="Symbol">→</a> <a id="5249" href="Number.Prettyprint.html#940" class="Function">[ℝ]</a>
-<a id="5253" class="Comment">-- As-patterns (or @-patterns) go well with resolving things in our approach</a>
-<a id="5330" href="Number.html#5224" class="Function">test201</a> <a id="5338" href="Number.html#5338" class="Bound">n</a><a id="5339" class="Symbol">@(</a><a id="5341" href="Number.html#5341" class="Bound">nn</a> <a id="5344" href="Number.Blueprint.html#8506" class="InductiveConstructor Operator">,,</a> <a id="5347" href="Number.html#5347" class="Bound">np</a><a id="5349" class="Symbol">)</a> <a id="5351" href="Number.html#5351" class="Bound">r</a><a id="5352" class="Symbol">@(</a><a id="5354" href="Number.html#5354" class="Bound">rn</a> <a id="5357" href="Number.Blueprint.html#8506" class="InductiveConstructor Operator">,,</a> <a id="5360" href="Number.html#5360" class="Bound">rp</a><a id="5362" class="Symbol">)</a> <a id="5364" class="Symbol">=</a> <a id="5366" class="Keyword">let</a>
-<a id="5370" class="Comment">-- generic operations are provided</a>
-<a id="5405" class="Comment">-- q : [ℕ⁺]</a>
-<a id="5417" class="Comment">-- z : [ℝ₀⁺]</a>
-   <a id="5433" href="Number.html#5433" class="Bound">q</a> <a id="5435" class="Symbol">=</a> <a id="5437" href="Number.html#5338" class="Bound">n</a> <a id="5439" href="Number.GenericOperations.html#15508" class="Function Operator">+</a> <a id="5441" href="Number.html#5338" class="Bound">n</a>
-   <a id="5446" href="Number.html#5446" class="Bound">z</a> <a id="5448" class="Symbol">=</a> <a id="5450" href="Number.html#5351" class="Bound">r</a> <a id="5452" href="Number.GenericOperations.html#15508" class="Function Operator">+</a> <a id="5454" href="Number.html#5351" class="Bound">r</a>
-
-<a id="5457" class="Comment">-- we can project-out the underlying number of a `Number` with `num`</a>
-<a id="5526" class="Comment">-- zʳ : ℝ</a>
-   <a id="5539" href="Number.html#5539" class="Bound">zʳ</a> <a id="5542" class="Symbol">=</a> <a id="5544" href="Number.Blueprint.html#8630" class="Function">num</a> <a id="5548" href="Number.html#5446" class="Bound">z</a>
-
-<a id="5551" class="Comment">-- and we can project-out the property of a `Number` with `prp`</a>
-<a id="5615" class="Comment">-- zp : 0ʳ ≤ʳ (rn +ʳ rn)</a>
-   <a id="5643" href="Number.html#5643" class="Bound">zp</a> <a id="5646" class="Symbol">=</a> <a id="5648" href="Number.Blueprint.html#8724" class="Function">prp</a> <a id="5652" href="Number.html#5446" class="Bound">z</a>
-
-<a id="5655" class="Comment">-- since the generic `_+_` makes use of `_+ʳ_` on ℝ, we get definitional equality</a>
-   <a id="5740" href="Number.html#5740" class="Bound">_</a> <a id="5742" class="Symbol">:</a> <a id="5744" href="Number.html#5539" class="Bound">zʳ</a> <a id="5747" href="Agda.Builtin.Cubical.Path.html#381" class="Function Operator">≡</a> <a id="5749" href="Number.html#5354" class="Bound">rn</a> <a id="5752" href="Number.Postulates.html#4283" class="Function Operator">+ʳ</a> <a id="5755" href="Number.html#5354" class="Bound">rn</a>
-   <a id="5761" class="Symbol">_</a> <a id="5763" class="Symbol">=</a> <a id="5765" href="Cubical.Foundations.Id.html#588" class="Function">refl</a>
-
-<a id="5771" class="Comment">-- we can turn a generic number into a Σ pair with `pop`</a>
-<a id="5828" class="Comment">-- qʳ   : ℕ₀</a>
-<a id="5841" class="Comment">-- qʳ   = nn +ⁿ nn</a>
-<a id="5860" class="Comment">-- qp   : 0ⁿ &lt;ⁿ (nn +ⁿ nn)</a>
-<a id="5887" class="Comment">-- qp   = +-&lt;-&lt;-implies-&lt;ʳ nn nn np np</a>
-   <a id="5929" class="Symbol">(</a><a id="5930" href="Number.html#5930" class="Bound">qʳ</a> <a id="5933" href="Agda.Builtin.Sigma.html#236" class="InductiveConstructor Operator">,</a> <a id="5935" href="Number.html#5935" class="Bound">qp</a><a id="5937" class="Symbol">)</a> <a id="5939" class="Symbol">=</a> <a id="5941" href="Number.Blueprint.html#8836" class="Function">pop</a> <a id="5945" href="Number.html#5433" class="Bound">q</a>
-
-<a id="5948" class="Comment">-- and we can create a number with `_,,_`</a>
-<a id="5990" class="Comment">-- this needs some type annotation for help</a>
-   <a id="6037" href="Number.html#6037" class="Bound">q&#39;</a> <a id="6040" class="Symbol">:</a> <a id="6042" href="Function.Base.html#4590" class="Function">typeOf</a> <a id="6049" href="Number.html#5433" class="Bound">q</a>
-   <a id="6054" href="Number.html#6037" class="Bound">q&#39;</a> <a id="6057" class="Symbol">=</a> <a id="6059" href="Number.html#5930" class="Bound">qʳ</a> <a id="6062" href="Number.Blueprint.html#8506" class="InductiveConstructor Operator">,,</a> <a id="6065" href="Number.html#5935" class="Bound">qp</a>
-
-<a id="6069" class="Comment">-- if the two parts of q and q&#39; are in scope, then we get definitional equality</a>
-   <a id="6152" href="Number.html#6152" class="Bound">_</a> <a id="6154" class="Symbol">:</a> <a id="6156" href="Number.html#5433" class="Bound">q</a> <a id="6158" href="Agda.Builtin.Cubical.Path.html#381" class="Function Operator">≡</a> <a id="6160" href="Number.html#6037" class="Bound">q&#39;</a>
-   <a id="6166" class="Symbol">_</a> <a id="6168" class="Symbol">=</a> <a id="6170" href="Cubical.Foundations.Id.html#588" class="Function">refl</a>
-
-<a id="6176" class="Comment">-- r is nonnegative from [ℝ₀⁺], [1ʳ] is positive from [ℝ⁺]</a>
-<a id="6235" class="Comment">-- and _+_ makes use of the fact that &quot;positive + nonnegative = positive&quot;</a>
-<a id="6309" class="Comment">-- y : [ℝ⁺]</a>
-<a id="6321" class="Comment">-- y = (rn +ʳ 1ʳ) ,, +-≤-&lt;-implies-&lt;ʳ rn 1ʳ rp 0&lt;1</a>
-   <a id="6375" href="Number.html#6375" class="Bound">y</a> <a id="6377" class="Symbol">=</a>  <a id="6380" href="Number.html#5351" class="Bound">r</a> <a id="6382" href="Number.GenericOperations.html#15508" class="Function Operator">+</a> <a id="6384" href="Number.html#5060" class="Function">[1ʳ]</a>
-
-<a id="6390" class="Comment">-- _+_ automatically coerces n from ℕ⁺ to ℝ⁺</a>
-<a id="6435" class="Comment">-- and uses the fact that &quot;positive + nonnegative = positive&quot;</a>
-<a id="6497" class="Comment">-- n+r : [ℝ⁺]</a>
-<a id="6511" class="Comment">-- n+r = (ℕ↪ℝ nn +ʳ rn) ,, +-&lt;-≤-implies-&lt;ʳ (ℕ↪ℝ nn) rn (coerce-ℕ↪ℝ (nn ,, np)) rp</a>
-   <a id="6597" href="Number.html#6597" class="Bound">n+r</a> <a id="6601" class="Symbol">=</a> <a id="6603" href="Number.html#5338" class="Bound">n</a> <a id="6605" href="Number.GenericOperations.html#15508" class="Function Operator">+</a> <a id="6607" href="Number.html#5351" class="Bound">r</a>
-
-<a id="6610" class="Comment">-- generic relations like _&lt;_ also make use of their underlying relations</a>
-<a id="6684" class="Comment">-- and therefore we also get definitional equality, no matter how the relation is stated</a>
-   <a id="6776" href="Number.html#6776" class="Bound">pp</a>   <a id="6781" class="Symbol">:</a> <a id="6783" href="Number.html#5060" class="Function">[1ʳ]</a> <a id="6788" href="Number.GenericOperations.html#16272" class="Function Operator">&lt;</a>      <a id="6795" class="Symbol">(</a><a id="6796" href="Number.html#5351" class="Bound">r</a>  <a id="6799" href="Number.GenericOperations.html#15508" class="Function Operator">+</a> <a id="6801" href="Number.html#5060" class="Function">[1ʳ]</a><a id="6805" class="Symbol">)</a>
-   <a id="6810" href="Number.html#6776" class="Bound">pp</a>   <a id="6815" class="Symbol">=</a> <a id="6817" class="Symbol">{!!}</a>
-   <a id="6825" href="Number.html#6825" class="Bound">pp&#39;</a>  <a id="6830" class="Symbol">:</a>  <a id="6833" href="Number.Postulates.html#4267" class="Function">1ʳ</a>  <a id="6837" href="Number.Postulates.html#4161" class="Function Operator">&lt;ʳ</a> <a id="6840" href="Number.Blueprint.html#8630" class="Function">num</a> <a id="6844" class="Symbol">(</a><a id="6845" href="Number.html#5351" class="Bound">r</a>  <a id="6848" href="Number.GenericOperations.html#15508" class="Function Operator">+</a> <a id="6850" href="Number.html#5060" class="Function">[1ʳ]</a><a id="6854" class="Symbol">)</a>
-   <a id="6859" href="Number.html#6825" class="Bound">pp&#39;</a>  <a id="6864" class="Symbol">=</a> <a id="6866" class="Symbol">{!!}</a>
-   <a id="6874" href="Number.html#6874" class="Bound">pp&#39;&#39;</a> <a id="6879" class="Symbol">:</a>  <a id="6882" href="Number.Postulates.html#4267" class="Function">1ʳ</a>  <a id="6886" href="Number.Postulates.html#4161" class="Function Operator">&lt;ʳ</a>     <a id="6893" class="Symbol">(</a><a id="6894" href="Number.html#5354" class="Bound">rn</a> <a id="6897" href="Number.Postulates.html#4283" class="Function Operator">+ʳ</a> <a id="6900" href="Number.Postulates.html#4267" class="Function">1ʳ</a> <a id="6903" class="Symbol">)</a>
-   <a id="6908" href="Number.html#6874" class="Bound">pp&#39;&#39;</a> <a id="6913" class="Symbol">=</a> <a id="6915" class="Symbol">{!!}</a>
-   <a id="6923" href="Number.html#6923" class="Bound">_</a> <a id="6925" class="Symbol">:</a> <a id="6927" class="Symbol">(</a><a id="6928" href="Number.html#6776" class="Bound">pp</a> <a id="6931" href="Agda.Builtin.Cubical.Path.html#381" class="Function Operator">≡</a> <a id="6933" href="Number.html#6825" class="Bound">pp&#39;</a><a id="6936" class="Symbol">)</a> <a id="6938" href="Number.html#842" class="Function Operator">×</a> <a id="6940" class="Symbol">(</a><a id="6941" href="Number.html#6776" class="Bound">pp</a> <a id="6944" href="Agda.Builtin.Cubical.Path.html#381" class="Function Operator">≡</a> <a id="6946" href="Number.html#6874" class="Bound">pp&#39;&#39;</a><a id="6950" class="Symbol">)</a>
-   <a id="6955" class="Symbol">_</a> <a id="6957" class="Symbol">=</a> <a id="6959" href="Cubical.Foundations.Id.html#588" class="Function">refl</a> <a id="6964" href="Agda.Builtin.Sigma.html#236" class="InductiveConstructor Operator">,</a> <a id="6966" href="Cubical.Foundations.Id.html#588" class="Function">refl</a>
-   <a id="6974" class="Keyword">in</a> <a id="6977" class="Symbol">{!!}</a>
+<a id="[1ʳ]"></a><a id="4990" href="Number.html#4990" class="Function">[1ʳ]</a> <a id="4995" class="Symbol">:</a> <a id="4997" href="Number.Prettyprint.html#1070" class="Function">[ℝ⁺]</a>
+<a id="5002" href="Number.html#4990" class="Function">[1ʳ]</a> <a id="5007" class="Symbol">=</a> <a id="5009" href="Number.Postulates.html#5519" class="Function">1ʳ</a> <a id="5012" href="Number.Base.html#7738" class="InductiveConstructor Operator">,,</a> <a id="5015" href="Number.Structures.html#2107" class="Function">ℝ.0&lt;1</a>
 
 
 
+<a id="5024" class="Comment">-- test101 : Number (isNat , isPositiveᵒʳ) → Number (isReal ,  isNonnegativeᵒʳ) → {!!}</a>
 
+<a id="5112" class="Keyword">open</a> <a id="5117" class="Keyword">import</a> <a id="5124" href="Function.Base.html" class="Module">Function.Base</a> <a id="5138" class="Keyword">using</a> <a id="5144" class="Symbol">(</a><a id="5145" href="Function.Base.html#4590" class="Function">typeOf</a><a id="5151" class="Symbol">)</a>
+
+<a id="test201"></a><a id="5154" href="Number.html#5154" class="Function">test201</a> <a id="5162" class="Symbol">:</a> <a id="5164" href="Number.Prettyprint.html#305" class="Function">[ℕ⁺]</a> <a id="5169" class="Symbol">→</a> <a id="5171" href="Number.Prettyprint.html#1025" class="Function">[ℝ₀⁺]</a> <a id="5177" class="Symbol">→</a> <a id="5179" href="Number.Prettyprint.html#935" class="Function">[ℝ]</a>
+<a id="5183" class="Comment">-- As-patterns (or @-patterns) go well with resolving things in our approach</a>
+<a id="5260" href="Number.html#5154" class="Function">test201</a> <a id="5268" href="Number.html#5268" class="Bound">n</a><a id="5269" class="Symbol">@(</a><a id="5271" href="Number.html#5271" class="Bound">nn</a> <a id="5274" href="Number.Base.html#7738" class="InductiveConstructor Operator">,,</a> <a id="5277" href="Number.html#5277" class="Bound">np</a><a id="5279" class="Symbol">)</a> <a id="5281" href="Number.html#5281" class="Bound">r</a><a id="5282" class="Symbol">@(</a><a id="5284" href="Number.html#5284" class="Bound">rn</a> <a id="5287" href="Number.Base.html#7738" class="InductiveConstructor Operator">,,</a> <a id="5290" href="Number.html#5290" class="Bound">rp</a><a id="5292" class="Symbol">)</a> <a id="5294" class="Symbol">=</a> <a id="5296" class="Keyword">let</a>
+<a id="5300" class="Comment">-- generic operations are provided</a>
+<a id="5335" class="Comment">-- q : [ℕ⁺]</a>
+<a id="5347" class="Comment">-- z : [ℝ₀⁺]</a>
+   <a id="5363" href="Number.html#5363" class="Bound">q</a> <a id="5365" class="Symbol">=</a> <a id="5367" href="Number.html#5268" class="Bound">n</a> <a id="5369" href="Number.Operations.html#3098" class="Function Operator">+</a> <a id="5371" href="Number.html#5268" class="Bound">n</a>
+   <a id="5376" href="Number.html#5376" class="Bound">z</a> <a id="5378" class="Symbol">=</a> <a id="5380" href="Number.html#5281" class="Bound">r</a> <a id="5382" href="Number.Operations.html#3098" class="Function Operator">+</a> <a id="5384" href="Number.html#5281" class="Bound">r</a>
+
+<a id="5387" class="Comment">-- we can project-out the underlying number of a `Number` with `num`</a>
+<a id="5456" class="Comment">-- zʳ : ℝ</a>
+   <a id="5469" href="Number.html#5469" class="Bound">zʳ</a> <a id="5472" class="Symbol">=</a> <a id="5474" href="Number.Base.html#7862" class="Function">num</a> <a id="5478" href="Number.html#5376" class="Bound">z</a>
+
+<a id="5481" class="Comment">-- and we can project-out the property of a `Number` with `prp`</a>
+<a id="5545" class="Comment">-- zp : 0ʳ ≤ʳ (rn +ʳ rn)</a>
+   <a id="5573" href="Number.html#5573" class="Bound">zp</a> <a id="5576" class="Symbol">=</a> <a id="5578" href="Number.Base.html#7956" class="Function">prp</a> <a id="5582" href="Number.html#5376" class="Bound">z</a>
+
+<a id="5585" class="Comment">-- since the generic `_+_` makes use of `_+ʳ_` on ℝ, we get definitional equality</a>
+   <a id="5670" href="Number.html#5670" class="Bound">_</a> <a id="5672" class="Symbol">:</a> <a id="5674" href="Number.html#5469" class="Bound">zʳ</a> <a id="5677" href="Agda.Builtin.Cubical.Path.html#381" class="Function Operator">≡</a> <a id="5679" href="Number.html#5284" class="Bound">rn</a> <a id="5682" href="Number.Postulates.html#5535" class="Function Operator">+ʳ</a> <a id="5685" href="Number.html#5284" class="Bound">rn</a>
+   <a id="5691" class="Symbol">_</a> <a id="5693" class="Symbol">=</a> <a id="5695" href="Cubical.Foundations.Id.html#588" class="Function">refl</a>
+
+<a id="5701" class="Comment">-- we can turn a generic number into a Σ pair with `pop`</a>
+<a id="5758" class="Comment">-- qʳ   : ℕ₀</a>
+<a id="5771" class="Comment">-- qʳ   = nn +ⁿ nn</a>
+<a id="5790" class="Comment">-- qp   : 0ⁿ &lt;ⁿ (nn +ⁿ nn)</a>
+<a id="5817" class="Comment">-- qp   = +-&lt;-&lt;-implies-&lt;ʳ nn nn np np</a>
+   <a id="5859" class="Symbol">(</a><a id="5860" href="Number.html#5860" class="Bound">qʳ</a> <a id="5863" href="Agda.Builtin.Sigma.html#236" class="InductiveConstructor Operator">,</a> <a id="5865" href="Number.html#5865" class="Bound">qp</a><a id="5867" class="Symbol">)</a> <a id="5869" class="Symbol">=</a> <a id="5871" href="Number.Base.html#8068" class="Function">pop</a> <a id="5875" href="Number.html#5363" class="Bound">q</a>
+
+<a id="5878" class="Comment">-- and we can create a number with `_,,_`</a>
+<a id="5920" class="Comment">-- this needs some type annotation for help</a>
+   <a id="5967" href="Number.html#5967" class="Bound">q&#39;</a> <a id="5970" class="Symbol">:</a> <a id="5972" href="Function.Base.html#4590" class="Function">typeOf</a> <a id="5979" href="Number.html#5363" class="Bound">q</a>
+   <a id="5984" href="Number.html#5967" class="Bound">q&#39;</a> <a id="5987" class="Symbol">=</a> <a id="5989" href="Number.html#5860" class="Bound">qʳ</a> <a id="5992" href="Number.Base.html#7738" class="InductiveConstructor Operator">,,</a> <a id="5995" href="Number.html#5865" class="Bound">qp</a>
+
+<a id="5999" class="Comment">-- if the two parts of q and q&#39; are in scope, then we get definitional equality</a>
+   <a id="6082" href="Number.html#6082" class="Bound">_</a> <a id="6084" class="Symbol">:</a> <a id="6086" href="Number.html#5363" class="Bound">q</a> <a id="6088" href="Agda.Builtin.Cubical.Path.html#381" class="Function Operator">≡</a> <a id="6090" href="Number.html#5967" class="Bound">q&#39;</a>
+   <a id="6096" class="Symbol">_</a> <a id="6098" class="Symbol">=</a> <a id="6100" href="Cubical.Foundations.Id.html#588" class="Function">refl</a>
+
+<a id="6106" class="Comment">-- r is nonnegative from [ℝ₀⁺], [1ʳ] is positive from [ℝ⁺]</a>
+<a id="6165" class="Comment">-- and _+_ makes use of the fact that &quot;positive + nonnegative = positive&quot;</a>
+<a id="6239" class="Comment">-- y : [ℝ⁺]</a>
+<a id="6251" class="Comment">-- y = (rn +ʳ 1ʳ) ,, +-≤-&lt;-implies-&lt;ʳ rn 1ʳ rp 0&lt;1</a>
+   <a id="6305" href="Number.html#6305" class="Bound">y</a> <a id="6307" class="Symbol">=</a>  <a id="6310" href="Number.html#5281" class="Bound">r</a> <a id="6312" href="Number.Operations.html#3098" class="Function Operator">+</a> <a id="6314" href="Number.html#4990" class="Function">[1ʳ]</a>
+
+<a id="6320" class="Comment">-- _+_ automatically coerces n from ℕ⁺ to ℝ⁺</a>
+<a id="6365" class="Comment">-- and uses the fact that &quot;positive + nonnegative = positive&quot;</a>
+<a id="6427" class="Comment">-- n+r : [ℝ⁺]</a>
+<a id="6441" class="Comment">-- n+r = (ℕ↪ℝ nn +ʳ rn) ,, +-&lt;-≤-implies-&lt;ʳ (ℕ↪ℝ nn) rn (coerce-ℕ↪ℝ (nn ,, np)) rp</a>
+   <a id="6527" href="Number.html#6527" class="Bound">n+r</a> <a id="6531" class="Symbol">=</a> <a id="6533" href="Number.html#5268" class="Bound">n</a> <a id="6535" href="Number.Operations.html#3098" class="Function Operator">+</a> <a id="6537" href="Number.html#5281" class="Bound">r</a>
+
+<a id="6540" class="Comment">-- generic relations like _&lt;_ also make use of their underlying relations</a>
+<a id="6614" class="Comment">-- and therefore we also get definitional equality, no matter how the relation is stated</a>
+   <a id="6706" href="Number.html#6706" class="Bound">pp</a>   <a id="6711" class="Symbol">:</a> <a id="6713" href="Number.html#4990" class="Function">[1ʳ]</a> <a id="6718" href="Number.Operations.html#3781" class="Function Operator">&lt;</a>      <a id="6725" class="Symbol">(</a><a id="6726" href="Number.html#5281" class="Bound">r</a>  <a id="6729" href="Number.Operations.html#3098" class="Function Operator">+</a> <a id="6731" href="Number.html#4990" class="Function">[1ʳ]</a><a id="6735" class="Symbol">)</a>
+   <a id="6740" href="Number.html#6706" class="Bound">pp</a>   <a id="6745" class="Symbol">=</a> <a id="6747" class="Symbol">{!!}</a>
+   <a id="6755" href="Number.html#6755" class="Bound">pp&#39;</a>  <a id="6760" class="Symbol">:</a>  <a id="6763" href="Number.Postulates.html#5519" class="Function">1ʳ</a>  <a id="6767" href="Number.Postulates.html#5413" class="Function Operator">&lt;ʳ</a> <a id="6770" href="Number.Base.html#7862" class="Function">num</a> <a id="6774" class="Symbol">(</a><a id="6775" href="Number.html#5281" class="Bound">r</a>  <a id="6778" href="Number.Operations.html#3098" class="Function Operator">+</a> <a id="6780" href="Number.html#4990" class="Function">[1ʳ]</a><a id="6784" class="Symbol">)</a>
+   <a id="6789" href="Number.html#6755" class="Bound">pp&#39;</a>  <a id="6794" class="Symbol">=</a> <a id="6796" class="Symbol">{!!}</a>
+   <a id="6804" href="Number.html#6804" class="Bound">pp&#39;&#39;</a> <a id="6809" class="Symbol">:</a>  <a id="6812" href="Number.Postulates.html#5519" class="Function">1ʳ</a>  <a id="6816" href="Number.Postulates.html#5413" class="Function Operator">&lt;ʳ</a>     <a id="6823" class="Symbol">(</a><a id="6824" href="Number.html#5284" class="Bound">rn</a> <a id="6827" href="Number.Postulates.html#5535" class="Function Operator">+ʳ</a> <a id="6830" href="Number.Postulates.html#5519" class="Function">1ʳ</a> <a id="6833" class="Symbol">)</a>
+   <a id="6838" href="Number.html#6804" class="Bound">pp&#39;&#39;</a> <a id="6843" class="Symbol">=</a> <a id="6845" class="Symbol">{!!}</a>
+   <a id="6853" href="Number.html#6853" class="Bound">_</a> <a id="6855" class="Symbol">:</a> <a id="6857" class="Symbol">(</a><a id="6858" href="Number.html#6706" class="Bound">pp</a> <a id="6861" href="Agda.Builtin.Cubical.Path.html#381" class="Function Operator">≡</a> <a id="6863" href="Number.html#6755" class="Bound">pp&#39;</a><a id="6866" class="Symbol">)</a> <a id="6868" href="Number.html#601" class="Function Operator">×</a> <a id="6870" class="Symbol">(</a><a id="6871" href="Number.html#6706" class="Bound">pp</a> <a id="6874" href="Agda.Builtin.Cubical.Path.html#381" class="Function Operator">≡</a> <a id="6876" href="Number.html#6804" class="Bound">pp&#39;&#39;</a><a id="6880" class="Symbol">)</a>
+   <a id="6885" class="Symbol">_</a> <a id="6887" class="Symbol">=</a> <a id="6889" href="Cubical.Foundations.Id.html#588" class="Function">refl</a> <a id="6894" href="Agda.Builtin.Sigma.html#236" class="InductiveConstructor Operator">,</a> <a id="6896" href="Cubical.Foundations.Id.html#588" class="Function">refl</a>
+   <a id="6904" class="Keyword">in</a> <a id="6907" class="Symbol">{! - [1ʳ]!}</a>
+
+
+<a id="6921" href="Number.html#6921" class="UnsolvedMeta Function">_</a> <a id="6923" class="Symbol">=</a> <a id="6925" class="Symbol">{! ℕ!}</a>
+
+<a id="6933" class="Comment">{-
+
+distance : ∀(x y : [ℝ]) → [ℝ]
+distance x y = max (x + (- y)) (- (x + (- y)))
+
+IsCauchy : (x : ℕ → ℝ) → Type (ℓ-max ℓ&#39; ℚℓ)
+IsCauchy x = ∀(ε : [ℚ⁺]) → ∃[ N ∈ ℕ ] ∀(m n : ℕ) → N ≤ⁿ m → N ≤ⁿ n → distance (x m) (x n) &lt; ε
+
+-}</a>
 </pre></body></html>
