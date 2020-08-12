@@ -30,6 +30,8 @@ record IsRField {F : Type ℓ} (_#_ : Rel F F ℓ') (0f 1f : F) (_+_ _·_ : F �
     +-comm  : ∀ x y   →       x + y ≡ y + x
     distrib : ∀ x y z → (x + y) · z ≡ (x · z) + (y · z)
     ⁻¹-preserves-#0 : ∀ x → (p : x # 0f) → _⁻¹ x {{p}} # 0f
+    -preserves-#  : ∀ x y → x # y  → (- x) # (- y)
+    -preserves-#0 : ∀ x   → x # 0f → (- x) #    0f
     -- TODO: properties
 
 -- Finₖ ℕ ℤ ℚ ℚ₀⁺ ℚ⁺ ℝ ℝ₀⁺ ℝ⁺
@@ -62,6 +64,15 @@ record IsROrderedCommSemiring {F : Type ℓ} (_<_ _≤_ _#_ : Rel F F ℓ') (min
 record IsROrderedCommRing {F : Type ℓ} (_<_ _≤_ _#_ : Rel F F ℓ') (min max : F → F → F) (0f 1f : F) (_+_ _·_ : F → F → F) (-_ : F → F) : Type (ℓ-max ℓ ℓ') where
   field
     isROrderedCommSemiring : IsROrderedCommSemiring _<_ _≤_ _#_ min max 0f 1f _+_ _·_
+    0≡-0 : 0f ≡ - 0f
+    -flips-<  : ∀ x y → x  < y  → (- y) < (- x)
+    -flips-<0 : ∀ x   → x  < 0f →    0f < (- x)
+    -flips-0< : ∀ x   → 0f < x  → (- x) <    0f
+    -flips-≤  : ∀ x y → x  ≤ y  → (- y) ≤ (- x)
+    -flips-≤0 : ∀ x   → x  ≤ 0f →    0f ≤ (- x)
+    -flips-0≤ : ∀ x   → 0f ≤ x  → (- x) ≤    0f
+    -preserves-#  : ∀ x y → x # y  → (- x) # (- y)
+    -preserves-#0 : ∀ x   → x # 0f → (- x) #    0f
     -- TODO: properties
   open IsROrderedCommSemiring isROrderedCommSemiring public
 
@@ -71,7 +82,10 @@ record IsROrderedField {F : Type ℓ} (_<_ _≤_ _#_ : Rel F F ℓ') (min max : 
     isROrderedCommRing : IsROrderedCommRing _<_ _≤_ _#_ min max 0f 1f _+_ _·_ -_
     isRField           : IsRField _#_ 0f 1f _+_ _·_ -_ _⁻¹
     
-  open IsROrderedCommRing isROrderedCommRing public
+  open IsROrderedCommRing isROrderedCommRing hiding
+    ( -preserves-#
+    ; -preserves-#0
+    ) public
   open IsRField isRField public
 
   field

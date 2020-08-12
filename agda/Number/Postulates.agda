@@ -78,6 +78,10 @@ module ℕ* where
   _·_ = Bundle._·_ bundle
   isROrderedCommSemiring = Bundle.isROrderedCommSemiring bundle
 
+  0≤x : ∀ x → 0 ≤ x
+  0≤x ℕ.zero =  0 , refl
+  0≤x (ℕ.suc x) =  ℕ.suc x , (λ i → ℕ.suc (Nat.+-zero x i)) ∙ refl {x = ℕ.suc x}
+
   open IsROrderedCommSemiring isROrderedCommSemiring public
 
 module ℕ  = ℕ* hiding (ℕ)
@@ -133,7 +137,7 @@ module ℤ* where
   open IsROrderedCommRing isROrderedCommRing public
 
 module ℤ  = ℤ* hiding (ℤ)
-module ℤᶻ = ℤ
+module ℤᶻ = ℤ*
     renaming
     ( Carrier to Carrierᶻ
     ; _<_ to _<ᶻ_
