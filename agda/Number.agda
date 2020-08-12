@@ -11,18 +11,25 @@ private
 open import Cubical.Foundations.Everything renaming (_⁻¹ to _⁻¹ᵖ; assoc to ∙-assoc)
 open import Cubical.Relation.Nullary.Base -- ¬_
 open import Cubical.Relation.Binary.Base -- Rel
-
--- open import Data.Nat.Base using (ℕ) renaming (_≤_ to _≤ₙ_)
-open import Cubical.Data.Nat using (ℕ; zero; suc) renaming (_+_ to _+ₙ_)
-open import Cubical.Data.Nat.Order renaming (zero-≤ to z≤n; suc-≤-suc to s≤s; _≤_ to _≤ₙ_; _<_ to _<ₙ_)
-
 open import Cubical.Data.Unit.Base -- Unit
 open import Cubical.Data.Empty -- ⊥
 open import Cubical.Data.Sum.Base renaming (_⊎_ to infixr 4 _⊎_)
 open import Cubical.Data.Sigma.Base renaming (_×_ to infixr 4 _×_)
 open import Cubical.Data.Empty renaming (elim to ⊥-elim) -- `⊥` and `elim`
-open import Cubical.Data.Maybe.Base
-open import Function.Base using (_∋_)
+open import Function.Base using (it; _∋_; _$_)
+
+-- open import Data.Nat.Base using (ℕ) renaming (_≤_ to _≤ₙ_)
+-- open import Cubical.Data.Nat using (ℕ; zero; suc) renaming (_+_ to _+ₙ_)
+-- open import Cubical.Data.Nat.Order renaming (zero-≤ to z≤n; suc-≤-suc to s≤s; _≤_ to _≤ₙ_; _<_ to _<ₙ_)
+-- open import Cubical.Data.Fin.Base
+-- import Cubical.Data.Fin.Properties
+-- open import Cubical.Data.Nat using (ℕ; zero; suc) renaming (_+_ to _+ₙ_)
+-- open import Cubical.Data.Nat.Properties using (+-suc; injSuc; snotz; +-comm; +-assoc; +-zero; inj-m+)
+-- open import Cubical.Data.Nat.Order renaming (zero-≤ to z≤n; suc-≤-suc to s≤s; _≤_ to _≤ₙ_; _<_ to _<ₙ_; _≟_ to _≟ₙ_)
+-- open import Data.Nat.Base using (ℕ; z≤n; s≤s; zero; suc) renaming (_≤_ to _≤ₙ_; _<_ to _<ₙ_; _+_ to _+ₙ_)
+-- open import Agda.Builtin.Bool renaming (true to TT; false to FF)
+-- import Cubical.Data.Fin.Properties
+-- open import Data.Nat.Properties using (+-mono-<)
 
 -- open import Bundles
 
@@ -30,9 +37,9 @@ open import Number.Postulates
 open import Number.Structures
 open import Number.Bundles
 open import Number.Inclusions
-open import Number.Blueprint
+open import Number.Base
 open import Number.Coercions
-open import Number.GenericOperations
+open import Number.Operations
 
 open ℕⁿ
 open ℤᶻ
@@ -40,17 +47,6 @@ open ℚᶠ
 open ℝʳ
 open ℂᶜ
 
-
-open import Cubical.Data.Fin.Base
--- import Cubical.Data.Fin.Properties
-open import Cubical.Data.Nat using (ℕ; zero; suc) renaming (_+_ to _+ₙ_)
-open import Cubical.Data.Nat.Properties using (+-suc; injSuc; snotz; +-comm; +-assoc; +-zero; inj-m+)
-open import Cubical.Data.Nat.Order renaming (zero-≤ to z≤n; suc-≤-suc to s≤s; _≤_ to _≤ₙ_; _<_ to _<ₙ_; _≟_ to _≟ₙ_)
--- open import Data.Nat.Base using (ℕ; z≤n; s≤s; zero; suc) renaming (_≤_ to _≤ₙ_; _<_ to _<ₙ_; _+_ to _+ₙ_)
-open import Agda.Builtin.Bool renaming (true to TT; false to FF)
-open import Function.Base using (it; _$_) -- instance search
-import Cubical.Data.Fin.Properties
-open import Data.Nat.Properties using (+-mono-<)
 
 -- NOTE: well, for 15 allowed coercions, we might just enumerate them
 --   unfortunately with overlapping patterns a style as in `Cl` is not possible
@@ -88,13 +84,14 @@ open import Data.Nat.Properties using (+-mono-<)
 --             → Ip ll p (f (num x))
 -- coerce-OCSR {l} {ll} {p} {𝕏OCSR} {𝕐OCSR} {f} (x ,, q) = ?
 
-
+{-
 private
   instance
     z≤n' : ∀ {n}                 → zero  ≤ₙ n
     z≤n' {n} = z≤n
     s≤s' : ∀ {m n} {{m≤n : m ≤ₙ n}} → suc m ≤ₙ suc n
     s≤s' {m} {n} {{m≤n}} = s≤s m≤n
+-}
 
 {-
 -- TODO: why does `it` not work here?
@@ -214,8 +211,17 @@ test201 n@(nn ,, np) r@(rn ,, rp) = let
    pp'' = {!!}
    _ : (pp ≡ pp') × (pp ≡ pp'')
    _ = refl , refl
-   in {!!}
+   in {! - [1ʳ]!}
 
 
+_ = {! ℕ!}
 
+{-
 
+distance : ∀(x y : [ℝ]) → [ℝ]
+distance x y = max (x + (- y)) (- (x + (- y)))
+
+IsCauchy : (x : ℕ → ℝ) → Type (ℓ-max ℓ' ℚℓ)
+IsCauchy x = ∀(ε : [ℚ⁺]) → ∃[ N ∈ ℕ ] ∀(m n : ℕ) → N ≤ⁿ m → N ≤ⁿ n → distance (x m) (x n) < ε
+
+-}

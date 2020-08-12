@@ -66,6 +66,18 @@ record IsROrderedCommSemiringInclusion
     preserves-·   : ∀ x y → f (x F.· y)   ≡ f x G.·  f y
   open IsRLatticeInclusion isRLatticeInclusion public
 
+  preserves-#0 : ∀ x →   x  F.# F.0f → f x  G.# G.0f
+  preserves-0≤ : ∀ x → F.0f F.≤   x  → G.0f G.≤ f x 
+  preserves-0< : ∀ x → F.0f F.<   x  → G.0f G.< f x 
+  preserves-<0 : ∀ x →   x  F.< F.0f → f x  G.< G.0f
+  preserves-≤0 : ∀ x →   x  F.≤ F.0f → f x  G.≤ G.0f
+
+  preserves-#0 x q = transport (λ i → f x G.# preserves-0 i) (preserves-# _ _ q)
+  preserves-0≤ x q = transport (λ i → preserves-0 i G.≤ f x) (preserves-≤ _ _ q)
+  preserves-0< x q = transport (λ i → preserves-0 i G.< f x) (preserves-< _ _ q)
+  preserves-<0 x q = transport (λ i → f x G.< preserves-0 i) (preserves-< _ _ q)
+  preserves-≤0 x q = transport (λ i → f x G.≤ preserves-0 i) (preserves-≤ _ _ q)
+
 -- ℤ ℚ ℝ
 record IsROrderedCommRingInclusion
   {ℓ ℓ' ℓₚ ℓₚ'}
@@ -114,6 +126,9 @@ record IsRFieldInclusion
     preserves-#   : ∀ x y →   x F.#   y → f x G.# f y
     reflects-#    : ∀ x y → f x G.# f y →   x F.#   y
     -- TODO: properties
+    
+  preserves-#0 : ∀ x →   x  F.# F.0f → f x  G.# G.0f
+  preserves-#0 x q = transport (λ i → f x G.# preserves-0 i) (preserves-# _ _ q)
 
 record Isℕ↪ℂ
   {ℓ ℓ' ℓₚ ℓₚ'}

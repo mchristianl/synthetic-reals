@@ -2,7 +2,7 @@
 
 open import Agda.Primitive renaming (_⊔_ to ℓ-max; lsuc to ℓ-suc; lzero to ℓ-zero)
 
-module Number.Blueprint where
+module Number.Base where
 
 private
   variable
@@ -163,32 +163,32 @@ NumberKindInterpretation isComplex = let open ℂ* in ℂ
 -- PositivityKind interpretation
 
 PositivityKindInterpretation : (nl : NumberKind) → PositivityKindType nl → (x : NumberKindInterpretation nl) → Type (NumberKindProplevel nl)
-PositivityKindInterpretation isNat     ⁇x⁇ x =                                        Unit
-PositivityKindInterpretation isNat     x#0 x = let open ℕ                             in ( x # 0f)
-PositivityKindInterpretation isNat     0≤x x = let open ℕ                             in (0f ≤  x)
-PositivityKindInterpretation isNat     0<x x = let open ℕ                             in (ℕ.0f < x) 
-PositivityKindInterpretation isNat     x≤0 x = let open ℕ                             in ( x ≤ 0f) 
-PositivityKindInterpretation isNat     x<0 x =                                        ⊥
-PositivityKindInterpretation isInt     ⁇x⁇ x =                                        Lift Unit
-PositivityKindInterpretation isInt     x#0 x = let open ℤ.Bundle             ℤ.bundle in ( x # 0f)
-PositivityKindInterpretation isInt     0≤x x = let open ℤ.Bundle             ℤ.bundle in (0f ≤  x)
-PositivityKindInterpretation isInt     0<x x = let open ℤ.Bundle             ℤ.bundle in (0f <  x)
-PositivityKindInterpretation isInt     x≤0 x = let open ℤ.Bundle             ℤ.bundle in ( x ≤ 0f)
-PositivityKindInterpretation isInt     x<0 x = let open ℤ.Bundle             ℤ.bundle in ( x < 0f)
-PositivityKindInterpretation isRat     ⁇x⁇ x =                                        Lift Unit        
-PositivityKindInterpretation isRat     x#0 x = let open ℚ.Bundle             ℚ.bundle in ( x # 0f)
-PositivityKindInterpretation isRat     0≤x x = let open ℚ.Bundle             ℚ.bundle in (0f ≤  x)
-PositivityKindInterpretation isRat     0<x x = let open ℚ.Bundle             ℚ.bundle in (0f <  x)
-PositivityKindInterpretation isRat     x≤0 x = let open ℚ.Bundle             ℚ.bundle in ( x ≤ 0f)
-PositivityKindInterpretation isRat     x<0 x = let open ℚ.Bundle             ℚ.bundle in ( x < 0f)
-PositivityKindInterpretation isReal    ⁇x⁇ x =                                        Lift Unit 
-PositivityKindInterpretation isReal    x#0 x = let open ℝ.Bundle             ℝ.bundle in ( x # 0f)
-PositivityKindInterpretation isReal    0≤x x = let open ℝ.Bundle             ℝ.bundle in (0f ≤  x)
-PositivityKindInterpretation isReal    0<x x = let open ℝ.Bundle             ℝ.bundle in (0f <  x)
-PositivityKindInterpretation isReal    x≤0 x = let open ℝ.Bundle             ℝ.bundle in ( x ≤ 0f)
-PositivityKindInterpretation isReal    x<0 x = let open ℝ.Bundle             ℝ.bundle in ( x < 0f)
-PositivityKindInterpretation isComplex ⁇x⁇ x =                                        Lift Unit 
-PositivityKindInterpretation isComplex x#0 x = let open ℂ.Bundle             ℂ.bundle in ( x # 0f)
+PositivityKindInterpretation isNat     ⁇x⁇ x =               Unit
+PositivityKindInterpretation isNat     x#0 x = let open ℕ in  x # 0f
+PositivityKindInterpretation isNat     0≤x x = let open ℕ in 0f ≤  x
+PositivityKindInterpretation isNat     0<x x = let open ℕ in 0f <  x
+PositivityKindInterpretation isNat     x≤0 x = let open ℕ in  x ≤ 0f
+PositivityKindInterpretation isNat     x<0 x =               ⊥
+PositivityKindInterpretation isInt     ⁇x⁇ x =               Lift Unit
+PositivityKindInterpretation isInt     x#0 x = let open ℤ in  x # 0f
+PositivityKindInterpretation isInt     0≤x x = let open ℤ in 0f ≤  x
+PositivityKindInterpretation isInt     0<x x = let open ℤ in 0f <  x
+PositivityKindInterpretation isInt     x≤0 x = let open ℤ in  x ≤ 0f
+PositivityKindInterpretation isInt     x<0 x = let open ℤ in  x < 0f
+PositivityKindInterpretation isRat     ⁇x⁇ x =               Lift Unit
+PositivityKindInterpretation isRat     x#0 x = let open ℚ in  x # 0f
+PositivityKindInterpretation isRat     0≤x x = let open ℚ in 0f ≤  x
+PositivityKindInterpretation isRat     0<x x = let open ℚ in 0f <  x
+PositivityKindInterpretation isRat     x≤0 x = let open ℚ in  x ≤ 0f
+PositivityKindInterpretation isRat     x<0 x = let open ℚ in  x < 0f
+PositivityKindInterpretation isReal    ⁇x⁇ x =               Lift Unit
+PositivityKindInterpretation isReal    x#0 x = let open ℝ in  x # 0f
+PositivityKindInterpretation isReal    0≤x x = let open ℝ in 0f ≤  x
+PositivityKindInterpretation isReal    0<x x = let open ℝ in 0f <  x
+PositivityKindInterpretation isReal    x≤0 x = let open ℝ in  x ≤ 0f
+PositivityKindInterpretation isReal    x<0 x = let open ℝ in  x < 0f
+PositivityKindInterpretation isComplex ⁇x⁇ x =               Lift Unit
+PositivityKindInterpretation isComplex x#0 x = let open ℂ in  x # 0f
 
 NumberLevel : NumberKind → Level
 NumberLevel l = ℓ-max (NumberKindLevel l) (NumberKindProplevel l)
@@ -214,93 +214,6 @@ pop (x ,, p) = x , p
 
 open PatternsType
 
--- workflow:
--- 1. split on the both positivities at once
--- 2. add a general clause on top
--- 3. check file
--- 4. remove all unreachable clauses and goto 2.
--- feel free to remove too many clauses and let agda display the missing ones
-+-Positivityᵒʳ : PositivityKindOrderedRing → PositivityKindOrderedRing → PositivityKindOrderedRing
-+-Positivityᵒʳ _   X   = X  
-+-Positivityᵒʳ X   _   = X  
-+-Positivityᵒʳ _   X⁺⁻ = X  
-+-Positivityᵒʳ X⁺⁻ _   = X
--- clauses with same sign
-+-Positivityᵒʳ X₀⁺ X₀⁺ = X₀⁺ 
-+-Positivityᵒʳ X₀⁻ X₀⁻ = X₀⁻ 
-+-Positivityᵒʳ X₀⁺ X⁺  = X⁺  
-+-Positivityᵒʳ X⁺  X₀⁺ = X⁺  
-+-Positivityᵒʳ X⁺  X⁺  = X⁺  
-+-Positivityᵒʳ X₀⁻ X⁻  = X⁻ 
-+-Positivityᵒʳ X⁻  X⁻  = X⁻
-+-Positivityᵒʳ X⁻  X₀⁻ = X⁻
--- remaining clauses with alternating sign
-+-Positivityᵒʳ X₀⁻ X₀⁺ = X  
-+-Positivityᵒʳ X₀⁺ X₀⁻ = X  
-+-Positivityᵒʳ X⁻  X₀⁺ = X  
-+-Positivityᵒʳ X₀⁺ X⁻  = X  
-+-Positivityᵒʳ X⁻  X⁺  = X  
-+-Positivityᵒʳ X⁺  X⁻  = X  
-+-Positivityᵒʳ X₀⁻ X⁺  = X  
-+-Positivityᵒʳ X⁺  X₀⁻ = X
-
-+-Positivityᶠ : PositivityKindField → PositivityKindField → PositivityKindField
--- positivity information is lost after _+_ on a field
-+-Positivityᶠ x   y   = X
-
-+-Positivityʰ : (l : NumberKind) → PositivityKindType l → PositivityKindType l → PositivityKindType l
-+-Positivityʰ isNat     = +-Positivityᵒʳ
-+-Positivityʰ isInt     = +-Positivityᵒʳ
-+-Positivityʰ isRat     = +-Positivityᵒʳ
-+-Positivityʰ isReal    = +-Positivityᵒʳ
-+-Positivityʰ isComplex = +-Positivityᶠ
-
-·-Positivityᵒʳ : PositivityKindOrderedRing → PositivityKindOrderedRing → PositivityKindOrderedRing
-·-Positivityᵒʳ _   X   = X  
-·-Positivityᵒʳ X   _   = X  
-·-Positivityᵒʳ X₀⁺ X⁺⁻ = X  
-·-Positivityᵒʳ X⁺⁻ X₀⁺ = X
-·-Positivityᵒʳ X₀⁻ X⁺⁻ = X 
-·-Positivityᵒʳ X⁺⁻ X₀⁻ = X
--- multiplying nonzero numbers gives a nonzero number
-·-Positivityᵒʳ X⁺⁻ X⁺⁻ = X⁺⁻ 
-·-Positivityᵒʳ X⁺  X⁺⁻ = X⁺⁻ 
-·-Positivityᵒʳ X⁺⁻ X⁺  = X⁺⁻
-·-Positivityᵒʳ X⁻  X⁺⁻ = X⁺⁻
-·-Positivityᵒʳ X⁺⁻ X⁻  = X⁺⁻
--- multiplying positive numbers gives a positive number
-·-Positivityᵒʳ X₀⁺ X₀⁺ = X₀⁺ 
-·-Positivityᵒʳ X₀⁺ X⁺  = X₀⁺ 
-·-Positivityᵒʳ X⁺  X₀⁺ = X₀⁺ 
-·-Positivityᵒʳ X⁺  X⁺  = X⁺
--- multiplying negative numbers gives a positive number
-·-Positivityᵒʳ X₀⁻ X⁻  = X₀⁺
-·-Positivityᵒʳ X⁻  X₀⁻ = X₀⁺
-·-Positivityᵒʳ X₀⁻ X₀⁻ = X₀⁺  
-·-Positivityᵒʳ X⁻  X⁻  = X⁺ 
--- multiplying a positive and a negative number gives a negative number
-·-Positivityᵒʳ X⁻  X₀⁺ = X₀⁻
-·-Positivityᵒʳ X₀⁺ X⁻  = X₀⁻
-·-Positivityᵒʳ X₀⁻ X⁺  = X₀⁻
-·-Positivityᵒʳ X⁺  X₀⁻ = X₀⁻
-·-Positivityᵒʳ X₀⁻ X₀⁺ = X₀⁻
-·-Positivityᵒʳ X₀⁺ X₀⁻ = X₀⁻
-·-Positivityᵒʳ X⁻  X⁺  = X⁻ 
-·-Positivityᵒʳ X⁺  X⁻  = X⁻
-
-·-Positivityᶠ : PositivityKindField → PositivityKindField → PositivityKindField
-·-Positivityᶠ X   X   = X  
-·-Positivityᶠ X   X⁺⁻ = X
-·-Positivityᶠ X⁺⁻ X   = X
--- multiplying nonzero numbers gives a nonzero number
-·-Positivityᶠ X⁺⁻ X⁺⁻ = X⁺⁻
-
-·-Positivityʰ : (l : NumberKind) → PositivityKindType l → PositivityKindType l → PositivityKindType l
-·-Positivityʰ isNat     = ·-Positivityᵒʳ
-·-Positivityʰ isInt     = ·-Positivityᵒʳ
-·-Positivityʰ isRat     = ·-Positivityᵒʳ
-·-Positivityʰ isReal    = ·-Positivityᵒʳ
-·-Positivityʰ isComplex = ·-Positivityᶠ
 
 {- NOTE: overlapping patterns makes this possible:
 
