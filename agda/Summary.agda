@@ -12,7 +12,7 @@ infix 1 _≅_
 _≅_ = Iso
 
 open import Number.Postulates
-open import Number.Blueprint
+open import Number.Base
 open import Number.Prettyprint
 
 open ℕⁿ

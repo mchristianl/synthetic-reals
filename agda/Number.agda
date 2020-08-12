@@ -30,9 +30,9 @@ open import Number.Postulates
 open import Number.Structures
 open import Number.Bundles
 open import Number.Inclusions
-open import Number.Blueprint
+open import Number.Base
 open import Number.Coercions
-open import Number.GenericOperations
+open import Number.Operations
 
 open ℕⁿ
 open ℤᶻ

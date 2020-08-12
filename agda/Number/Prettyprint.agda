@@ -4,7 +4,7 @@ module Number.Prettyprint where
 
 open import Cubical.Data.Sigma.Base
 open import Number.Postulates
-open import Number.Blueprint
+open import Number.Base
 
 [ℕ]   = Number (isNat     , anyPositivityᵒʳ)
 [ℕ⁺⁻] = Number (isNat     , isNonzeroᵒʳ    )

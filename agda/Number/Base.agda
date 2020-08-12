@@ -2,7 +2,7 @@
 
 open import Agda.Primitive renaming (_⊔_ to ℓ-max; lsuc to ℓ-suc; lzero to ℓ-zero)
 
-module Number.Blueprint where
+module Number.Base where
 
 private
   variable
@@ -214,93 +214,6 @@ pop (x ,, p) = x , p
 
 open PatternsType
 
--- workflow:
--- 1. split on the both positivities at once
--- 2. add a general clause on top
--- 3. check file
--- 4. remove all unreachable clauses and goto 2.
--- feel free to remove too many clauses and let agda display the missing ones
-+-Positivityᵒʳ : PositivityKindOrderedRing → PositivityKindOrderedRing → PositivityKindOrderedRing
-+-Positivityᵒʳ _   X   = X  
-+-Positivityᵒʳ X   _   = X  
-+-Positivityᵒʳ _   X⁺⁻ = X  
-+-Positivityᵒʳ X⁺⁻ _   = X
--- clauses with same sign
-+-Positivityᵒʳ X₀⁺ X₀⁺ = X₀⁺ 
-+-Positivityᵒʳ X₀⁻ X₀⁻ = X₀⁻ 
-+-Positivityᵒʳ X₀⁺ X⁺  = X⁺  
-+-Positivityᵒʳ X⁺  X₀⁺ = X⁺  
-+-Positivityᵒʳ X⁺  X⁺  = X⁺  
-+-Positivityᵒʳ X₀⁻ X⁻  = X⁻ 
-+-Positivityᵒʳ X⁻  X⁻  = X⁻
-+-Positivityᵒʳ X⁻  X₀⁻ = X⁻
--- remaining clauses with alternating sign
-+-Positivityᵒʳ X₀⁻ X₀⁺ = X  
-+-Positivityᵒʳ X₀⁺ X₀⁻ = X  
-+-Positivityᵒʳ X⁻  X₀⁺ = X  
-+-Positivityᵒʳ X₀⁺ X⁻  = X  
-+-Positivityᵒʳ X⁻  X⁺  = X  
-+-Positivityᵒʳ X⁺  X⁻  = X  
-+-Positivityᵒʳ X₀⁻ X⁺  = X  
-+-Positivityᵒʳ X⁺  X₀⁻ = X
-
-+-Positivityᶠ : PositivityKindField → PositivityKindField → PositivityKindField
--- positivity information is lost after _+_ on a field
-+-Positivityᶠ x   y   = X
-
-+-Positivityʰ : (l : NumberKind) → PositivityKindType l → PositivityKindType l → PositivityKindType l
-+-Positivityʰ isNat     = +-Positivityᵒʳ
-+-Positivityʰ isInt     = +-Positivityᵒʳ
-+-Positivityʰ isRat     = +-Positivityᵒʳ
-+-Positivityʰ isReal    = +-Positivityᵒʳ
-+-Positivityʰ isComplex = +-Positivityᶠ
-
-·-Positivityᵒʳ : PositivityKindOrderedRing → PositivityKindOrderedRing → PositivityKindOrderedRing
-·-Positivityᵒʳ _   X   = X  
-·-Positivityᵒʳ X   _   = X  
-·-Positivityᵒʳ X₀⁺ X⁺⁻ = X  
-·-Positivityᵒʳ X⁺⁻ X₀⁺ = X
-·-Positivityᵒʳ X₀⁻ X⁺⁻ = X 
-·-Positivityᵒʳ X⁺⁻ X₀⁻ = X
--- multiplying nonzero numbers gives a nonzero number
-·-Positivityᵒʳ X⁺⁻ X⁺⁻ = X⁺⁻ 
-·-Positivityᵒʳ X⁺  X⁺⁻ = X⁺⁻ 
-·-Positivityᵒʳ X⁺⁻ X⁺  = X⁺⁻
-·-Positivityᵒʳ X⁻  X⁺⁻ = X⁺⁻
-·-Positivityᵒʳ X⁺⁻ X⁻  = X⁺⁻
--- multiplying positive numbers gives a positive number
-·-Positivityᵒʳ X₀⁺ X₀⁺ = X₀⁺ 
-·-Positivityᵒʳ X₀⁺ X⁺  = X₀⁺ 
-·-Positivityᵒʳ X⁺  X₀⁺ = X₀⁺ 
-·-Positivityᵒʳ X⁺  X⁺  = X⁺
--- multiplying negative numbers gives a positive number
-·-Positivityᵒʳ X₀⁻ X⁻  = X₀⁺
-·-Positivityᵒʳ X⁻  X₀⁻ = X₀⁺
-·-Positivityᵒʳ X₀⁻ X₀⁻ = X₀⁺  
-·-Positivityᵒʳ X⁻  X⁻  = X⁺ 
--- multiplying a positive and a negative number gives a negative number
-·-Positivityᵒʳ X⁻  X₀⁺ = X₀⁻
-·-Positivityᵒʳ X₀⁺ X⁻  = X₀⁻
-·-Positivityᵒʳ X₀⁻ X⁺  = X₀⁻
-·-Positivityᵒʳ X⁺  X₀⁻ = X₀⁻
-·-Positivityᵒʳ X₀⁻ X₀⁺ = X₀⁻
-·-Positivityᵒʳ X₀⁺ X₀⁻ = X₀⁻
-·-Positivityᵒʳ X⁻  X⁺  = X⁻ 
-·-Positivityᵒʳ X⁺  X⁻  = X⁻
-
-·-Positivityᶠ : PositivityKindField → PositivityKindField → PositivityKindField
-·-Positivityᶠ X   X   = X  
-·-Positivityᶠ X   X⁺⁻ = X
-·-Positivityᶠ X⁺⁻ X   = X
--- multiplying nonzero numbers gives a nonzero number
-·-Positivityᶠ X⁺⁻ X⁺⁻ = X⁺⁻
-
-·-Positivityʰ : (l : NumberKind) → PositivityKindType l → PositivityKindType l → PositivityKindType l
-·-Positivityʰ isNat     = ·-Positivityᵒʳ
-·-Positivityʰ isInt     = ·-Positivityᵒʳ
-·-Positivityʰ isRat     = ·-Positivityᵒʳ
-·-Positivityʰ isReal    = ·-Positivityᵒʳ
-·-Positivityʰ isComplex = ·-Positivityᶠ
 
 {- NOTE: overlapping patterns makes this possible:
 

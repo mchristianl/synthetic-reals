@@ -11,7 +11,7 @@ open import Cubical.Data.Empty renaming (elim to ⊥-elim) -- `⊥` and `elim`
 
 open import Number.Postulates
 open import Number.Inclusions
-open import Number.Blueprint
+open import Number.Base
 open import MoreNatProperties
 
 open ℕⁿ

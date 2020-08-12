@@ -1,6 +1,6 @@
 {-# OPTIONS --cubical --no-import-sorts --allow-unsolved-metas #-}
 
-module Number.GenericOperations where
+module Number.Operations.Details where
 
 open import Cubical.Foundations.Everything renaming (_⁻¹ to _⁻¹ᵖ; assoc to ∙-assoc)
 open import Cubical.Relation.Nullary.Base -- ¬_
@@ -13,7 +13,7 @@ open import Number.Postulates
 open import Number.Structures
 open import Number.Bundles
 open import Number.Inclusions
-open import Number.Blueprint
+open import Number.Base
 open import Number.Coercions
 
 open ℕⁿ
@@ -22,77 +22,10 @@ open ℚᶠ
 open ℝʳ
 open ℂᶜ
 
-open PatternsType
+infix  9 _⁻¹ᶠ
+infix  8 -_
 
-+-Types : NumberProp → NumberProp → NumberProp
-+-Types (level₀ , pos₀) (level₁ , pos₁) =
-  let level  = maxₙₗ level₀ level₁
-  in level , +-Positivityʰ level (coerce-PositivityKind level₀ level pos₀) (coerce-PositivityKind level₁ level pos₁)
-
-·-Types : NumberProp → NumberProp → NumberProp
-·-Types (level₀ , pos₀) (level₁ , pos₁) =
-  let level  = maxₙₗ level₀ level₁
-  in level , ·-Positivityʰ level (coerce-PositivityKind level₀ level pos₀) (coerce-PositivityKind level₁ level pos₁)
-
-⁻¹-Types : ∀{l p} → Number (l , p) → Type (ℓ-max (NumberLevel (maxₙₗ l isRat)) (NumberKindProplevel l))
--- numbers that can be zero need an additional apartness proof
-⁻¹-Types {isNat    } {X  } (x ,, p) = ∀{{ q : x #ⁿ 0ⁿ }} → Number (isRat     , X⁺⁻)
-⁻¹-Types {isInt    } {X  } (x ,, p) = ∀{{ q : x #ᶻ 0ᶻ }} → Number (isRat     , X⁺⁻)
-⁻¹-Types {isRat    } {X  } (x ,, p) = ∀{{ q : x #ᶠ 0ᶠ }} → Number (isRat     , X⁺⁻)
-⁻¹-Types {isReal   } {X  } (x ,, p) = ∀{{ q : x #ʳ 0ʳ }} → Number (isReal    , X⁺⁻)
-⁻¹-Types {isComplex} {X  } (x ,, p) = ∀{{ q : x #ᶜ 0ᶜ }} → Number (isComplex , X⁺⁻)
-⁻¹-Types {isNat    } {X₀⁺} (x ,, p) = ∀{{ q : x #ⁿ 0ⁿ }} → Number (isRat     , X⁺ )
-⁻¹-Types {isInt    } {X₀⁺} (x ,, p) = ∀{{ q : x #ᶻ 0ᶻ }} → Number (isRat     , X⁺ )
-⁻¹-Types {isRat    } {X₀⁺} (x ,, p) = ∀{{ q : x #ᶠ 0ᶠ }} → Number (isRat     , X⁺ )
-⁻¹-Types {isReal   } {X₀⁺} (x ,, p) = ∀{{ q : x #ʳ 0ʳ }} → Number (isReal    , X⁺ )
-⁻¹-Types {isNat    } {X₀⁻} (x ,, p) = ∀{{ q : x #ⁿ 0ⁿ }} → Number (isRat     , X⁻ )
-⁻¹-Types {isInt    } {X₀⁻} (x ,, p) = ∀{{ q : x #ᶻ 0ᶻ }} → Number (isRat     , X⁻ )
-⁻¹-Types {isRat    } {X₀⁻} (x ,, p) = ∀{{ q : x #ᶠ 0ᶠ }} → Number (isRat     , X⁻ )
-⁻¹-Types {isReal   } {X₀⁻} (x ,, p) = ∀{{ q : x #ʳ 0ʳ }} → Number (isReal    , X⁻ )
--- positive, negative and nonzero numbers are already apart from zero
-⁻¹-Types {isNat    } {X⁺⁻} (x ,, p) = ∀{{ q : Lift {j = NumberKindProplevel isNat    } Unit }} → Number (isRat     , X⁺⁻)
-⁻¹-Types {isNat    } {X⁺ } (x ,, p) = ∀{{ q : Lift {j = NumberKindProplevel isNat    } Unit }} → Number (isRat     , X⁺ )
-⁻¹-Types {isInt    } {X⁺⁻} (x ,, p) = ∀{{ q : Lift {j = NumberKindProplevel isInt    } Unit }} → Number (isRat     , X⁺⁻)
-⁻¹-Types {isInt    } {X⁺ } (x ,, p) = ∀{{ q : Lift {j = NumberKindProplevel isInt    } Unit }} → Number (isRat     , X⁺ )
-⁻¹-Types {isInt    } {X⁻ } (x ,, p) = ∀{{ q : Lift {j = NumberKindProplevel isInt    } Unit }} → Number (isRat     , X⁻ )
-⁻¹-Types {isRat    } {X⁺⁻} (x ,, p) = ∀{{ q : Lift {j = NumberKindProplevel isRat    } Unit }} → Number (isRat     , X⁺⁻)
-⁻¹-Types {isRat    } {X⁺ } (x ,, p) = ∀{{ q : Lift {j = NumberKindProplevel isRat    } Unit }} → Number (isRat     , X⁺ )
-⁻¹-Types {isRat    } {X⁻ } (x ,, p) = ∀{{ q : Lift {j = NumberKindProplevel isRat    } Unit }} → Number (isRat     , X⁻ )
-⁻¹-Types {isReal   } {X⁺⁻} (x ,, p) = ∀{{ q : Lift {j = NumberKindProplevel isReal   } Unit }} → Number (isReal    , X⁺⁻)
-⁻¹-Types {isReal   } {X⁺ } (x ,, p) = ∀{{ q : Lift {j = NumberKindProplevel isReal   } Unit }} → Number (isReal    , X⁺ )
-⁻¹-Types {isReal   } {X⁻ } (x ,, p) = ∀{{ q : Lift {j = NumberKindProplevel isReal   } Unit }} → Number (isReal    , X⁻ )
-⁻¹-Types {isComplex} {X⁺⁻} (x ,, p) = ∀{{ q : Lift {j = NumberKindProplevel isComplex} Unit }} → Number (isComplex , X⁺⁻)
-
--Types : ∀{l p} → Number (l , p) → Type (NumberLevel (maxₙₗ l isInt))
--Types {isInt    } {X  } (x ,, p) = Number (isInt     , X)
--Types {isRat    } {X  } (x ,, p) = Number (isRat     , X)
--Types {isReal   } {X  } (x ,, p) = Number (isReal    , X)
--Types {isComplex} {X  } (x ,, p) = Number (isComplex , X)
--- the negative of a natural number is a Nonpositive integer
--Types {isNat    } {X  } (x ,, p) = Number (isInt     , X₀⁻)
--- the negative of a nonzero number is a nonzero number
--Types {isNat    } {X⁺⁻} (x ,, p) = Number (isInt     , X⁺⁻)
--Types {isInt    } {X⁺⁻} (x ,, p) = Number (isInt     , X⁺⁻)
--Types {isRat    } {X⁺⁻} (x ,, p) = Number (isRat     , X⁺⁻)
--Types {isReal   } {X⁺⁻} (x ,, p) = Number (isReal    , X⁺⁻)
--Types {isComplex} {X⁺⁻} (x ,, p) = Number (isComplex , X⁺⁻)
--- the negative of a positive number is a negative number
--Types {isNat    } {X₀⁺} (x ,, p) = Number (isInt     , X₀⁻)
--Types {isInt    } {X₀⁺} (x ,, p) = Number (isInt     , X₀⁻)
--Types {isRat    } {X₀⁺} (x ,, p) = Number (isRat     , X₀⁻)
--Types {isReal   } {X₀⁺} (x ,, p) = Number (isReal    , X₀⁻)
--Types {isNat    } {X⁺ } (x ,, p) = Number (isInt     , X⁻ )
--Types {isInt    } {X⁺ } (x ,, p) = Number (isInt     , X⁻ )
--Types {isRat    } {X⁺ } (x ,, p) = Number (isRat     , X⁻ )
--Types {isReal   } {X⁺ } (x ,, p) = Number (isReal    , X⁻ )
--- the negative of a negative number is a positive number
--Types {isNat    } {X₀⁻} (x ,, p) = Number (isInt     , X₀⁺)
--Types {isInt    } {X₀⁻} (x ,, p) = Number (isInt     , X₀⁺)
--Types {isRat    } {X₀⁻} (x ,, p) = Number (isRat     , X₀⁺)
--Types {isReal   } {X₀⁻} (x ,, p) = Number (isReal    , X₀⁺)
--Types {isInt    } {X⁻ } (x ,, p) = Number (isInt     , X⁺ )
--Types {isRat    } {X⁻ } (x ,, p) = Number (isRat     , X⁺ )
--Types {isReal   } {X⁻ } (x ,, p) = Number (isReal    , X⁺ )
+open import Number.Operations.Specification
 
 open PatternsProp
 
@@ -313,31 +246,6 @@ _+ʰʳ_ {x≤0} {x≤0} (a ,, pa) (b ,, pb) = ℝ.+-≤0-≤0-implies-≤0 a b p
 _+ʰᶜ_ : ∀{p q} → (x : Number (isComplex , p)) → (y : Number (isComplex , q)) → PositivityKindInterpretation isComplex (+-Positivityʰ isComplex p q) (num x +ᶜ num y)
 _+ʰᶜ_ x y = lift tt
 
-_+ʰ_ : ∀{l p q} → Number (l , p) → Number (l , q) → Number (l , +-Positivityʰ l p q)
-_+ʰ_ {isNat    } x y = (num x +ⁿ num y) ,, (x +ʰⁿ y)
-_+ʰ_ {isInt    } x y = (num x +ᶻ num y) ,, (x +ʰᶻ y)
-_+ʰ_ {isRat    } x y = (num x +ᶠ num y) ,, (x +ʰᶠ y)
-_+ʰ_ {isReal   } x y = (num x +ʳ num y) ,, (x +ʰʳ y)
-_+ʰ_ {isComplex} x y = (num x +ᶜ num y) ,, (x +ʰᶜ y)
-
-{- NOTE: this creates a weird Number.L in the Have/Goal display
-
-module _ {Lx Ly Px Py} (x : Number (Lx , Px)) (y : Number (Ly , Py)) where
-  private L = maxₙₗ' Lx Ly
-  _+_ : Number (L , +-Positivityʰ L (coerce-PositivityKind Lx L Px) (coerce-PositivityKind Ly L Py))
-  _+_ =
-    let (Lx≤L , Ly≤L) = max-implies-≤ₙₗ₂' Lx Ly
-    in coerce Lx L Lx≤L x +ʰ coerce Ly L Ly≤L y
--}
-
-_+_ : ∀{Lx Ly Px Py} → (x : Number (Lx , Px)) (y : Number (Ly , Py))
-    → let L = maxₙₗ Lx Ly
-      in Number (L , +-Positivityʰ L (coerce-PositivityKind Lx L Px) (coerce-PositivityKind Ly L Py))
-_+_ {Lx} {Ly} {Px} {Py} x y =
-  let L = maxₙₗ Lx Ly
-      (Lx≤L , Ly≤L) = max-implies-≤ₙₗ₂ Lx Ly
-  in coerce Lx L Lx≤L x +ʰ coerce Ly L Ly≤L y
-
 _·ʰⁿ_ : ∀{p q} → (x : Number (isNat , p)) → (y : Number (isNat , q)) → PositivityKindInterpretation isNat (·-Positivityʰ isNat p q) (num x ·ⁿ num y)
 _·ʰⁿ_ {⁇x⁇} {⁇x⁇} (a ,, pa) (b ,, pb) = tt
 _·ʰⁿ_ {⁇x⁇} {x#0} (a ,, pa) (b ,, pb) = tt
@@ -484,61 +392,3 @@ _·ʰᶜ_ {⁇x⁇} {⁇x⁇} (a ,, pa) (b ,, pb) = lift tt
 _·ʰᶜ_ {⁇x⁇} {x#0} (a ,, pa) (b ,, pb) = lift tt
 _·ʰᶜ_ {x#0} {⁇x⁇} (a ,, pa) (b ,, pb) = lift tt
 _·ʰᶜ_ {x#0} {x#0} (a ,, pa) (b ,, pb) = ℂ.·-#0-#0-implies-#0 a b pa pb -- a # 0 → b # 0 → (a · b) # 0
-
-_·ʰ_ : ∀{l p q} → Number (l , p) → Number (l , q) → Number (l , ·-Positivityʰ l p q)
-_·ʰ_ {isNat    } x y = (num x ·ⁿ num y) ,, (x ·ʰⁿ y)
-_·ʰ_ {isInt    } x y = (num x ·ᶻ num y) ,, (x ·ʰᶻ y)
-_·ʰ_ {isRat    } x y = (num x ·ᶠ num y) ,, (x ·ʰᶠ y)
-_·ʰ_ {isReal   } x y = (num x ·ʳ num y) ,, (x ·ʰʳ y)
-_·ʰ_ {isComplex} x y = (num x ·ᶜ num y) ,, (x ·ʰᶜ y)
-
-_·_ : ∀{Lx Ly Px Py} → (x : Number (Lx , Px)) (y : Number (Ly , Py))
-    → let L = maxₙₗ Lx Ly
-      in Number (L , ·-Positivityʰ L (coerce-PositivityKind Lx L Px) (coerce-PositivityKind Ly L Py))
-_·_ {Lx} {Ly} {Px} {Py} x y =
-  let L = maxₙₗ Lx Ly
-      (Lx≤L , Ly≤L) = max-implies-≤ₙₗ₂ Lx Ly
-  in coerce Lx L Lx≤L x ·ʰ coerce Ly L Ly≤L y
-
-_<ʰ_ : ∀{L} → (x y : NumberKindInterpretation L) → Type (NumberKindProplevel L)
-_<ʰ_ {isNat}     x y = x <ⁿ y
-_<ʰ_ {isInt}     x y = x <ᶻ y
-_<ʰ_ {isRat}     x y = x <ᶠ y
-_<ʰ_ {isReal}    x y = x <ʳ y
--- NOTE: this is some realization of a partial function, because `_<_` is defined on all numbers
---       one might already anticipate that this breaks something in the future ...
-_<ʰ_ {isComplex} x y = {{p : ⊥}} → Lift ⊥
-
-_<_ : ∀{Lx Ly Px Py} → (x : Number (Lx , Px)) (y : Number (Ly , Py)) → Type (NumberKindProplevel (maxₙₗ Lx Ly))
-_<_ {Lx} {Ly} {Px} {Py} x y =
-  let L = maxₙₗ Lx Ly
-      (Lx≤L , Ly≤L) = max-implies-≤ₙₗ₂ Lx Ly
-  in num (coerce Lx L Lx≤L x) <ʰ num (coerce Ly L Ly≤L y)
-
-_≤ʰ_ : ∀{L} → (x y : NumberKindInterpretation L) → Type (NumberKindProplevel L)
-_≤ʰ_ {isNat}     x y = x ≤ⁿ y
-_≤ʰ_ {isInt}     x y = x ≤ᶻ y
-_≤ʰ_ {isRat}     x y = x ≤ᶠ y
-_≤ʰ_ {isReal}    x y = x ≤ʳ y
--- NOTE: this is some realization of a partial function, because `_<_` is defined on all numbers
---       one might already anticipate that this breaks something in the future ...
-_≤ʰ_ {isComplex} x y = {{p : ⊥}} → Lift ⊥
-
-_≤_ : ∀{Lx Ly Px Py} → (x : Number (Lx , Px)) (y : Number (Ly , Py)) → Type (NumberKindProplevel (maxₙₗ Lx Ly))
-_≤_ {Lx} {Ly} {Px} {Py} x y =
-  let L = maxₙₗ Lx Ly
-      (Lx≤L , Ly≤L) = max-implies-≤ₙₗ₂ Lx Ly
-  in num (coerce Lx L Lx≤L x) ≤ʰ num (coerce Ly L Ly≤L y)
-
-_#ʰ_ : ∀{L} → (x y : NumberKindInterpretation L) → Type (NumberKindProplevel L)
-_#ʰ_ {isNat}     x y = x #ⁿ y
-_#ʰ_ {isInt}     x y = x #ᶻ y
-_#ʰ_ {isRat}     x y = x #ᶠ y
-_#ʰ_ {isReal}    x y = x #ʳ y
-_#ʰ_ {isComplex} x y = x #ᶜ y
-
-_#_ : ∀{Lx Ly Px Py} → (x : Number (Lx , Px)) (y : Number (Ly , Py)) → Type (NumberKindProplevel (maxₙₗ Lx Ly))
-_#_ {Lx} {Ly} {Px} {Py} x y =
-  let L = maxₙₗ Lx Ly
-      (Lx≤L , Ly≤L) = max-implies-≤ₙₗ₂ Lx Ly
-  in num (coerce Lx L Lx≤L x) #ʰ num (coerce Ly L Ly≤L y)
