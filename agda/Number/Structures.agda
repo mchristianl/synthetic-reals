@@ -32,6 +32,7 @@ record IsRField {F : Type ℓ} (_#_ : Rel F F ℓ') (0f 1f : F) (_+_ _·_ : F �
     ⁻¹-preserves-#0 : ∀ x → (p : x # 0f) → _⁻¹ x {{p}} # 0f
     -preserves-#  : ∀ x y → x # y  → (- x) # (- y)
     -preserves-#0 : ∀ x   → x # 0f → (- x) #    0f
+    ·-#0-#0-implies-#0 : ∀ a b → a  # 0f →  b # 0f → (a · b) #    0f
     -- TODO: properties
 
 -- Finₖ ℕ ℤ ℚ ℚ₀⁺ ℚ⁺ ℝ ℝ₀⁺ ℝ⁺
@@ -48,14 +49,51 @@ record IsROrderedCommSemiring {F : Type ℓ} (_<_ _≤_ _#_ : Rel F F ℓ') (min
     isRLattice : IsRLattice _<_ _≤_ _#_ min max
     -- TODO: the following can be derived
     0<1 : 0f < 1f
-    +-<-<-implies-<ʳ : ∀ a b → 0f <  a → 0f <  b →    0f   < (a + b)
-    +-<-≤-implies-<ʳ : ∀ a b → 0f <  a → 0f ≤  b →    0f   < (a + b)
-    +-≤-<-implies-<ʳ : ∀ a b → 0f ≤  a → 0f <  b →    0f   < (a + b)
-    +-≤-≤-implies-≤ʳ : ∀ a b → 0f ≤  a → 0f ≤  b →    0f   ≤ (a + b)
-    +-<-<-implies-<ˡ : ∀ a b →  a < 0f →  b < 0f → (a + b) <    0f
-    +-<-≤-implies-<ˡ : ∀ a b →  a < 0f →  b ≤ 0f → (a + b) <    0f
-    +-≤-<-implies-<ˡ : ∀ a b →  a ≤ 0f →  b < 0f → (a + b) <    0f
-    +-≤-≤-implies-≤ˡ : ∀ a b →  a ≤ 0f →  b ≤ 0f → (a + b) ≤    0f
+    +-0<-0<-implies-0< : ∀ a b → 0f <  a → 0f <  b →    0f   < (a + b)
+    +-0<-0≤-implies-0< : ∀ a b → 0f <  a → 0f ≤  b →    0f   < (a + b)
+    +-0≤-0<-implies-0< : ∀ a b → 0f ≤  a → 0f <  b →    0f   < (a + b)
+    +-0≤-0≤-implies-0≤ : ∀ a b → 0f ≤  a → 0f ≤  b →    0f   ≤ (a + b)
+    +-<0-<0-implies-<0 : ∀ a b →  a < 0f →  b < 0f → (a + b) <    0f
+    +-<0-≤0-implies-<0 : ∀ a b →  a < 0f →  b ≤ 0f → (a + b) <    0f
+    +-≤0-<0-implies-<0 : ∀ a b →  a ≤ 0f →  b < 0f → (a + b) <    0f
+    +-≤0-≤0-implies-≤0 : ∀ a b →  a ≤ 0f →  b ≤ 0f → (a + b) ≤    0f
+
+    ·-#0-#0-implies-#0 : ∀ a b → a  # 0f →  b # 0f → (a · b) #    0f
+    ·-#0-0<-implies-#0 : ∀ a b → a  # 0f → 0f < b  → (a · b) #    0f
+    ·-#0-<0-implies-#0 : ∀ a b → a  # 0f →  b < 0f → (a · b) #    0f
+    ·-0≤-0≤-implies-0≤ : ∀ a b → 0f ≤  a → 0f ≤ b  →    0f   ≤ (a · b)
+    ·-0≤-0<-implies-0≤ : ∀ a b → 0f ≤  a → 0f < b  →    0f   ≤ (a · b)
+    ·-0≤-<0-implies-≤0 : ∀ a b → 0f ≤  a →  b < 0f → (a · b) ≤    0f
+    ·-0≤-≤0-implies-≤0 : ∀ a b → 0f ≤  a →  b ≤ 0f → (a · b) ≤    0f
+    ·-0<-#0-implies-#0 : ∀ a b → 0f <  a →  b # 0f → (a · b) #    0f
+    ·-0<-0≤-implies-0≤ : ∀ a b → 0f <  a → 0f ≤ b  →    0f   ≤ (a · b)
+    ·-0<-0<-implies-0< : ∀ a b → 0f <  a → 0f < b  →    0f   < (a · b)
+    ·-0<-<0-implies-<0 : ∀ a b → 0f <  a →  b < 0f → (a · b) <    0f
+    ·-0<-≤0-implies-≤0 : ∀ a b → 0f <  a →  b ≤ 0f → (a · b) ≤    0f
+    ·-<0-#0-implies-#0 : ∀ a b → a  < 0f →  b # 0f → (a · b) #    0f
+    ·-<0-0≤-implies-≤0 : ∀ a b → a  < 0f → 0f ≤ b  → (a · b) ≤    0f
+    ·-<0-0<-implies-<0 : ∀ a b → a  < 0f → 0f < b  → (a · b) <    0f
+    ·-<0-<0-implies-0< : ∀ a b → a  < 0f →  b < 0f →    0f   < (a · b)
+    ·-<0-≤0-implies-0≤ : ∀ a b → a  < 0f →  b ≤ 0f →    0f   ≤ (a · b)
+    ·-≤0-0≤-implies-≤0 : ∀ a b → a  ≤ 0f → 0f ≤ b  → (a · b) ≤    0f
+    ·-≤0-0<-implies-≤0 : ∀ a b → a  ≤ 0f → 0f < b  → (a · b) ≤    0f
+    ·-≤0-<0-implies-0≤ : ∀ a b → a  ≤ 0f →  b < 0f →    0f   ≤ (a · b)
+    ·-≤0-≤0-implies-0≤ : ∀ a b → a  ≤ 0f →  b ≤ 0f →    0f   ≤ (a · b)
+
+    {-
+    ·-#0-#0-implies-#0 : ∀ a b → a  # 0f → b  # 0f → (a · b) #    0f
+    ·-#0-0<-implies-#0 : ∀ a b → a  # 0f → 0f < b  → (a · b) #    0f
+    ·-0≤-0≤-implies-0≤ : ∀ a b → 0f ≤ a  → 0f ≤ b  →    0f   ≤ (a · b)
+    ·-0≤-0<-implies-0≤ : ∀ a b → 0f ≤ a  → 0f < b  →    0f   ≤ (a · b)
+    ·-0≤-≤0-implies-≤0 : ∀ a b → 0f ≤ a  → b  ≤ 0f → (a · b) ≤    0f
+    ·-0<-#0-implies-#0 : ∀ a b → 0f < a  → b  # 0f → (a · b) #    0f
+    ·-0<-0≤-implies-0≤ : ∀ a b → 0f < a  → 0f ≤ b  →    0f   ≤ (a · b)
+    ·-0<-0<-implies-0< : ∀ a b → 0f < a  → 0f < b  →    0f   < (a · b)
+    ·-0<-≤0-implies-≤0 : ∀ a b → 0f < a  → b  ≤ 0f → (a · b) ≤    0f
+    ·-≤0-0≤-implies-≤0 : ∀ a b → a  ≤ 0f → 0f ≤ b  → (a · b) ≤    0f
+    ·-≤0-0<-implies-≤0 : ∀ a b → a  ≤ 0f → 0f < b  → (a · b) ≤    0f
+    ·-≤0-≤0-implies-0≤ : ∀ a b → a  ≤ 0f → b  ≤ 0f →    0f   ≤ (a · b)
+    -}
     
     -- TODO: properties
   open IsRLattice isRLattice public
@@ -86,7 +124,9 @@ record IsROrderedField {F : Type ℓ} (_<_ _≤_ _#_ : Rel F F ℓ') (min max : 
     ( -preserves-#
     ; -preserves-#0
     ) public
-  open IsRField isRField public
+  open IsRField isRField hiding
+    ( ·-#0-#0-implies-#0
+    ) public
 
   field
     ⁻¹-preserves-<0 : ∀ x → (x < 0f) → (p : x # 0f) → _⁻¹ x {{p}} < 0f
