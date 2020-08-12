@@ -54,7 +54,7 @@ data Number (p : NumberProp) : Type (NumberLevel (fst p)) where
        → Number p
 ```
 
-This allows to define the operations `_+_`, `-_`, `_·_`, `_⁻¹`, `_<_`, `_≤_` and `_#_` on a general `Number` type family in a way that it makes use of the specific operations for the underlying, concrete number type.
+This allows to define the operations `_+_`, `-_`, `_·_`, `_⁻¹`, `_<_`, `_≤_`, `_#_`, `min`, `max` and `|_|` [on a general `Number` type family](https://mchristianl.github.io/synthetic-reals/html/Number.Base.html) in a way that it makes use of the specific operations for the underlying, concrete number type. The special behaviour of these operations is given [by tables](https://mchristianl.github.io/synthetic-reals/html/Number.Operations.Specification.html)
 
 ```agda
 test201 : [ℕ⁺] → [ℝ₀⁺] → [ℝ]

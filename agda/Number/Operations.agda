@@ -23,7 +23,7 @@ open ℚᶠ
 open ℝʳ
 open ℂᶜ
 
-infixl 6 _-_
+-- infixl 6 _-_
 infixl 7 _·_
 infixl 6 _+_
 infixl 4 _#_

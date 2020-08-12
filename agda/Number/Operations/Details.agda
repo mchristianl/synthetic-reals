@@ -22,7 +22,7 @@ open ℚᶠ
 open ℝʳ
 open ℂᶜ
 
-infix  9 _⁻¹ᶠ
+infix  9 _⁻¹
 infix  8 -_
 
 open import Number.Operations.Specification

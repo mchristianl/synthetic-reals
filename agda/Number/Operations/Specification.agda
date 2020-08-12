@@ -104,6 +104,96 @@ open PatternsType
 ·-Positivityʰ isReal    = ·-Positivityᵒʳ
 ·-Positivityʰ isComplex = ·-Positivityᶠ
 
+min-Positivityᵒʳ : PositivityKindOrderedRing → PositivityKindOrderedRing → PositivityKindOrderedRing
+min-Positivityᵒʳ X   X   = X
+min-Positivityᵒʳ X   X⁺⁻ = X
+min-Positivityᵒʳ X   X₀⁺ = X
+min-Positivityᵒʳ X   X⁺  = X
+min-Positivityᵒʳ X   X⁻  = X⁻
+min-Positivityᵒʳ X   X₀⁻ = X₀⁻
+min-Positivityᵒʳ X⁺⁻ X   = X
+min-Positivityᵒʳ X⁺⁻ X⁺⁻ = X⁺⁻
+min-Positivityᵒʳ X⁺⁻ X₀⁺ = X
+min-Positivityᵒʳ X⁺⁻ X⁺  = X⁺⁻
+min-Positivityᵒʳ X⁺⁻ X⁻  = X⁻
+min-Positivityᵒʳ X⁺⁻ X₀⁻ = X₀⁻
+min-Positivityᵒʳ X₀⁺ X   = X
+min-Positivityᵒʳ X₀⁺ X⁺⁻ = X
+min-Positivityᵒʳ X₀⁺ X₀⁺ = X₀⁺
+min-Positivityᵒʳ X₀⁺ X⁺  = X₀⁺
+min-Positivityᵒʳ X₀⁺ X⁻  = X⁻
+min-Positivityᵒʳ X₀⁺ X₀⁻ = X₀⁻
+min-Positivityᵒʳ X⁺  X   = X
+min-Positivityᵒʳ X⁺  X⁺⁻ = X⁺⁻
+min-Positivityᵒʳ X⁺  X₀⁺ = X₀⁺
+min-Positivityᵒʳ X⁺  X⁺  = X⁺
+min-Positivityᵒʳ X⁺  X⁻  = X⁻
+min-Positivityᵒʳ X⁺  X₀⁻ = X₀⁻
+min-Positivityᵒʳ X⁻  X   = X⁻
+min-Positivityᵒʳ X⁻  X⁺⁻ = X⁻
+min-Positivityᵒʳ X⁻  X₀⁺ = X⁻
+min-Positivityᵒʳ X⁻  X⁺  = X⁻
+min-Positivityᵒʳ X⁻  X⁻  = X⁻
+min-Positivityᵒʳ X⁻  X₀⁻ = X⁻
+min-Positivityᵒʳ X₀⁻ X   = X₀⁻
+min-Positivityᵒʳ X₀⁻ X⁺⁻ = X₀⁻
+min-Positivityᵒʳ X₀⁻ X₀⁺ = X₀⁻
+min-Positivityᵒʳ X₀⁻ X⁺  = X₀⁻
+min-Positivityᵒʳ X₀⁻ X⁻  = X⁻
+min-Positivityᵒʳ X₀⁻ X₀⁻ = X₀⁻
+
+max-Positivityᵒʳ : PositivityKindOrderedRing → PositivityKindOrderedRing → PositivityKindOrderedRing
+max-Positivityᵒʳ X   X   = X
+max-Positivityᵒʳ X   X⁺⁻ = X
+max-Positivityᵒʳ X   X₀⁺ = X₀⁺
+max-Positivityᵒʳ X   X⁺  = X⁺
+max-Positivityᵒʳ X   X⁻  = X
+max-Positivityᵒʳ X   X₀⁻ = X
+max-Positivityᵒʳ X⁺⁻ X   = X
+max-Positivityᵒʳ X⁺⁻ X⁺⁻ = X⁺⁻
+max-Positivityᵒʳ X⁺⁻ X₀⁺ = X₀⁺
+max-Positivityᵒʳ X⁺⁻ X⁺  = X⁺
+max-Positivityᵒʳ X⁺⁻ X⁻  = X⁺⁻
+max-Positivityᵒʳ X⁺⁻ X₀⁻ = X
+max-Positivityᵒʳ X₀⁺ X   = X₀⁺
+max-Positivityᵒʳ X₀⁺ X⁺⁻ = X₀⁺
+max-Positivityᵒʳ X₀⁺ X₀⁺ = X₀⁺
+max-Positivityᵒʳ X₀⁺ X⁺  = X⁺
+max-Positivityᵒʳ X₀⁺ X⁻  = X₀⁺
+max-Positivityᵒʳ X₀⁺ X₀⁻ = X₀⁺
+max-Positivityᵒʳ X⁺  X   = X⁺
+max-Positivityᵒʳ X⁺  X⁺⁻ = X⁺
+max-Positivityᵒʳ X⁺  X₀⁺ = X⁺
+max-Positivityᵒʳ X⁺  X⁺  = X⁺
+max-Positivityᵒʳ X⁺  X⁻  = X⁺
+max-Positivityᵒʳ X⁺  X₀⁻ = X⁺
+max-Positivityᵒʳ X⁻  X   = X
+max-Positivityᵒʳ X⁻  X⁺⁻ = X⁺⁻
+max-Positivityᵒʳ X⁻  X₀⁺ = X₀⁺
+max-Positivityᵒʳ X⁻  X⁺  = X⁺
+max-Positivityᵒʳ X⁻  X⁻  = X⁻
+max-Positivityᵒʳ X⁻  X₀⁻ = X₀⁻
+max-Positivityᵒʳ X₀⁻ X   = X
+max-Positivityᵒʳ X₀⁻ X⁺⁻ = X
+max-Positivityᵒʳ X₀⁻ X₀⁺ = X₀⁺
+max-Positivityᵒʳ X₀⁻ X⁺  = X⁺
+max-Positivityᵒʳ X₀⁻ X⁻  = X₀⁻
+max-Positivityᵒʳ X₀⁻ X₀⁻ = X₀⁻
+
+min-Positivityʰ : (l : NumberKind) → PositivityKindType l → PositivityKindType l → PositivityKindType l
+min-Positivityʰ isNat     = min-Positivityᵒʳ
+min-Positivityʰ isInt     = min-Positivityᵒʳ
+min-Positivityʰ isRat     = min-Positivityᵒʳ
+min-Positivityʰ isReal    = min-Positivityᵒʳ
+min-Positivityʰ isComplex = λ _ _ → X -- doesn't matter since `min` is undefined for ℂ
+
+max-Positivityʰ : (l : NumberKind) → PositivityKindType l → PositivityKindType l → PositivityKindType l
+max-Positivityʰ isNat     = max-Positivityᵒʳ
+max-Positivityʰ isInt     = max-Positivityᵒʳ
+max-Positivityʰ isRat     = max-Positivityᵒʳ
+max-Positivityʰ isReal    = max-Positivityᵒʳ
+max-Positivityʰ isComplex = λ _ _ → X -- doesn't matter since `max` is undefined for ℂ
+
 +-Types : NumberProp → NumberProp → NumberProp
 +-Types (level₀ , pos₀) (level₁ , pos₁) =
   let level  = maxₙₗ level₀ level₁
@@ -174,3 +264,29 @@ open PatternsType
 -Types {isRat    } {X⁻ } (x ,, p) = Number (isRat     , X⁺ )
 -Types {isReal   } {X⁻ } (x ,, p) = Number (isReal    , X⁺ )
 
+||-Types : ∀{l p} → Number (l , p) → Type (NumberLevel (minₙₗ l isReal))
+||-Types {isNat    } {X  } (x ,, p) = Number (isNat  , X₀⁺)
+||-Types {isNat    } {X⁺⁻} (x ,, p) = Number (isNat  , X⁺ )
+||-Types {isNat    } {X₀⁺} (x ,, p) = Number (isNat  , X₀⁺)
+||-Types {isNat    } {X⁺ } (x ,, p) = Number (isNat  , X⁺ )
+||-Types {isNat    } {X₀⁻} (x ,, p) = Number (isNat  , X₀⁺)
+||-Types {isInt    } {X  } (x ,, p) = Number (isInt  , X₀⁺)
+||-Types {isInt    } {X⁺⁻} (x ,, p) = Number (isInt  , X⁺ )
+||-Types {isInt    } {X₀⁺} (x ,, p) = Number (isInt  , X₀⁺)
+||-Types {isInt    } {X⁺ } (x ,, p) = Number (isInt  , X⁺ )
+||-Types {isInt    } {X⁻ } (x ,, p) = Number (isInt  , X⁺ )
+||-Types {isInt    } {X₀⁻} (x ,, p) = Number (isInt  , X₀⁺)
+||-Types {isRat    } {X  } (x ,, p) = Number (isRat  , X₀⁺)
+||-Types {isRat    } {X⁺⁻} (x ,, p) = Number (isRat  , X⁺ )
+||-Types {isRat    } {X₀⁺} (x ,, p) = Number (isRat  , X₀⁺)
+||-Types {isRat    } {X⁺ } (x ,, p) = Number (isRat  , X⁺ )
+||-Types {isRat    } {X⁻ } (x ,, p) = Number (isRat  , X⁺ )
+||-Types {isRat    } {X₀⁻} (x ,, p) = Number (isRat  , X₀⁺)
+||-Types {isReal   } {X  } (x ,, p) = Number (isReal , X₀⁺)
+||-Types {isReal   } {X⁺⁻} (x ,, p) = Number (isReal , X⁺ )
+||-Types {isReal   } {X₀⁺} (x ,, p) = Number (isReal , X₀⁺)
+||-Types {isReal   } {X⁺ } (x ,, p) = Number (isReal , X⁺ )
+||-Types {isReal   } {X⁻ } (x ,, p) = Number (isReal , X⁺ )
+||-Types {isReal   } {X₀⁻} (x ,, p) = Number (isReal , X₀⁺)
+||-Types {isComplex} {X  } (x ,, p) = Number (isReal , X₀⁺)
+||-Types {isComplex} {X⁺⁻} (x ,, p) = Number (isReal , X⁺ )
