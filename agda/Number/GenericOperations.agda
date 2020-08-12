@@ -138,7 +138,6 @@ _⁻¹ {isReal   } {X₀⁻} (x ,, q) {{h}} =  _⁻¹ʳ      x  {{h}} ,, ℝ.⁻
 _⁻¹ {isComplex} {X  } (x ,, q) {{h}} =  _⁻¹ᶜ      x  {{h}} ,, ℂ.⁻¹-preserves-#0 x h
 _⁻¹ {isComplex} {X⁺⁻} (x ,, q) {{h}} =  _⁻¹ᶜ      x  {{q}} ,, ℂ.⁻¹-preserves-#0 x q
 
-
 -Types : ∀{l p} → Number (l , p) → Type (NumberLevel (maxₙₗ l isInt))
 -Types {isInt    } {X  } (x ,, p) = Number (isInt     , X)
 -Types {isRat    } {X  } (x ,, p) = Number (isRat     , X)
@@ -225,10 +224,80 @@ _+ʰⁿ_ {X₀⁻} {X⁺ } (a ,, pa) (b ,, pb) = tt
 _+ʰⁿ_ {X₀⁻} {X₀⁻} (a ,, pa) (b ,, pb) = ℕ.+-≤-≤-implies-≤ˡ a b pa pb -- a ≤ 0 → b ≤ 0 → (a + b) ≤ 0
 
 _+ʰᶻ_ : ∀{p q} → (x : Number (isInt , p)) → (y : Number (isInt , q)) → PositivityKindInterpretation isInt (+-Positivityʰ isInt p q) (num x +ᶻ num y)
-_+ʰᶻ_ {p} {q} (a ,, pa) (b ,, pb) = {!!}
+_+ʰᶻ_ {X  } {X  } (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶻ_ {X  } {X⁺⁻} (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶻ_ {X  } {X₀⁺} (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶻ_ {X  } {X⁺ } (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶻ_ {X  } {X⁻ } (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶻ_ {X  } {X₀⁻} (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶻ_ {X⁺⁻} {X  } (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶻ_ {X⁺⁻} {X⁺⁻} (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶻ_ {X⁺⁻} {X₀⁺} (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶻ_ {X⁺⁻} {X⁺ } (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶻ_ {X⁺⁻} {X⁻ } (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶻ_ {X⁺⁻} {X₀⁻} (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶻ_ {X₀⁺} {X  } (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶻ_ {X₀⁺} {X⁺⁻} (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶻ_ {X₀⁺} {X₀⁺} (a ,, pa) (b ,, pb) = ℤ.+-≤-≤-implies-≤ʳ a b pa pb -- 0 ≤ a → 0 ≤ b → 0 ≤ a + b
+_+ʰᶻ_ {X₀⁺} {X⁺ } (a ,, pa) (b ,, pb) = ℤ.+-≤-<-implies-<ʳ a b pa pb -- 0 ≤ a → 0 < b → 0 < a + b
+_+ʰᶻ_ {X₀⁺} {X⁻ } (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶻ_ {X₀⁺} {X₀⁻} (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶻ_ {X⁺ } {X  } (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶻ_ {X⁺ } {X⁺⁻} (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶻ_ {X⁺ } {X₀⁺} (a ,, pa) (b ,, pb) = ℤ.+-<-≤-implies-<ʳ a b pa pb -- 0 < a → 0 ≤ b → 0 < a + b
+_+ʰᶻ_ {X⁺ } {X⁺ } (a ,, pa) (b ,, pb) = ℤ.+-<-<-implies-<ʳ a b pa pb -- 0 < a → 0 < b → 0 < a + b
+_+ʰᶻ_ {X⁺ } {X⁻ } (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶻ_ {X⁺ } {X₀⁻} (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶻ_ {X⁻ } {X  } (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶻ_ {X⁻ } {X⁺⁻} (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶻ_ {X⁻ } {X₀⁺} (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶻ_ {X⁻ } {X⁺ } (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶻ_ {X⁻ } {X⁻ } (a ,, pa) (b ,, pb) = ℤ.+-<-<-implies-<ˡ a b pa pb -- a < 0 → b < 0 → (a + b) < 0
+_+ʰᶻ_ {X⁻ } {X₀⁻} (a ,, pa) (b ,, pb) = ℤ.+-<-≤-implies-<ˡ a b pa pb -- a < 0 → b ≤ 0 → (a + b) < 0
+_+ʰᶻ_ {X₀⁻} {X  } (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶻ_ {X₀⁻} {X⁺⁻} (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶻ_ {X₀⁻} {X₀⁺} (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶻ_ {X₀⁻} {X⁺ } (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶻ_ {X₀⁻} {X⁻ } (a ,, pa) (b ,, pb) = ℤ.+-≤-<-implies-<ˡ a b pa pb -- a ≤ 0 → b < 0 → (a + b) < 0
+_+ʰᶻ_ {X₀⁻} {X₀⁻} (a ,, pa) (b ,, pb) = ℤ.+-≤-≤-implies-≤ˡ a b pa pb -- a ≤ 0 → b ≤ 0 → (a + b) ≤ 0    
 
 _+ʰᶠ_ : ∀{p q} → (x : Number (isRat , p)) → (y : Number (isRat , q)) → PositivityKindInterpretation isRat (+-Positivityʰ isRat p q) (num x +ᶠ num y)
-_+ʰᶠ_ {p} {q} (a ,, pa) (b ,, pb) = {!!}
+_+ʰᶠ_ {X  } {X  } (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶠ_ {X  } {X⁺⁻} (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶠ_ {X  } {X₀⁺} (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶠ_ {X  } {X⁺ } (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶠ_ {X  } {X⁻ } (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶠ_ {X  } {X₀⁻} (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶠ_ {X⁺⁻} {X  } (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶠ_ {X⁺⁻} {X⁺⁻} (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶠ_ {X⁺⁻} {X₀⁺} (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶠ_ {X⁺⁻} {X⁺ } (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶠ_ {X⁺⁻} {X⁻ } (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶠ_ {X⁺⁻} {X₀⁻} (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶠ_ {X₀⁺} {X  } (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶠ_ {X₀⁺} {X⁺⁻} (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶠ_ {X₀⁺} {X₀⁺} (a ,, pa) (b ,, pb) = ℚ.+-≤-≤-implies-≤ʳ a b pa pb -- 0 ≤ a → 0 ≤ b → 0 ≤ a + b
+_+ʰᶠ_ {X₀⁺} {X⁺ } (a ,, pa) (b ,, pb) = ℚ.+-≤-<-implies-<ʳ a b pa pb -- 0 ≤ a → 0 < b → 0 < a + b
+_+ʰᶠ_ {X₀⁺} {X⁻ } (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶠ_ {X₀⁺} {X₀⁻} (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶠ_ {X⁺ } {X  } (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶠ_ {X⁺ } {X⁺⁻} (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶠ_ {X⁺ } {X₀⁺} (a ,, pa) (b ,, pb) = ℚ.+-<-≤-implies-<ʳ a b pa pb -- 0 < a → 0 ≤ b → 0 < a + b
+_+ʰᶠ_ {X⁺ } {X⁺ } (a ,, pa) (b ,, pb) = ℚ.+-<-<-implies-<ʳ a b pa pb -- 0 < a → 0 < b → 0 < a + b
+_+ʰᶠ_ {X⁺ } {X⁻ } (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶠ_ {X⁺ } {X₀⁻} (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶠ_ {X⁻ } {X  } (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶠ_ {X⁻ } {X⁺⁻} (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶠ_ {X⁻ } {X₀⁺} (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶠ_ {X⁻ } {X⁺ } (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶠ_ {X⁻ } {X⁻ } (a ,, pa) (b ,, pb) = ℚ.+-<-<-implies-<ˡ a b pa pb -- a < 0 → b < 0 → (a + b) < 0
+_+ʰᶠ_ {X⁻ } {X₀⁻} (a ,, pa) (b ,, pb) = ℚ.+-<-≤-implies-<ˡ a b pa pb -- a < 0 → b ≤ 0 → (a + b) < 0
+_+ʰᶠ_ {X₀⁻} {X  } (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶠ_ {X₀⁻} {X⁺⁻} (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶠ_ {X₀⁻} {X₀⁺} (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶠ_ {X₀⁻} {X⁺ } (a ,, pa) (b ,, pb) = lift tt
+_+ʰᶠ_ {X₀⁻} {X⁻ } (a ,, pa) (b ,, pb) = ℚ.+-≤-<-implies-<ˡ a b pa pb -- a ≤ 0 → b < 0 → (a + b) < 0
+_+ʰᶠ_ {X₀⁻} {X₀⁻} (a ,, pa) (b ,, pb) = ℚ.+-≤-≤-implies-≤ˡ a b pa pb -- a ≤ 0 → b ≤ 0 → (a + b) ≤ 0    
 
 _+ʰʳ_ : ∀{p q} → (x : Number (isReal , p)) → (y : Number (isReal , q)) → PositivityKindInterpretation isReal (+-Positivityʰ isReal p q) (num x +ʳ num y)
 _+ʰʳ_ {X  } {X  } (a ,, pa) (b ,, pb) = lift tt
