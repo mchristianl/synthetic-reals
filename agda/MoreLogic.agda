@@ -14,7 +14,7 @@ open import Cubical.Foundations.Prelude
 open import Function.Base using (_∋_)
 open import Cubical.Foundations.Logic
 open import Cubical.HITs.PropositionalTruncation
-open import Cubical.Data.Empty renaming (elim to ⊥-elim) hiding (⊥) -- `⊥` and `elim`
+open import Cubical.Data.Empty renaming (elim to ⊥-elim) renaming (⊥ to ⊥⊥) -- `⊥` and `elim`
 
 import Cubical.Data.Empty as Empty
 open import Cubical.Data.Unit.Base
@@ -91,6 +91,7 @@ module Properties where
    ⇐∶ ¬¬-intro (¬ P)
 
   -- taken from https://ncatlab.org/nlab/show/excluded+middle#DoubleNegatedPEM
+  -- Double-negated PEM
   weak-LEM : ∀(P : hProp ℓ) → [ ¬ ¬ (P ⊔ ¬ P) ]
   weak-LEM _ ¬[p⊔¬p] = ¬[p⊔¬p] (inr (λ p → ¬[p⊔¬p] (inl p)))
 

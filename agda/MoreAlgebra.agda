@@ -26,6 +26,41 @@ module Definitions where
   _Reflects_⟶_ : ∀{Aℓ Bℓ ℓ ℓ'} {A : Type Aℓ} {B : Type Bℓ} → (A → B) → Rel A A ℓ → Rel B B ℓ' → Set _
   f Reflects P ⟶ Q = ∀{x y} → Q (f x) (f y) → P x y
 
+  -- https://en.wikipedia.org/wiki/Complete_partial_order
+  --   A partially ordered set is a directed-complete partial order (dcpo) if each of its directed subsets has a supremum.
+  --   A subset of a partial order is directed if it is non-empty and every pair of elements has an upper bound in the subset.
+  --   In the literature, dcpos sometimes also appear under the label up-complete poset.
+
+  -- https://ncatlab.org/nlab/show/dcpo
+  --   A DCPO, or directed-complete partial order, is a poset with all directed joins.
+  --   Often a DCPO is required to have a bottom element ⊥\bot; then it is called a pointed DCPO or a CPO (but this term is ambiguous).
+
+  -- In this chapter we develop the theory of directed-complete partial orders (dcpo), namely
+  -- partially ordered sets in which only certain joins are required to exist.
+  --
+  -- ...
+  --
+  -- 3.1 Dcpos
+  -- 
+  -- We start by defining partial orders. By a binary relation R on a set X , we mean a map X → X → HProp, as in Definition 2.7.1.
+  -- We can specify which universe the binary relation lands in by saying that R is HPropᵢ-valued or is a relation in universe i if R : X → X → HPropᵢ.
+  --
+  -- Definition 3.1.1. A binary relation R on a set X is
+  -- 
+  -- 1. reflexive     if (∀ x       : X)   R x x;
+  -- 2. irreflexive   if (∀ x       : X) ¬ R x x;
+  -- 3. symmetric     if (∀ x, y    : X)   R x y ⇒ R y x;
+  -- 4. antisymmetric if (∀ x, y    : X)   R x y ⇒ R y x ⇒ x = y;
+  -- 5. transitive    if (∀ x, y, z : X)   R x y ⇒ R y z ⇒ R x z;
+  -- 6. cotransitive  if (∀ x, y, z : X)   R x y ⇒ (R x z) ∨ (R z y).
+  -- 
+  -- Remark 3.1.2. Cotransitivity is also known as weak linearity [91, Definition 11.2.7] or the approximate splitting principle [84].
+  -- 
+  -- Definition 3.1.3.
+  -- 
+  -- A preorder, denoted by ≤, is a reflexive transitive relation.
+  -- A partial order is an antisymmetric preorder.
+
   -- Definition 4.1.4.
   -- - An apartness relation, denoted by #, is an irreflexive symmetric cotransitive relation.
   -- - A strict partial order, denoted by <, is an irreflexive transitive cotransitive relation.

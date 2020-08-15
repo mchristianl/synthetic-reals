@@ -47,6 +47,8 @@ open ℚᶠ
 open ℝʳ
 open ℂᶜ
 
+import Data.Nat.Properties
+
 
 -- NOTE: well, for 15 allowed coercions, we might just enumerate them
 --   unfortunately with overlapping patterns a style as in `Cl` is not possible
@@ -146,6 +148,20 @@ open import Number.Prettyprint
 [1ʳ] : [ℝ⁺]
 [1ʳ] = 1ʳ ,, ℝ.0<1
 
+[1]-Type : (l : NumberKind) → Type (NumberLevel l)
+[1]-Type isNat     = [ℕ⁺]
+[1]-Type isInt     = [ℤ⁺]
+[1]-Type isRat     = [ℚ⁺]
+[1]-Type isReal    = [ℝ⁺]
+[1]-Type isComplex = [ℂ⁺⁻]
+
+-- NOTE: this is ambiguous with generic operations such as _+_
+[1] : ∀{l} → [1]-Type l
+[1] {isNat}     = 1ⁿ ,, ℕ.0<1 
+[1] {isInt}     = 1ᶻ ,, ℤ.0<1 
+[1] {isRat}     = 1ᶠ ,, ℚ.0<1 
+[1] {isReal}    = 1ʳ ,, ℝ.0<1 
+[1] {isComplex} = 1ᶜ ,, ℂ.1#0 
 
 
 -- test101 : Number (isNat , isPositiveᵒʳ) → Number (isReal ,  isNonnegativeᵒʳ) → {!!}

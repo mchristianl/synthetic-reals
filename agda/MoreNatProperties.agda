@@ -8,6 +8,7 @@ open import Cubical.Foundations.Everything renaming (_⁻¹ to _⁻¹ᵖ; assoc 
 
 open import Cubical.Data.Sigma.Base renaming (_×_ to infixr 4 _×_)
 open import Cubical.Relation.Nullary.Base -- ¬_
+open import Cubical.Data.Empty renaming (elim to ⊥-elim) -- `⊥` and `elim`
 open import Function.Base using (_$_)
 
 open import Cubical.Data.Nat
@@ -90,3 +91,7 @@ open MoreLogic.Reasoning
 --         ∀ x k → ¬ (x + suc k ≤ x)
 k+x+sy≢x : ∀ k x y → ¬(k + (x + suc y) ≡ x)
 k+x+sy≢x k x y p = snotz $ sym (+-suc k y) ∙ inj-m+ {x} (+-assoc x k (suc y) ∙ (λ i → (+-comm x k) i + (suc y)) ∙ sym (+-assoc k x (suc y)) ∙ p ∙ sym (+-zero x))
+
+0≤x : ∀ x → 0 ≤ x
+0≤x zero =  0 , refl
+0≤x (suc x) =  suc x , (λ i → suc (+-zero x i)) ∙ refl {x = suc x}

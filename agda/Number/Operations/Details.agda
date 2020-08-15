@@ -9,6 +9,11 @@ open import Cubical.Data.Sigma.Base renaming (_×_ to infixr 4 _×_)
 open import Cubical.Data.Empty renaming (elim to ⊥-elim) -- `⊥` and `elim`
 open import Function.Base using (_$_)
 
+open import Cubical.Data.Nat.Properties
+open import Cubical.Data.Nat.Order renaming (zero-≤ to z≤n; suc-≤-suc to s≤s)
+
+open import MoreNatProperties renaming (0≤x to 0≤xⁿ)
+
 open import Number.Postulates
 open import Number.Structures
 open import Number.Bundles
@@ -76,7 +81,7 @@ _⁻¹ {isComplex} {⁇x⁇} (x ,, q) {{h}} =  _⁻¹ᶜ      x  {{h}} ,, ℂ.�
 _⁻¹ {isComplex} {x#0} (x ,, q) {{h}} =  _⁻¹ᶜ      x  {{q}} ,, ℂ.⁻¹-preserves-#0 x q
 
 -_ : ∀{l p} → (x : Number (l , p)) → -Types x
--_ {isNat    } {⁇x⁇} (x ,, p) = (-ᶻ (ℕ↪ℤ x)) ,, (ℤ.-flips-0≤ _ $ Isℕ↪ℤ.preserves-0≤ ℕ↪ℤinc _ (ℕ.0≤x x))
+-_ {isNat    } {⁇x⁇} (x ,, p) = (-ᶻ (ℕ↪ℤ x)) ,, (ℤ.-flips-0≤ _ $ Isℕ↪ℤ.preserves-0≤ ℕ↪ℤinc _ (0≤xⁿ x))
 -_ {isNat    } {x#0} (x ,, p) = (-ᶻ (ℕ↪ℤ x)) ,, (ℤ.-preserves-#0 _ $ Isℕ↪ℤ.preserves-#0 ℕ↪ℤinc _ p)
 -_ {isNat    } {0≤x} (x ,, p) = (-ᶻ (ℕ↪ℤ x)) ,, (ℤ.-flips-0≤ _ $ Isℕ↪ℤ.preserves-0≤ ℕ↪ℤinc _ p)
 -_ {isNat    } {0<x} (x ,, p) = (-ᶻ (ℕ↪ℤ x)) ,, (ℤ.-flips-0< _ $ Isℕ↪ℤ.preserves-0< ℕ↪ℤinc _ p)
@@ -392,3 +397,48 @@ _·ʰᶜ_ {⁇x⁇} {⁇x⁇} (a ,, pa) (b ,, pb) = lift tt
 _·ʰᶜ_ {⁇x⁇} {x#0} (a ,, pa) (b ,, pb) = lift tt
 _·ʰᶜ_ {x#0} {⁇x⁇} (a ,, pa) (b ,, pb) = lift tt
 _·ʰᶜ_ {x#0} {x#0} (a ,, pa) (b ,, pb) = ℂ.·-#0-#0-implies-#0 a b pa pb -- a # 0 → b # 0 → (a · b) # 0
+
+
+open PatternsType
+
+-- abs x = max x (- x)
+
+abs : ∀{l p} → (x : Number (l , p)) → abs-Types x
+abs {isNat    } {X  } (x ,, p) = (absⁿ x ,, 0≤xⁿ x)
+abs {isNat    } {X⁺⁻} (x ,, p) = (absⁿ x ,, ℕ.0≤-#0-implies-0< x (0≤xⁿ x) p)
+abs {isNat    } {X₀⁺} (x ,, p) = (absⁿ x ,, p)
+abs {isNat    } {X⁺ } (x ,, p) = (absⁿ x ,, p)
+abs {isNat    } {X₀⁻} (x ,, p) = (absⁿ x ,, (0ⁿ , (sym $ ≤0→≡0 p)))
+abs {isInt    } {X  } (x ,, p) = (absᶻ x ,, {!!})
+abs {isInt    } {X⁺⁻} (x ,, p) = (absᶻ x ,, {!!})
+abs {isInt    } {X₀⁺} (x ,, p) = (absᶻ x ,, ?)
+abs {isInt    } {X⁺ } (x ,, p) = (absᶻ x ,, ?)
+abs {isInt    } {X⁻ } (x ,, p) = (absᶻ x ,, {!!})
+abs {isInt    } {X₀⁻} (x ,, p) = (absᶻ x ,, {!!})
+abs {isRat    } {X  } (x ,, p) = (absᶠ x ,, {!!})
+abs {isRat    } {X⁺⁻} (x ,, p) = (absᶠ x ,, {!!})
+abs {isRat    } {X₀⁺} (x ,, p) = (absᶠ x ,, ?)
+abs {isRat    } {X⁺ } (x ,, p) = (absᶠ x ,, ?)
+abs {isRat    } {X⁻ } (x ,, p) = (absᶠ x ,, {!!})
+abs {isRat    } {X₀⁻} (x ,, p) = (absᶠ x ,, {!!})
+abs {isReal   } {X  } (x ,, p) = (absʳ x ,, {!!})
+abs {isReal   } {X⁺⁻} (x ,, p) = (absʳ x ,, {!!})
+abs {isReal   } {X₀⁺} (x ,, p) = (absʳ x ,, ?)
+abs {isReal   } {X⁺ } (x ,, p) = (absʳ x ,, ?)
+abs {isReal   } {X⁻ } (x ,, p) = (absʳ x ,, {!!})
+abs {isReal   } {X₀⁻} (x ,, p) = (absʳ x ,, {!!})
+abs {isComplex} {X  } (x ,, p) = (absᶜ x ,, 0≤abs x)
+abs {isComplex} {X⁺⁻} (x ,, p) = (absᶜ x ,, γ) where
+  pʳ = ℂ.0≤abs x
+  γ : 0ʳ <ʳ absᶜ x
+  γ =  ℝ.0≤-#0-implies-0< (absᶜ x) pʳ (ℂ.abs-preserves-#0 x p)
+
+
+-- a < b → ¬(b ≤ a) = ¬¬(a < b)
+
+-- 0≤abs       : ∀ x → 0ʳ ≤ʳ abs x
+-- abs-preserves-0 : ∀ x → x ≡ 0f → abs x ≡ 0ʳ
+-- abs-reflects-0  : ∀ x → abs x ≡ 0ʳ → x ≡ 0f
+-- abs-preserves-· : ∀ x y → abs (x · y) ≡ (abs x) ·ʳ (abs y)
+-- #-tight : ∀ x y → ¬(x # y) → x ≡ y
+-- a ≤ b = ¬(b < a)

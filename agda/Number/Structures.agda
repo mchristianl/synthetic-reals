@@ -6,7 +6,7 @@ module Number.Structures where
 
 private
   variable
-    ℓ ℓ' ℓ'' : Level
+    ℓ ℓ' : Level
 
 open import Cubical.Foundations.Everything renaming (_⁻¹ to _⁻¹ᵖ; assoc to ∙-assoc)
 open import Cubical.Relation.Nullary.Base -- ¬_
@@ -23,6 +23,18 @@ open import Cubical.Data.Sigma.Base renaming (_×_ to infixr 4 _×_)
 open import Cubical.Data.Empty renaming (elim to ⊥-elim) -- `⊥` and `elim`
 open import Cubical.Data.Maybe.Base
 
+import MoreAlgebra
+open MoreAlgebra.Definitions
+
+-- ℕ ℤ ℚ ℝ ℂ and ℚ₀⁺ ℝ₀⁺ ...
+-- ring without additive inverse
+record IsRCommSemiring {F : Type ℓ} (_<_ _≤_ _#_ : Rel F F ℓ') (min max : F → F → F) (0f 1f : F) (_+_ _·_ : F → F → F) : Type (ℓ-max ℓ ℓ') where
+  -- field
+
+-- ℤ ℚ ℝ ℂ
+record IsRCommRing {F : Type ℓ} (_<_ _≤_ _#_ : Rel F F ℓ') (min max : F → F → F) (0f 1f : F) (_+_ _·_ : F → F → F) (-_ : F → F) : Type (ℓ-max ℓ ℓ') where
+  -- field
+
 -- ℚ ℝ ℂ
 record IsRField {F : Type ℓ} (_#_ : Rel F F ℓ') (0f 1f : F) (_+_ _·_ : F → F → F) (-_ : F → F) (_⁻¹ : (x : F) → {{ x # 0f }} → F) : Type (ℓ-max ℓ ℓ') where
   field
@@ -33,16 +45,24 @@ record IsRField {F : Type ℓ} (_#_ : Rel F F ℓ') (0f 1f : F) (_+_ _·_ : F �
     -preserves-#  : ∀ x y → x # y  → (- x) # (- y)
     -preserves-#0 : ∀ x   → x # 0f → (- x) #    0f
     ·-#0-#0-implies-#0 : ∀ a b → a  # 0f →  b # 0f → (a · b) #    0f
+    1#0 : 1f # 0f
     -- TODO: properties
 
--- Finₖ ℕ ℤ ℚ ℚ₀⁺ ℚ⁺ ℝ ℝ₀⁺ ℝ⁺
+-- Finₖ ℕ ℤ ℚ ℝ and ℚ₀⁺ ℚ⁺ ℝ₀⁺ ℝ⁺ ...
 record IsRLattice {F : Type ℓ} (_<_ _≤_ _#_ : Rel F F ℓ') (min max : F → F → F) : Type (ℓ-max ℓ ℓ') where
   field
+    isPartialOrder : IsPartialOrder _≤_
+    glb      : ∀ x y z → z ≤ min x y → z ≤ x × z ≤ y
+    glb-back : ∀ x y z → z ≤ x × z ≤ y → z ≤ min x y
+    lub      : ∀ x y z → max x y ≤ z → x ≤ z × y ≤ z
+    lub-back : ∀ x y z → x ≤ z × y ≤ z → max x y ≤ z
+
+    -- derived properties
     <-implies-# : ∀ x y → x < y → x # y
     ≤-#-implies-< : ∀ x y → x ≤ y → x # y → x < y
     #-sym : ∀ x y → x # y → y # x
 
--- ℕ ℤ ℚ ℚ₀⁺ ℚ⁺ ℝ ℝ₀⁺ ℝ⁺
+-- ℕ ℤ ℚ ℝ and ℚ₀⁺ ℚ⁺ ℝ₀⁺ ℝ⁺ ...
 -- ring without additive inverse
 record IsROrderedCommSemiring {F : Type ℓ} (_<_ _≤_ _#_ : Rel F F ℓ') (min max : F → F → F) (0f 1f : F) (_+_ _·_ : F → F → F) : Type (ℓ-max ℓ ℓ') where
   field
@@ -79,6 +99,8 @@ record IsROrderedCommSemiring {F : Type ℓ} (_<_ _≤_ _#_ : Rel F F ℓ') (min
     ·-≤0-0<-implies-≤0 : ∀ a b → a  ≤ 0f → 0f < b  → (a · b) ≤    0f
     ·-≤0-<0-implies-0≤ : ∀ a b → a  ≤ 0f →  b < 0f →    0f   ≤ (a · b)
     ·-≤0-≤0-implies-0≤ : ∀ a b → a  ≤ 0f →  b ≤ 0f →    0f   ≤ (a · b)
+
+    0≤-#0-implies-0< : ∀ x → 0f ≤ x → x # 0f → 0f < x
 
     {-
     ·-#0-#0-implies-#0 : ∀ a b → a  # 0f → b  # 0f → (a · b) #    0f
@@ -132,7 +154,8 @@ record IsROrderedField {F : Type ℓ} (_<_ _≤_ _#_ : Rel F F ℓ') (min max : 
     ⁻¹-preserves-<0 : ∀ x → (x < 0f) → (p : x # 0f) → _⁻¹ x {{p}} < 0f
     ⁻¹-preserves-0< : ∀ x → (0f < x) → (p : x # 0f) → 0f < _⁻¹ x {{p}}
 
--- ℚ₀⁺ ℝ₀⁺
+-- ℚ₀⁺ ℚ₀⁻ ℝ₀⁺ ℝ₀⁻
+{-
 record IsROrderedSemifield {F : Type ℓ} (_<_ _≤_ _#_ : Rel F F ℓ') (min max : F → F → F) (0f 1f : F) (_+_ _·_ : F → F → F) (_⁻¹ : (x : F) → {{ x < 0f }} → F) : Type (ℓ-max ℓ ℓ') where
   field
     isROrderedCommSemiring : IsROrderedCommSemiring _<_ _≤_ _#_ min max 0f 1f _+_ _·_
@@ -140,8 +163,10 @@ record IsROrderedSemifield {F : Type ℓ} (_<_ _≤_ _#_ : Rel F F ℓ') (min ma
     #0-implies-0< : ∀ x → 0f # x → 0f < x
     positivity : ∀ x → 0f ≤ x
   open IsROrderedCommSemiring isROrderedCommSemiring public
+-}
 
--- ℚ⁺ ℝ⁺
+-- ℚ⁺ ℚ⁻ ℝ⁺ ℝ⁻
+{-
 record IsROrderedSemifieldWithoutZero {F : Type ℓ} (_<_ _≤_ _#_ : Rel F F ℓ') (min max : F → F → F) (0f 1f : F) (_+_ _·_ : F → F → F) (_⁻¹ : (x : F) → F) : Type (ℓ-max ℓ ℓ') where
   field
     isRLattice : IsRLattice _<_ _≤_ _#_ min max
@@ -152,3 +177,4 @@ record IsROrderedSemifieldWithoutZero {F : Type ℓ} (_<_ _≤_ _#_ : Rel F F �
     -- TODO: properties
   open IsRLattice isRLattice public
 
+-}

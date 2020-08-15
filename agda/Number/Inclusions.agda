@@ -4,10 +4,6 @@ open import Agda.Primitive renaming (_⊔_ to ℓ-max; lsuc to ℓ-suc; lzero to
 
 module Number.Inclusions where
 
-private
-  variable
-    ℓ ℓ' ℓ'' : Level
-
 open import Cubical.Foundations.Everything renaming (_⁻¹ to _⁻¹ᵖ; assoc to ∙-assoc)
 open import Cubical.Relation.Nullary.Base -- ¬_
 open import Cubical.Relation.Binary.Base -- Rel

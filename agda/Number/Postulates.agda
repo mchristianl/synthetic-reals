@@ -9,6 +9,7 @@ private
     ℓ ℓ' ℓ'' : Level
 
 open import Cubical.Foundations.Everything renaming (_⁻¹ to _⁻¹ᵖ; assoc to ∙-assoc)
+open import Cubical.Relation.Nullary.Base -- ¬_
 open import Cubical.Relation.Binary.Base -- Rel
 open import Function.Base using (_∋_)
 
@@ -67,21 +68,25 @@ module ℕ* where
     ; isROrderedCommSemiring = Postulates.isROrderedCommSemiring
     })
 
-  _<_ = Bundle._<_ bundle
-  _≤_ = Bundle._≤_ bundle
+  open import Cubical.Data.Nat.Order using (_≤_; _<_) public
+  import MoreAlgebra
+  open MoreAlgebra.Definitions using (_#'_) public
+  open import Agda.Builtin.Nat using () renaming (zero to 0f)  public
+
+  -- _<_ = Bundle._<_ bundle
+  -- _≤_ = Bundle._≤_ bundle
   _#_ = Bundle._#_ bundle
   min = Bundle.min bundle
   max = Bundle.max bundle
-  0f  = Bundle.0f  bundle
+  -- 0f  = Bundle.0f  bundle
   1f  = Bundle.1f  bundle
   _+_ = Bundle._+_ bundle
   _·_ = Bundle._·_ bundle
   isROrderedCommSemiring = Bundle.isROrderedCommSemiring bundle
 
-  0≤x : ∀ x → 0 ≤ x
-  0≤x ℕ.zero =  0 , refl
-  0≤x (ℕ.suc x) =  ℕ.suc x , (λ i → ℕ.suc (Nat.+-zero x i)) ∙ refl {x = ℕ.suc x}
-
+  abs : ℕ → ℕ
+  abs x = x
+  
   open IsROrderedCommSemiring isROrderedCommSemiring public
 
 module ℕ  = ℕ* hiding (ℕ)
@@ -98,6 +103,7 @@ module ℕⁿ = ℕ*
     ; _+_ to _+ⁿ_
     ; _·_ to _·ⁿ_
     ; isROrderedCommSemiring to isROrderedCommSemiringⁿ
+    ; abs to absⁿ
     )
 
 module ℤ* where
@@ -133,8 +139,11 @@ module ℤ* where
     ; -_  = -_
     ; isROrderedCommRing = isROrderedCommRing
     })
-  
+
   open IsROrderedCommRing isROrderedCommRing public
+
+  abs : ℤ → ℤ
+  abs x = max x (- x)
 
 module ℤ  = ℤ* hiding (ℤ)
 module ℤᶻ = ℤ*
@@ -151,6 +160,7 @@ module ℤᶻ = ℤ*
     ; _·_ to _·ᶻ_
     ; -_  to -ᶻ_ 
     ; isROrderedCommRing to isROrderedCommRingᶻ
+    ; abs to absᶻ
     )
 
 module ℚ* where
@@ -189,6 +199,9 @@ module ℚ* where
     ; isROrderedField = isROrderedField
     })
 
+  abs : ℚ → ℚ
+  abs x = max x (- x)
+
   open IsROrderedField isROrderedField public
 
 module ℚ  = ℚ* hiding (ℚ)
@@ -207,19 +220,28 @@ module ℚᶠ = ℚ*
   ; -_  to -ᶠ_ 
   ; _⁻¹ to _⁻¹ᶠ
   ; isROrderedField to isROrderedFieldᶠ
+  ; abs to absᶠ
   )
 
 module ℝ* where
-  module Postulates where
-    postulate
-      ℝ           : Type ℝℓ
-      _<_ _≤_ _#_ : Rel ℝ ℝ ℝℓ'
-      min max     : ℝ → ℝ → ℝ
-      0f 1f       : ℝ
-      _+_ _·_     : ℝ → ℝ → ℝ
-      -_          : ℝ → ℝ
-      _⁻¹         : (x : ℝ) → {{ x # 0f }} → ℝ
-      isROrderedField : IsROrderedField _<_ _≤_ _#_ min max 0f 1f _+_ _·_ -_ _⁻¹
+  private
+    module Postulates where
+      postulate
+        ℝ           : Type ℝℓ
+        _<_ _≤_ _#_ : Rel ℝ ℝ ℝℓ'
+        min max     : ℝ → ℝ → ℝ
+        0f 1f       : ℝ
+        _+_ _·_     : ℝ → ℝ → ℝ
+        -_          : ℝ → ℝ
+        _⁻¹         : (x : ℝ) → {{ x # 0f }} → ℝ
+        isROrderedField : IsROrderedField _<_ _≤_ _#_ min max 0f 1f _+_ _·_ -_ _⁻¹
+
+        -- square root on ℝ₀⁺
+        sqrt : (x : ℝ) → {{0f ≤ x}} → ℝ
+        0≤sqrt : ∀ x → {{p : 0f ≤ x}} → 0f ≤ sqrt x {{p}}
+        sqrt-reflects-≡ : ∀ x y → {{px : 0f ≤ x}} → {{py : 0f ≤ y}} → sqrt x {{px}} ≡ sqrt y {{py}} → x ≡ y
+        sqrt-inv : ∀ x → {{p : 0f ≤ x}} → {{q : 0f ≤ (x · x)}}→ sqrt (x · x) {{q}} ≡ x
+        sqrt²-id : ∀ x → {{p : 0f ≤ x}} → sqrt x {{p}} · sqrt x {{p}} ≡ x
 
   module Bundle = ROrderedField {ℝℓ} {ℝℓ'}
   Bundle = ROrderedField {ℝℓ} {ℝℓ'}
@@ -245,6 +267,9 @@ module ℝ* where
     ; isROrderedField = isROrderedField
     })
 
+  abs : ℝ → ℝ
+  abs x = max x (- x)
+
   open IsROrderedField isROrderedField public
 
 module ℝ  = ℝ* hiding (ℝ)
@@ -263,9 +288,14 @@ module ℝʳ = ℝ*
     ; -_  to -ʳ_ 
     ; _⁻¹ to _⁻¹ʳ
     ; isROrderedField to isROrderedFieldʳ
+    ; isRField to isRFieldʳ
+    ; Bundle to Bundleʳ
+    ; bundle to bundleʳ
+    ; abs to absʳ
     )
 
 module ℂ* where
+  open ℝʳ
   module Postulates where
     postulate
       ℂ           : Type ℂℓ
@@ -275,6 +305,14 @@ module ℂ* where
       -_          : ℂ → ℂ
       _⁻¹         : (x : ℂ) → {{ x # 0f }} → ℂ
       isRField : IsRField _#_ 0f 1f _+_ _·_ -_ _⁻¹
+      abs         : ℂ → ℝ
+      0≤abs       : ∀ x → 0ʳ ≤ʳ abs x
+      abs-preserves-0 : ∀ x → x ≡ 0f → abs x ≡ 0ʳ
+      abs-reflects-0  : ∀ x → abs x ≡ 0ʳ → x ≡ 0f
+      abs-preserves-· : ∀ x y → abs (x · y) ≡ (abs x) ·ʳ (abs y)
+      abs-preserves-#0 : ∀ x → x # 0f → abs x #ʳ 0ʳ
+      abs-reflects-#0 : ∀ x → abs x #ʳ 0ʳ → x # 0f
+      
 
   module Bundle = RField {ℂℓ} {ℂℓ'}
   Bundle = RField {ℂℓ} {ℂℓ'}
@@ -310,6 +348,7 @@ module ℂᶜ = ℂ*
     ; -_  to -ᶜ_
     ; _⁻¹ to _⁻¹ᶜ
     ; isRField to isRFieldᶜ
+    ; abs to absᶜ
     )
 
 Isℕ↪ℤ = Number.Inclusions.IsROrderedCommSemiringInclusion
