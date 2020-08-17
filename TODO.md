@@ -51,6 +51,14 @@
     Subset→Embedding {X = X} A = D , f , ψ
       where ...
     ```
+    where
+    ```agda
+    hasPropFibers : (A → B) → Type _
+    hasPropFibers f = ∀ y → isProp (fiber f y)
+
+    _↪_ : Type ℓ → Type ℓ → Type ℓ
+    A ↪ B = Σ[ f ∈ (A → B) ] hasPropFibers f
+    ```
 - use `hProp`s
   - ~~checkout `Cubical.Structures.Poset`~~
   - apply the "hProp-record-idiom" to all the definitions and the hierarchy
@@ -60,3 +68,19 @@
 - complete all necessary axioms in the number hierarchy
   - then divide into necessary axioms and derivable theorems
     - and try to proof the theorems
+- case-splitting for `⊔` would be great instead of using `⊔-elim` all the time .. I came up with
+  ```agda
+  ⊎-implies-⊔ : ∀ {ℓ ℓ'} (P : hProp ℓ) (Q : hProp ℓ') → [ P ] ⊎ [ Q ] → [ P ⊔ Q ]
+  ⊎-implies-⊔ P Q (inl x) = inlᵖ x
+  ⊎-implies-⊔ P Q (inr x) = inrᵖ x
+
+  -- NOTE: need to explcitly state the props `P` and `Q`, as well as the returned prop `R z`
+  --       to make agda resolving all the metas
+  case[_⊔_]_return_of_ : ∀ {ℓ ℓ'} (P : hProp ℓ) (Q : hProp ℓ')
+                    → (z : [ P ⊔ Q ])
+                    → (R : [ P ⊔ Q ] → hProp ℓ'')
+                    → (S : (x : [ P ] ⊎ [ Q ]) → [ R (⊎-implies-⊔ P Q x) ] )
+                    → [ R z ]
+  case[_⊔_]_return_of_ P Q z R S = ⊔-elim P Q R (λ p → S (inl p)) (λ q → S (inr q)) z
+  ```
+  - or can we even have something like `⊔⊎-iso : (P : hProp ℓ) (Q : hProp ℓ') → Iso ([ P ⊔ Q ]) ([ P ] ⊎ [ Q ])` ?

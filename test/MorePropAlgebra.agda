@@ -16,7 +16,7 @@ open import Cubical.Data.Sigma.Base renaming (_×_ to infixr 4 _×_)
 open import Cubical.Data.Empty renaming (elim to ⊥-elim; ⊥ to ⊥⊥) -- `⊥` and `elim`
 open import Cubical.Foundations.Logic renaming (¬_ to ¬ᵖ_; inl to inlᵖ; inr to inrᵖ)
 
-open import Cubical.HITs.PropositionalTruncation.Base
+-- open import Cubical.HITs.PropositionalTruncation.Base
 
 {-
 ⊔⊎-iso : (P : hProp ℓ) (Q : hProp ℓ') → Iso ([ P ⊔ Q ]) ([ P ] ⊎ [ Q ])
