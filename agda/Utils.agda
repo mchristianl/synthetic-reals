@@ -26,3 +26,6 @@ contraposition f ¬q p = ⊥-elim (¬q (f p))
 
 deMorgan₂' : {P : Type ℓ} {Q : Type ℓ'} → ¬(P ⊎ Q) → (¬ P) × (¬ Q)
 deMorgan₂' {P = P} {Q = Q} ¬[p⊎q] = (λ p → ⊥-elim (¬[p⊎q] (inl p))) , λ q → ⊥-elim (¬[p⊎q] (inr q))
+
+hPropRel : ∀ {ℓ} (A B : Type ℓ) (ℓ' : Level) → Type (ℓ-max ℓ (ℓ-suc ℓ'))
+hPropRel A B ℓ' = A → B → hProp ℓ'

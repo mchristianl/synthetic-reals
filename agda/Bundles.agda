@@ -18,6 +18,7 @@ open import Cubical.Data.Empty renaming (elim to ⊥-elim) -- `⊥` and `elim`
 -- open import Cubical.Structures.Poset
 open import Cubical.Foundations.Function
 open import Cubical.Structures.Ring
+open import Cubical.Foundations.Logic renaming (¬_ to ¬ᵖ_)
 
 open import Function.Base using (_∋_)
 -- open import Function.Reasoning using (∋-syntax)
@@ -95,21 +96,21 @@ module ClassicalFieldModule where
 --    w + x # y + z ⇒ w # y ∨ x # z.
 
 record IsConstructiveField {F : Type ℓ}
-                           (0f : F) (1f : F) (_+_ : F → F → F) (_·_ : F → F → F) (-_ : F → F) (_#_ : Rel F F ℓ') (_⁻¹ᶠ : (x : F) → {{x # 0f}} → F) : Type (ℓ-max ℓ ℓ') where
+                           (0f : F) (1f : F) (_+_ : F → F → F) (_·_ : F → F → F) (-_ : F → F) (_#_ : hPropRel F F ℓ') (_⁻¹ᶠ : (x : F) → {{[ x # 0f ]}} → F) : Type (ℓ-max ℓ ℓ') where
   constructor isconstructivefield
 
   field
     isCommRing : IsCommRing 0f 1f _+_ _·_ -_
-    ·-rinv     : ∀ x → (p : x # 0f) → x · (_⁻¹ᶠ x {{p}}) ≡ 1f
-    ·-linv     : ∀ x → (p : x # 0f) → (_⁻¹ᶠ x {{p}}) · x ≡ 1f
-    ·-inv-back : ∀ x y → (x · y ≡ 1f) → x # 0f × y # 0f
-    #-tight    : ∀ x y → ¬(x # y) → x ≡ y
+    ·-rinv     : ∀ x → (p : [ x # 0f ]) → x · (_⁻¹ᶠ x {{p}}) ≡ 1f
+    ·-linv     : ∀ x → (p : [ x # 0f ]) → (_⁻¹ᶠ x {{p}}) · x ≡ 1f
+    ·-inv-back : ∀ x y → (x · y ≡ 1f) → [ x # 0f ] × [ y # 0f ]
+    #-tight    : ∀ x y → ¬([ x # y ]) → x ≡ y
     -- NOTE: the following ⊎ caused trouble two times with resolving ℓ or ℓ'
-    +-#-extensional : ∀ w x y z → (w + x) # (y + z) → (w # y) ⊎ (x # z)
-    isApartnessRel  : IsApartnessRel _#_
+    +-#-extensional : ∀ w x y z → [ (w + x) # (y + z) ] → [ (w # y) ⊔ (x # z) ]
+    isApartnessRel  : IsApartnessRelᵖ _#_
 
   open IsCommRing {0r = 0f} {1r = 1f} isCommRing public
-  open IsApartnessRel isApartnessRel public
+  open IsApartnessRelᵖ isApartnessRel public
     renaming
       ( isIrrefl  to #-irrefl
       ; isSym     to #-sym
@@ -124,8 +125,8 @@ record ConstructiveField : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
     _+_  : Carrier → Carrier → Carrier
     _·_  : Carrier → Carrier → Carrier
     -_   : Carrier → Carrier
-    _#_  : Rel Carrier Carrier ℓ'
-    _⁻¹ᶠ : (x : Carrier) → {{x # 0f}} → Carrier
+    _#_  : hPropRel Carrier Carrier ℓ'
+    _⁻¹ᶠ : (x : Carrier) → {{[ x # 0f ]}} → Carrier
     isConstructiveField : IsConstructiveField 0f 1f _+_ _·_ -_ _#_ _⁻¹ᶠ
 
   infix  9 _⁻¹ᶠ
