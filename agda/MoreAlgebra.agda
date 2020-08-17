@@ -155,6 +155,7 @@ module Definitions where
              isProp×, isProp×2, isProp×3
            to show the record's `isProp`
            do we have pathes on records? in order to use `isProp` on records?
+             yes, with record constructors
   -}
   record [IsStrictPartialOrder] {ℓ ℓ' : Level} {A : Type ℓ} (R : hPropRel A A ℓ') : Type (ℓ-max ℓ ℓ') where
     constructor isstrictpartialorderᵖ
@@ -163,15 +164,14 @@ module Definitions where
       isTrans   : [ isTransᵖ   R ]
       isCotrans : [ isCotransᵖ R ]
 
-  IsStrictPartialOrder-isProp : ∀{ℓ ℓ'} {A : Type ℓ} (R : hPropRel A A ℓ') → isProp ([IsStrictPartialOrder] R)
-  IsStrictPartialOrder-isProp R (isstrictpartialorderᵖ isIrrefl₀ isTrans₀ isCotrans₀)
-                                (isstrictpartialorderᵖ isIrrefl₁ isTrans₁ isCotrans₁) = γ where
-    γ = λ i → isstrictpartialorderᵖ (snd (isIrreflᵖ  R) isIrrefl₀  isIrrefl₁  i)
-                                    (snd (isTransᵖ   R) isTrans₀   isTrans₁   i)
-                                    (snd (isCotransᵖ R) isCotrans₀ isCotrans₁ i)
-
   isStrictParialOrder : {ℓ ℓ' : Level} {A : Type ℓ} (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
-  isStrictParialOrder R = [IsStrictPartialOrder] R , IsStrictPartialOrder-isProp R
+  isStrictParialOrder R = [IsStrictPartialOrder] R , φ-prop where
+    φ-prop :      isProp ([IsStrictPartialOrder] R)
+    φ-prop (isstrictpartialorderᵖ isIrrefl₀ isTrans₀ isCotrans₀)
+           (isstrictpartialorderᵖ isIrrefl₁ isTrans₁ isCotrans₁) =
+      λ i → isstrictpartialorderᵖ (isProp[] (isIrreflᵖ  R) isIrrefl₀  isIrrefl₁  i)
+                                  (isProp[] (isTransᵖ   R) isTrans₀   isTrans₁   i)
+                                  (isProp[] (isCotransᵖ R) isCotrans₀ isCotrans₁ i)
 
   record IsPreorder {ℓ ℓ' : Level} {A : Type ℓ} (R : Rel A A ℓ') : Type (ℓ-max ℓ ℓ') where
     constructor ispreorder
