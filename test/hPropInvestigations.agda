@@ -153,25 +153,37 @@ weak-LEM' {ℓ = ℓ} P = {! (¬[P⊓¬P] P) ∘ pathTo⇒ (⊓-comm (¬ P) P) !
 --   PathP : ∀ {ℓ} (A : I → Set ℓ) → A i0 → A i1 →  Set ℓ
 --   Path  : ∀ {ℓ} (A :    Type ℓ) → A    → A    → Type ℓ
 --   Path A a b = PathP (λ _ → A) a b
+-- Direct definitions of lower h-levels
+--   isContr A = Σ[ x ∈ A ] (∀ y → x ≡ y)
+--   isProp  A = (x y : A) → x ≡ y
+--   isSet   A = (x y : A) → isProp (x ≡ y)
 --
--- an element of hProp just states what the proposition is
--- an element of [ hProp ] states that the proposition holds
+-- an element of   hProp   states what the proposition is    - the element is the proposition
+-- an element of [ hProp ] states that the proposition holds - the element is the proof
 -- pathes such as `P ⊓ ¬ P ≡ ¬ P ⊓ P` just state that the propositions are the same
 -- we cannot use `transport` on `P ⊓ ¬ P ≡ ¬ P ⊓ P`
 -- `⇔toPath` can be used to get equality of the propositions from forward and backward implication based on the witnesses
 --   ⇔toPath : [ P ⇒ Q ] → [ Q ⇒ P ] → P ≡ Q
 -- similar with `hProp≡`
 --   hProp≡ : [ P ] ≡ [ Q ] → P ≡ Q
--- we can use `isoToPath` to create a path `[ P ] ≡ [ Q ]` but only when we are able to formulate an isomorphism
--- so `[ P ] ≡ [ Q ]` is what we can transport the witnesses along
--- but it seems to be a very strong property of two ≡-equal propositions to have their elements being ≡-equal too
---   is it? Or can we always find an isomorphism `Iso [ P ] [ Q ]` for every path `P ≡ Q`? I guess not
 -- there is `pathTo⇒` and `pathTo⇐` to create witness-based implications
 --   pathTo⇒ : P ≡ Q → [ P ⇒ Q ]
 --   pathTo⇐ : P ≡ Q → [ Q ⇒ P ]
 -- here, we have that `[ P ⇒ Q ]` is definitionally equivalent to `[ P ] → [ Q ]`
 -- because `[ P ] → [ Q ]` is the first element of the tuple `P ⇒ Q` which gets projected out with `[_]`
 --   A ⇒ B = ([ A ] → [ B ]) , isPropΠ λ _ → isProp[] B
+-- we can use `isoToPath` to create a path `[ P ] ≡ [ Q ]` but only when we are able to formulate an isomorphism
+-- so `[ P ] ≡ [ Q ]` is what we can transport the witnesses along
+--   isoToPath  : Iso A B → A ≡ B
+--   isoToEquiv : Iso A B → A ≃ B
+-- with
+--   A ≃ B = Σ[ f ∈ A → B ] isEquiv f
+-- where `isEquiv` is basically
+--   isEquiv = (f : A → B) → ∀(y : B) → isContr (fiber f y)
+-- but it seems to be a very strong property of two ≡-equal propositions to have their elements being ≡-equal too
+--   is it? Or can we always find an isomorphism `Iso [ P ] [ Q ]` for every path `P ≡ Q`? I guess not
+
+
 
 -- ∥¬A∥≡¬∥A∥
 _ = hProp≡
@@ -210,3 +222,23 @@ _ = Path
 --
 -- NOTE: the important sentence is "we identify elements of HProp with ... their first projection"
 --       therefore Agda's first projection `[_]` is not present in Booij's writing (it's implicit)
+
+
+import Cubical.Functions.Embedding
+
+-- Embeddings are generalizations of injections. The usual
+-- definition of injection as:
+--
+--    f x ≡ f y → x ≡ y
+--
+-- is not well-behaved with higher h-levels, while embeddings
+-- are.
+--
+--   isEmbedding : (A → B) → Type _
+--   isEmbedding f = ∀ w x → isEquiv {A = w ≡ x} (cong f)
+
+-- injEmbedding
+--   : {f : A → B}
+--   → isSet A → isSet B
+--   → (∀{w x} → f w ≡ f x → w ≡ x)
+--   → isEmbedding f

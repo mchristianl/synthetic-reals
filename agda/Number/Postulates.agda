@@ -115,7 +115,13 @@ module ℤ* where
       0f 1f       : ℤ
       _+_ _·_     : ℤ → ℤ → ℤ
       -_          : ℤ → ℤ
+      
+    abs : ℤ → ℤ
+    abs x = max x (- x)
+
+    postulate
       isROrderedCommRing : IsROrderedCommRing _<_ _≤_ _#_ min max 0f 1f _+_ _·_ -_
+      isAbsOrderedCommRing : IsAbsOrderedCommRing _<_ _≤_ _#_ min max 0f 1f _+_ _·_ -_ abs
       
   module Bundle = ROrderedCommRing {ℤℓ} {ℤℓ'}
   Bundle = ROrderedCommRing {ℤℓ} {ℤℓ'}
@@ -138,12 +144,13 @@ module ℤ* where
     ; _·_ = _·_
     ; -_  = -_
     ; isROrderedCommRing = isROrderedCommRing
+    ; isAbsOrderedCommRing = isAbsOrderedCommRing
     })
 
   open IsROrderedCommRing isROrderedCommRing public
 
-  abs : ℤ → ℤ
-  abs x = max x (- x)
+  -- abs : ℤ → ℤ
+  -- abs x = max x (- x)
 
 module ℤ  = ℤ* hiding (ℤ)
 module ℤᶻ = ℤ*
@@ -173,7 +180,13 @@ module ℚ* where
       _+_ _·_     : ℚ → ℚ → ℚ
       -_          : ℚ → ℚ
       _⁻¹         : (x : ℚ) → {{ x # 0f }} → ℚ
+      
+    abs : ℚ → ℚ
+    abs x = max x (- x)
+
+    postulate
       isROrderedField : IsROrderedField _<_ _≤_ _#_ min max 0f 1f _+_ _·_ -_ _⁻¹
+      isAbsOrderedCommRing : IsAbsOrderedCommRing _<_ _≤_ _#_ min max 0f 1f _+_ _·_ -_ abs
 
   module Bundle = ROrderedField {ℚℓ} {ℚℓ'}
   Bundle = ROrderedField {ℚℓ} {ℚℓ'}
@@ -197,10 +210,11 @@ module ℚ* where
     ; -_  = -_
     ; _⁻¹ = _⁻¹
     ; isROrderedField = isROrderedField
+    ; isAbsOrderedCommRing = isAbsOrderedCommRing
     })
 
-  abs : ℚ → ℚ
-  abs x = max x (- x)
+  -- abs : ℚ → ℚ
+  -- abs x = max x (- x)
 
   open IsROrderedField isROrderedField public
 
@@ -234,7 +248,13 @@ module ℝ* where
         _+_ _·_     : ℝ → ℝ → ℝ
         -_          : ℝ → ℝ
         _⁻¹         : (x : ℝ) → {{ x # 0f }} → ℝ
+
+      abs : ℝ → ℝ
+      abs x = max x (- x)
+
+      postulate
         isROrderedField : IsROrderedField _<_ _≤_ _#_ min max 0f 1f _+_ _·_ -_ _⁻¹
+        isAbsOrderedCommRing : IsAbsOrderedCommRing _<_ _≤_ _#_ min max 0f 1f _+_ _·_ -_ abs
 
         -- square root on ℝ₀⁺
         sqrt : (x : ℝ) → {{0f ≤ x}} → ℝ
@@ -265,10 +285,11 @@ module ℝ* where
     ; -_  = -_
     ; _⁻¹ = _⁻¹
     ; isROrderedField = isROrderedField
+    ; isAbsOrderedCommRing = isAbsOrderedCommRing
     })
 
-  abs : ℝ → ℝ
-  abs x = max x (- x)
+  -- abs : ℝ → ℝ
+  -- abs x = max x (- x)
 
   open IsROrderedField isROrderedField public
 
@@ -353,22 +374,22 @@ module ℂᶜ = ℂ*
 
 Isℕ↪ℤ = Number.Inclusions.IsROrderedCommSemiringInclusion
 Isℕ↪ℚ = Number.Inclusions.IsROrderedCommSemiringInclusion
-Isℕ↪ℂ = Number.Inclusions.Isℕ↪ℂ
+Isℕ↪ℂ = Number.Inclusions.IsRCommSemiringInclusion
 Isℕ↪ℝ = Number.Inclusions.IsROrderedCommSemiringInclusion
 Isℤ↪ℚ = Number.Inclusions.IsROrderedCommRingInclusion
 Isℤ↪ℝ = Number.Inclusions.IsROrderedCommRingInclusion
-Isℤ↪ℂ = Number.Inclusions.Isℤ↪ℂ
+Isℤ↪ℂ = Number.Inclusions.IsRCommRingInclusion
 Isℚ↪ℝ = Number.Inclusions.IsROrderedFieldInclusion
 Isℚ↪ℂ = Number.Inclusions.IsRFieldInclusion
 Isℝ↪ℂ = Number.Inclusions.IsRFieldInclusion
 
 module Isℕ↪ℤ = Number.Inclusions.IsROrderedCommSemiringInclusion
 module Isℕ↪ℚ = Number.Inclusions.IsROrderedCommSemiringInclusion
---module Isℕ↪ℂ = Number.Inclusions.Isℕ↪ℂ
+module Isℕ↪ℂ = Number.Inclusions.IsRCommSemiringInclusion
 module Isℕ↪ℝ = Number.Inclusions.IsROrderedCommSemiringInclusion
 module Isℤ↪ℚ = Number.Inclusions.IsROrderedCommRingInclusion
 module Isℤ↪ℝ = Number.Inclusions.IsROrderedCommRingInclusion
---module Isℤ↪ℂ = Number.Inclusions.Isℤ↪ℂ
+module Isℤ↪ℂ = Number.Inclusions.IsRCommRingInclusion
 module Isℚ↪ℝ = Number.Inclusions.IsROrderedFieldInclusion
 module Isℚ↪ℂ = Number.Inclusions.IsRFieldInclusion
 module Isℝ↪ℂ = Number.Inclusions.IsRFieldInclusion

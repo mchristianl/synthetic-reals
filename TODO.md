@@ -51,3 +51,28 @@
     Subset→Embedding {X = X} A = D , f , ψ
       where ...
     ```
+- use `hProp`s
+  - checkout `Cubical.Structures.Poset`
+    ```agda
+    Order : (ℓ₁ : Level) → Type ℓ₀ → Type (ℓ-max ℓ₀ (ℓ-suc ℓ₁))
+    Order ℓ₁ A = A → A → hProp ℓ₁
+
+    isReflexive : {A : Type ℓ₀} → Order ℓ₁ A → hProp (ℓ-max ℓ₀ ℓ₁)
+    isReflexive {A = X} _⊑_ = ((x : X) → [ x ⊑ x ]) , isPropΠ λ x → snd (x ⊑ x)
+
+    isTransitive : {A : Type ℓ₀} → Order ℓ₁ A → hProp (ℓ-max ℓ₀ ℓ₁)
+    isTransitive {ℓ₀ = ℓ₀} {ℓ₁ = ℓ₁} {A = X} _⊑_ = φ , φ-prop
+      where
+        φ      : Type (ℓ-max ℓ₀ ℓ₁)
+        φ      = ((x y z : X) → [ x ⊑ y ⇒ y ⊑ z ⇒ x ⊑ z ])
+        φ-prop : isProp φ
+        φ-prop = isPropΠ3 λ x y z → snd (x ⊑ y ⇒ y ⊑ z ⇒ x ⊑ z)
+
+    isAntisym : {A : Type ℓ₀} → isSet A → Order ℓ₁ A → hProp (ℓ-max ℓ₀ ℓ₁)
+    isAntisym {ℓ₀ = ℓ₀} {ℓ₁ = ℓ₁} {A = X} A-set _⊑_ = φ , φ-prop
+      where
+        φ      : Type (ℓ-max ℓ₀ ℓ₁)
+        φ      = ((x y : X) → [ x ⊑ y ] → [ y ⊑ x ] → x ≡ y)
+        φ-prop : isProp φ
+        φ-prop = isPropΠ3 λ x y z → isPropΠ λ _ → A-set x y
+    ```

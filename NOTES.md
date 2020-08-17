@@ -246,6 +246,16 @@ propIsInitial I x y i {X} = res X i
     res i = fp i , cp **
 ```
 
+```agda
+-- We make this a record so that isEquiv can be proved using
+-- copatterns. This is good because copatterns don't get unfolded
+-- unless a projection is applied so it should be more efficient.
+record isEquiv {ℓ ℓ'} {A : Set ℓ} {B : Set ℓ'} (f : A → B) : Set (ℓ ⊔ ℓ') where
+  no-eta-equality
+  field
+    equiv-proof : (y : B) → isContr (fiber f y)
+```
+
 ## using equivalences instead of `lemma` and `lemma-back`
 
 - when using "implicational" reasoning `_⇒⟨_⟩` agda is pretty good in determining the arguments within `⟨_⟩`
@@ -281,6 +291,45 @@ propIsInitial I x y i {X} = res X i
 ```
 
 ## some research about hProps
+
+Booij writes "we identify elements of HProp with ... their first projection". Therefore Agda's first projection `[_]` is not present in Booij's writing (it's implicit).
+
+| Booij                                  | Agda                                                                     |
+| -------------------------------------- | ------------------------------------------------------------------------ |
+| `⊤              := 1                 ` | `⊤ : hProp _                                                           ` |
+|                                        | `⊤ = Unit , (λ _ _ _ → tt)                                             ` |
+| -------------------------------------- | ------------------------------------------------------------------------ |
+| `⊥              := 0                 ` | `⊥ : hProp _                                                           ` |
+|                                        | `⊥ = ⊥.⊥ , λ ()                                                        ` |
+| -------------------------------------- | ------------------------------------------------------------------------ |
+| `P ∧ Q          := P × Q             ` | `A ⊓′ B = A × B                                                        ` |
+|                                        | `A ⊓ B = [ A ] ⊓′ [ B ] , isOfHLevelΣ 1 (isProp[] A) (\ _ → isProp[] B)` |
+| -------------------------------------- | ------------------------------------------------------------------------ |
+| `P ⇒ Q          := P → Q             ` | `A ⇒ B = ([ A ] → [ B ]) , isPropΠ λ _ → isProp[] B                    ` |
+| -------------------------------------- | ------------------------------------------------------------------------ |
+| `P ⇔ Q          := P = Q             ` | `A ⇔ B = (A ⇒ B) ⊓ (B ⇒ A)                                             ` |
+|                                        | `⇔toPath : [ P ⇒ Q ] → [ Q ⇒ P ] → P ≡ Q                               ` |
+|                                        | `pathTo⇒ : P ≡ Q → [ P ⇒ Q ]                                           ` |
+|                                        | `pathTo⇐ : P ≡ Q → [ Q ⇒ P ]                                           ` |
+| -------------------------------------- | ------------------------------------------------------------------------ |
+| `¬P             := P → 0             ` | `¬ A = ([ A ] → ⊥.⊥) , isPropΠ λ _ → ⊥.isProp⊥                         ` |
+|                                        | `x ≢ₚ y = ¬ x ≡ₚ y                                                     ` |
+| -------------------------------------- | ------------------------------------------------------------------------ |
+| `P ∨ Q          := ∥ P + Q ∥         ` | `A ⊔′ B = ∥ A ⊎ B ∥                                                    ` |
+|                                        | `P ⊔ Q = ∥ [ P ] ⊎ [ Q ] ∥ₚ                                            ` |
+| -------------------------------------- | ------------------------------------------------------------------------ |
+| `(∀ x : X) R(x) :=  (Π x : X) R(x)   ` | `∀[∶]-syntax {A = A} P = (∀ x → [ P x ]) , isPropΠ (isProp[] ∘ P)      ` |
+|                                        | `∀[]-syntax  {A = A} P = (∀ x → [ P x ]) , isPropΠ (isProp[] ∘ P)      ` |
+|                                        | `syntax ∀[∶]-syntax {A = A} (λ a → P) = ∀[ a ∶ A ] P                   ` |
+|                                        | `syntax  ∀[]-syntax (λ a → P)          = ∀[ a ] P                      ` |
+| -------------------------------------- | ------------------------------------------------------------------------ |
+| `(∃ x : X) R(x) := ∥ (Σ x : X) R(x) ∥` | `∃[∶]-syntax {A = A} P = ∥ Σ A ([_] ∘ P) ∥ₚ                            ` |
+|                                        | `∃[]-syntax  {A = A} P = ∥ Σ A ([_] ∘ P) ∥ₚ                            ` |
+|                                        | `syntax ∃[∶]-syntax {A = A} (λ x → P) = ∃[ x ∶ A ] P                   ` |
+|                                        | `syntax ∃[]-syntax          (λ x → P) = ∃[ x ] P                       ` |
+| -------------------------------------- | ------------------------------------------------------------------------ |
+| `isHProp(P)   := (Π p, q : P)(p =ₚ q)` | `isProp A = (x y : A) → x ≡ y                                          ` |
+| `HProp       := (Σ P : 𝓤) isHProp(P)` | `hProp  ℓ = Σ[ A ∈ Type ℓ ] isProp A                                   ` |
 
 the equivalences might be proven together
 this could be done with `⇒∶_⇐∶_` and `⇐∶_⇒∶_` from `Cubical.Foundations.Logic`

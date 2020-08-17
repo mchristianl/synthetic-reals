@@ -126,14 +126,15 @@ record IsRFieldInclusion
   preserves-#0 : ∀ x →   x  F.# F.0f → f x  G.# G.0f
   preserves-#0 x q = transport (λ i → f x G.# preserves-0 i) (preserves-# _ _ q)
 
-record Isℕ↪ℂ
+-- ℕ ℤ ℚ ℝ ℂ
+record IsRCommSemiringInclusion
   {ℓ ℓ' ℓₚ ℓₚ'}
-  (F : ROrderedCommSemiring {ℓ} {ℓₚ}) (G : RField {ℓ'} {ℓₚ'})
-  (f : (ROrderedCommSemiring.Carrier F) → (RField.Carrier G)) : Type (ℓ-max (ℓ-max ℓ ℓ') (ℓ-max ℓₚ ℓₚ'))
+  (F : RCommSemiring {ℓ} {ℓₚ}) (G : RCommSemiring {ℓ'} {ℓₚ'})
+  (f : (RCommSemiring.Carrier F) → (RCommSemiring.Carrier G)) : Type (ℓ-max (ℓ-max ℓ ℓ') (ℓ-max ℓₚ ℓₚ'))
   where
   private
-    module F = ROrderedCommSemiring F
-    module G = RField G
+    module F = RCommSemiring F
+    module G = RCommSemiring G
   field
     -- CommSemiringInclusion
     preserves-0   :         f  F.0f       ≡ G.0f
@@ -146,14 +147,15 @@ record Isℕ↪ℂ
     reflects-#    : ∀ x y → f x G.# f y →   x F.#   y
     -- TODO: properties
 
-record Isℤ↪ℂ
+-- ℤ ℚ ℝ ℂ
+record IsRCommRingInclusion
   {ℓ ℓ' ℓₚ ℓₚ'}
-  (F : ROrderedCommRing {ℓ} {ℓₚ}) (G : RField {ℓ'} {ℓₚ'})
-  (f : (ROrderedCommRing.Carrier F) → (RField.Carrier G)) : Type (ℓ-max (ℓ-max ℓ ℓ') (ℓ-max ℓₚ ℓₚ'))
+  (F : RCommRing {ℓ} {ℓₚ}) (G : RCommRing {ℓ'} {ℓₚ'})
+  (f : (RCommRing.Carrier F) → (RCommRing.Carrier G)) : Type (ℓ-max (ℓ-max ℓ ℓ') (ℓ-max ℓₚ ℓₚ'))
   where
   private
-    module F = ROrderedCommRing F
-    module G = RField G
+    module F = RCommRing F
+    module G = RCommRing G
   field
     -- CommSemiringInclusion
     preserves-0   :         f  F.0f       ≡ G.0f
