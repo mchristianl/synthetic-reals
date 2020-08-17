@@ -4,7 +4,7 @@ This is an attempt to make use of [Booij 2020 - Analysis in Univalent Type Theor
 
 The main file is [SyntheticReals.agda](agda/SyntheticReals.agda) that is also [rendered in clickable html](https://mchristianl.github.io/synthetic-reals/html/SyntheticReals.html) and [a literate agda version](https://mchristianl.github.io/synthetic-reals/html/) is in the making.
 
-## developments on-top of the real numbers
+## developments on-top of real numbers
 
 Not all necessary machinery is already available in the cubical standard library. Nonetheless, we provide `record`s for several number types that are [backed by postulates](https://mchristianl.github.io/synthetic-reals/html/Number.Postulates.html). Ideally these postulates will be replaced by actual implementations from the standard library when they are available.
 
@@ -54,7 +54,7 @@ data Number (p : NumberProp) : Type (NumberLevel (fst p)) where
        → Number p
 ```
 
-This allows to define the operations `_+_`, `-_`, `_·_`, `_⁻¹`, `_<_`, `_≤_`, `_#_`, `min`, `max` and `|_|` [on a general `Number` type family](https://mchristianl.github.io/synthetic-reals/html/Number.Base.html) in a way that it makes use of the specific operations for the underlying, concrete number type. The special behaviour of these operations is given [by tables](https://mchristianl.github.io/synthetic-reals/html/Number.Operations.Specification.html)
+This allows to define the operations `_+_`, `-_`, `_·_`, `_⁻¹`, `_<_`, `_≤_`, `_#_`, `min`, `max` and `abs` [on a general `Number` type family](https://mchristianl.github.io/synthetic-reals/html/Number.Base.html) in a way that it makes use of the specific operations for the underlying, concrete number type. The special behaviour of these operations is given [by tables](https://mchristianl.github.io/synthetic-reals/html/Number.Operations.Specification.html)
 
 ```agda
 test201 : [ℕ⁺] → [ℝ₀⁺] → [ℝ]

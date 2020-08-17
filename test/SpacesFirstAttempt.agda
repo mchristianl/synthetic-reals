@@ -64,7 +64,7 @@ record PoorField : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
 
 we might have some "ur"-reals
   these are "the" "numbers"
-or even better: just "ur-numbers" to support projections from 𝕂 into ℝ₀⁺
+or even better: just "ur-numbers" to support functions from 𝕂 into ℝ₀⁺
 being part of some concrete number type is attached via a hidden instance-proof property
   this should be similar to a typeclass mechanism in Coq or Isabelle/HOL
   TODO: maybe, when re-reading their papers, it becomes apparent that this is how it's done in Hölzl 2013 and the Coq-Port of their work
