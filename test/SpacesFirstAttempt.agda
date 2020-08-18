@@ -182,11 +182,11 @@ record IsMetric {ℓ} {X : Type ℓ} (d : X → X → ℝ₀⁺) : Type (ℓ-max
   open ℝ₀⁺Field ℝ₀⁺F
   field
     -- identity of indiscernibles
-    isIdToIndisc      : ∀ x y → 0f ≡ d x y → x ≡ y
-    isIdToIndisc-back : ∀ x y → x ≡ y → 0f ≡ d x y
-    isSym             : ∀ x y → d x y ≡ d y x
+    isPositiveOnNonzero      : ∀ x y → 0f ≡ d x y → x ≡ y
+    isPositiveOnNonzero-back : ∀ x y → x ≡ y → 0f ≡ d x y
+    isSym                    : ∀ x y → d x y ≡ d y x
     -- subadditivity / triangle inequality
-    isTriangleIneq    : ∀ x y z → d x y ≤ d x z + d z y
+    isTriangleIneq           : ∀ x y z → d x y ≤ d x z + d z y
 
 record MetricSpace : Type (ℓ-max (ℓ-suc ℓ) (ℓ-max ℝℓ' ℝℓ)) where
   field
@@ -283,10 +283,10 @@ module Lemma-1 (𝕂F : 𝕂Field {𝕂ℓ} {𝕂ℓ'}) (NVS : NormedVectorSpace
   
   lemma-1 : IsMetric d 
   lemma-1 = record
-    { isIdToIndisc      = {!!}
-    ; isIdToIndisc-back = {!!}
-    ; isSym             = {!!}
-    ; isTriangleIneq    = {!!}
+    { isPositiveOnNonzero      = {!!}
+    ; isPositiveOnNonzero-back = {!!}
+    ; isSym                    = {!!}
+    ; isTriangleIneq           = {!!}
     }
 
   IsNormMetric : (V → V → ℝ₀⁺) → Type (ℓ-max ℓ ℝℓ)

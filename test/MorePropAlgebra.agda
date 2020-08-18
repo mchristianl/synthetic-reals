@@ -15,6 +15,10 @@ open import Cubical.Data.Sum.Base renaming (_⊎_ to infixr 4 _⊎_)
 open import Cubical.Data.Sigma.Base renaming (_×_ to infixr 4 _×_)
 open import Cubical.Data.Empty renaming (elim to ⊥-elim; ⊥ to ⊥⊥) -- `⊥` and `elim`
 open import Cubical.Foundations.Logic renaming (¬_ to ¬ᵖ_; inl to inlᵖ; inr to inrᵖ)
+open import Function.Base using (_∋_)
+
+import Data.Sum
+import Cubical.Data.Sigma
 
 -- open import Cubical.HITs.PropositionalTruncation.Base
 
@@ -37,6 +41,7 @@ open import Cubical.Foundations.Logic renaming (¬_ to ¬ᵖ_; inl to inlᵖ; in
 
 -- NOTE: hProps need to be explicit arguments (that is not a necessity, but we need to give them completely and not just their witnesses)
 
+
 ⊎-implies-⊔ : ∀ {ℓ ℓ'} (P : hProp ℓ) (Q : hProp ℓ') → [ P ] ⊎ [ Q ] → [ P ⊔ Q ]
 ⊎-implies-⊔ P Q (inl x) = inlᵖ x
 ⊎-implies-⊔ P Q (inr x) = inrᵖ x
@@ -47,6 +52,79 @@ case[_⊔_]_return_of_ : ∀ {ℓ ℓ'} (P : hProp ℓ) (Q : hProp ℓ')
                   → (S : (x : [ P ] ⊎ [ Q ]) → [ R (⊎-implies-⊔ P Q x) ] )
                   → [ R z ]
 case[_⊔_]_return_of_ P Q z R S = ⊔-elim P Q R (λ p → S (inl p)) (λ q → S (inr q)) z
+
+-- hProp-union and Σ-Type-union are equivalent when the two disjuncts are disjoint such that one disproves the other and vice versa
+
+⊎-Level : ∀{A : Type ℓ}{B : Type ℓ'} → A ⊎ B → Level
+⊎-Level {ℓ  = ℓ } (inl x) = ℓ
+⊎-Level {ℓ' = ℓ'} (inr x) = ℓ'
+
+⊎-Type : ∀{A : Type ℓ}{B : Type ℓ'}(x : A ⊎ B) → Type (⊎-Level x)
+⊎-Type {A = A} (inl x) = A
+⊎-Type {B = B} (inr x) = B
+
+⊎-pred : ∀{A : Type ℓ}{B : Type ℓ'}(x : A ⊎ B) → ⊎-Type x
+⊎-pred (inl x) = x
+⊎-pred (inr x) = x
+
+⊎-predˡ : ∀{A : Type ℓ}{B : Type ℓ'}(z : A ⊎ B) → {y : A} → z ≡ inl y → A
+⊎-predˡ (inl x) {y} p = x
+⊎-predˡ (inr x) {y} p = y
+
+-- ⊎-pred-congˡ :
+--        {A : Type ℓ}
+--        {B : Type ℓ'}
+--        {x y : A}
+--        → (p : ((A ⊎ B) ∋ inl x) ≡ inl y) →
+--        PathP (λ i → A) (⊎-pred {B = B} (inl x)) (⊎-pred {B = B} (inl y))
+-- ⊎-pred-congˡ p i = {! ⊎-pred (p i) !}
+
+inl-reflects-≡ : ∀{A : Type ℓ}{B : Type ℓ'} {x y : A} → ((A ⊎ B) ∋ inl x) ≡ inl y → x ≡ y
+inl-reflects-≡ {A = A} {B = B} {x = x} {y = y} p =  cong γ p where
+  γ : (z : A ⊎ B) → A
+  γ (inl y) = y
+  γ (inr y) = x
+
+inr-reflects-≡ : ∀{A : Type ℓ}{B : Type ℓ'} {x y : B} → ((A ⊎ B) ∋ inr x) ≡ inr y → x ≡ y
+inr-reflects-≡ {A = A} {B = B} {x = x} {y = y} p = cong γ p where
+  γ : (z : A ⊎ B) → B
+  γ (inl y) = x
+  γ (inr y) = y
+
+isProp⊎ : ∀{ℓ ℓ'} {A : Type ℓ} {B : Type ℓ'} → isProp A → isProp B → (A → ¬ B) ⊎ (B → ¬ A) → isProp (A ⊎ B)
+isProp⊎ pA pB      X⇒¬Y  (inl x) (inl y) = cong inl (pA x y)
+isProp⊎ pA pB      X⇒¬Y  (inr x) (inr y) = cong inr (pB x y)
+isProp⊎ pA pB (inl A⇒¬B) (inl x) (inr y) = ⊥-elim (A⇒¬B x y)
+isProp⊎ pA pB (inr B⇒¬A) (inl x) (inr y) = ⊥-elim (B⇒¬A y x)
+isProp⊎ pA pB (inl A⇒¬B) (inr x) (inl y) = ⊥-elim (A⇒¬B y x)
+isProp⊎ pA pB (inr B⇒¬A) (inr x) (inl y) = ⊥-elim (B⇒¬A x y)
+
+-- open import Cubical.HITs.PropositionalTruncation.Base
+
+module _ {ℓ ℓ'} (P : hProp ℓ) (Q : hProp ℓ')
+         (X⇒¬Y : [ P ⇒ ¬ᵖ Q ] ⊎ [ Q ⇒ ¬ᵖ P ]) where
+
+  isProp-P⊎Q : isProp ([ P ] ⊎ [ Q ])
+  isProp-P⊎Q = isProp⊎ (isProp[] P) (isProp[] Q) X⇒¬Y
+  
+  P⊎Qᵖ : hProp (ℓ-max ℓ ℓ')
+  P⊎Qᵖ = ([ P ] ⊎ [ Q ]) , isProp-P⊎Q
+
+  -- ⊎-implies-⊔' : [ P⊎Qᵖ ] → [ P ⊔ Q ]
+  -- ⊎-implies-⊔' x = ∣ x ∣
+
+  ⊔-implies-⊎ : [ P ⊔ Q ] → [ P⊎Qᵖ ]
+  ⊔-implies-⊎ x = ⊔-elim P Q (λ x → ([ P ] ⊎ [ Q ]) , isProp-P⊎Q) (λ p → inl p) (λ q → inr q) x
+  
+  ⊔⊎-equiv : [ P⊎Qᵖ ⇔ P ⊔ Q ]
+  ⊔⊎-equiv = ⊎-implies-⊔ P Q , ⊔-implies-⊎
+  
+  ⊔⊎-≡ : P⊎Qᵖ ≡ P ⊔ Q
+  ⊔⊎-≡ with ⊔⊎-equiv
+  ... | p , q = ⇔toPath p q
+
+
+-- _ = {!⊔⊎-≡!}
 
 -- ⊔-elim : (P : hProp ℓ)
 --          (Q : hProp ℓ')
@@ -256,6 +334,14 @@ module Consequences where
           (inr b<a) x → case[ b < x ⊔ x < a ] (<-cotrans _ _ b<a x) return (λ _ → (a #'' x) ⊔ (x #'' b)) of λ where
             (inl b<x) → inrᵖ (inrᵖ b<x)
             (inr x<a) → inlᵖ (inrᵖ x<a)
+       -- NOTE: this makes a disjointness-proof necessary, so using _⊎_ in the first place would be better
+       --       or would it be better to use _⊔_ and provide a disjointness proof?
+       --       well, cotransitivity does not care about the disjointness of cases
+       --         it only arises from our specific properties of _<_ in a context of b < a that b < x is disjoint with x < b
+       --         so, the ⊔-elim is still preferred here
+       -- (inr b<a) x → case ⊔-implies-⊎ (b < x) (x < a) {! <-trans b x a!} (<-cotrans _ _ b<a x) of λ where
+       --   (inl b<x) → inrᵖ (inrᵖ b<x)
+       --   (inr x<a) → inlᵖ (inrᵖ x<a)
       }
 
   -- 2. we have a preorder defined by
