@@ -20,6 +20,8 @@ open import Function.Base using (_∋_)
 import Data.Sum
 import Cubical.Data.Sigma
 
+import Cubical.Structures.CommRing
+
 -- open import Cubical.HITs.PropositionalTruncation.Base
 
 {-

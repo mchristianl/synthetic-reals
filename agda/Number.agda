@@ -168,6 +168,7 @@ open import Number.Prettyprint
 
 open import Function.Base using (typeOf)
 
+
 test201 : [ℕ⁺] → [ℝ₀⁺] → [ℝ]
 -- As-patterns (or @-patterns) go well with resolving things in our approach
 test201 n@(nn ,, np) r@(rn ,, rp) = let
@@ -232,6 +233,7 @@ test201 n@(nn ,, np) r@(rn ,, rp) = let
 
 _ = {! ℕ!}
 
+
 {-
 
 distance : ∀(x y : [ℝ]) → [ℝ]
@@ -241,3 +243,13 @@ IsCauchy : (x : ℕ → ℝ) → Type (ℓ-max ℓ' ℚℓ)
 IsCauchy x = ∀(ε : [ℚ⁺]) → ∃[ N ∈ ℕ ] ∀(m n : ℕ) → N ≤ⁿ m → N ≤ⁿ n → distance (x m) (x n) < ε
 
 -}
+
+test : [ℕ⁺] → [ℝ₀⁺] → [ℝ]
+test n@(nn ,, np) r@(rn ,, rp) = let
+  q : [ℕ⁺]
+  q = n + n
+  z : [ℝ₀⁺]
+  z = r + r
+  k : [ℝ⁺]
+  k = n + r
+  in {!!}

@@ -285,7 +285,7 @@ module Lemma-1 (𝕂F : 𝕂Field {𝕂ℓ} {𝕂ℓ'}) (NVS : NormedVectorSpace
   lemma-1 = record
     { isPositiveOnNonzero      = {!!}
     ; isPositiveOnNonzero-back = {!!}
-    ; isSym                    = {!!}
+    ; isSym                    = {! λ x y → ?!}
     ; isTriangleIneq           = {!!}
     }
 
