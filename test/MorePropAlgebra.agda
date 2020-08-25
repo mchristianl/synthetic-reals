@@ -28,7 +28,7 @@ import Cubical.Structures.CommRing
 ⊔⊎-iso : (P : hProp ℓ) (Q : hProp ℓ') → Iso ([ P ⊔ Q ]) ([ P ] ⊎ [ Q ])
 ⊔⊎-iso P Q =
   let f : [ P ⊔ Q ] → [ P ] ⊎ [ Q ]
-      f = ⊔-elim P Q (λ p → {!!}) (λ x → inl x) (λ y → inr y) 
+      f = ⊔-elim P Q (λ p → {!!}) (λ x → inl x) (λ y → inr y)
       g : [ P ] ⊎ [ Q ] → [ P ⊔ Q ]
       g p = ∣ p ∣
       γ : section f g
@@ -108,7 +108,7 @@ module _ {ℓ ℓ'} (P : hProp ℓ) (Q : hProp ℓ')
 
   isProp-P⊎Q : isProp ([ P ] ⊎ [ Q ])
   isProp-P⊎Q = isProp⊎ (isProp[] P) (isProp[] Q) X⇒¬Y
-  
+
   P⊎Qᵖ : hProp (ℓ-max ℓ ℓ')
   P⊎Qᵖ = ([ P ] ⊎ [ Q ]) , isProp-P⊎Q
 
@@ -117,10 +117,10 @@ module _ {ℓ ℓ'} (P : hProp ℓ) (Q : hProp ℓ')
 
   ⊔-implies-⊎ : [ P ⊔ Q ] → [ P⊎Qᵖ ]
   ⊔-implies-⊎ x = ⊔-elim P Q (λ x → ([ P ] ⊎ [ Q ]) , isProp-P⊎Q) (λ p → inl p) (λ q → inr q) x
-  
+
   ⊔⊎-equiv : [ P⊎Qᵖ ⇔ P ⊔ Q ]
   ⊔⊎-equiv = ⊎-implies-⊔ P Q , ⊔-implies-⊎
-  
+
   ⊔⊎-≡ : P⊎Qᵖ ≡ P ⊔ Q
   ⊔⊎-≡ with ⊔⊎-equiv
   ... | p , q = ⇔toPath p q
@@ -135,7 +135,7 @@ module _ {ℓ ℓ'} (P : hProp ℓ) (Q : hProp ℓ')
 --        → (∀ y → [ R (inr y) ])
 --        → (∀ z → [ R z ])
 -- ⊔-elim _ _ R P⇒R Q⇒R = PropTrunc.elim (snd ∘ R) (⊎.elim P⇒R Q⇒R)
-  
+
 --  ⇒∶ {! (⊔-elim P Q (\ _ → (Q ⊔ P)) inr inl) !}
 --  ⇐∶ {! (⊔-elim Q P (\ _ → (P ⊔ Q)) inr inl) !}
 
@@ -170,7 +170,7 @@ module Definitions where
       φ : Type (ℓ-max ℓ ℓ')
       φ = (a b : A) → [ R a b ⇒ (∀[ x ∶ A ] (R a x) ⊔ (R x b)) ]
       φ-prop : isProp φ
-      φ-prop = isPropΠ2 λ a b → snd (R a b ⇒ (∀[ x ∶ A ] (R a x) ⊔ (R x b))) 
+      φ-prop = isPropΠ2 λ a b → snd (R a b ⇒ (∀[ x ∶ A ] (R a x) ⊔ (R x b)))
 
   IsCotrans : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
   IsCotrans R = [ isCotransᵖ R ]
@@ -259,8 +259,8 @@ module Definitions where
       isAntisym : [ isAntisymᵖ R ]
       isTrans   : [ isTransᵖ   R ]
 
-  isParialOrder : {ℓ ℓ' : Level} {A : Type ℓ} (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
-  isParialOrder R =  IsPartialOrder R , φ-prop where
+  isParialOrderᵖ : {ℓ ℓ' : Level} {A : Type ℓ} (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
+  isParialOrderᵖ R =  IsPartialOrder R , φ-prop where
     φ-prop : isProp (IsPartialOrder R)
     φ-prop (ispartialorder isRefl₀ isAntisym₀ isTrans₀)
            (ispartialorder isRefl₁ isAntisym₁ isTrans₁) =
@@ -282,7 +282,7 @@ module Definitions where
 -- TODO: check whether this matches the wording of the (old) standard library
 module Consequences where
   open Definitions
-  
+
   -- Lemma 4.1.7.
   -- Given a strict partial order < on a set X:
   -- 1. we have an apartness relation defined by
@@ -327,8 +327,8 @@ module Consequences where
     in record
       { isIrrefl  = λ a a#a → case[ a < a ⊔ a < a ] a#a return (λ _ → ⊥) of λ where
                             (inl a<a) → <-irrefl _ a<a
-                            (inr a<a) → <-irrefl _ a<a  
-      ; isSym     = λ a b p → pathTo⇒ (⊔-comm (a < b) (b < a)) p 
+                            (inr a<a) → <-irrefl _ a<a
+      ; isSym     = λ a b p → pathTo⇒ (⊔-comm (a < b) (b < a)) p
       ; isCotrans = λ a b p → case[ a < b ⊔ b < a ] p return (λ _ → ∀[ x ] (a #'' x) ⊔ (x #'' b)) of λ where
           (inl a<b) x → case[ a < x ⊔ x < b ] (<-cotrans _ _ a<b x) return (λ _ → (a #'' x) ⊔ (x #'' b)) of λ where
             (inl a<x) → inlᵖ (inlᵖ a<x)
@@ -373,7 +373,7 @@ module Properties where
 
       invUniqueL : {g h : Carrier} → g + h ≡ 0g → g ≡ - h
       invUniqueL {g} {h} p = simplR h (p ∙ sym (invl h))
-      
+
       -- ported from `Algebra.Properties.Group`
       right-helper : ∀ x y → y ≡ - x + (x + y)
       right-helper x y = (
@@ -394,7 +394,7 @@ module Properties where
         (- (- x)) + (- x + x) ≡⟨ sym (right-helper (- x) x) ⟩
         x                    ∎)
 
-  module _ where  
+  module _ where
     open import Cubical.Structures.Ring
     module RingProperties (R : Ring {ℓ}) where
       open Ring R
@@ -437,16 +437,16 @@ module Properties where
             Q = transport (λ i →  a · snd (+-inv b) (~ i) ≡ 0r) P
             R : a · (- b) + a · b ≡ 0r
             R = transport (λ i → ·-rdist-+ a (- b) b i ≡ 0r) Q
-        in a+b≡0→a≡-b R 
+        in a+b≡0→a≡-b R
 
       a·b-a·c≡a·[b-c] : ∀ a b c → a · b - (a · c) ≡ a · (b - c)
       a·b-a·c≡a·[b-c] a b c =
         let P : a · b + a · (- c) ≡ a · (b + - c)
             P = sym (·-rdist-+ a b (- c))
             Q : a · b - a · c ≡ a · (b + - c)
-            Q = transport (λ i →  a · b + a·-b≡-a·b a c i ≡ a · (b + - c) ) P 
+            Q = transport (λ i →  a · b + a·-b≡-a·b a c i ≡ a · (b + - c) ) P
         in  Q
 
-  -- exports  
+  -- exports
   module Group = GroupProperties
   module Ring  = RingProperties
