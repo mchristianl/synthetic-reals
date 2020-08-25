@@ -10,16 +10,16 @@ open import Cubical.Structures.AbGroup
 
 
 {-
-| name | struct              | apart | abs | order | cauchy | sqrt₀⁺  | exp | final name                                         |
-|------|---------------------|-------|-----|-------|--------|---------|-----|----------------------------------------------------|
-| ℕ    | Semiring            |  (✓)  | (✓) | lin.  |        | (on x²) |     | LinearlyOrderedSemiring                            |
-| ℤ    | Ring                |  (✓)  | (✓) | lin.  |        | (on x²) |     | LinearlyOrderedRing                                |
-| ℚ    | Field               |  (✓)  | (✓) | lin.  |        | (on x²) | (✓) | LinearlyOrderedField                               |
-| ℝ    | Field               |  (✓)  | (✓) | part. |   ✓    |    ✓    | (✓) | CompletePartiallyOrderedFieldWithSqrt              |
-| ℂ    | euclidean 2-Product |  (✓)  | (✓) |       |   ✓    |         |  ?  | EuclideanTwoProductOfCompletePartiallyOrderedField |
-| R    | Ring                |   ✓   |  ✓  |       |        |         |  ?  | ApartnessRingWithAbs                               |
-| G    | Group               |   ✓   |  ✓  |       |        |         |  ?  | ApartnessGroupWithAbs                              |
-| K    | Field               |   ✓   |  ✓  |       |   ✓    |         |  ?  | CompleteApartnessFieldWithAbs                      |
+| name | struct              | apart | abs | order | cauchy | sqrt₀⁺  | exp | final name                                                 |
+|------|---------------------|-------|-----|-------|--------|---------|-----|------------------------------------------------------------|
+| ℕ    | Semiring            |  (✓)  | (✓) | lin.  |        | (on x²) |     | LinearlyOrderedSemiring                                    |
+| ℤ    | Ring                |  (✓)  | (✓) | lin.  |        | (on x²) |     | LinearlyOrderedRing                                        |
+| ℚ    | Field               |  (✓)  | (✓) | lin.  |        | (on x²) | (✓) | LinearlyOrderedField                                       |
+| ℝ    | Field               |  (✓)  | (✓) | part. |   ✓    |    ✓    | (✓) | CompletePartiallyOrderedFieldWithSqrt                      |
+| ℂ    | euclidean 2-Product |  (✓)  | (✓) |       |  (✓)   |         |  ?  | EuclideanTwoProductOfCompletePartiallyOrderedFieldWithSqrt |
+| R    | Ring                |   ✓   |  ✓  |       |        |         |  ?  | ApartnessRingWithAbs                                       |
+| G    | Group               |   ✓   |  ✓  |       |        |         |  ?  | ApartnessGroupWithAbs                                      |
+| K    | Field               |   ✓   |  ✓  |       |   ✓    |         |  ?  | CompleteApartnessFieldWithAbs                              |
 -}
 
 record CompleteApartnessFieldWithAbs {ℓ : Level} : Type (ℓ-suc ℓ) where
