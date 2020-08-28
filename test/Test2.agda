@@ -3,15 +3,14 @@
 module Test2 where
 -- open import Agda.Primitive renaming (_⊔_ to ℓ-max; lsuc to ℓ-suc; lzero to ℓ-zero)
 
--- open import Cubical.Foundations.Everything renaming (_⁻¹ to _⁻¹ᵖ; assoc to ∙-assoc)
+open import Cubical.Foundations.Everything renaming (_⁻¹ to _⁻¹ᵖ; assoc to ∙-assoc)
+open import Cubical.Relation.Nullary.Base -- ¬_
+open import Cubical.Data.Empty            -- ⊥
+open import Cubical.Foundations.Logic renaming (¬_ to ¬ᵖ_; ⊥ to ⊥ᵖ)
 
--- open import Cubical.Relation.Nullary.Base -- ¬_
--- open import Cubical.Data.Empty            -- ⊥
--- open import Cubical.Foundations.Logic renaming (¬_ to ¬ᵖ_; ⊥ to ⊥ᵖ)
-
-data ⊥ : Set where
-¬_ : ∀{ℓ} → Set ℓ → Set ℓ
-¬ A = A → ⊥
+-- data ⊥ : Set where
+-- ¬_ : ∀{ℓ} → Set ℓ → Set ℓ
+-- ¬ A = A → ⊥
 
 inst-¬ : ∀{ℓ} {A : Set ℓ} → (A → ⊥) → {{a : A }} → ⊥
 inst-¬ f {{a}} = f a
