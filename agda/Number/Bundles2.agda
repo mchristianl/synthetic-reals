@@ -46,6 +46,7 @@ open import Number.Structures2
 
 module _ where
   abstract
+    -- `ab` for "abstractify", short like `id` for "identity"
     ab : ∀{ℓ} {X : Type ℓ} → X → X
     ab R = R
 
@@ -55,11 +56,30 @@ module _ where
     ab-≡ᵖ : ∀{ℓ} (P : hProp ℓ) → ab P ≡ P
     ab-≡ᵖ P = refl
 
-    ab-≡ᵖ² : ∀{ℓ ℓ'} {X : Type ℓ} (R : hPropRel X X ℓ') → ab R ≡ R
-    ab-≡ᵖ² R = refl
+    -- ab-≡ᵖ² : ∀{ℓ ℓ'} {X : Type ℓ} (R : hPropRel X X ℓ') → ab R ≡ R
+    -- ab-≡ᵖ² R = refl
 
-    ab-≡ᵖ²' : ∀{ℓ ℓ'} {X : Type ℓ} (R : hPropRel X X ℓ') → ∀ x y → ab (R x y) ≡ R x y
-    ab-≡ᵖ²' R x y = refl
+    ab-≡ᵖ² : ∀{ℓ ℓ'} {X : Type ℓ} (R : hPropRel X X ℓ') → ∀ x y → ab (R x y) ≡ R x y
+    ab-≡ᵖ² R x y = refl
+
+    [ab] : ∀{ℓ} {X : Type ℓ} → X → ab X
+    [ab] {X = X} x = transport (sym (ab-≡ {X = X})) x
+
+    infix 1 !_
+    infix 1 !!_
+    infix 1 ~~_
+
+    !_ : ∀{ℓ} {X : Type ℓ} → X → X
+    ! R = R
+
+    !-≡ : ∀{ℓ} {X : Type ℓ} → (! X) ≡ X
+    !-≡ = refl
+
+    !!_ : ∀{ℓ} {X : Type ℓ} → X → ! X
+    !!_ {X = X} x = transport (sym (!-≡ {X = X})) x
+
+    ~~_ : ∀{ℓ} {X : Type ℓ} → ! X → X
+    ~~_ {X = X} x = transport (!-≡ {X = X}) x
 
 -- NOTE: this smells like "CPO" https://en.wikipedia.org/wiki/Complete_partial_order
 record CompletePartiallyOrderedFieldWithSqrt {ℓ ℓ' : Level} : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
@@ -95,7 +115,7 @@ record CompletePartiallyOrderedFieldWithSqrt {ℓ ℓ' : Level} : Type (ℓ-suc 
   _≤ᵃ_ x y = ab (x ≤ y)
 
   ≤-≡-≤ᵃ : ∀ x y → x ≤ y ≡ x ≤ᵃ y
-  ≤-≡-≤ᵃ x y = sym (ab-≡ᵖ²' _≤_ x y)
+  ≤-≡-≤ᵃ x y = sym (ab-≡ᵖ (x ≤ y)) -- (ab-≡ᵖ² _≤_ x y)
 
   ≤ᵃ-inst : ∀{x y} → [ x ≤ y ] → [ x ≤ᵃ y ]
   ≤ᵃ-inst x≤y = pathTo⇒ (≤-≡-≤ᵃ _ _) x≤y
@@ -105,8 +125,10 @@ record CompletePartiallyOrderedFieldWithSqrt {ℓ ℓ' : Level} : Type (ℓ-suc 
     --       when making this an instance argument, agda complains
     --         Instance arguments with explicit arguments are never considered by instance search
     -- we circumvent this by introducing `_≤ⁱ_`
-    sqrt₀⁺ : (x : Carrier) → {{ [ 0f ≤ⁱ x ] }} → Carrier
-    sqrt₀⁺' : (x : Carrier) → {{ [ 0f ≤ᵃ x ] }} → Carrier
+    sqrt₀⁺    : (x : Carrier) → {{    [ 0f ≤ⁱ x ] }} → Carrier
+    sqrt₀⁺'   : (x : Carrier) → {{    [ 0f ≤ᵃ x ] }} → Carrier
+    sqrt₀⁺''  : (x : Carrier) → {{ ab [ 0f ≤  x ] }} → Carrier
+    sqrt₀⁺''' : (x : Carrier) → {{  ! [ 0f ≤  x ] }} → Carrier
 
   -- sqrt-test : (x y : Carrier) → [ 0f ≤ x ] → [ 0f ≤ y ] → Carrier
   -- sqrt-test x y 0≤x 0≤y = let instance itx = ≤ⁱ-inst 0≤x
@@ -117,6 +139,17 @@ record CompletePartiallyOrderedFieldWithSqrt {ℓ ℓ' : Level} : Type (ℓ-suc 
   sqrt-test' x y 0≤x 0≤y = let instance _ = ≤ᵃ-inst 0≤x
                                instance _ = ≤ᵃ-inst 0≤y
                            in sqrt₀⁺' x
+
+  sqrt-test'' : (x y : Carrier) → [ 0f ≤ x ] → [ 0f ≤ y ] → Carrier
+  sqrt-test'' x y 0≤x 0≤y = let instance _ = [ab] 0≤x -- transport (sym ab-≡) 0≤x
+                                instance _ = [ab] 0≤y
+                            in (sqrt₀⁺'' x) + (sqrt₀⁺'' y)
+
+  -- other syntax
+  sqrt-test''' : (x y : Carrier) → [ 0f ≤ x ] → [ 0f ≤ y ] → Carrier
+  sqrt-test''' x y 0≤x 0≤y = let instance _ = !! 0≤x -- transport (sym ab-≡) 0≤x
+                                 instance _ = !! 0≤y
+                             in (sqrt₀⁺''' x) + (sqrt₀⁺''' y)
 
   <-asym : [ isAsymᵖ _<_ ]
   <-asym = irrefl+trans→asym _<_ <-irrefl <-trans
