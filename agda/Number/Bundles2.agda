@@ -15,11 +15,12 @@ open import Cubical.Data.Sum.Base renaming (_⊎_ to infixr 4 _⊎_)
 open import Cubical.Data.Sigma.Base renaming (_×_ to infixr 4 _×_)
 open import Cubical.Data.Empty renaming (elim to ⊥-elim; ⊥ to ⊥⊥) -- `⊥` and `elim`
 open import Cubical.Foundations.Logic renaming (¬_ to ¬ᵖ_; inl to inlᵖ; inr to inrᵖ)
-open import Function.Base using (_∋_)
+open import Function.Base using (it; _∋_)
 
 open import Cubical.HITs.PropositionalTruncation --.Properties
 
 
+open import Utils using (!_; !!_)
 import MoreLogic
 open MoreLogic.Definitions
 open MoreLogic.Properties
@@ -29,6 +30,7 @@ open MorePropAlgebra.Consequences
 open import Number.Structures2
 
 
+open MoreLogic.Reasoning
 
 {-
 | name | struct              | apart | abs | order | cauchy | sqrt₀⁺  | exp | final name                                                             |
@@ -44,121 +46,122 @@ open import Number.Structures2
 -}
 
 
-module _ where
-  abstract
-    -- `ab` for "abstractify", short like `id` for "identity"
-    ab : ∀{ℓ} {X : Type ℓ} → X → X
-    ab R = R
-
-    ab-≡ : ∀{ℓ} {X : Type ℓ} → ab X ≡ X
-    ab-≡ = refl
-
-    ab-≡ᵖ : ∀{ℓ} (P : hProp ℓ) → ab P ≡ P
-    ab-≡ᵖ P = refl
-
-    -- ab-≡ᵖ² : ∀{ℓ ℓ'} {X : Type ℓ} (R : hPropRel X X ℓ') → ab R ≡ R
-    -- ab-≡ᵖ² R = refl
-
-    ab-≡ᵖ² : ∀{ℓ ℓ'} {X : Type ℓ} (R : hPropRel X X ℓ') → ∀ x y → ab (R x y) ≡ R x y
-    ab-≡ᵖ² R x y = refl
-
-    [ab] : ∀{ℓ} {X : Type ℓ} → X → ab X
-    [ab] {X = X} x = transport (sym (ab-≡ {X = X})) x
-
-    infix 1 !_
-    infix 1 !!_
-    infix 1 ~~_
-
-    !_ : ∀{ℓ} {X : Type ℓ} → X → X
-    ! R = R
-
-    !-≡ : ∀{ℓ} {X : Type ℓ} → (! X) ≡ X
-    !-≡ = refl
-
-    !!_ : ∀{ℓ} {X : Type ℓ} → X → ! X
-    !!_ {X = X} x = transport (sym (!-≡ {X = X})) x
-
-    ~~_ : ∀{ℓ} {X : Type ℓ} → ! X → X
-    ~~_ {X = X} x = transport (!-≡ {X = X}) x
-
 -- NOTE: this smells like "CPO" https://en.wikipedia.org/wiki/Complete_partial_order
 record CompletePartiallyOrderedFieldWithSqrt {ℓ ℓ' : Level} : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
   field
     Carrier : Type ℓ
     0f      : Carrier
     1f      : Carrier
+    _<_     : hPropRel Carrier Carrier ℓ'
+    min     : Carrier → Carrier → Carrier
+    max     : Carrier → Carrier → Carrier
     _+_     : Carrier → Carrier → Carrier
     _·_     : Carrier → Carrier → Carrier
     -_      : Carrier → Carrier
-    _<_     : hPropRel Carrier Carrier ℓ'
-    <-irrefl : [ isIrreflᵖ _<_ ]
-    <-trans  : [ isTransᵖ _<_ ]
+    <-irrefl  : [ isIrreflᵖ _<_ ]
+    <-trans   : [ isTransᵖ _<_ ]
+    <-cotrans : [ isCotransᵖ _<_ ]
     isset   : isSet Carrier
+
+  -- NOTE: these intermediate definitions are restricted and behave like let-definitions
+  --       e.g. they show up in goal contexts and they do not allow for `where` blocks
+
+  _-_ : Carrier → Carrier → Carrier
+  a - b = a + (- b)
 
   _≤_ : hPropRel Carrier Carrier ℓ'
   x ≤ y = ¬ᵖ(y < x)
 
-  _≤ⁱ_ : hPropRel Carrier Carrier ℓ'
-  -- x ≤ᵢ y = ({{p : [ y < x ]}} → ⊥⊥) , λ f g → instanceFunExt {A = [ y < x ]} {B = λ q i → ⊥⊥} {f = f} {g = g} λ {{r}} → ⊥-elim {A = λ _ → f ≡ g} f
-  -- x ≤ᵢ y = ({{p : [ y < x ]}} → ⊥⊥) , λ f g → instanceFunExt (λ {{_}} → ⊥-elim {A = λ _ → f ≡ g} f)
-  x ≤ⁱ y = ¬ⁱ(y < x)
-
-  ≤-≡-≤ⁱ : ∀ x y → x ≤ y ≡ x ≤ⁱ y
-  ≤-≡-≤ⁱ x y = ¬-≡-¬ⁱ (y < x)
-    -- ⇒∶ (λ f {{p}} → f   p  )
-    -- ⇐∶ (λ f   p   → f {{p}})
-
-  ≤ⁱ-inst : ∀{x y} → [ x ≤ y ] → [ x ≤ⁱ y ]
-  ≤ⁱ-inst x≤y = pathTo⇒ (≤-≡-≤ⁱ _ _) x≤y
-
-  _≤ᵃ_ : hPropRel Carrier Carrier ℓ'
-  _≤ᵃ_ x y = ab (x ≤ y)
-
-  ≤-≡-≤ᵃ : ∀ x y → x ≤ y ≡ x ≤ᵃ y
-  ≤-≡-≤ᵃ x y = sym (ab-≡ᵖ (x ≤ y)) -- (ab-≡ᵖ² _≤_ x y)
-
-  ≤ᵃ-inst : ∀{x y} → [ x ≤ y ] → [ x ≤ᵃ y ]
-  ≤ᵃ-inst x≤y = pathTo⇒ (≤-≡-≤ᵃ _ _) x≤y
-
-  field
-    -- NOTE: `[ 0f ≤ x ]` normalizes to `fst (x < 0f) → ⊥⊥` and therefore it takes an explicit argument `fst (x < 0f)`
-    --       when making this an instance argument, agda complains
-    --         Instance arguments with explicit arguments are never considered by instance search
-    -- we circumvent this by introducing `_≤ⁱ_`
-    sqrt₀⁺    : (x : Carrier) → {{    [ 0f ≤ⁱ x ] }} → Carrier
-    sqrt₀⁺'   : (x : Carrier) → {{    [ 0f ≤ᵃ x ] }} → Carrier
-    sqrt₀⁺''  : (x : Carrier) → {{ ab [ 0f ≤  x ] }} → Carrier
-    sqrt₀⁺''' : (x : Carrier) → {{  ! [ 0f ≤  x ] }} → Carrier
-
-  -- sqrt-test : (x y : Carrier) → [ 0f ≤ x ] → [ 0f ≤ y ] → Carrier
-  -- sqrt-test x y 0≤x 0≤y = let instance itx = ≤ⁱ-inst 0≤x
-  --                             instance ity = ≤ⁱ-inst 0≤y
-  --                         in sqrt₀⁺ x
-
-  sqrt-test' : (x y : Carrier) → [ 0f ≤ x ] → [ 0f ≤ y ] → Carrier
-  sqrt-test' x y 0≤x 0≤y = let instance _ = ≤ᵃ-inst 0≤x
-                               instance _ = ≤ᵃ-inst 0≤y
-                           in sqrt₀⁺' x
-
-  sqrt-test'' : (x y : Carrier) → [ 0f ≤ x ] → [ 0f ≤ y ] → Carrier
-  sqrt-test'' x y 0≤x 0≤y = let instance _ = [ab] 0≤x -- transport (sym ab-≡) 0≤x
-                                instance _ = [ab] 0≤y
-                            in (sqrt₀⁺'' x) + (sqrt₀⁺'' y)
-
-  -- other syntax
-  sqrt-test''' : (x y : Carrier) → [ 0f ≤ x ] → [ 0f ≤ y ] → Carrier
-  sqrt-test''' x y 0≤x 0≤y = let instance _ = !! 0≤x -- transport (sym ab-≡) 0≤x
-                                 instance _ = !! 0≤y
-                             in (sqrt₀⁺''' x) + (sqrt₀⁺''' y)
+  ≤-cotrans : [ isCotransᵖ _≤_ ]
+  ≤-cotrans a b a≤b x =
+    let γ : [ (b < x) ⊓ (x < a) ] → [ b < a ]
+        γ p = <-trans b x a (fst p) (snd p)
+        -- γ p = ⊔-elim (b < x) (x < a) (λ _ → a < b)
+        --       (λ b<x → {! <-cotrans b x b<x a  !})
+        --       (λ x<a → {! <-cotrans x a x<a b  !}) p
+    in  {! contraposition ((b < x) ⊓ (x < a)) (b < a) γ a≤b  !} -- need deMorgan₁
+  -- Q → P
+  -- ¬ P → ¬ Q
 
   <-asym : [ isAsymᵖ _<_ ]
   <-asym = irrefl+trans→asym _<_ <-irrefl <-trans
 
+  <-asym¹ = λ(a b : Carrier) → λ x y → {!  (<-asym a b)   !}
+
+  ≤-antisym : [ isAntisymˢ isset _≤_ ]
+  ≤-antisym a b a≤b b≤a = {!   !}
+
+  abs : Carrier → Carrier
+  abs x = max x (- x)
+
+  -- suppose that x < ε for all ε > 0. If x > 0, then x < x, a contradiction; so 0 ≥ x. Thus x ≥ 0 and 0 ≥ x, and therefore x = 0.
+  bridges-R3-12 : ∀ x → [ 0f ≤ x ] → (∀ ε → [ 0f < ε ] → [ x < ε ]) → x ≡ 0f
+  bridges-R3-12 x 0≤x f = let γ : [ x ≤ 0f ]
+                              γ = {!   !}
+                           in {!   !}
+  field
+    -- `R3.12` in [Bridges 1999]
+    -- bridges-R2-2  : ∀ x y → [ y < x ] → ∀ z → [ (z < x) ⊔ (y < z) ]
+    sqrt : (x : Carrier) → {{ ! [ 0f ≤ x ] }} → Carrier
+    0≤sqrt : ∀ x → {{ p : ! [ 0f ≤ x ] }} → [ 0f ≤ sqrt x {{p}} ]
+    0≤x² : ∀ x → [ 0f ≤ (x · x) ]
+
+  ≤-split : ∀ x → [ 0f ≤ x ] → ( x ≡ 0f ) ⊎ [ 0f < x ]
+  ≤-split x p = {!   !}
+
+  instance _ = λ {x} → !! 0≤x² x
+
+  field
+    -- NOTE: all "interface" instance arguments (i.e. those that appear in the goal) need to be passed in as arguments
+    -- sqrt-of-²  : ∀ x → {{ p₁ : ! [ 0f ≤ x ] }} → {{ p₂ : ! [ 0f ≤ x · x ] }} → sqrt (x · x) {{p₂}} ≡ x
+    -- sqrt-unique-existence : ∀ x → {{ p : ! [ 0f ≤ x ] }} → Σ[ y ∈ Carrier ] y · y ≡ x
+    -- sqrt-uniqueness : ∀ x y z → {{ p : ! [ 0f ≤ x ] }} → y · y ≡ x → z · z ≡ x → y ≡ z
+
+
+
+    ·-uniqueness : ∀ x y → {{ p₁ : ! [ 0f ≤ x ] }} → {{ p₂ : ! [ 0f ≤ y ] }} → x · x ≡ y · y → x ≡ y
+
+    sqrt-existence   : ∀ x   → {{ p  : ! [ 0f ≤ x ] }} → sqrt x {{p}} · sqrt x {{p}} ≡ x
+    sqrt-preserves-· : ∀ x y → {{ p₁ : ! [ 0f ≤ x ] }} → {{ p₁ : ! [ 0f ≤ y ] }} → {{ p₁ : ! [ 0f ≤ x · y ] }} → sqrt (x · y) ≡ sqrt x · sqrt y
+    sqrt0≡0 : {{ p : ! [ 0f ≤ 0f ] }} → sqrt 0f {{p}} ≡ 0f
+    sqrt1≡1 : {{ p : ! [ 0f ≤ 1f ] }} → sqrt 1f {{p}} ≡ 1f
+    -- √x √x = x ⇒ √xx = x
+    -- √x √x √x √x = x x
+    -- √(√x √x √x √x) = √(x x)
+
+  -- ²-of-sqrt' : ∀ x → {{ p : ! [ 0f ≤ x ] }} → sqrt x {{p}} · sqrt x {{p}} ≡ x
+  -- ²-of-sqrt' x {{p}} = let y = sqrt x; instance q = !! 0≤sqrt x in transport (
+  --   sqrt (y · y) ≡ y ≡⟨ {!   !} ⟩
+  --   sqrt (y · y) · sqrt (y · y) ≡ y · sqrt (y · y) ≡⟨ {!   !} ⟩
+  --   sqrt (y · y) · sqrt (y · y) ≡ y · y ≡⟨ {! λ x → x  !} ⟩
+  --   sqrt x · sqrt x ≡ x ∎) (sqrt-of-² y)
+--    {!   !} ⇒⟨ {!   !} ⟩
+--    {!   !} ◼) {! (sqrt-of-² y ) !}
+  -- sqrt (x · x) ≡ x
+  -- sqrt (x · x) · sqrt (x · x) ≡ x · sqrt (x · x)
+  -- sqrt (x · x) · sqrt (x · x) ≡ x · x
+  -- x = sqrt y
+  -- sqrt y · sqrt y ≡ y
+
+  sqrt-test : (x y z : Carrier) → [ 0f ≤ x ] → [ 0f ≤ y ] → Carrier
+  sqrt-test x y z 0≤x 0≤y = let instance _ = !! 0≤x
+                                instance _ = !! 0≤y
+                            in (sqrt x) + (sqrt y) + (sqrt (z · z))
+
   _#_ : hPropRel Carrier Carrier ℓ'
-  x # y = ([ x < y ] ⊎ [ y < x ]) , isProp-P⊎Q (x < y) (y < x) (inl (<-asym x y))
+  x # y = {! ([ x < y ] ⊎ [ y < x ]) , isProp-P⊎Q (x < y) (y < x) (inl (<-asym x y)) !}
 
   field
     _⁻¹ : (x : Carrier) → {{p : [ x # 0f ]}} → Carrier
+
+  infix  9 _⁻¹
+  infixl 7 _·_
+  infix  6 -_
+  infix  5 _-_
+  infixl 5 _+_
+  infixl 4 _#_
+  infixl 4 _≤_
+  infixl 4 _<_
 
 -----------8<--------------------------------------------8<------------------------------------------8<------------------
 
@@ -172,7 +175,7 @@ module _ -- mathematical structures with `abs` into the real numbers
   (ℝbundle : CompletePartiallyOrderedFieldWithSqrt {ℝℓ} {ℝℓ'})
   where
   module ℝ = CompletePartiallyOrderedFieldWithSqrt ℝbundle
-  open ℝ using () renaming (Carrier to ℝ; isset to issetʳ; _≤_ to _≤ʳ_; 0f to 0ʳ; _+_ to _+ʳ_; _·_ to _·ʳ_)
+  open ℝ using () renaming (Carrier to ℝ; isset to issetʳ; _≤_ to _≤ʳ_; 0f to 0ʳ; 1f to 1ʳ; _+_ to _+ʳ_; _·_ to _·ʳ_; -_ to -ʳ_; _-_ to _-ʳ_)
 
   -- this makes the complex numbers ℂ
   module EuclideanTwoProductOfCompletePartiallyOrderedFieldWithSqrt where
@@ -182,6 +185,25 @@ module _ -- mathematical structures with `abs` into the real numbers
     re im : Carrier → ℝ
     re = fst
     im = snd
+
+    0f : Carrier
+    0f = 0ʳ , 0ʳ
+
+    1f : Carrier
+    1f = 1ʳ , 0ʳ
+
+    _+_ : Carrier → Carrier → Carrier
+    (ar , ai) + (br , bi) = (ar +ʳ br) , (ai +ʳ bi)
+
+    _·_ : Carrier → Carrier → Carrier
+    (ar , ai) · (br , bi) = (ar ·ʳ br -ʳ ai ·ʳ bi) , (ar ·ʳ bi +ʳ br ·ʳ ai)
+
+    -_ : Carrier → Carrier
+    - (ar , ai) = (-ʳ ar , -ʳ ai)
+
+    isset : isSet Carrier
+    isset = isSetΣ ℝ.isset (λ _ → ℝ.isset)
+
 
 
   -- this makes the `R` in `RModule`

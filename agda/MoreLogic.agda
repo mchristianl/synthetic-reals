@@ -9,7 +9,8 @@ private
     ℓ ℓ' ℓ'' : Level
 
 open import Cubical.Foundations.Everything renaming (_⁻¹ to _⁻¹ᵖ; assoc to ∙-assoc)
-open import Cubical.Data.Sigma.Base renaming (_×_ to infixr 4 _×_)
+open import Cubical.Data.Sigma renaming (_×_ to infixr 4 _×_)
+-- open import Cubical.Data.Sigma.Properties
 open import Cubical.Data.Sum.Base renaming (_⊎_ to infixr 4 _⊎_)
 open import Cubical.Foundations.Prelude
 open import Function.Base using (_∋_)
@@ -21,6 +22,8 @@ open import Cubical.Data.Empty.Properties -- isProp⊥
 
 import Cubical.Data.Empty as Empty
 open import Cubical.Data.Unit.Base
+
+open import Utils
 
 -- "implicational" reaoning
 
@@ -123,6 +126,9 @@ module Properties where
    [ ⊤↑ {ℓ} ] ⇒⟨ transport ( λ i → [ p≡⊤ (~ i) ]) ⟩
    [ P     ] ◼) (lift tt)
 
+  contraposition : (P : hProp ℓ) (Q : hProp ℓ') → [ P ⇒ Q ] → [ ¬ Q ⇒ ¬ P ]
+  contraposition P Q f ¬q p = ⊥-elim (¬q (f p))
+
   instanceFunExt : {A : Type ℓ} {B : A → I → Type ℓ'}
                    {f : {{x : A}} → B x i0} {g : {{x : A}} → B x i1}
                  → ({{x : A}} → PathP (B x) (f {{x}}) (g {{x}}))
@@ -148,12 +154,22 @@ module Properties where
       → ((ab : Σ A B)      → (f   ab   ) ≡ (g   (ab) ))
   Σ-preserves-≡ p (a , b) = p a b
 
-  uncurry-preserves-≡-back
+  Σ-reflects-≡ :
+        {A : Type ℓ}
+        {B : A → Type ℓ'}
+        {a b : Σ A B}
+      → a ≡ b
+      → Σ[ p ∈ (fst a ≡ fst b) ] transport (λ i → B (p i)) (snd a) ≡ snd b
+      --  Σ[ q ∈ (fst a ≡ fst b) ] (PathP (λ i → B (q i)) (snd a) (snd b))
+  Σ-reflects-≡ a≡b with PathΣ→ΣPathTransport _ _ a≡b
+  ... | fst≡fst , snd≡snd = fst≡fst , snd≡snd
+
+  uncurry-reflects-≡
     : {A : Type ℓ} {B : A → Type ℓ'} {C : (a : A) → B a → Type ℓ''}
     → (f g : (a : A) → (b : B a) → C a b)
     -------------------------------------------------------------
     → (uncurry f ≡ uncurry g) → f ≡ g
-  uncurry-preserves-≡-back f g p = funExt (λ x →
+  uncurry-reflects-≡ f g p = funExt (λ x →
     f x                         ≡⟨ refl ⟩
     (λ y → (uncurry f) (x , y)) ≡⟨ ( λ i → λ y → (p i) (x , y)) ⟩
     (λ y → (uncurry g) (x , y)) ≡⟨ refl ⟩
@@ -170,17 +186,11 @@ module Properties where
    ((a : A) (b : B a) → (         f   a   b)  ≡ (         g   a   b) ) ⇒⟨ (λ z → z) ⟩ -- holds definitionally
    ((a : A) (b : B a) → ((uncurry f) (a , b)) ≡ ((uncurry g) (a , b))) ⇒⟨ Σ-preserves-≡ ⟩
    ((ab : Σ A B)      → ((uncurry f)   ab   ) ≡ ((uncurry g) ( ab  ))) ⇒⟨ funExt ⟩
-                         (uncurry f)          ≡  (uncurry g)           ⇒⟨ uncurry-preserves-≡-back f g ⟩
+                         (uncurry f)          ≡  (uncurry g)           ⇒⟨ uncurry-reflects-≡ f g ⟩
                                   f           ≡           g            ◼)
 
   funExt-⊥₂ : {A B : Type ℓ} (f g : A → B → Empty.⊥) → f ≡ g
   funExt-⊥₂ f g =  funExt₂ᶜ λ a b → ⊥-elim {A = λ _ → f a b ≡ g a b} (g a b)
-
-  implicationᵖ : (P Q : hProp ℓ) → [ ¬ (P ⊓ Q) ] → [ P ⇒ ¬ Q ]
-  implicationᵖ {ℓ = ℓ} P Q ¬[p⊓q] p q = ⊥-elim (¬[p⊓q] (p , q))
-
-  contrapositionᵖ : {P Q : hProp ℓ} → ( [ P ⇒ Q ] ) → [ ¬ Q ⇒ ¬ P ]
-  contrapositionᵖ f ¬q p = ⊥-elim (¬q (f p))
 
   -- weak deMorgan laws: only these three hold without further assumptions
 
@@ -192,6 +202,73 @@ module Properties where
 
   deMorgan₁-back : (P Q : hProp ℓ) → [ ¬ P ⊔ ¬ Q ] → [ ¬ (P ⊓ Q) ]
   deMorgan₁-back {ℓ = ℓ} P Q [¬p⊔¬q] (p , q) = ⊔-elim (¬ P) (¬ Q) (λ [¬p⊔¬q] → ⊥) (λ ¬p → ¬p p) (λ ¬q → ¬q q) [¬p⊔¬q]
+
+  ¬-⊓-distrib  : (P Q : hProp ℓ) → [ ¬ (P ⊓ Q) ] → [ (P ⇒ ¬ Q) ⊓ (Q ⇒ ¬ P) ]
+  ¬-⊓-distrib P Q ¬p⊓q = (λ p q → ¬p⊓q (p , q)) , (λ q p → ¬p⊓q (p , q))
+
+  implicationᵖ : (P Q : hProp ℓ) → [ ¬ (P ⊓ Q) ] → [ P ⇒ ¬ Q ]
+  implicationᵖ {ℓ = ℓ} P Q ¬[p⊓q] p q = ⊥-elim (¬[p⊓q] (p , q))
+
+  contrapositionᵖ : (P Q : hProp ℓ) → [ P ⇒ Q ] → [ ¬ Q ⇒ ¬ P ]
+  contrapositionᵖ P Q f ¬q p = ⊥-elim (¬q (f p))
+
+  -- Q and P are disjoint if P ⇒ ¬ Q or equivalently Q ⇒ ¬ P
+
+  [P⇒¬Q]≡[Q⇒¬P] : ∀{ℓ ℓ'} (P : hProp ℓ) (Q : hProp ℓ') → (P ⇒ ¬ Q) ≡ (Q ⇒ ¬ P)
+  [P⇒¬Q]≡[Q⇒¬P] P Q =
+    ⇒∶ (λ p⇒¬q q p → p⇒¬q p q)
+    ⇐∶ (λ q⇒¬p p q → q⇒¬p q p)
+
+  [P⇒¬Q]⇒[Q⇒¬P] : ∀{ℓ ℓ'} (P : hProp ℓ) (Q : hProp ℓ') → [ (P ⇒ ¬ Q) ] → [ (Q ⇒ ¬ P) ]
+  [P⇒¬Q]⇒[Q⇒¬P] P Q = pathTo⇒ ([P⇒¬Q]≡[Q⇒¬P] P Q)
+
+  [P⇒¬Q]≡¬[P⊓Q] : ∀{ℓ ℓ'} (P : hProp ℓ) (Q : hProp ℓ') → (P ⇒ ¬ Q) ≡ ¬ (P ⊓ Q)
+  [P⇒¬Q]≡¬[P⊓Q] P Q =
+    ⇒∶ (λ{ p⇒¬q (p , q) →  p⇒¬q   p   q })
+    ⇐∶ (λ ¬[p⊓q] p   q  → ¬[p⊓q] (p , q) )
+
+  -- [¬P⇒Q]⇒[¬Q⇒¬¬P]
+  -- [¬P⇒¬¬Q]≡[¬Q⇒¬¬P]
+  --         ≡¬[¬P⊓¬Q]
+  --         ≡¬¬[P⊔Q]
+  -- [¬P≡Q]⇒¬[P⊓Q]≡¬[P⊓¬P]
+
+  ¬[P⊓¬P] : ∀{ℓ} (P : hProp ℓ) → [ ¬ (P ⊓ ¬ P) ]
+  ¬[P⊓¬P] P (p , ¬p) = ¬p p
+
+  -- NOTE: I think that we do not have ¬ P ≡ ¬ Q → P ≡ Q
+  --       since this might be equivalent to some LEM ?
+
+  -- ¬-reflects-≡ : ∀{ℓ} (P Q : hProp ℓ) → ¬ P ≡ ¬ Q → P ≡ Q
+  -- ¬-reflects-≡ P Q ¬p≡¬q with Σ-reflects-≡ ¬p≡¬q
+  -- ... | fst≡fst , snd≡snd = ΣPathP ({!   !} , {!   !})
+  --
+  -- -- (∀ x → P x ≡ P y) → x ≡ y
+  --
+  -- postulate dne : ∀{ℓ} (P : hProp ℓ) → ¬ ¬ P ≡ P
+  --
+  -- ¬-isEquiv : ∀ ℓ → isEquiv (¬_ {ℓ = ℓ})
+  -- ¬-isEquiv ℓ = λ where
+  --   .equiv-proof P → ((¬ P) , dne P) , λ{ (Q , ¬Q≡P) →
+  --     let γ = {! isPropIsProp (isProp[] Q) (isProp[] Q)  !}
+  --     in {!   !} }
+
+  -- fst (fst (equiv-proof (¬-isEquiv ℓ) P)) = ¬ P
+  -- snd (fst (equiv-proof (¬-isEquiv ℓ) P)) = dne P
+  -- snd (equiv-proof (¬-isEquiv ℓ) P) (Q , ¬Q≡P) = {!   !}
+
+  ¬[P⊓¬P]≡¬[P⊓Q]⇒[¬P≡Q] : ∀{ℓ } (P Q : hProp ℓ) → [ ¬ (P ⊓ ¬ P) ] ≡ [ ¬ (P ⊓ Q) ] → [ P ] ≡ [ ¬ Q ]
+  ¬[P⊓¬P]≡¬[P⊓Q]⇒[¬P≡Q] P Q p = {! [P⇒¬Q]≡¬[P⊓Q] P Q  !}
+
+  -- foo : ∀{ℓ ℓ'} (P : hProp ℓ) (Q : hProp ℓ') → [ (P ⇒ ¬ Q) ] → [ (¬ Q ⇒ P) ] → P ≡ ¬ Q
+
+  -- bar : ∀{ℓ} (P Q : hProp ℓ) → [ ¬ (P ⊓ Q) ] → P ≡ ¬ Q
+  -- -- ¬-⊓-distrib P Q ¬p⊓q
+  -- bar P Q ¬p⊓q = let r1 : [ (P ⇒ ¬ Q) ⊓ (Q ⇒ ¬ P) ]
+  --                    r1 =
+  --                    r2 : [ (Q ⇒ ¬ P) ⊓ (P ⇒ ¬ Q) ]
+  --                    r2 =
+  --                in {! ¬-⊓-distrib Q P (transport (λ i → [ ¬ ⊓-comm P Q i ]) ¬p⊓q)  !}
 
   -- more logic
 
@@ -273,11 +350,3 @@ module Properties where
     ⊔⊎-≡ : P⊎Qᵖ ≡ P ⊔ Q
     ⊔⊎-≡ with ⊔⊎-equiv
     ... | p , q = ⇔toPath p q
-
-  [P⇒¬Q]≡[Q⇒¬P] : ∀{ℓ ℓ'} (P : hProp ℓ) (Q : hProp ℓ') → (P ⇒ ¬ Q) ≡ (Q ⇒ ¬ P)
-  [P⇒¬Q]≡[Q⇒¬P] P Q =
-    ⇒∶ (λ p⇒¬q q p → p⇒¬q p q)
-    ⇐∶ (λ q⇒¬p p q → q⇒¬p q p)
-
-  [P⇒¬Q]⇒[Q⇒¬P] : ∀{ℓ ℓ'} (P : hProp ℓ) (Q : hProp ℓ') → [ (P ⇒ ¬ Q) ] → [ (Q ⇒ ¬ P) ]
-  [P⇒¬Q]⇒[Q⇒¬P] P Q = pathTo⇒ ([P⇒¬Q]≡[Q⇒¬P] P Q)

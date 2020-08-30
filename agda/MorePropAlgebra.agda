@@ -12,7 +12,7 @@ open import Cubical.Foundations.Everything renaming (_⁻¹ to _⁻¹ᵖ; assoc 
 open import Cubical.Relation.Nullary.Base -- ¬_
 open import Cubical.Relation.Binary.Base
 open import Cubical.Data.Sum.Base renaming (_⊎_ to infixr 4 _⊎_)
-open import Cubical.Data.Sigma.Base renaming (_×_ to infixr 4 _×_)
+open import Cubical.Data.Sigma renaming (_×_ to infixr 4 _×_)
 open import Cubical.Data.Empty renaming (elim to ⊥-elim; ⊥ to ⊥⊥) -- `⊥` and `elim`
 open import Cubical.Foundations.Logic renaming (¬_ to ¬ᵖ_; inl to inlᵖ; inr to inrᵖ)
 open import Function.Base using (_∋_)
@@ -34,7 +34,8 @@ open MoreLogic.Properties
 -- test20 : {A : Type ℓ} → (a b : A) (p : Id a b) → A
 -- test20 a b p = {!!}
 
--- open import Cubical.HITs.PropositionalTruncation.Base
+open import Cubical.HITs.PropositionalTruncation.Base -- ∣_∣
+open import Cubical.HITs.PropositionalTruncation.Properties using (propTruncIsProp) renaming (elim to ∣∣-elim)
 
 {-
 ⊔⊎-iso : (P : hProp ℓ) (Q : hProp ℓ') → Iso ([ P ⊔ Q ]) ([ P ] ⊎ [ Q ])
@@ -196,6 +197,9 @@ module Definitions where
   IsSym : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
   IsSym R = [ isSymᵖ R ]
 
+  -- NOTE: we have ∀ a b → [ ¬ (R a b ⊓ R b a) ] which is stronger than [ R a b ⇒ ¬ R b a ]
+  --       because it implies also [ ¬ R b a ⇒ R a b ]
+
   isAsymᵖ : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
   isAsymᵖ {ℓ} {ℓ'} {A = A} R = φ , φ-prop where
     φ : Type (ℓ-max ℓ ℓ')
@@ -205,6 +209,54 @@ module Definitions where
 
   IsAsym : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
   IsAsym R = [ isAsymᵖ R ]
+
+  isAsymᵖ' : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
+  isAsymᵖ' {ℓ} {ℓ'} {A = A} R = φ , φ-prop where
+    φ : Type (ℓ-max ℓ ℓ')
+    φ = (a b : A) → [ ¬ᵖ (R a b ⊓ R b a) ]
+    φ-prop : isProp φ
+    φ-prop = isPropΠ2 (λ a b → isProp[] (¬ᵖ (R a b ⊓ R b a)))
+
+  IsAsym' : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
+  IsAsym' R = [ isAsymᵖ' R ]
+
+  -- isAsym'⇒ᵖ : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → [ isAsymᵖ' R ] → [ isAsymᵖ R ]
+  -- isAsym'⇒ᵖ _<_ <-asym a b = fst (¬-⊓-distrib (a < b) (b < a) (<-asym a b))
+  --
+  -- isAsymᵖ⇒' : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → [ isAsymᵖ R ] → [ isAsymᵖ' R ]
+  -- isAsymᵖ⇒' _<_ <-asym a b (a<b , b<a) = <-asym a b a<b b<a
+
+  isAsymᵖ≡' : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → isAsymᵖ R ≡ isAsymᵖ' R
+  isAsymᵖ≡' _<_ =
+    ⇒∶ (λ{ <-asym a b (a<b , b<a) → <-asym a b a<b b<a })
+    ⇐∶ (λ  <-asym a b → fst (¬-⊓-distrib (a < b) (b < a) (<-asym a b)) )
+
+  isAsymᵖ² : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
+  isAsymᵖ² {ℓ} {ℓ'} {A = A} R = φ , φ-prop where
+    φ : Type (ℓ-max ℓ ℓ')
+    φ = (a b : A) → [ ¬ᵖ R b a ⇒ R a b ]
+    φ-prop : isProp φ
+    φ-prop = isPropΠ2 (λ a b → isProp[] (¬ᵖ R b a ⇒ R a b))
+
+  isAsymᵖ⇒² : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → [ isAsymᵖ' R ] → [ isAsymᵖ² R ]
+  isAsymᵖ⇒² _<_ <-asym a b ¬b<a = {! ¬-⊓-distrib (a < b) (b < a) (<-asym a b)  !}
+
+  -- do we have `R a b ≡ ¬ᵖ R b a` ?
+
+  -- isAsymᵖ-back : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
+  -- isAsymᵖ-back {ℓ} {ℓ'} {A = A} R = φ , φ-prop where
+  --   φ : Type (ℓ-max ℓ ℓ')
+  --   φ = (a b : A) → [ ¬ᵖ R b a ⇒ R a b ]
+  --   φ-prop : isProp φ
+  --   φ-prop = isPropΠ2 (λ a b → isProp[] (¬ᵖ R b a ⇒ R a b))
+
+  -- foo : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → [ isAsymᵖ' R ] → ∀ a b → [ ¬ᵖ R a b ⇒ R b a ]
+  -- foo _<_ <-asym a b = {! contraposition  !}
+
+  -- isAsymᵖ⇔isAsymᵖ-back : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → isAsymᵖ' R ≡ isAsymᵖ-back R
+  -- isAsymᵖ⇔isAsymᵖ-back _<_ =
+  --   ⇒∶ (λ f a b → {! [P⇒¬Q]⇒[Q⇒¬P] _ _ (f a b)  !})
+  --   ⇐∶ (λ f a b → {! [P⇒¬Q]⇒[Q⇒¬P] (b < a) (a < b)  !})
 
   isTransᵖ : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
   isTransᵖ {ℓ} {ℓ'} {A = A} R = φ , φ-prop
@@ -216,6 +268,12 @@ module Definitions where
 
   IsTrans : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
   IsTrans R = [ isTransᵖ R ]
+
+  irrefl+trans→asym : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → [ isIrreflᵖ R ] → [ isTransᵖ R ] → [ isAsymᵖ R ]
+  irrefl+trans→asym _<_ isIrrefl isTrans a b a<b b<a = isIrrefl _ (isTrans _ _ _ a<b b<a)
+
+  irrefl+trans→asym' : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → [ isIrreflᵖ R ] → [ isTransᵖ R ] → [ isAsymᵖ' R ]
+  irrefl+trans→asym' _<_ isIrrefl isTrans a b (a<b , b<a) = isIrrefl _ (isTrans _ _ _ a<b b<a)
 
   record IsApartnessRel {ℓ ℓ' : Level} {A : Type ℓ} (R : hPropRel A A ℓ') : Type (ℓ-max ℓ ℓ') where
     constructor isapartnessrel
@@ -272,6 +330,40 @@ module Definitions where
 
   IsAntisym : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
   IsAntisym R = [ isAntisymᵖ R ]
+
+  isAntisymˢ : {ℓ ℓ' : Level} {A : Type ℓ} → isSet A → (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
+  isAntisymˢ {ℓ} {ℓ'} {A = A} isset R = φ , φ-prop where
+    φ : Type (ℓ-max ℓ ℓ')
+    φ = ∀ a b → [ R a b ] → [ R b a ] → a ≡ b
+    φ-prop : isProp φ
+    φ-prop = isPropΠ2 (λ a b → isPropΠ2 λ a<b b<a → isset a b)
+
+  IsAntisymˢ : {ℓ ℓ' : Level} {A : Type ℓ} → isSet A → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
+  IsAntisymˢ isset R = [ isAntisymˢ isset R ]
+
+  -- NOTE: we also have isProp→Iso in `Cubical.Foundations.Isomorphism`
+  isAntisym-ˢ≡ᵖ : {ℓ ℓ' : Level} {A : Type ℓ} → (isset : isSet A) → (R : hPropRel A A ℓ') → isAntisymˢ isset R ≡ isAntisymᵖ R
+  isAntisym-ˢ≡ᵖ isset R = hProp≡ (isoToPath (record -- ΣPathP
+    { fun      = λ ≤-antisymˢ a b a≤b b≤a → ∣ ≤-antisymˢ a b a≤b b≤a ∣
+    ; inv      = λ ≤-antisymᵖ a b a≤b b≤a → ∣∣-elim (λ c → isset a b) (λ x → x) (≤-antisymᵖ a b a≤b b≤a)
+    ; rightInv = λ f → isProp[] (isAntisymᵖ       R) _ f
+    ; leftInv  = λ g → isProp[] (isAntisymˢ isset R) _ g
+    })) -- , {! isPropIsProp {?} {?} ? ?  !}) -- isPropIsProp
+
+  -- isPropΠ2 {! isProp[] (isAntisymᵖ R)  !} {!  !} f
+  --  λ f → uncurry-reflects-≡ _ f (uncurry-reflects-≡ _ _ (uncurry-reflects-≡ _ _ {! uncurry (uncurry (uncurry f))  !}))
+  -- λ ≤-antisymᵖ i a b a≤b b≤a → {! ≤-antisymᵖ    !} -- transport {!  !} (≤-antisymᵖ a b a≤b b≤a)
+
+  -- isSetΣ ? ? (isAntisymˢ R isset) (isAntisymᵖ R)
+
+  -- (b : (a b₁ : A) → fst (R a b₁) → fst (R b₁ a) → ∥ a ≡ b₁ ∥) → (λ a b₁ a≤b b≤a → ∣ ∣∣-elim (λ c → isset a b₁) (λ x → x) (b a b₁ a≤b b≤a) ∣) ≡ b
+
+  -- transp (λ i → ∥ a ≡ b ∥) i0 (≤-antisymᵖ a b x x₁) != ∣ ∣∣-elim (λ c → isset a b) (λ x₂ → x₂) (≤-antisymᵖ a b x x₁) ∣ of type ∥ a ≡ b ∥
+  -- need to show ≡ of these two terms of ∥ a ≡ b ∥:
+  --   ≤-antisymᵖ a b a≤b b≤a
+  --   ∣ ∣∣-elim (λ c → isset a b) (λ x → x) (≤-antisymᵖ a b a≤b b≤a) ∣
+  -- with
+  ---  propTruncIsProp (≤-antisymᵖ a b a≤b b≤a) (∣ ∣∣-elim (λ c → isset a b) (λ x → x) (≤-antisymᵖ a b a≤b b≤a) ∣)
 
   record IsPartialOrder {ℓ ℓ' : Level} {A : Type ℓ} (R : hPropRel A A ℓ') : Type (ℓ-max ℓ ℓ') where
     constructor ispartialorder
@@ -380,9 +472,6 @@ module Consequences where
        (λ c<b → ¬c<b c<b)
        (λ b<a → ¬b<a b<a)
        (<-cotrans _ _ c<a b)
-
-  irrefl+trans→asym : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → [ isIrreflᵖ R ] → [ isTransᵖ R ] → [ isAsymᵖ R ]
-  irrefl+trans→asym _<_ isIrrefl isTrans a b a<b b<a = isIrrefl _ (isTrans _ _ _ a<b b<a)
 
 module Properties where
 

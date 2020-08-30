@@ -7,6 +7,7 @@ open import Cubical.Foundations.Everything renaming (_⁻¹ to _⁻¹ᵖ; assoc 
 open import Cubical.Relation.Nullary.Base -- ¬_
 open import Cubical.Data.Empty            -- ⊥
 open import Cubical.Foundations.Logic renaming (¬_ to ¬ᵖ_; ⊥ to ⊥ᵖ)
+-- open import Cubical.Relation.Binary.Base using (PropRel)
 
 -- data ⊥ : Set where
 -- ¬_ : ∀{ℓ} → Set ℓ → Set ℓ
@@ -21,7 +22,7 @@ inst-¬ f {{a}} = f a
 --     0ˣ : X
 --     _<_ : X → X → Set ℓ'
 
-module _ {ℓ ℓ'} (X : Set ℓ) (0ˣ : X) (_<_ : X → X → Set ℓ') where
+module TestA {ℓ ℓ'} (X : Set ℓ) (0ˣ : X) (_<_ : X → X → Set ℓ') where
 
   _≤_ : X → X → Set ℓ'
   a ≤ b = (b < a) → ⊥ -- ¬(b < a)

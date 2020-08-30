@@ -2099,7 +2099,7 @@ module ℚ where
 
 as written in the `NOTE`s above, it has some effect, putting new modules at the end of `Number.Postulates` which we did not do at the end:
 
-```
+```agda
 
 {-
 module Translated where
@@ -2118,4 +2118,127 @@ module Translated where
 ℂ = ℂ.ℂ
 -}
 
+```
+
+## multiple instance resolution and negation
+
+see Agda email from 28.08.20, 17:32
+
+```agda
+module _ where
+  abstract
+    -- `ab` for "abstractify", short like `id` for "identity"
+    ab : ∀{ℓ} {X : Type ℓ} → X → X
+    ab R = R
+
+    ab-≡ : ∀{ℓ} {X : Type ℓ} → ab X ≡ X
+    ab-≡ = refl
+
+    ab-≡ᵖ : ∀{ℓ} (P : hProp ℓ) → ab P ≡ P
+    ab-≡ᵖ P = refl
+
+    -- ab-≡ᵖ² : ∀{ℓ ℓ'} {X : Type ℓ} (R : hPropRel X X ℓ') → ab R ≡ R
+    -- ab-≡ᵖ² R = refl
+
+    ab-≡ᵖ² : ∀{ℓ ℓ'} {X : Type ℓ} (R : hPropRel X X ℓ') → ∀ x y → ab (R x y) ≡ R x y
+    ab-≡ᵖ² R x y = refl
+
+    [ab] : ∀{ℓ} {X : Type ℓ} → X → ab X
+    [ab] {X = X} x = transport (sym (ab-≡ {X = X})) x
+    {-
+    infix 1 !_
+    infix 1 !!_
+    infix 1 !!⁻¹_
+
+    !_ : ∀{ℓ} {X : Type ℓ} → X → X
+    ! R = R
+
+    !-≡ : ∀{ℓ} {X : Type ℓ} → (! X) ≡ X
+    !-≡ = refl
+
+    !!_ : ∀{ℓ} {X : Type ℓ} → X → ! X
+    !!_ {X = X} x = transport (sym (!-≡ {X = X})) x
+
+    !!⁻¹_ : ∀{ℓ} {X : Type ℓ} → ! X → X
+    !!⁻¹_ {X = X} x = transport (!-≡ {X = X}) x
+    -}
+
+-- NOTE: this smells like "CPO" https://en.wikipedia.org/wiki/Complete_partial_order
+record CompletePartiallyOrderedFieldWithSqrt {ℓ ℓ' : Level} : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
+  field
+    Carrier : Type ℓ
+    0f      : Carrier
+    1f      : Carrier
+    _+_     : Carrier → Carrier → Carrier
+    _·_     : Carrier → Carrier → Carrier
+    -_      : Carrier → Carrier
+    _<_     : hPropRel Carrier Carrier ℓ'
+    <-irrefl : [ isIrreflᵖ _<_ ]
+    <-trans  : [ isTransᵖ _<_ ]
+    isset   : isSet Carrier
+
+  _≤_ : hPropRel Carrier Carrier ℓ'
+  x ≤ y = ¬ᵖ(y < x)
+
+  _≤ⁱ_ : hPropRel Carrier Carrier ℓ'
+  -- x ≤ᵢ y = ({{p : [ y < x ]}} → ⊥⊥) , λ f g → instanceFunExt {A = [ y < x ]} {B = λ q i → ⊥⊥} {f = f} {g = g} λ {{r}} → ⊥-elim {A = λ _ → f ≡ g} f
+  -- x ≤ᵢ y = ({{p : [ y < x ]}} → ⊥⊥) , λ f g → instanceFunExt (λ {{_}} → ⊥-elim {A = λ _ → f ≡ g} f)
+  x ≤ⁱ y = ¬ⁱ(y < x)
+
+  ≤-≡-≤ⁱ : ∀ x y → x ≤ y ≡ x ≤ⁱ y
+  ≤-≡-≤ⁱ x y = ¬-≡-¬ⁱ (y < x)
+    -- ⇒∶ (λ f {{p}} → f   p  )
+    -- ⇐∶ (λ f   p   → f {{p}})
+
+  ≤ⁱ-inst : ∀{x y} → [ x ≤ y ] → [ x ≤ⁱ y ]
+  ≤ⁱ-inst x≤y = pathTo⇒ (≤-≡-≤ⁱ _ _) x≤y
+
+  _≤ᵃ_ : hPropRel Carrier Carrier ℓ'
+  _≤ᵃ_ x y = ab (x ≤ y)
+
+  ≤-≡-≤ᵃ : ∀ x y → x ≤ y ≡ x ≤ᵃ y
+  ≤-≡-≤ᵃ x y = sym (ab-≡ᵖ (x ≤ y)) -- (ab-≡ᵖ² _≤_ x y)
+
+  ≤ᵃ-inst : ∀{x y} → [ x ≤ y ] → [ x ≤ᵃ y ]
+  ≤ᵃ-inst x≤y = pathTo⇒ (≤-≡-≤ᵃ _ _) x≤y
+
+  field
+    -- NOTE: `[ 0f ≤ x ]` normalizes to `fst (x < 0f) → ⊥⊥` and therefore it takes an explicit argument `fst (x < 0f)`
+    --       when making this an instance argument, agda complains
+    --         Instance arguments with explicit arguments are never considered by instance search
+    -- we circumvent this by introducing `_≤ⁱ_`
+    sqrt₀⁺    : (x : Carrier) → {{    [ 0f ≤ⁱ x ] }} → Carrier
+    sqrt₀⁺'   : (x : Carrier) → {{    [ 0f ≤ᵃ x ] }} → Carrier
+    sqrt₀⁺''  : (x : Carrier) → {{ ab [ 0f ≤  x ] }} → Carrier
+    sqrt₀⁺''' : (x : Carrier) → {{  ! [ 0f ≤  x ] }} → Carrier
+
+  -- sqrt-test : (x y : Carrier) → [ 0f ≤ x ] → [ 0f ≤ y ] → Carrier
+  -- sqrt-test x y 0≤x 0≤y = let instance itx = ≤ⁱ-inst 0≤x
+  --                             instance ity = ≤ⁱ-inst 0≤y
+  --                         in sqrt₀⁺ x
+
+  sqrt-test' : (x y : Carrier) → [ 0f ≤ x ] → [ 0f ≤ y ] → Carrier
+  sqrt-test' x y 0≤x 0≤y = let instance _ = ≤ᵃ-inst 0≤x
+                               instance _ = ≤ᵃ-inst 0≤y
+                           in sqrt₀⁺' x
+
+  sqrt-test'' : (x y : Carrier) → [ 0f ≤ x ] → [ 0f ≤ y ] → Carrier
+  sqrt-test'' x y 0≤x 0≤y = let instance _ = [ab] 0≤x -- transport (sym ab-≡) 0≤x
+                                instance _ = [ab] 0≤y
+                            in (sqrt₀⁺'' x) + (sqrt₀⁺'' y)
+
+  -- other syntax
+  sqrt-test''' : (x y : Carrier) → [ 0f ≤ x ] → [ 0f ≤ y ] → Carrier
+  sqrt-test''' x y 0≤x 0≤y = let instance _ = !! 0≤x -- transport (sym ab-≡) 0≤x
+                                 instance _ = !! 0≤y
+                             in (sqrt₀⁺''' x) + (sqrt₀⁺''' y)
+
+  <-asym : [ isAsymᵖ _<_ ]
+  <-asym = irrefl+trans→asym _<_ <-irrefl <-trans
+
+  _#_ : hPropRel Carrier Carrier ℓ'
+  x # y = ([ x < y ] ⊎ [ y < x ]) , isProp-P⊎Q (x < y) (y < x) (inl (<-asym x y))
+
+  field
+    _⁻¹ : (x : Carrier) → {{p : [ x # 0f ]}} → Carrier
 ```
