@@ -105,10 +105,22 @@ module Properties where
   ¬¬-elim : (P : hProp ℓ) → [ ¬ ¬ ¬ P ] → [ ¬ P ]
   ¬¬-elim _ ¬¬¬p p = ¬¬¬p (λ ¬p → ¬p p)
 
-  ¬¬-involutive : (P : hProp ℓ) → ¬ ¬ ¬ P ≡ ¬ P
-  ¬¬-involutive P =
+  ¬¬-involutiveᵖ : (P : hProp ℓ) → ¬ ¬ ¬ P ≡ ¬ P
+  ¬¬-involutiveᵖ P =
    ⇒∶ ¬¬-elim     P
    ⇐∶ ¬¬-intro (¬ P)
+
+  ¬¬-involutive : (A : Type ℓ) → (¬ᵗ ¬ᵗ ¬ᵗ A) ≡ (¬ᵗ A)
+  ¬¬-involutive A = isoToPath λ where
+    .Iso.fun      ¬¬¬a a → ¬¬¬a (λ ¬a → ¬a a)
+    .Iso.inv      ¬a ¬¬a → ¬¬a ¬a
+    .Iso.rightInv ¬a     → refl
+    -- the following proof is `... ≡ ¬¬¬a` and uses funext to reduce this to a proof `∀ x → ... x ≡ ¬¬¬a x`
+    -- but this does not matter, since we have `¬¬¬a x` which is `⊥` and then we can use ⊥-elim to obtain whatever is necessary
+    -- `⊥-elim` needed a detailed hint what to produce and this might not be the most elegant way to proof this
+    .Iso.leftInv  ¬¬¬a   →
+      funExt {A = (¬ᵗ ¬ᵗ A)} {B = λ _ i → ⊥⊥} {f = (λ ¬¬a → ¬¬a (λ a → ¬¬¬a (λ ¬a → ¬a a)))} {g = ¬¬¬a}
+             (λ x → ⊥-elim {A = λ _ → (x (λ a → ¬¬¬a (λ ¬a → ¬a a)) ≡ ¬¬¬a x)} (¬¬¬a x))
 
   -- taken from https://ncatlab.org/nlab/show/excluded+middle#DoubleNegatedPEM
   -- Double-negated PEM
@@ -334,17 +346,17 @@ module Properties where
   module _ {ℓ ℓ'} (P : hProp ℓ) (Q : hProp ℓ')
            (X⇒¬Y : [ P ⇒ ¬ Q ] ⊎ [ Q ⇒ ¬ P ]) where
 
-    isProp-P⊎Q : isProp ([ P ] ⊎ [ Q ])
-    isProp-P⊎Q = isProp⊎ (isProp[] P) (isProp[] Q) X⇒¬Y
+    ⊎-isProp : isProp ([ P ] ⊎ [ Q ])
+    ⊎-isProp = isProp⊎ (isProp[] P) (isProp[] Q) X⇒¬Y
 
     P⊎Qᵖ : hProp (ℓ-max ℓ ℓ')
-    P⊎Qᵖ = ([ P ] ⊎ [ Q ]) , isProp-P⊎Q
+    P⊎Qᵖ = ([ P ] ⊎ [ Q ]) , ⊎-isProp
 
     -- ⊎-implies-⊔' : [ P⊎Qᵖ ] → [ P ⊔ Q ]
     -- ⊎-implies-⊔' x = ∣ x ∣
 
     ⊔-implies-⊎ : [ P ⊔ Q ] → [ P⊎Qᵖ ]
-    ⊔-implies-⊎ x = ⊔-elim P Q (λ x → ([ P ] ⊎ [ Q ]) , isProp-P⊎Q) (λ p → inl p) (λ q → inr q) x
+    ⊔-implies-⊎ x = ⊔-elim P Q (λ x → ([ P ] ⊎ [ Q ]) , ⊎-isProp) (λ p → inl p) (λ q → inr q) x
 
     ⊔⊎-equiv : [ P⊎Qᵖ ⇔ P ⊔ Q ]
     ⊔⊎-equiv = ⊎-implies-⊔ P Q , ⊔-implies-⊎
