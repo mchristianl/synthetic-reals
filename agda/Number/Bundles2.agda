@@ -66,30 +66,79 @@ record CompletePartiallyOrderedFieldWithSqrt {ℓ ℓ' : Level} : Type (ℓ-suc 
   -- NOTE: these intermediate definitions are restricted and behave like let-definitions
   --       e.g. they show up in goal contexts and they do not allow for `where` blocks
 
+  <-asym : [ isAsymᵖ _<_ ]
+  <-asym = irrefl+trans→asym _<_ <-irrefl <-trans
+
   _-_ : Carrier → Carrier → Carrier
   a - b = a + (- b)
+
+  _#_ : hPropRel Carrier Carrier ℓ'
+  x # y = ([ x < y ] ⊎ [ y < x ]) , isProp-P⊎Q (x < y) (y < x) (inl (<-asym x y))
 
   _≤_ : hPropRel Carrier Carrier ℓ'
   x ≤ y = ¬ᵖ(y < x)
 
-  ≤-cotrans : [ isCotransᵖ _≤_ ]
-  ≤-cotrans a b a≤b x =
-    let γ : [ (b < x) ⊓ (x < a) ] → [ b < a ]
-        γ p = <-trans b x a (fst p) (snd p)
-        -- γ p = ⊔-elim (b < x) (x < a) (λ _ → a < b)
-        --       (λ b<x → {! <-cotrans b x b<x a  !})
-        --       (λ x<a → {! <-cotrans x a x<a b  !}) p
-    in  {! contraposition ((b < x) ⊓ (x < a)) (b < a) γ a≤b  !} -- need deMorgan₁
+  ≤-refl : [ isReflᵖ _≤_ ]
+  ≤-refl = <-irrefl
+
+  ≤-trans : [ isTransᵖ _≤_ ]
+  ≤-trans a b c ¬b<a ¬c<b c<a =
+    ⊔-elim (c < b) (b < a) (λ _ → ⊥)
+    (λ c<b → ¬c<b c<b)
+    (λ b<a → ¬b<a b<a)
+    (<-cotrans _ _ c<a b)
+
+  -- ≤-cotrans : [ isCotransᵖ _≤_ ]
+  -- ≤-cotrans a b a≤b x =
+  --   let γ : [ (b < x) ⊓ (x < a) ] → [ b < a ]
+  --       γ p = <-trans b x a (fst p) (snd p)
+  --       -- γ p = ⊔-elim (b < x) (x < a) (λ _ → a < b)
+  --       --       (λ b<x → {! <-cotrans b x b<x a  !})
+  --       --       (λ x<a → {! <-cotrans x a x<a b  !}) p
+  --   in  {! contraposition ((b < x) ⊓ (x < a)) (b < a) γ a≤b  !} -- need deMorgan₁
   -- Q → P
   -- ¬ P → ¬ Q
 
-  <-asym : [ isAsymᵖ _<_ ]
-  <-asym = irrefl+trans→asym _<_ <-irrefl <-trans
+  -- <-asym¹ = λ(a b : Carrier) → λ x y → {!  (<-asym a b)   !}
 
-  <-asym¹ = λ(a b : Carrier) → λ x y → {!  (<-asym a b)   !}
+  -- if x > y then x > y ≥ x, wich contradicts 4. Hence ¬(x > y). Similarly, ¬(y > x), so ¬(x ≠ y) and therefore by axiom R2(3), x = y.
+  -- NOTE: this makes use of #-tight to proof ≤-antisym
+  --       but we are alrady using ≤-antisym to proof #-tight
+  --       so I guess that we have to assume one of them?
+  --       Bridges lists tightness a property of _<_, so he seems to assume #-tight
+  --       Booij assumes `≤-isLattice : IsLattice _≤_ min max` which gives ≤-refl, ≤-antisym and ≤-trans and proofs #-tight from it
+  -- ≤-antisym : (∀ x y → [ ¬ᵖ (x # y) ] → x ≡ y) → [ isAntisymˢ isset _≤_ ]
+  ≤-antisym : [ isTightˢ'' isset _<_ ] → [ isAntisymˢ isset _≤_ ]
+  ≤-antisym #-tight x y y≤x x≤y =
+    let ¬[x#y] : [ ¬ᵖ (x # y) ]
+        ¬[x#y] p = (deMorgan₂-back (x < y) (y < x) (x≤y , y≤x)) (⊎-implies-⊔ (x < y) (y < x) p)
+    in #-tight x y ¬[x#y]
 
-  ≤-antisym : [ isAntisymˢ isset _≤_ ]
-  ≤-antisym a b a≤b b≤a = {!   !}
+  -- R-antisym : [    R a b ] → [    R b a ] → a ≡ b
+  -- R-tight   : [ ¬ᵖ R a b ] → [ ¬ᵖ R b a ] → a ≡ b
+
+  -- a ≤ b = ¬ᵖ (b < a)
+  -- a # b = ¬ᵖ ([ a < b ] ⊎ [ b < a ])
+  -- ≤-antisym : [ ¬ᵖ (b < a) ] → [ ¬ᵖ (a < b) ] → a ≡ b
+  -- ≤-antisym : [ ¬ᵖ (b < a) ] × [ ¬ᵖ (a < b) ] → a ≡ b -- by curry/uncurry
+  -- ≤-antisym : ¬ ( [ b < a ]  ⊎     [ a < b ]) → a ≡ b -- by <-irrefl
+  -- #-tight   : [ ¬ᵖ (a < b)   ⊔   ¬ᵖ (b < a) ] → a ≡ b
+  -- #-tight   : [ ¬ᵖ (a < b) ] × [ ¬ᵖ (b < a) ] → a ≡ b -- by curry/uncurry
+  -- #-tight   : ¬ ( [ a < b ]  ⊎     [ b < a ]) → a ≡ b -- by <-irrefl
+
+  -- #-tight : [ isAntisymˢ isset _≤_ ] → ∀ x y → [ ¬ᵖ (x # y) ] → x ≡ y
+  #-tight : [ isAntisymˢ isset _≤_ ] → [ isTightˢ'' isset _<_ ]
+  #-tight ≤-antisym x y ¬[[x<y]⊎[y<x]] = let (¬[x<y] , ¬[y<x]) = Utils.deMorgan₂' ¬[[x<y]⊎[y<x]]
+                                         in ≤-antisym _ _ ¬[y<x] ¬[x<y]
+  #-tight≡≤-antisym : isTightˢ'' isset _<_ ≡ isAntisymˢ isset _≤_
+  #-tight≡≤-antisym =
+    ⇒∶ (λ #-tight x y y≤x x≤y →
+          let ¬[x#y] : [ ¬ᵖ (x # y) ]
+              ¬[x#y] p = (deMorgan₂-back (x < y) (y < x) (x≤y , y≤x)) (⊎-implies-⊔ (x < y) (y < x) p)
+            in #-tight x y ¬[x#y])
+    ⇐∶ (λ ≤-antisym x y ¬[[x<y]⊎[y<x]] →
+          let (¬[x<y] , ¬[y<x]) = Utils.deMorgan₂' ¬[[x<y]⊎[y<x]]
+          in ≤-antisym _ _ ¬[y<x] ¬[x<y])
 
   abs : Carrier → Carrier
   abs x = max x (- x)
@@ -147,9 +196,6 @@ record CompletePartiallyOrderedFieldWithSqrt {ℓ ℓ' : Level} : Type (ℓ-suc 
   sqrt-test x y z 0≤x 0≤y = let instance _ = !! 0≤x
                                 instance _ = !! 0≤y
                             in (sqrt x) + (sqrt y) + (sqrt (z · z))
-
-  _#_ : hPropRel Carrier Carrier ℓ'
-  x # y = {! ([ x < y ] ⊎ [ y < x ]) , isProp-P⊎Q (x < y) (y < x) (inl (<-asym x y)) !}
 
   field
     _⁻¹ : (x : Carrier) → {{p : [ x # 0f ]}} → Carrier

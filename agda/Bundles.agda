@@ -207,7 +207,7 @@ record IsAlmostOrderedField {F : Type ℓ}
     -- 4. NOTE: we already have ≤-isPartialOrder in <-isLattice
     -- ≤-isPartialOrder : IsPartialOrder _≤_
     -- 5.
-    <-isLattice : IsLattice _≤_ min max
+    ≤-isLattice : IsLattice _≤_ min max
 
   open IsCommRing {0r = 0f} {1r = 1f} isCommRing public
   open IsStrictPartialOrder <-isStrictPartialOrder public
@@ -215,7 +215,7 @@ record IsAlmostOrderedField {F : Type ℓ}
       ( isIrrefl  to <-irrefl
       ; isTrans   to <-trans
       ; isCotrans to <-cotrans )
-  open IsLattice <-isLattice public
+  open IsLattice ≤-isLattice public
 
 record AlmostOrderedField : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
   constructor orderedfield
@@ -356,4 +356,3 @@ record OrderedFieldMor {ℓ ℓ' ℓₚ ℓₚ'} (F : OrderedField {ℓ} {ℓₚ
 -- NOTE: f preserves P: P A ⇒ P (f A)
 --       f reflects  P: P (f A) ⇒ P A
 -- Remark 4.3.2. The contrapositive of reflecting < means preserving ≤.
-

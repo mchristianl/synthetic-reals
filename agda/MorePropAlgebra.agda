@@ -231,15 +231,17 @@ module Definitions where
     ⇒∶ (λ{ <-asym a b (a<b , b<a) → <-asym a b a<b b<a })
     ⇐∶ (λ  <-asym a b → fst (¬-⊓-distrib (a < b) (b < a) (<-asym a b)) )
 
-  isAsymᵖ² : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
-  isAsymᵖ² {ℓ} {ℓ'} {A = A} R = φ , φ-prop where
-    φ : Type (ℓ-max ℓ ℓ')
-    φ = (a b : A) → [ ¬ᵖ R b a ⇒ R a b ]
-    φ-prop : isProp φ
-    φ-prop = isPropΠ2 (λ a b → isProp[] (¬ᵖ R b a ⇒ R a b))
-
-  isAsymᵖ⇒² : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → [ isAsymᵖ' R ] → [ isAsymᵖ² R ]
-  isAsymᵖ⇒² _<_ <-asym a b ¬b<a = {! ¬-⊓-distrib (a < b) (b < a) (<-asym a b)  !}
+  -- NOTE: this is tricky somehow and might not be equivalent to the other ones
+  --
+  -- isAsymᵖ² : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
+  -- isAsymᵖ² {ℓ} {ℓ'} {A = A} R = φ , φ-prop where
+  --   φ : Type (ℓ-max ℓ ℓ')
+  --   φ = (a b : A) → [ ¬ᵖ R b a ⇒ R a b ]
+  --   φ-prop : isProp φ
+  --   φ-prop = isPropΠ2 (λ a b → isProp[] (¬ᵖ R b a ⇒ R a b))
+  --
+  -- isAsymᵖ⇒² : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → [ isAsymᵖ' R ] → [ isAsymᵖ² R ]
+  -- isAsymᵖ⇒² _<_ <-asym a b ¬b<a = {! ¬-⊓-distrib (a < b) (b < a) (<-asym a b)  !}
 
   -- do we have `R a b ≡ ¬ᵖ R b a` ?
 
@@ -349,6 +351,97 @@ module Definitions where
     ; rightInv = λ f → isProp[] (isAntisymᵖ       R) _ f
     ; leftInv  = λ g → isProp[] (isAntisymˢ isset R) _ g
     })) -- , {! isPropIsProp {?} {?} ? ?  !}) -- isPropIsProp
+
+  isTightᵖ : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
+  isTightᵖ {ℓ} {ℓ'} {A = A} R = φ , φ-prop where
+    φ : Type (ℓ-max ℓ ℓ')
+    φ = ∀ a b → [ ¬ᵖ R a b ⇒ ¬ᵖ R b a ⇒ a ≡ₚ b ]
+    φ-prop : isProp φ
+    φ-prop = isPropΠ2 (λ a b → isProp[] (¬ᵖ R a b ⇒ ¬ᵖ R b a ⇒ a ≡ₚ b))
+
+  IsTight : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
+  IsTight R = [ isTightᵖ R ]
+
+  isTightˢ : {ℓ ℓ' : Level} {A : Type ℓ} → isSet A → (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
+  isTightˢ {ℓ} {ℓ'} {A = A} isset R = φ , φ-prop where
+    φ : Type (ℓ-max ℓ ℓ')
+    φ = ∀ a b → [ ¬ᵖ R a b ] → [ ¬ᵖ R b a ] → a ≡ b
+    φ-prop : isProp φ
+    φ-prop = isPropΠ2 (λ a b → isPropΠ2 λ ¬a<b ¬b<a → isset a b)
+
+  IsTightˢ : {ℓ ℓ' : Level} {A : Type ℓ} → isSet A → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
+  IsTightˢ isset R = [ isTightˢ isset R ]
+
+  isTight-ˢ≡ᵖ : {ℓ ℓ' : Level} {A : Type ℓ} → (isset : isSet A) → (R : hPropRel A A ℓ') → isTightˢ isset R ≡ isTightᵖ R
+  isTight-ˢ≡ᵖ isset R = hProp≡ (isoToPath (record -- ΣPathP
+    { fun      = λ ≤-tightˢ a b a≤b b≤a → ∣ ≤-tightˢ a b a≤b b≤a ∣
+    ; inv      = λ ≤-tightᵖ a b a≤b b≤a → ∣∣-elim (λ c → isset a b) (λ x → x) (≤-tightᵖ a b a≤b b≤a)
+    ; rightInv = λ f → isProp[] (isTightᵖ       R) _ f
+    ; leftInv  = λ g → isProp[] (isTightˢ isset R) _ g
+    }))
+
+  isTightᵖ' : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
+  isTightᵖ' {ℓ} {ℓ'} {A = A} R = φ , φ-prop where
+    φ : Type (ℓ-max ℓ ℓ')
+    φ = ∀ a b → [ ¬ᵖ (R a b ⊔ R b a) ⇒ a ≡ₚ b ]
+    φ-prop : isProp φ
+    φ-prop = isPropΠ2 (λ a b → isProp[] (¬ᵖ (R a b ⊔ R b a) ⇒ a ≡ₚ b))
+
+  IsTight' : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
+  IsTight' R = [ isTightᵖ' R ]
+
+  isTightˢ' : {ℓ ℓ' : Level} {A : Type ℓ} → isSet A → (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
+  isTightˢ' {ℓ} {ℓ'} {A = A} isset R = φ , φ-prop where
+    φ : Type (ℓ-max ℓ ℓ')
+    φ = ∀ a b → [ ¬ᵖ (R a b ⊔ R b a) ] → a ≡ b
+    φ-prop : isProp φ
+    φ-prop = isPropΠ2 (λ a b → isPropΠ λ ¬[a<b⊔b<a] → isset a b)
+
+  IsTightˢ' : {ℓ ℓ' : Level} {A : Type ℓ} → isSet A → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
+  IsTightˢ' isset R = [ isTightˢ' isset R ]
+
+  isTight-ˢ'≡ᵖ' : {ℓ ℓ' : Level} {A : Type ℓ} → (isset : isSet A) → (R : hPropRel A A ℓ') → isTightˢ' isset R ≡ isTightᵖ' R
+  isTight-ˢ'≡ᵖ' isset _≤_ = hProp≡ (isoToPath (record -- ΣPathP
+    { fun      = λ ≤-tightˢ' a b ¬[a≤b⊔b≤a] → ∣ ≤-tightˢ' a b ¬[a≤b⊔b≤a] ∣
+    ; inv      = λ ≤-tightᵖ' a b ¬[a≤b⊔b≤a] → ∣∣-elim (λ c → isset a b) (λ x → x) (≤-tightᵖ' a b ¬[a≤b⊔b≤a])
+    ; rightInv = λ f → isProp[] (isTightᵖ'       _≤_) _ f
+    ; leftInv  = λ g → isProp[] (isTightˢ' isset _≤_) _ g
+    }))
+
+  isTightᵖ'' : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
+  isTightᵖ'' {ℓ} {ℓ'} {A = A} R = φ , φ-prop where
+    φ : Type (ℓ-max ℓ ℓ')
+    φ = ∀ a b → ¬ ([ R a b ] ⊎ [ R b a ]) → [ a ≡ₚ b ]
+    φ-prop : isProp φ
+    φ-prop = isPropΠ2 (λ a b → isPropΠ λ p → isProp[] (a ≡ₚ b))
+
+  IsTight'' : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
+  IsTight'' R = [ isTightᵖ'' R ]
+
+  isTightˢ'' : {ℓ ℓ' : Level} {A : Type ℓ} → isSet A → (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
+  isTightˢ'' {ℓ} {ℓ'} {A = A} isset R = φ , φ-prop where
+    φ : Type (ℓ-max ℓ ℓ')
+    φ = ∀ a b → ¬ ([ R a b ] ⊎ [ R b a ]) → a ≡ b
+    φ-prop : isProp φ
+    φ-prop = isPropΠ2 (λ a b → isPropΠ λ ¬[a<b⊎b<a] → isset a b)
+
+  IsTightˢ'' : {ℓ ℓ' : Level} {A : Type ℓ} → isSet A → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
+  IsTightˢ'' isset R = [ isTightˢ'' isset R ]
+
+  -- TODO: this is not what we want
+  isTight-ˢ''≡ᵖ'' : {ℓ ℓ' : Level} {A : Type ℓ} → (isset : isSet A) → (R : hPropRel A A ℓ') → [ isIrreflᵖ R ] → isTightˢ'' isset R ≡ isTightᵖ'' R
+  isTight-ˢ''≡ᵖ'' {A = A} isset _≤_ ≤-irrefl = hProp≡ (isoToPath (record -- ΣPathP
+    { fun      = λ ≤-tightˢ'' a b ¬[a≤b⊎b≤a] → ∣ ≤-tightˢ'' a b ¬[a≤b⊎b≤a] ∣
+    ; inv      = λ ≤-tightᵖ'' a b ¬[a≤b⊎b≤a] → ∣∣-elim (λ c → isset a b) (λ x → x) (≤-tightᵖ'' a b ¬[a≤b⊎b≤a])
+    ; rightInv = λ f → isProp[] (isTightᵖ''       _≤_) _ f
+    ; leftInv  = λ g → isProp[] (isTightˢ'' isset _≤_) _ g
+    }))
+
+
+  -- TODO: isTightᵖ _#_ ≡ isAntisymˢ _≤_
+
+  -- trans→antisymᵖ : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → [ isTransᵖ R ] → [ isAntisymᵖ R ]
+  -- trans→antisymᵖ _≤_ ≤-trans a b a≤b b≤a = {!   !}
 
   -- isPropΠ2 {! isProp[] (isAntisymᵖ R)  !} {!  !} f
   --  λ f → uncurry-reflects-≡ _ f (uncurry-reflects-≡ _ _ (uncurry-reflects-≡ _ _ {! uncurry (uncurry (uncurry f))  !}))

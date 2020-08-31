@@ -257,8 +257,10 @@ module Properties where
   -- snd (fst (equiv-proof (¬-isEquiv ℓ) P)) = dne P
   -- snd (equiv-proof (¬-isEquiv ℓ) P) (Q , ¬Q≡P) = {!   !}
 
-  ¬[P⊓¬P]≡¬[P⊓Q]⇒[¬P≡Q] : ∀{ℓ } (P Q : hProp ℓ) → [ ¬ (P ⊓ ¬ P) ] ≡ [ ¬ (P ⊓ Q) ] → [ P ] ≡ [ ¬ Q ]
-  ¬[P⊓¬P]≡¬[P⊓Q]⇒[¬P≡Q] P Q p = {! [P⇒¬Q]≡¬[P⊓Q] P Q  !}
+  -- ¬[P⊓¬P]≡¬[P⊓Q]⇒[¬P≡Q] : ∀{ℓ } (P Q : hProp ℓ) → [ ¬ (P ⊓ ¬ P) ] ≡ [ ¬ (P ⊓ Q) ] → [ P ] ≡ [ ¬ Q ]
+  -- ¬[P⊓¬P]≡¬[P⊓Q]⇒[¬P≡Q] P Q p = {! [P⇒¬Q]≡¬[P⊓Q] P Q  !}
+  --
+  -- ¬[P⊓¬P]≡¬[P⊓Q]≡[P⇒¬Q]≡[P⇒¬¬P]
 
   -- foo : ∀{ℓ ℓ'} (P : hProp ℓ) (Q : hProp ℓ') → [ (P ⇒ ¬ Q) ] → [ (¬ Q ⇒ P) ] → P ≡ ¬ Q
 
