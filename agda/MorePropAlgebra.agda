@@ -276,28 +276,28 @@ module Definitions where
    -
    - We provide a few variants of tightness
    -
-   -   IsTight           R = ∀ a b → [ ¬ᵖ    R a b   ⇒   ¬ᵖ R b a      ⇒   a ≡ₚ b ] -- "canonical"
-   -   IsTightˢ    isset R = ∀ a b → [ ¬ᵖ    R a b ] → [ ¬ᵖ R b a ]    →   a ≡  b
-   -   IsTight'          R = ∀ a b → [ ¬ᵖ (  R a b   ⊔      R b a  )   ⇒   a ≡ₚ b ]
-   -   IsTightˢ'   isset R = ∀ a b → [ ¬ᵖ (  R a b   ⊔      R b a  ) ] →   a ≡  b
-   -   IsTight''         R = ∀ a b →   ¬  ([ R a b ] ⊎ [    R b a ])   → [ a ≡ₚ b ]
-   -   IsTightˢ''  isset R = ∀ a b →   ¬  ([ R a b ] ⊎ [    R b a ])   →   a ≡  b   -- "convenient"
-   -   IsTight'''        R = ∀ a b → [ ¬ᵖ    R a b                     ⇒   a ≡ₚ b ] -- on "_#_"
-   -   IsTightˢ''' isset R = ∀ a b →   ¬   [ R a b ]                   →   a ≡  b   -- on "_#_", also "convenient"
+   -   IsTight           R = ∀ a b → [ ¬ᵖ    R a b   ⇒   ¬ᵖ R b a      ⇒   a ≡ₚ b ] -- on _<_, "canonical"
+   -   IsTightˢ    isset R = ∀ a b → [ ¬ᵖ    R a b ] → [ ¬ᵖ R b a ]    →   a ≡  b   -- on _<_
+   -   IsTight'          R = ∀ a b → [ ¬ᵖ (  R a b   ⊔      R b a  )   ⇒   a ≡ₚ b ] -- on _<_, definitional `isTight-ᵖ'≡ᵖ'''`
+   -   IsTightˢ'   isset R = ∀ a b → [ ¬ᵖ (  R a b   ⊔      R b a  ) ] →   a ≡  b   -- on _<_
+   -   IsTight''         R = ∀ a b →   ¬  ([ R a b ] ⊎ [    R b a ])   → [ a ≡ₚ b ] -- on _<_
+   -   IsTightˢ''  isset R = ∀ a b →   ¬  ([ R a b ] ⊎ [    R b a ])   →   a ≡  b   -- on _<_, "convenient"
+   -   IsTight'''        R = ∀ a b → [ ¬ᵖ    R a b                     ⇒   a ≡ₚ b ] -- on _#_
+   -   IsTightˢ''' isset R = ∀ a b →   ¬   [ R a b ]                   →   a ≡  b   -- on _#_, also "convenient"
    -
    - where the very first one, `IsTight` corresponds to a "canonical" definition,
    - the later one, `IsTightˢ''` is the "most convenient" one to use for `a # b = ¬ᵖ ([ a < b ] ⊎ [ b < a ])` on sets.
-   - and the last ones `IsTight'''` and `IsTightˢ'''` are for "_#_" instead of "_<_"
+   - and the last ones `IsTight'''` and `IsTightˢ'''` are for "_#_" instead of "_<_".
    -
    - These tightness definitions are all equivalent in the following sense:
    -
-   -   isTight-ˢ≡ᵖ       : (isset : isSet A) → isTightˢ    isset R ≡ isTightᵖ    R
-   -   isTight-ˢ'≡ᵖ'     : (isset : isSet A) → isTightˢ'   isset R ≡ isTightᵖ'   R
-   -   isTight-ˢ''≡ᵖ''   : (isset : isSet A) → isTightˢ''  isset R ≡ isTightᵖ''  R
-   -   isTight-ˢ'''≡ᵖ''' : (isset : isSet A) → isTightˢ''' isset R ≡ isTightᵖ''' R
-   -   isTight-ᵖ≡ᵖ'      :                     isTightᵖ          R ≡ isTightᵖ'   R
-   -   isTight-ᵖ'≡ᵖ''    :                     isTightᵖ'         R ≡ isTightᵖ''  R
-   -   isTight-ᵖ'≡ᵖ'''   :                     isTightᵖ'       _<_ ≡ isTightᵖ''' (λ a b → (a < b) ⊔ (b < a))
+   -   isTight-ˢ≡ᵖ       : (isset : isSet A) → isTightˢ    isset _<_ ≡ isTightᵖ    _<_
+   -   isTight-ˢ'≡ᵖ'     : (isset : isSet A) → isTightˢ'   isset _<_ ≡ isTightᵖ'   _<_
+   -   isTight-ˢ''≡ᵖ''   : (isset : isSet A) → isTightˢ''  isset _<_ ≡ isTightᵖ''  _<_
+   -   isTight-ˢ'''≡ᵖ''' : (isset : isSet A) → isTightˢ''' isset _#_ ≡ isTightᵖ''' _#_
+   -   isTight-ᵖ≡ᵖ'      :                     isTightᵖ          _<_ ≡ isTightᵖ'   _<_
+   -   isTight-ᵖ'≡ᵖ''    :                     isTightᵖ'         _<_ ≡ isTightᵖ''  _<_
+   -   isTight-ᵖ'≡ᵖ'''   :                     isTightᵖ'         _<_ ≡ isTightᵖ''' (λ a b → (a < b) ⊔ (b < a))
    -
    - where `isTight-ᵖ'≡ᵖ'''` holds definitionally.
    -}
@@ -448,8 +448,6 @@ module Definitions where
       ; rightInv = λ f → isProp[] (isAntisymᵖ _≤_) _ f
       ; leftInv  = λ g → isProp[] (isTightᵖ   _<_) _ g
       }))
-
-  -- TODO: isTightᵖ _#_ ≡ isAntisymˢ _≤_
 
   -- trans→antisymᵖ : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → [ isTransᵖ R ] → [ isAntisymᵖ R ]
   -- trans→antisymᵖ _≤_ ≤-trans a b a≤b b≤a = {!   !}

@@ -130,6 +130,7 @@ record CompletePartiallyOrderedFieldWithSqrt {ℓ ℓ' : Level} : Type (ℓ-suc 
   #-tight : [ isAntisymˢ isset _≤_ ] → [ isTightˢ'' isset _<_ ]
   #-tight ≤-antisym x y ¬[[x<y]⊎[y<x]] = let (¬[x<y] , ¬[y<x]) = Utils.deMorgan₂' ¬[[x<y]⊎[y<x]]
                                          in ≤-antisym _ _ ¬[y<x] ¬[x<y]
+                                         
   #-tight≡≤-antisym : isTightˢ'' isset _<_ ≡ isAntisymˢ isset _≤_
   #-tight≡≤-antisym =
     ⇒∶ (λ #-tight x y y≤x x≤y →
