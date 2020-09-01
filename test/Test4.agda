@@ -54,5 +54,5 @@ module TestB {ℓ ℓ'} (X : Type ℓ)
     in ( (sqrt x)       -- works
        + (sqrt y)       -- also works
        + (sqrt (z · z)) -- uses instance from module scope
-       + (sqrt (x · x)) -- uses instance from let-scope (?)
+       + (sqrt (x · x)) -- uses instance from let-scope (?) -- NOTE: see https://github.com/agda/agda/issues/4688
        )

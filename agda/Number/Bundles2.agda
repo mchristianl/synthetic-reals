@@ -67,13 +67,16 @@ record CompletePartiallyOrderedFieldWithSqrt {ℓ ℓ' : Level} : Type (ℓ-suc 
   --       e.g. they show up in goal contexts and they do not allow for `where` blocks
 
   <-asym : [ isAsymᵖ _<_ ]
-  <-asym = irrefl+trans→asym _<_ <-irrefl <-trans
+  <-asym = irrefl+trans-implies-asym _<_ <-irrefl <-trans
 
   _-_ : Carrier → Carrier → Carrier
   a - b = a + (- b)
 
   _#_ : hPropRel Carrier Carrier ℓ'
-  x # y = ([ x < y ] ⊎ [ y < x ]) , isProp-P⊎Q (x < y) (y < x) (inl (<-asym x y))
+  x # y = ([ x < y ] ⊎ [ y < x ]) , ⊎-isProp (x < y) (y < x) (inl (<-asym x y))
+
+  field
+    #-tight : [ isTightˢ''' isset _#_ ]
 
   _≤_ : hPropRel Carrier Carrier ℓ'
   x ≤ y = ¬ᵖ(y < x)
@@ -108,11 +111,13 @@ record CompletePartiallyOrderedFieldWithSqrt {ℓ ℓ' : Level} : Type (ℓ-suc 
   --       Bridges lists tightness a property of _<_, so he seems to assume #-tight
   --       Booij assumes `≤-isLattice : IsLattice _≤_ min max` which gives ≤-refl, ≤-antisym and ≤-trans and proofs #-tight from it
   -- ≤-antisym : (∀ x y → [ ¬ᵖ (x # y) ] → x ≡ y) → [ isAntisymˢ isset _≤_ ]
-  ≤-antisym : [ isTightˢ'' isset _<_ ] → [ isAntisymˢ isset _≤_ ]
-  ≤-antisym #-tight x y y≤x x≤y =
-    let ¬[x#y] : [ ¬ᵖ (x # y) ]
-        ¬[x#y] p = (deMorgan₂-back (x < y) (y < x) (x≤y , y≤x)) (⊎-implies-⊔ (x < y) (y < x) p)
-    in #-tight x y ¬[x#y]
+  ≤-antisym : [ isAntisymˢ isset _≤_ ]
+  ≤-antisym = pathTo⇒ (isTightˢ'''≡isAntisymˢ isset _<_ <-asym) #-tight
+
+  -- ≤-antisym x y y≤x x≤y
+    -- let ¬[x#y] : [ ¬ᵖ (x # y) ]
+    --     ¬[x#y] p = (deMorgan₂-back (x < y) (y < x) (x≤y , y≤x)) (⊎-implies-⊔ (x < y) (y < x) p)
+    -- in #-tight x y ¬[x#y]
 
   -- R-antisym : [    R a b ] → [    R b a ] → a ≡ b
   -- R-tight   : [ ¬ᵖ R a b ] → [ ¬ᵖ R b a ] → a ≡ b
@@ -127,28 +132,74 @@ record CompletePartiallyOrderedFieldWithSqrt {ℓ ℓ' : Level} : Type (ℓ-suc 
   -- #-tight   : ¬ ( [ a < b ]  ⊎     [ b < a ]) → a ≡ b -- by <-irrefl
 
   -- #-tight : [ isAntisymˢ isset _≤_ ] → ∀ x y → [ ¬ᵖ (x # y) ] → x ≡ y
-  #-tight : [ isAntisymˢ isset _≤_ ] → [ isTightˢ'' isset _<_ ]
-  #-tight ≤-antisym x y ¬[[x<y]⊎[y<x]] = let (¬[x<y] , ¬[y<x]) = Utils.deMorgan₂' ¬[[x<y]⊎[y<x]]
-                                         in ≤-antisym _ _ ¬[y<x] ¬[x<y]
-                                         
-  #-tight≡≤-antisym : isTightˢ'' isset _<_ ≡ isAntisymˢ isset _≤_
-  #-tight≡≤-antisym =
-    ⇒∶ (λ #-tight x y y≤x x≤y →
-          let ¬[x#y] : [ ¬ᵖ (x # y) ]
-              ¬[x#y] p = (deMorgan₂-back (x < y) (y < x) (x≤y , y≤x)) (⊎-implies-⊔ (x < y) (y < x) p)
-            in #-tight x y ¬[x#y])
-    ⇐∶ (λ ≤-antisym x y ¬[[x<y]⊎[y<x]] →
-          let (¬[x<y] , ¬[y<x]) = Utils.deMorgan₂' ¬[[x<y]⊎[y<x]]
-          in ≤-antisym _ _ ¬[y<x] ¬[x<y])
+
+  -- #-tight : [ isAntisymˢ isset _≤_ ] → [ isTightˢ'' isset _<_ ]
+  -- #-tight ≤-antisym x y ¬[[x<y]⊎[y<x]] =
+  --   let (¬[x<y] , ¬[y<x]) = Utils.deMorgan₂' ¬[[x<y]⊎[y<x]]
+  --   in ≤-antisym _ _ ¬[y<x] ¬[x<y]
+  --
+  -- #-tight≡≤-antisym : (!! isTightˢ'' isset _<_) ≡ (!! isAntisymˢ isset _≤_)
+  -- #-tight≡≤-antisym = {!  !}
+  --   ⇒∶ (λ #-tight x y y≤x x≤y →
+  --         let ¬[x#y] : [ ¬ᵖ (x # y) ]
+  --             ¬[x#y] p = (deMorgan₂-back (x < y) (y < x) (x≤y , y≤x)) (⊎-implies-⊔ (x < y) (y < x) p)
+  --           in #-tight x y ¬[x#y])
+  --   ⇐∶ (λ ≤-antisym x y ¬[[x<y]⊎[y<x]] →
+  --         let (¬[x<y] , ¬[y<x]) = Utils.deMorgan₂' ¬[[x<y]⊎[y<x]]
+  --         in ≤-antisym _ _ ¬[y<x] ¬[x<y])
 
   abs : Carrier → Carrier
   abs x = max x (- x)
 
+  -- bridges-R3-3 : ∀ x y z → (x > y ∧ y > z) ⇒ x > z -- NOTE: this is transitivity
+  -- Since x > y, either x > z or z > y. The latter is ruled out by axiom R2(1).
+
+  bridges-R3-4 : ∀ x y → [ ¬ᵖ((x < y) ⊓ (y ≤ x)) ]
+  bridges-R3-4 x y x<y⊓y≤x = snd x<y⊓y≤x (fst x<y⊓y≤x)
+
+  bridges-R3-5 : ∀ x y z → [ x ≤ y ] → [ y < z ] → [ x < z ]
+  -- Either x < z or y < x. The latter is ruled out by 4.
+  -- bridges-R3-5 x y z x≤y y<z = ⊔-elim (y < x) (x < z) (λ _ → x < z) (λ y<x → ⊥-elim (bridges-R3-4 _ _ (y<x , x≤y))) (λ x<z → x<z) (<-cotrans y z y<z x)
+  bridges-R3-5 x y z x≤y y<z = ⊔-elim (y < x) (x < z) (λ _ → x < z) (λ y<x → ⊥-elim (x≤y y<x)) (λ x<z → x<z) (<-cotrans y z y<z x)
+
+  bridges-R3-6 : ∀ x y z → [ x < y ] → [ y ≤ z ] → [ x < z ]
+  bridges-R3-6 x y z x<y y≤z = ⊔-elim (x < z) (z < y) (λ _ → x < z) (λ x<z → x<z) (λ z<y → ⊥-elim (y≤z z<y)) (<-cotrans _ _ x<y z)
+
   -- suppose that x < ε for all ε > 0. If x > 0, then x < x, a contradiction; so 0 ≥ x. Thus x ≥ 0 and 0 ≥ x, and therefore x = 0.
   bridges-R3-12 : ∀ x → [ 0f ≤ x ] → (∀ ε → [ 0f < ε ] → [ x < ε ]) → x ≡ 0f
-  bridges-R3-12 x 0≤x f = let γ : [ x ≤ 0f ]
-                              γ = {!   !}
-                           in {!   !}
+  bridges-R3-12 x 0≤x [∀ε>0∶x<ε] =
+    let x≤0 : [ x ≤ 0f ]
+        x≤0 0<x = <-irrefl x ([∀ε>0∶x<ε] x 0<x)
+    in ≤-antisym x 0f x≤0 0≤x
+
+  -- NOTE: this is how Bridges defines ≤
+  _≤''_ : hPropRel Carrier Carrier (ℓ-max ℓ ℓ')
+  x ≤'' y = (∀ ε → [ y < ε ] → [ x < ε ]) , isPropΠ2 (λ ε y<ε → isProp[] (x < ε))
+
+  ≤''-implies-≤ : ∀ x y → [ x ≤'' y ] → [ x ≤ y ]
+  ≤''-implies-≤ x y x≤''y y<x = <-irrefl x (x≤''y x y<x)
+
+  ≤-implies-≤'' : ∀ x y → [ x ≤ y ] → [ x ≤'' y ]
+  ≤-implies-≤'' x y x≤y ε y<ε = bridges-R3-5 x y ε x≤y y<ε
+
+
+  ≤-≡-≤'' : ∀ x y → (Liftᵖ {ℓ'} {ℓ} (x ≤ y)) ≡ (x ≤'' y)
+  ≤-≡-≤'' x y = ⇔toPath
+                ((≤-implies-≤'' x y) ∘ (unliftᵖ (x ≤ y))) -- (λ{ (lift p) → ≤-implies-≤'' x y p})
+                ((liftᵖ (x ≤ y)) ∘ (≤''-implies-≤ x y))
+
+  -- NOTE: it seems that `_⇔_` might be the "preferred" / "most performant" / "least cluttered" way to "store" a path when hProps are available
+
+  ≤-⇔-≤'' : ∀ x y → [ (x ≤ y) ⇔ (x ≤'' y) ]
+  ≤-⇔-≤'' x y = (≤-implies-≤'' x y) , (≤''-implies-≤ x y)
+
+  -- ≤+preserves-<-implies-≡
+  bridges-R3-12' : ∀ x y → [ x ≤ y ] → (∀ ε → [ x < ε ] → [ y < ε ]) → x ≡ y
+  bridges-R3-12' x y x≤y [∀x<ε→y<ε] =
+    let y≤x : [ y ≤ x ]
+        y≤x x<y = <-irrefl y ([∀x<ε→y<ε] y x<y)
+    in ≤-antisym x y x≤y y≤x
+
   field
     -- `R3.12` in [Bridges 1999]
     -- bridges-R2-2  : ∀ x y → [ y < x ] → ∀ z → [ (z < x) ⊔ (y < z) ]

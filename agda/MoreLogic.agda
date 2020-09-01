@@ -55,6 +55,15 @@ module Definitions where
   hPropRel : ∀ {ℓ} (A B : Type ℓ) (ℓ' : Level) → Type (ℓ-max ℓ (ℓ-suc ℓ'))
   hPropRel A B ℓ' = A → B → hProp ℓ'
 
+  Liftᵖ : ∀{i j : Level} → hProp i → hProp (ℓ-max i j)
+  Liftᵖ {i} {j} P = Lift {i} {j} [ P ] , λ{ (lift p) (lift q) → λ i → lift (isProp[] P p q i) }
+
+  liftᵖ : ∀{i j : Level} → (P : hProp i) → [ P ] → [ Liftᵖ {i} {j} P ]
+  liftᵖ P p = lift p
+
+  unliftᵖ : ∀{i j : Level} → (P : hProp i) → [ Liftᵖ {i} {j} P ] → [ P ]
+  unliftᵖ P (lift p) = p
+
   ⊥↑ : ∀{ℓ} → hProp ℓ
   ⊥↑ = Lift Empty.⊥ , λ ()
 
@@ -106,37 +115,42 @@ module Properties where
   ¬¬-elim _ ¬¬¬p p = ¬¬¬p (λ ¬p → ¬p p)
 
   ¬¬-involutiveᵖ : (P : hProp ℓ) → ¬ ¬ ¬ P ≡ ¬ P
-  ¬¬-involutiveᵖ P =
-   ⇒∶ ¬¬-elim     P
-   ⇐∶ ¬¬-intro (¬ P)
+  abstract
+    ¬¬-involutiveᵖ P =
+     ⇒∶ ¬¬-elim     P
+     ⇐∶ ¬¬-intro (¬ P)
 
   ¬¬-involutive : (A : Type ℓ) → (¬ᵗ ¬ᵗ ¬ᵗ A) ≡ (¬ᵗ A)
-  ¬¬-involutive A = isoToPath λ where
-    .Iso.fun      ¬¬¬a a → ¬¬¬a (λ ¬a → ¬a a)
-    .Iso.inv      ¬a ¬¬a → ¬¬a ¬a
-    .Iso.rightInv ¬a     → refl
-    -- the following proof is `... ≡ ¬¬¬a` and uses funext to reduce this to a proof `∀ x → ... x ≡ ¬¬¬a x`
-    -- but this does not matter, since we have `¬¬¬a x` which is `⊥` and then we can use ⊥-elim to obtain whatever is necessary
-    -- `⊥-elim` needed a detailed hint what to produce and this might not be the most elegant way to proof this
-    .Iso.leftInv  ¬¬¬a   →
-      funExt {A = (¬ᵗ ¬ᵗ A)} {B = λ _ i → ⊥⊥} {f = (λ ¬¬a → ¬¬a (λ a → ¬¬¬a (λ ¬a → ¬a a)))} {g = ¬¬¬a}
-             (λ x → ⊥-elim {A = λ _ → (x (λ a → ¬¬¬a (λ ¬a → ¬a a)) ≡ ¬¬¬a x)} (¬¬¬a x))
+  abstract
+    ¬¬-involutive A = isoToPath λ where
+      .Iso.fun      ¬¬¬a a → ¬¬¬a (λ ¬a → ¬a a)
+      .Iso.inv      ¬a ¬¬a → ¬¬a ¬a
+      .Iso.rightInv ¬a     → refl
+      -- the following proof is `... ≡ ¬¬¬a` and uses funext to reduce this to a proof `∀ x → ... x ≡ ¬¬¬a x`
+      -- but this does not matter, since we have `¬¬¬a x` which is `⊥` and then we can use ⊥-elim to obtain whatever is necessary
+      -- `⊥-elim` needed a detailed hint what to produce and this might not be the most elegant way to proof this
+      .Iso.leftInv  ¬¬¬a   →
+        funExt {A = (¬ᵗ ¬ᵗ A)} {B = λ _ i → ⊥⊥} {f = (λ ¬¬a → ¬¬a (λ a → ¬¬¬a (λ ¬a → ¬a a)))} {g = ¬¬¬a}
+               (λ x → ⊥-elim {A = λ _ → (x (λ a → ¬¬¬a (λ ¬a → ¬a a)) ≡ ¬¬¬a x)} (¬¬¬a x))
 
   -- taken from https://ncatlab.org/nlab/show/excluded+middle#DoubleNegatedPEM
   -- Double-negated PEM
   weak-LEM : ∀(P : hProp ℓ) → [ ¬ ¬ (P ⊔ ¬ P) ]
   weak-LEM _ ¬[p⊔¬p] = ¬[p⊔¬p] (inrᵖ (λ p → ¬[p⊔¬p] (inlᵖ p)))
 
+  weak-LEMᵗ : ∀(P : Type ℓ) → ¬ᵗ ¬ᵗ (P ⊎ (¬ᵗ P))
+  weak-LEMᵗ _ ¬[p⊔¬p] = ¬[p⊔¬p] (inr (λ p → ¬[p⊔¬p] (inl p)))
+
   ⊤-introᵖ : {P : hProp ℓ} → [ P ] → P ≡ ⊤↑
   ⊤-introᵖ {ℓ = ℓ} {P = P} p = let
-   P⇔⊤↑ : [ P ⇔ ⊤↑ {ℓ} ]
-   P⇔⊤↑ = (λ _ → lift tt) , (λ _ → p)
-   in ⇔toPath (fst P⇔⊤↑) (snd P⇔⊤↑)
+    P⇔⊤↑ : [ P ⇔ ⊤↑ {ℓ} ]
+    P⇔⊤↑ = (λ _ → lift tt) , (λ _ → p)
+    in ⇔toPath (fst P⇔⊤↑) (snd P⇔⊤↑)
 
   ⊤-elimᵖ : {P : hProp ℓ} → P ≡ ⊤↑ → [ P ]
   ⊤-elimᵖ {ℓ = ℓ} {P = P} p≡⊤ = (
-   [ ⊤↑ {ℓ} ] ⇒⟨ transport ( λ i → [ p≡⊤ (~ i) ]) ⟩
-   [ P     ] ◼) (lift tt)
+    [ ⊤↑ {ℓ} ] ⇒⟨ transport ( λ i → [ p≡⊤ (~ i) ]) ⟩
+    [ P     ] ◼) (lift tt)
 
   contraposition : (P : hProp ℓ) (Q : hProp ℓ') → [ P ⇒ Q ] → [ ¬ Q ⇒ ¬ P ]
   contraposition P Q f ¬q p = ⊥-elim (¬q (f p))
@@ -207,13 +221,13 @@ module Properties where
   -- weak deMorgan laws: only these three hold without further assumptions
 
   deMorgan₂ : (P Q : hProp ℓ) → [ ¬ (P ⊔ Q) ] → [ ¬ P ⊓ ¬ Q ]
-  deMorgan₂ P Q ¬[p⊔q] = (λ p →  ⊥-elim (¬[p⊔q] (inlᵖ p))) , λ q → ⊥-elim (¬[p⊔q] (inrᵖ q))
+  abstract deMorgan₂ P Q ¬[p⊔q] = (λ p →  ⊥-elim (¬[p⊔q] (inlᵖ p))) , λ q → ⊥-elim (¬[p⊔q] (inrᵖ q))
 
   deMorgan₂-back : (P Q : hProp ℓ) → [ ¬ P ⊓ ¬ Q ] → [ ¬ (P ⊔ Q) ]
-  deMorgan₂-back P Q (¬p , ¬q) p⊔q = ⊔-elim P Q (λ p⊔q → ⊥) ¬p ¬q p⊔q
+  abstract deMorgan₂-back P Q (¬p , ¬q) p⊔q = ⊔-elim P Q (λ p⊔q → ⊥) ¬p ¬q p⊔q
 
   deMorgan₁-back : (P Q : hProp ℓ) → [ ¬ P ⊔ ¬ Q ] → [ ¬ (P ⊓ Q) ]
-  deMorgan₁-back {ℓ = ℓ} P Q [¬p⊔¬q] (p , q) = ⊔-elim (¬ P) (¬ Q) (λ [¬p⊔¬q] → ⊥) (λ ¬p → ¬p p) (λ ¬q → ¬q q) [¬p⊔¬q]
+  abstract deMorgan₁-back {ℓ = ℓ} P Q [¬p⊔¬q] (p , q) = ⊔-elim (¬ P) (¬ Q) (λ [¬p⊔¬q] → ⊥) (λ ¬p → ¬p p) (λ ¬q → ¬q q) [¬p⊔¬q]
 
   ¬-⊓-distrib  : (P Q : hProp ℓ) → [ ¬ (P ⊓ Q) ] → [ (P ⇒ ¬ Q) ⊓ (Q ⇒ ¬ P) ]
   ¬-⊓-distrib P Q ¬p⊓q = (λ p q → ¬p⊓q (p , q)) , (λ q p → ¬p⊓q (p , q))
@@ -222,22 +236,23 @@ module Properties where
   implicationᵖ {ℓ = ℓ} P Q ¬[p⊓q] p q = ⊥-elim (¬[p⊓q] (p , q))
 
   contrapositionᵖ : (P Q : hProp ℓ) → [ P ⇒ Q ] → [ ¬ Q ⇒ ¬ P ]
-  contrapositionᵖ P Q f ¬q p = ⊥-elim (¬q (f p))
+  abstract contrapositionᵖ P Q f ¬q p = ⊥-elim (¬q (f p))
 
   -- Q and P are disjoint if P ⇒ ¬ Q or equivalently Q ⇒ ¬ P
 
-  [P⇒¬Q]≡[Q⇒¬P] : ∀{ℓ ℓ'} (P : hProp ℓ) (Q : hProp ℓ') → (P ⇒ ¬ Q) ≡ (Q ⇒ ¬ P)
-  [P⇒¬Q]≡[Q⇒¬P] P Q =
-    ⇒∶ (λ p⇒¬q q p → p⇒¬q p q)
-    ⇐∶ (λ q⇒¬p p q → q⇒¬p q p)
+  abstract
+    [P⇒¬Q]≡[Q⇒¬P] : ∀{ℓ ℓ'} (P : hProp ℓ) (Q : hProp ℓ') → (P ⇒ ¬ Q) ≡ (Q ⇒ ¬ P)
+    [P⇒¬Q]≡[Q⇒¬P] P Q =
+      ⇒∶ (λ p⇒¬q q p → p⇒¬q p q)
+      ⇐∶ (λ q⇒¬p p q → q⇒¬p q p)
 
-  [P⇒¬Q]⇒[Q⇒¬P] : ∀{ℓ ℓ'} (P : hProp ℓ) (Q : hProp ℓ') → [ (P ⇒ ¬ Q) ] → [ (Q ⇒ ¬ P) ]
-  [P⇒¬Q]⇒[Q⇒¬P] P Q = pathTo⇒ ([P⇒¬Q]≡[Q⇒¬P] P Q)
+    [P⇒¬Q]⇒[Q⇒¬P] : ∀{ℓ ℓ'} (P : hProp ℓ) (Q : hProp ℓ') → [ (P ⇒ ¬ Q) ] → [ (Q ⇒ ¬ P) ]
+    [P⇒¬Q]⇒[Q⇒¬P] P Q = pathTo⇒ ([P⇒¬Q]≡[Q⇒¬P] P Q)
 
-  [P⇒¬Q]≡¬[P⊓Q] : ∀{ℓ ℓ'} (P : hProp ℓ) (Q : hProp ℓ') → (P ⇒ ¬ Q) ≡ ¬ (P ⊓ Q)
-  [P⇒¬Q]≡¬[P⊓Q] P Q =
-    ⇒∶ (λ{ p⇒¬q (p , q) →  p⇒¬q   p   q })
-    ⇐∶ (λ ¬[p⊓q] p   q  → ¬[p⊓q] (p , q) )
+    [P⇒¬Q]≡¬[P⊓Q] : ∀{ℓ ℓ'} (P : hProp ℓ) (Q : hProp ℓ') → (P ⇒ ¬ Q) ≡ ¬ (P ⊓ Q)
+    [P⇒¬Q]≡¬[P⊓Q] P Q =
+      ⇒∶ (λ{ p⇒¬q (p , q) →  p⇒¬q   p   q })
+      ⇐∶ (λ ¬[p⊓q] p   q  → ¬[p⊓q] (p , q) )
 
   -- [¬P⇒Q]⇒[¬Q⇒¬¬P]
   -- [¬P⇒¬¬Q]≡[¬Q⇒¬¬P]
@@ -356,11 +371,12 @@ module Properties where
     -- ⊎-implies-⊔' x = ∣ x ∣
 
     ⊔-implies-⊎ : [ P ⊔ Q ] → [ P⊎Qᵖ ]
-    ⊔-implies-⊎ x = ⊔-elim P Q (λ x → ([ P ] ⊎ [ Q ]) , ⊎-isProp) (λ p → inl p) (λ q → inr q) x
+    abstract ⊔-implies-⊎ x = ⊔-elim P Q (λ x → ([ P ] ⊎ [ Q ]) , ⊎-isProp) (λ p → inl p) (λ q → inr q) x
 
     ⊔⊎-equiv : [ P⊎Qᵖ ⇔ P ⊔ Q ]
     ⊔⊎-equiv = ⊎-implies-⊔ P Q , ⊔-implies-⊎
 
     ⊔⊎-≡ : P⊎Qᵖ ≡ P ⊔ Q
-    ⊔⊎-≡ with ⊔⊎-equiv
-    ... | p , q = ⇔toPath p q
+    abstract
+      ⊔⊎-≡ with ⊔⊎-equiv
+      ... | p , q = ⇔toPath p q
