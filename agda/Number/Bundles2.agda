@@ -193,7 +193,7 @@ record CompletePartiallyOrderedFieldWithSqrt {ℓ ℓ' : Level} : Type (ℓ-suc 
   ≤-⇔-≤'' : ∀ x y → [ (x ≤ y) ⇔ (x ≤'' y) ]
   ≤-⇔-≤'' x y = (≤-implies-≤'' x y) , (≤''-implies-≤ x y)
 
-  -- ≤+preserves-<-implies-≡
+  -- ≤+preserves-<-implies-≡ ... this is just antisymmetry for different ≤s : ∀ x y → [ x ≤ y ] → [ y ≤'' x ] → x ≡ y
   bridges-R3-12' : ∀ x y → [ x ≤ y ] → (∀ ε → [ x < ε ] → [ y < ε ]) → x ≡ y
   bridges-R3-12' x y x≤y [∀x<ε→y<ε] =
     let y≤x : [ y ≤ x ]
@@ -207,8 +207,40 @@ record CompletePartiallyOrderedFieldWithSqrt {ℓ ℓ' : Level} : Type (ℓ-suc 
     0≤sqrt : ∀ x → {{ p : ! [ 0f ≤ x ] }} → [ 0f ≤ sqrt x {{p}} ]
     0≤x² : ∀ x → [ 0f ≤ (x · x) ]
 
+  -- well, I think that this is not possible
+  -- to obtain the RHS `( x ≡ 0f ) ⊎ [ 0f < x ]` or `[ x ≡ᵖ 0f ⊔ 0f < x ]`
+  -- we need to decide `inlᵖ` or `inrᵖ`
+  -- on the LHS which is `[ ¬ (x < 0f) ]` or `∀ ε → [ x < ε ] → [ 0f < ε ]`
+  -- in either case, we need to split x
+  -- recalling that we do NOT have `∀ x → [ x # 0 ] ⊎ x ≡ 0` nor `∀ x → [ x # 0 ⊔ x ≡ᵖ 0 ]`
+  -- we cannot split x at all
+  -- because we cannot split a real number
   ≤-split : ∀ x → [ 0f ≤ x ] → ( x ≡ 0f ) ⊎ [ 0f < x ]
-  ≤-split x p = {!   !}
+  ≤-split x p = let _ = {! [ 0f ≤'' x ]  !} in {! λ(ε : Carrier) → λ(0<ε : [ 0f < ε ]) → <-cotrans 0f ε 0<ε x  !}
+  -- but what we might be able to do is, to provide an eliminator `≤-elim`
+  ≤-elim : ∀{ℓ} → (P : Carrier → Carrier → Type ℓ) → ∀ x y → [ x ≤ y ] → (x ≡ y → P x y) → ([ x < y ] → P x y) → P x y
+  ≤-elim P x y x≤y f g = {!   !}
+  -- this way we do not decide anything ... or do we?
+  -- e.g. we might want something like [ x < 0 ⊔ x ≡ 0 ⊔ 0 < x ]
+  -- but this is trichotomy and we do not have it on the reals
+  -- so an eliminator dealing with all the cases is not complete
+  -- because we cannot proof that these are all cases
+  -- since that would constructively amount to picking one of the cases
+  -- I guess this is what it means that "you cannot split the reals"
+  -- nonetheless, I think that
+  --   bridges-R3-5 : ∀ x y z → [ x ≤ y ] → [ y < z ] → [ x < z ]
+  --   bridges-R3-6 : ∀ x y z → [ x < y ] → [ y ≤ z ] → [ x < z ]
+  -- already have what it takes to implement the generic number functions on subspaces of ℝ
+  -- so we might continue anyways
+
+  -- the following
+  --   (ε : Carrier) (0<ε : [ 0f < ε ]) → [ 0f < x ⊔ x < ε ]
+  -- does not imply
+  --   [ (0f < x) ⊔ (∀[ ε ] ∀[ 0<ε : [ 0f < ε ] ] x < ε) ]
+  -- or does it?
+
+  -- (ε : Carrier) (0<ε : [ 0f < ε ]) → [ 0f < x ⊔ x < ε ]
+  -- (ε : Carrier) (0<ε : [ 0f < ε ]) → [ 0f < x ] ⊎ [ x < ε ]
 
   instance _ = λ {x} → !! 0≤x² x
 

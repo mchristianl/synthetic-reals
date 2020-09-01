@@ -309,6 +309,35 @@ module Properties where
     (P ⊓ Q) ⊔ (P ⊓ R) ≡⟨ ( λ i → ⊓-comm P Q i ⊔ ⊓-comm P R i) ⟩
     (Q ⊓ P) ⊔ (R ⊓ P) ∎)
 
+  -- NOTE: this is in the standard library
+  -- ⊓-∀-distrib :  (P : A → hProp ℓ) (Q : A → hProp ℓ')
+  --   → (∀[ a ∶ A ] P a) ⊓ (∀[ a ∶ A ] Q a) ≡ (∀[ a ∶ A ] (P a ⊓ Q a))
+  -- ⊓-∀-distrib P Q =
+  --   ⇒∶ (λ {(p , q) a → p a , q a})
+  --   ⇐∶ λ pq → (fst ∘ pq ) , (snd ∘ pq)
+
+  -- well, we do not have `∀-⊔-distrib`
+  -- ∀-⊔-distrib : ∀{ℓ ℓ' ℓ''} {A : Type ℓ} → (P : A → hProp ℓ') → (Q : A → hProp ℓ'')
+  --             → ((∀[ x ∶ A ] P x) ⊔ (∀[ x ∶ A ] Q x)) ≡ (∀[ x ∶ A ] (P x ⊔ Q x))
+  -- ∀-⊔-distrib {A = A} P Q =
+  --   ⇒∶ (λ [∀xPx]⊔[∀xQx] x → ⊔-elim (∀[ x ] P x) (∀[ x ] Q x) (λ _ → P x ⊔ Q x) (λ ∀xPx → inlᵖ (∀xPx x)) (λ ∀xQx → inrᵖ (∀xQx x)) [∀xPx]⊔[∀xQx])
+  --   ⇐∶ λ ∀x[Px⊔Qx] → {!   !}
+
+  -- ∀-⊔-distribʳ : ∀{ℓ ℓ' ℓ''} {A : Type ℓ} → (P : hProp ℓ') → (Q : A → hProp ℓ'')
+  --             → (P ⊔ (∀[ x ∶ A ] Q x)) ≡ (∀[ x ∶ A ] (P ⊔ Q x))
+  -- ∀-⊔-distribʳ {A = A} P Q =
+  --   ⇒∶ (λ [P]⊔[∀xQx] x → ⊔-elim P (∀[ x ] Q x) (λ _ → P ⊔ Q x) (λ p → inlᵖ p) (λ ∀xQx → inrᵖ (∀xQx x)) [P]⊔[∀xQx])
+  --   ⇐∶ λ ∀x[P⊔Qx] → {!   !}
+
+  -- ∀-⊎-distribʳ : ∀{ℓ ℓ' ℓ''} (a : Type ℓ) {B : Type ℓ'} (f : B → Type ℓ'')
+  --              → (a → ∀ b → ¬ᵗ f b) -- a implies that fb is wrong
+  --              → (∀ b → f b → ¬ᵗ a) -- b implies that a is wrong
+  --              → (∀ b → a ⊎ f b)    -- for all b, either a holds or fb holds
+  --              → a ⊎ (∀ b → f b)    -- either a holds or fb holds forall b
+  -- ∀-⊎-distribʳ a f a→¬fb fb→¬a g = {!   !}
+
+
+
   ⊎-implies-⊔ : ∀ {ℓ ℓ'} (P : hProp ℓ) (Q : hProp ℓ') → [ P ] ⊎ [ Q ] → [ P ⊔ Q ]
   ⊎-implies-⊔ P Q (inl x) = inlᵖ x
   ⊎-implies-⊔ P Q (inr x) = inrᵖ x
