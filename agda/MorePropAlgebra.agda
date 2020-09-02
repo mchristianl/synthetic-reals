@@ -315,6 +315,65 @@ module Definitions where
       ; leftInv  = λ g → isProp[] (isAntisymˢ isset R) _ g
       }))
 
+  isAntisymᵖ' : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
+  isAntisymᵖ' {ℓ} {ℓ'} {A = A} R = φ , φ-prop where
+    φ : Type (ℓ-max ℓ ℓ')
+    φ = ∀ a b → [ R a b ⇒ ¬ᵖ (a ≡ₚ b) ⇒ R b a ]
+    φ-prop : isProp φ
+    abstract φ-prop = isPropΠ2 (λ a b → isProp[] (R a b ⇒ ¬ᵖ (a ≡ₚ b) ⇒ R b a))
+
+  IsAntisym' : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
+  IsAntisym' R = [ isAntisymᵖ' R ]
+
+  isAntisymˢ' : {ℓ ℓ' : Level} {A : Type ℓ} → isSet A → (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
+  isAntisymˢ' {ℓ = ℓ} {ℓ' = ℓ'} {A = A} isset R = φ , φ-prop where
+    φ : Type (ℓ-max ℓ ℓ')
+    φ = ∀ a b → [ R a b ] → ¬(a ≡ b) → [ R b a ]
+    φ-prop : isProp φ
+    abstract φ-prop = isPropΠ2 (λ a b → isPropΠ2 λ a<b ¬a≡b → isProp[] (R b a))
+
+  IsAntisymˢ' : {ℓ ℓ' : Level} {A : Type ℓ} → isSet A → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
+  IsAntisymˢ' isset R = [ isAntisymˢ' isset R ]
+
+  isAntisym-ˢ'≡ᵖ' : {ℓ ℓ' : Level} {A : Type ℓ} → (isset : isSet A) → (R : hPropRel A A ℓ') → isAntisymˢ' isset R ≡ isAntisymᵖ' R
+  abstract
+    isAntisym-ˢ'≡ᵖ' {A = A} isset _≤_ =
+      ⇒∶ (λ ≤-antisymˢ' a b a≤b ¬a≡b → ≤-antisymˢ' a b a≤b (λ  z  → ¬a≡b ∣ z ∣))
+      ⇐∶ (λ ≤-antisymᵖ' a b a≤b ¬a≡b → ≤-antisymᵖ' a b a≤b (λ ∣z∣ → ∣∣-elim {P = λ _ → ⊥⊥} (λ _ → isProp⊥) ¬a≡b ∣z∣))
+
+  -- test'' : {A B : Type ℓ} (f : A → B) → (a : A) → f a ≡ a .f
+  -- test'' f a = refl
+
+  -- Σ≡Prop' pB {u} {v} p i = (p i) , isProp→PathP (λ i → pB (p i)) (u .snd) (v .snd) i
+
+  module Test1 {A : Type ℓ} {B : Type ℓ'} (i : Iso A B) where
+    open Iso i renaming ( fun to f; inv to g; rightInv to s; leftInv to t)
+
+    isoToIsEquiv⁰ : isEquiv f
+    -- ?0-Goal : A
+    -- ?1-Goal : f ?0 ≡ y
+    -- ?2-Goal (?0 , ?1) ≡ z
+    isoToIsEquiv⁰ = record { equiv-proof = λ y → ({!   !} , {!   !}) , λ z → {!    !} }
+
+    isoToIsEquivᵃ : isEquiv f
+    isoToIsEquivᵃ .equiv-proof y .fst .fst = {!  !} -- ?0-Goal : A
+    isoToIsEquivᵃ .equiv-proof y .fst .snd = {!  !} -- ?1-Goal : f ?0 ≡ y
+    isoToIsEquivᵃ .equiv-proof y .snd z    = {!  !} -- ?2-Goal : fst (isoToIsEquivᵃ .equiv-proof y) ≡ z
+
+    isoToIsEquivᵇ : isEquiv f
+    (fst (fst ((equiv-proof isoToIsEquivᵇ) y))   ) = {!  !} -- ?0-Goal : A
+    (snd (fst ((equiv-proof isoToIsEquivᵇ) y))   ) = {!  !} -- ?1-Goal : f ?0 ≡ y
+    (    (snd ((equiv-proof isoToIsEquivᵇ) y)) z ) = {!  !} -- ?2-Goal : fst (isoToIsEquiv .equiv-proof y) ≡ z
+
+
+
+
+
+
+
+
+    _ = {! λ(y : B) → snd (fst (equiv-proof isoToIsEquivᵇ y))  !}
+
   {- tightness is closely related to antisymmetry:
    -
    -   R-antisym : [    R a b ] → [    R b a ] → a ≡ b
@@ -396,16 +455,6 @@ module Definitions where
       ; rightInv = λ f → isProp[] (isTightᵖ       _<_) _ f
       ; leftInv  = λ g → isProp[] (isTightˢ isset _<_) _ g
       }))
-
-  -- IsTight' : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
-  -- IsTight' R = ∀ a b → [ ¬ᵖ (R a b ⊔ R b a) ⇒ a ≡ₚ b ] -- [ isTightᵖ' R ]
-  --
-  -- isTightᵖ' : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
-  -- isTightᵖ' {ℓ} {ℓ'} {A = A} R = φ , φ-prop where
-  --   φ : Type (ℓ-max ℓ ℓ')
-  --   φ = IsTight' R
-  --   φ-prop : isProp φ
-  --   φ-prop = isPropΠ2 (λ a b → isProp[] (¬ᵖ (R a b ⊔ R b a) ⇒ a ≡ₚ b))
 
   isTightᵖ' : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
   isTightᵖ' {ℓ} {ℓ'} {A = A} R = φ , φ-prop where

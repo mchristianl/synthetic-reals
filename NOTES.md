@@ -256,6 +256,291 @@ record isEquiv {ℓ ℓ'} {A : Set ℓ} {B : Set ℓ'} (f : A → B) : Set (ℓ 
     equiv-proof : (y : B) → isContr (fiber f y)
 ```
 
+## open module afterwards in where clause
+
+https://agda.readthedocs.io/en/v2.6.1/language/copatterns.html#copatterns
+
+```agda
+backward-2 : {A : Set} → Enumeration A → A → A
+backward-2 e a = backward (backward a)
+  where
+    open Enumeration e
+```
+
+## dot-postfix notation for record fields / projections (copatterns?)
+
+This does only works for "(co)patterns" somehow. It somehow only works on "projections" from "constructor-projection-pairs", meaning that it works on the field-projection functions of a record but not on general functions.
+
+(Is the important "property" of patterns and copatterns here, that they make a "normalized term"?)
+
+In any case: instead of `fst u` we can write `u .fst` or even `u .Σ.fst` (or `Σ.fst u`) which are all definitionally equal.
+
+```agda
+test1' : {A : Type ℓ} {B : A → Type ℓ'} → (u : Σ A B) → fst u ≡ u .fst
+test1' u = refl
+
+test2' : {A : Type ℓ} {B : A → Type ℓ'} → (u : Σ A B) → fst u ≡ u .Σ.fst
+test2' u = refl
+```
+
+[the manual](https://agda.readthedocs.io/en/v2.6.1/language/record-types.html) writes about "copattnerns":
+
+_Elements of record types can be defined using a record expression [...] or using copatterns._
+_Copatterns may be used prefix_
+
+```agda
+p34 : Pair Nat Nat
+Pair.fst p34 = 3
+Pair.snd p34 = 4
+```
+
+_**suffix (in which case they are written prefixed with a dot)**_
+
+```agda
+p56 : Pair Nat Nat
+p56 .Pair.fst = 5
+p56 .Pair.snd = 6
+```
+
+_or using an anonymous copattern-matching lambda (you may only use the suffix form of copatterns in this case)_
+
+```agda
+p78 : Pair Nat Nat
+p78 = λ where
+  .Pair.fst → 7
+  .Pair.snd → 8
+```
+
+in `Agda.Builtin.Cubical.Glue` it is written that _copatterns don't get unfolded unless a projection is applied_
+
+```agda
+-- We make this a record so that isEquiv can be proved using
+-- copatterns. This is good because copatterns don't get unfolded
+-- unless a projection is applied so it should be more efficient.
+record isEquiv {ℓ ℓ'} {A : Set ℓ} {B : Set ℓ'} (f : A → B) : Set (ℓ ⊔ ℓ') where
+  no-eta-equality
+  field
+    equiv-proof : (y : B) → isContr (fiber f y)
+```
+
+## copatterns
+
+My copattern example would be:
+
+```agda
+-- suppose this function
+test2' : {A₁ A₂ A₃ A₄ B₁ B₂ B₃ B₄ : Type ℓ} → ((A₁ × A₂) × A₃) × A₄ → B₁ × (B₂ × (B₃ × B₄))
+test2' a₁₂₃₄ = {!   !} -- Goal: B₁ × (B₂ × (B₃ × B₄))
+
+-- we can "split" the RHS and give two separate "clauses" to construct the RHS
+test3' : {A₁ A₂ A₃ A₄ B₁ B₂ B₃ B₄ : Type ℓ} → ((A₁ × A₂) × A₃) × A₄ → B₁ × (B₂ × (B₃ × B₄))
+test3' a₁₂₃₄ .fst = {!   !} -- Goal : B₁
+test3' a₁₂₃₄ .snd = {!   !} -- Goal : B₂ × (B₃ × B₄)
+
+-- instead of writing `fst` and `snd` as a suffix to the LHS of the clauses, we can write them as a prefix (without the dot) or even mix the style for different clauses
+test3'ᵇ : {A₁ A₂ A₃ A₄ B₁ B₂ B₃ B₄ : Type ℓ} → ((A₁ × A₂) × A₃) × A₄ → B₁ × (B₂ × (B₃ × B₄))
+fst (test3'ᵇ a₁₂₃₄) = {!   !} -- Goal : B₁
+snd (test3'ᵇ a₁₂₃₄) = {!   !} -- Goal : B₂ × (B₃ × B₄)
+
+-- `fst` and `snd` are in scope, but if they would not be in scope, we could prefix them with their module name
+test3'ᶜ : {A₁ A₂ A₃ A₄ B₁ B₂ B₃ B₄ : Type ℓ} → ((A₁ × A₂) × A₃) × A₄ → B₁ × (B₂ × (B₃ × B₄))
+Σ.fst (test3'ᶜ a₁₂₃₄) = {!   !} -- Goal : B₁
+Σ.snd (test3'ᶜ a₁₂₃₄) = {!   !} -- Goal : B₂ × (B₃ × B₄)
+
+-- alternatively we can also use an "anonymous copattern-matching lambda" to create "sub-clauses"
+test3'ᵈ : {A₁ A₂ A₃ A₄ B₁ B₂ B₃ B₄ : Type ℓ} → ((A₁ × A₂) × A₃) × A₄ → B₁ × (B₂ × (B₃ × B₄))
+test3'ᵈ a₁₂₃₄ = λ where
+  .fst → {!   !} -- Goal : B₁
+  .snd → {!   !} -- Goal : B₂ × (B₃ × B₄)
+
+-- where we can move the arguments (in our case only a₁₂₃₄) to the sub-clauses like so
+test3'ᵈ' : {A₁ A₂ A₃ A₄ B₁ B₂ B₃ B₄ : Type ℓ} → ((A₁ × A₂) × A₃) × A₄ → B₁ × (B₂ × (B₃ × B₄))
+test3'ᵈ' = λ where
+   a₁₂₃₄ .fst → {!   !} -- Goal : B₁
+   a₁₂₃₄ .snd → {!   !} -- Goal : B₂ × (B₃ × B₄)
+
+-- the "sub-clauses" of an "anonymous copattern-matching lambda" do only allow for the dotted suffix copattern-notation
+-- meaning, that we have to write `a₁₂₃₄ .fst → {!   !}` and we cannot write `fst a₁₂₃₄ → {!   !}`
+
+-- again, if `fst` and `snd` where not in scope, we could prefix them by their
+test3'ᵉ : {A₁ A₂ A₃ A₄ B₁ B₂ B₃ B₄ : Type ℓ} → ((A₁ × A₂) × A₃) × A₄ → B₁ × (B₂ × (B₃ × B₄))
+test3'ᵉ a₁₂₃₄ = λ where
+  .Σ.fst → {!   !} -- Goal : B₁
+  .Σ.snd → {!   !} -- Goal : B₂ × (B₃ × B₄)
+
+-- copatterns can be "stacked" "on-top" of each other
+test4' : {A₁ A₂ A₃ A₄ B₁ B₂ B₃ B₄ : Type ℓ} → ((A₁ × A₂) × A₃) × A₄ → B₁ × (B₂ × (B₃ × B₄))
+test4' a₁₂₃₄ .fst      = {!   !} -- Goal : B₁
+test4' a₁₂₃₄ .snd .fst = {!   !} -- Goal : B₂
+test4' a₁₂₃₄ .snd .snd = {!   !} -- Goal : B₃ × B₄
+
+-- which corresponds to the following prefix-notation (where brackets are put around the LHS just to make proper right-alignment possible)
+test4'ᵇ : {A₁ A₂ A₃ A₄ B₁ B₂ B₃ B₄ : Type ℓ} → ((A₁ × A₂) × A₃) × A₄ → B₁ × (B₂ × (B₃ × B₄))
+(     fst (test4'ᵇ a₁₂₃₄) ) = {!   !} -- Goal : B₁
+(fst (snd (test4'ᵇ a₁₂₃₄))) = {!   !} -- Goal : B₂
+(snd (snd (test4'ᵇ a₁₂₃₄))) = {!   !} -- Goal : B₃ × B₄
+
+-- without the brackets it just looks like
+test4'ᶜ : {A₁ A₂ A₃ A₄ B₁ B₂ B₃ B₄ : Type ℓ} → ((A₁ × A₂) × A₃) × A₄ → B₁ × (B₂ × (B₃ × B₄))
+fst      (test4'ᶜ a₁₂₃₄)  = {!   !} -- Goal : B₁
+fst (snd (test4'ᶜ a₁₂₃₄)) = {!   !} -- Goal : B₂
+snd (snd (test4'ᶜ a₁₂₃₄)) = {!   !} -- Goal : B₃ × B₄
+
+-- of course, (regular) pattern matching does still work for each clause separately
+test5' : {A₁ A₂ A₃ A₄ B₁ B₂ B₃ B₄ : Type ℓ} → ((A₁ × A₂) × A₃) × A₄ → B₁ × (B₂ × (B₃ × B₄))
+test5' ( a₁₂₃      , a₄) .fst      = {!   !} -- Goal : B₁
+test5' ( a₁₂₃      , a₄) .snd .fst = {!   !} -- Goal : B₂
+test5' ((a₁₂ , a₃) , a₄) .snd .snd = {!   !} -- Goal : B₃ × B₄
+
+-- and copatterns also stack in an "anonymous copattern-matching lambda"
+test5'ᵈ : {A₁ A₂ A₃ A₄ B₁ B₂ B₃ B₄ : Type ℓ} → ((A₁ × A₂) × A₃) × A₄ → B₁ × (B₂ × (B₃ × B₄))
+test5'ᵈ (a₁₂₃ , a₄) = λ where
+  .fst      → {!   !} -- Goal : B₁
+  .snd .fst → {!   !} -- Goal : B₂
+  .snd .snd → {!   !} -- Goal : B₃ × B₄
+
+-- and all the previous "techniques" can be mixed arbitrarily
+test5'ᶠ : {A₁ A₂ A₃ A₄ B₁ B₂ B₃ B₄ : Type ℓ} → ((A₁ × A₂) × A₃) × A₄ → B₁ × (B₂ × (B₃ × B₄))
+test5'ᶠ (a₁₂₃₄    ) .fst = {!  !} -- Goal : B₁
+test5'ᶠ (a₁₂₃ , a₄) .snd = λ where
+  .fst → {!   !} -- Goal : B₂
+  .snd → {!   !} -- Goal : B₃ × B₄
+
+-- and so on and so forth ...
+test6' : {A₁ A₂ A₃ A₄ A₅ A₆ : Type ℓ}
+       → ((((A₁ ×  A₂) ×  A₃) ×  A₄) ×  A₅) × A₆
+       →     A₁ × (A₂  × (A₃  × (A₄  × (A₅  × A₆))))
+test6' a₁₂₃₄₅₆ = λ where
+  .fst → a₁₂₃₄₅₆ .fst .fst .fst .fst .fst
+  .snd .fst → a₁₂₃₄₅₆ .fst .fst .fst .fst .snd
+  .snd .snd .fst → a₁₂₃₄₅₆ .fst .fst .fst .snd
+  .snd .snd .snd .fst → a₁₂₃₄₅₆ .fst .fst .snd
+  .snd .snd .snd .snd .fst → a₁₂₃₄₅₆ .fst .snd
+  .snd .snd .snd .snd .snd      → a₁₂₃₄₅₆ .snd
+```
+
+### example from the standard library
+
+```agda
+module Test1 {A : Type ℓ} {B : Type ℓ'} (i : Iso A B) where
+  open Iso i renaming ( fun to f; inv to g; rightInv to s; leftInv to t)
+
+  -- an implementation of `isoToIsEquiv` with one clause is
+  isoToIsEquiv⁰ : isEquiv f
+  -- ?0-Goal : A
+  -- ?1-Goal : f ?0 ≡ y
+  -- ?2-Goal (?0 , ?1) ≡ z
+  isoToIsEquiv⁰ = record { equiv-proof = λ y → ({!   !} , {!   !}) , λ z → {!    !} }
+
+  -- with the use of copatterns, it is possible to expand this single clause into three separate clauses
+  -- and it is possible to bring `y` and `z` to the LHS of these clauses
+
+  -- the following is the variant which is used in the standard library where they note
+  --   "We make [isEquiv] a record so that isEquiv can be proved using copatterns."
+  --   "This is good because copatterns don't get unfolded unless a projection is applied so it should be more efficient."
+  isoToIsEquivᵃ : isEquiv f
+  isoToIsEquivᵃ .equiv-proof y .fst .fst = {!  !} -- ?0-Goal : A
+  isoToIsEquivᵃ .equiv-proof y .fst .snd = {!  !} -- ?1-Goal : f ?0 ≡ y
+  isoToIsEquivᵃ .equiv-proof y .snd z    = {!  !} -- ?2-Goal : fst (isoToIsEquivᵃ .equiv-proof y) ≡ z
+
+  -- it is equivalent to the following prefix-variant
+  isoToIsEquivᵇ : isEquiv f
+  (fst (fst ((equiv-proof isoToIsEquivᵇ) y))   ) = {!  !} -- ?0-Goal : A
+  (snd (fst ((equiv-proof isoToIsEquivᵇ) y))   ) = {!  !} -- ?1-Goal : f ?0 ≡ y
+  (    (snd ((equiv-proof isoToIsEquivᵇ) y)) z ) = {!  !} -- ?2-Goal : fst (isoToIsEquiv .equiv-proof y) ≡ z
+```
+
+I guess that a "clause" is the smallest unit of computation that agda can "unfold" / "evaluate" (just like in Haskell, I guess).
+If we build a structure and directly project out the first component (such as we do with hProps)
+then it would make sense that only the necessary clauses are "evaluated".
+
+So, if we "evaluate" / "normalize" / "unfold" (?) `fst (fst ((equiv-proof isoToIsEquivᵇ) y)` and this happens to be the first of three copattern clauses (like above),
+then only this copattern clause should be evaluated and the other two copattern clauses can be ignored completely.
+
+That might be what is more "efficient" about copatterns.
+
+The reason then to use a record `isEquiv` with a single field `equiv-proof` is, that copatterns can only be used for record fields ("constructor-projection-pairs" ?).
+
+| term                                                 |   | normal form (C-c C-n)                     | unfolding       |
+|------------------------------------------------------|---|-------------------------------------------|-----------------|
+| `isoToIsEquivᵇ`                                      | ⊢ | `isoToIsEquivᵇ`                           | no              |
+| `equiv-proof isoToIsEquivᵇ`                          | ⊢ | `equiv-proof isoToIsEquivᵇ`               | no              |
+| `λ(y : B) → equiv-proof isoToIsEquivᵇ y`             | ⊢ | `λ y → equiv-proof isoToIsEquivᵇ y`       | no              |
+| `λ(y : B) → snd (equiv-proof isoToIsEquivᵇ y)`       | ⊢ | `λ y z → ?2 (i = i) (y = y) (z = z)`      | yes (clause ?2) |
+| `λ(y : B) → fst (equiv-proof isoToIsEquivᵇ y)`       | ⊢ | `λ y → fst (equiv-proof isoToIsEquivᵇ y)` | no              |
+| `λ(y : B) → fst (fst (equiv-proof isoToIsEquivᵇ y))` | ⊢ | `λ y → ?0 (i = i) (y = y)`                | yes (clause ?0) |
+| `λ(y : B) → snd (fst (equiv-proof isoToIsEquivᵇ y))` | ⊢ | `λ y → ?1 (i = i) (y = y)`                | yes (clause ?1) |
+
+My theses:
+
+- Patterns allow to split a "computation" (function) into several independent "pieces" (clauses), based on the type(-destructors/projections?) on the LHS.
+- Copatterns allow to split a "computation" (function) into several independent "pieces" (clauses), based on the type(-destructors/projections?) on the RHS.
+- Mixing (nesting) patterns and copatterns allows to split a "computation" (function) into several independent "pieces" (clauses) based on the type(-destructors/projections?) in the (function-)signature.
+- A term will only "normalize further", when it is able to determine a single "piece" (clause). Otherwise it is "blocked" or "already normalized".
+
+### example of "cluttered" normalized term
+
+E.g. `≤-≡-≤''` normalizes to 760 lines which might be fine for emacs, but it kills the atom plugin
+
+```agda
+bridges-R3-5 : ∀ x y z → [ x ≤ y ] → [ y < z ] → [ x < z ]
+bridges-R3-5 x y z x≤y y<z = ⊔-elim (y < x) (x < z) (λ _ → x < z) (λ y<x → ⊥-elim (x≤y y<x)) (λ x<z → x<z) (<-cotrans y z y<z x)
+
+≤''-implies-≤ : ∀ x y → [ x ≤'' y ] → [ x ≤ y ]
+≤''-implies-≤ x y x≤''y y<x = <-irrefl x (x≤''y x y<x)
+
+≤-implies-≤'' : ∀ x y → [ x ≤ y ] → [ x ≤'' y ]
+≤-implies-≤'' x y x≤y ε y<ε = bridges-R3-5 x y ε x≤y y<ε
+
+≤-≡-≤'' : ∀ x y → (Liftᵖ {ℓ'} {ℓ} (x ≤ y)) ≡ (x ≤'' y)
+≤-≡-≤'' x y = ⇔toPath
+              ((≤-implies-≤'' x y) ∘ (unliftᵖ (x ≤ y))) -- (λ{ (lift p) → ≤-implies-≤'' x y p})
+              ((liftᵖ (x ≤ y)) ∘ (≤''-implies-≤ x y))
+```
+
+in these 760 lines of normalized term, there occur
+
+- `Agda.Builtin.Cubical.Glue.primGlue`
+- `Cubical.HITs.PropositionalTruncation.elim`
+- `Cubical.Data.Sum.Base.elim`
+- `⊥-elim`
+- `isProp⊥`
+- `transp`
+- `hcomp`
+- `isoToEquiv`
+- `<-irrefl`
+- `<-cotrans`
+- `idEquiv`
+- `isProp[]`
+
+the normalized terms of `≤-implies-≤''`, `≤''-implies-≤`, `_≤''_` and `bridges-R3-5` do not look that ugly:
+
+```agda
+≤-implies-≤'' =
+ λ x₁ y x≤y ε y<ε →
+  Cubical.HITs.PropositionalTruncation.elim
+   (λ x₂ → snd (x₁ < ε))
+   (Cubical.Data.Sum.Base.elim (λ y<x → ⊥-elim (x≤y y<x)) (λ x<z → x<z))
+   (<-cotrans y ε y<ε x₁)
+
+≤''-implies-≤ = λ x₁ y x≤''y y<x → <-irrefl x₁ (x≤''y x₁ y<x)
+
+_≤''_ =
+ λ x₁ y →
+  ( ((ε : Carrier) → fst (y < ε) → fst (x₁ < ε))
+  , (λ f g i x₂ x₃ → snd (x₁ < x₂) (f x₂ x₃) (g x₂ x₃) i)
+  )
+
+bridges-R3-5 =
+ λ x₁ y z x≤y y<z →
+  Cubical.HITs.PropositionalTruncation.elim
+   (λ x₂ → snd (x₁ < z))
+   (Cubical.Data.Sum.Base.elim (λ y<x → ⊥-elim (x≤y y<x)) (λ x<z → x<z))
+   (<-cotrans y z y<z x₁)
+```
+
+THESIS: Maybe we can also make use of copatterns in the `MorePropAlgebra` module to help Agda normalizing this term into something smaller.
+
 ## using equivalences instead of `lemma` and `lemma-back`
 
 - when using "implicational" reasoning `_⇒⟨_⟩` agda is pretty good in determining the arguments within `⟨_⟩`
