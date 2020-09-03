@@ -74,7 +74,7 @@ module Definitions where
     isSymᵖ      =                      ∀[ a ] ∀[ b ]     R a b ⇒    R b a
     isAsymᵖ     =                      ∀[ a ] ∀[ b ]     R a b ⇒ ¬ᵖ R b a
     isAsymᵖ'    =                      ∀[ a ] ∀[ b ] ¬ᵖ (R a b ⊓    R b a)
-    isAsymᵖ''   =                      ∀[ a ] ∀[ b ] ¬ᵖ  R a b ⇒    R b a
+    isAsymᵖ''   =                      ∀[ a ] ∀[ b ] ¬ᵖ  R a b ⇒    R b a  -- not equivalent! (weaker)
 
     isAntisymᵖ  =                      ∀[ a ] ∀[ b ]     R a b ⇒              R b a   ⇒            a ≡ₚ b
     isAntisymˢ  = λ(isset : isSet A) → ∀[ a ] ∀[ b ]     R a b ⇒              R b a   ⇒ ([ isset ] a ≡ˢ b)
@@ -154,6 +154,10 @@ module Definitions where
 
     _≤'_ : hPropRel X X ℓ'
     _≤'_ x y = ¬ᵖ (y < x)
+
+    -- this is how Bridges 1999 defines _≤_
+    _≤''_ : hPropRel X X (ℓ-max ℓ ℓ')
+    x ≤'' y = (∀ ε → [ y < ε ] → [ x < ε ]) , isPropΠ2 (λ ε y<ε → isProp[] (x < ε))
 
   -- combined hProps of relations
   module _ {ℓ ℓ' : Level} {A : Type ℓ} (R : hPropRel A A ℓ') where

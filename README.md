@@ -15,6 +15,14 @@ Considered number types are ℕ, ℤ, ℚ, ℝ and ℂ. Their operations are abb
 - operations on ℝ are abbreviated with `ʳ`, e.g. `_<ʳ_`
 - operations on ℂ are abbreviated with `ᶜ`, e.g. `_<ᶜ_`
 
+Additional naming occurs for
+
+- operations on types are annotated with `ᵗ` when types are not the "default", e.g. `_ᵗ⇒_` mapping a type and an hProp into an hProp
+- operations on sets and hProps of sets are annotated with `ˢ` when sets are not the "default", e.g. `[_]_≡ˢ_` as an alternative to `_≡ₚ_`
+- operations on hProps and instance of hProps are annotated with `ᵖ`, e.g. `isIrreflᵖ`
+- homogeneous variants are annotated with `ʰ`, inhomogeneous variants are annotated  with `ⁱ` or not annotated at all (inhomogeneous being the "default")
+- implicit or instance variants are also annotated with `ⁱ`
+
 The general idea is to attach subtype properties to a number. [We have](https://mchristianl.github.io/synthetic-reals/html/Summary.html) the following common number types:
 
 ```agda
