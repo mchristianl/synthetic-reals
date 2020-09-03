@@ -454,6 +454,8 @@ I guess that a "clause" is the smallest unit of computation that agda can "unfol
 If we build a structure and directly project out the first component (such as we do with hProps)
 then it would make sense that only the necessary clauses are "evaluated".
 
+Interestingly, clauses will only be unfolded when they have been "defined", meaning that when we postpone the clauses of a function definition, then all "code" inbetween the function declaration and the clause definition will not unfold the clause. (maybe this does also help to reorder clauses of a single function to help the termination checker (?))
+
 So, if we "evaluate" / "normalize" / "unfold" (?) `fst (fst ((equiv-proof isoToIsEquivᵇ) y)` and this happens to be the first of three copattern clauses (like above),
 then only this copattern clause should be evaluated and the other two copattern clauses can be ignored completely.
 
@@ -471,16 +473,200 @@ The reason then to use a record `isEquiv` with a single field `equiv-proof` is, 
 | `λ(y : B) → fst (fst (equiv-proof isoToIsEquivᵇ y))` | ⊢ | `λ y → ?0 (i = i) (y = y)`                | yes (clause ?0) |
 | `λ(y : B) → snd (fst (equiv-proof isoToIsEquivᵇ y))` | ⊢ | `λ y → ?1 (i = i) (y = y)`                | yes (clause ?1) |
 
-My theses:
+This does only work for "root-level" patterns and copatterns and not for "anonymous copattern-matching lambdas". For example the following definition
+
+```agda
+isoToIsEquivᶜ : isEquiv f
+isoToIsEquivᶜ = λ where
+  .equiv-proof y .fst .fst → {!  !} -- ?0-Goal : A
+  .equiv-proof y .fst .snd → {!  !} -- ?1-Goal : f ?0 ≡ y
+  .equiv-proof y .snd z    → {!  !} -- ?2-Goal : fst (isoToIsEquiv .equiv-proof y) ≡ z
+```
+
+makes the normal form of `isoToIsEquivᶜ` to
+
+```agda
+λ { .equiv-proof y .fst .fst → ?0 (i = i) (y = y)
+  ; .equiv-proof y .fst .snd → ?1 (i = i) (y = y)
+  ; .equiv-proof y .snd z → ?2 (i = i) (y = y) (z = z)
+  }
+```
+
+and the normal form of `equiv-proof isoToIsEquivᶜ` gets even longer
+
+```agda
+equiv-proof
+(λ { .equiv-proof y .fst .fst → ?0 (i = i) (y = y)
+   ; .equiv-proof y .fst .snd → ?1 (i = i) (y = y)
+   ; .equiv-proof y .snd z → ?2 (i = i) (y = y) (z = z)
+   })
+```
+
+and the normal form of `λ(y : B) → equiv-proof isoToIsEquivᶜ y` gets even longer
+
+```agda
+λ y →
+  equiv-proof
+  (λ { .equiv-proof y .fst .fst → ?0 (i = i) (y = y)
+     ; .equiv-proof y .fst .snd → ?1 (i = i) (y = y)
+     ; .equiv-proof y .snd z → ?2 (i = i) (y = y) (z = z)
+     })
+  y
+```
+
+finally the normal form of `λ(y : B) → snd (equiv-proof isoToIsEquivᶜ y)` reduces to the same "clause 2" as for the previous version
+
+```agda
+λ y z → ?2 (i = i) (y = y) (z = z)
+```
+
+Similar things happen for `isoToIsEquiv⁰ = record { equiv-proof = λ y → ({!   !} , {!   !}) , λ z → {!    !} }` although a bit better.
+
+We have that the normal form of `isoToIsEquiv⁰` is
+
+```agda
+record
+{ equiv-proof = λ y →
+    ( ?0 (i = i) (y = y)
+    , ?1 (i = i) (y = y))
+    , (λ z → ?2 (i = i) (y = y) (z = z)
+    )
+}
+```
+
+and the normal form of `equiv-proof isoToIsEquiv⁰` is a little bit smaller
+
+```agda
+λ y →
+  ( ?0 (i = i) (y = y)
+  , ?1 (i = i) (y = y))
+  , (λ z → ?2 (i = i) (y = y) (z = z)
+  )
+```
+
+the normal form of `λ(y : B) → equiv-proof isoToIsEquiv⁰ y` is the same as before (its effect is just that `y` gets renamed to `y` again).
+
+And finally the normal form of `λ(y : B) → snd (equiv-proof isoToIsEquiv⁰ y)` becomes "clause 2"
+
+```agda
+λ y z → ?2 (i = i) (y = y) (z = z)
+```
+
+We get a similar behaviour with
+
+```agda
+isoToIsEquivᵈ = record { equiv-proof = λ y → (a y , b y) , c y } where
+  a = λ y   → {!  !} -- ?0-Goal
+  b = λ y   → {!  !} -- ?1-Goal
+  c = λ y z → {!  !} -- ?2-Goal
+```
+
+and also the `where` clauses are immediately "inlined" into the normalized form when the `where`'s clause is "available" such that for
+
+```agda
+isoToIsEquivᵉ : isEquiv f
+isoToIsEquivᵉ .equiv-proof y = (a , b) , c where
+  a =       {!  !} -- ?0-Goal
+  b =       {!  !} -- ?1-Goal
+  c = λ z → {!  !} -- ?2-Goal
+```
+
+we have that `λ(y : B) → (equiv-proof isoToIsEquivᵈ y)` normalizes to
+
+```agda
+λ y →
+  ( ?0 (i = i) (y = y)
+  , ?1 (i = i) (y = y))
+  , (λ z → ?2 (i = i) (y = y) (z = z)
+  )
+```
+
+### My theses
 
 - Patterns allow to split a "computation" (function) into several independent "pieces" (clauses), based on the type(-destructors/projections?) on the LHS.
 - Copatterns allow to split a "computation" (function) into several independent "pieces" (clauses), based on the type(-destructors/projections?) on the RHS.
 - Mixing (nesting) patterns and copatterns allows to split a "computation" (function) into several independent "pieces" (clauses) based on the type(-destructors/projections?) in the (function-)signature.
 - A term will only "normalize further", when it is able to determine a single "piece" (clause). Otherwise it is "blocked" or "already normalized".
+- splitting into copatterns makes sense to allow the partial computation of a partially applied function without "waiting" for its arguments
+
+Therefore I would propose to define algebraic properties with copatterns like so:
+
+```agda
+isCotransᵖ : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
+isCotransᵖ R .fst =                                         ∀ a b →     [ R a b ⇒ (∀[ x ] R a x ⊔ R x b) ]
+isCotransᵖ R .snd = isprop where abstract isprop = isPropΠ2 λ a b → snd ( R a b ⇒ (∀[ x ] R a x ⊔ R x b) )
+```
+
+and generally use copatterns as much as possible.
+
+Well, the "intended" use is
+
+```agda
+isCotransᵖ : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
+isCotransᵖ R = ∀[ a ] ∀[ b ] R a b ⇒ (∀[ x ] R a x ⊔ R x b)
+```
+
+which is the same (almost definitinally).
+
+This normalizes to
+
+```agda
+( ((a b : A) → fst (R a b) → (x : A) → ∥ fst (R a x) ⊎ fst (R x b) ∥)
+, (λ f g i a b aRb c → squash (f a b aRb c) (g a b aRb c) i)
+)
+```
+
+and we could indeed make it a copattern-definition like so
+
+```agda
+isCotransᵖ : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
+isCotransᵖ {A = A} R .fst = (a b : A) → fst (R a b) → (x : A) → ∥ fst (R a x) ⊎ fst (R x b) ∥
+isCotransᵖ {A = A} R .snd f g i a b aRb c = squash (f a b aRb c) (g a b aRb c) i
+```
+
+but this destroys all readability. Also it seems to make no difference in type-checking-time.
+
+There is also the wording of two terms being "equal on the nose". What does it exactly mean? That two unnormalized terms are equal and there is no need to unfold them?
+
+There is also an email of Andrea Vezzosi "Re: [Agda] Identifying inefficiency" (09.04.19, 16:42) on the agda mailing list
+
+> I have found that efficiency problems with algebraic structures can be mitigated by disabling (definitional) eta rules for such record types and defining instances by copatterns. (Ulf gave a talk partly on this at the AIM in Leuven).
+
+He explains what the `no-eta-equality` does in
+
+```agda
+record isEquiv {ℓ ℓ'} {A : Set ℓ} {B : Set ℓ'} (f : A → B) : Set (ℓ ⊔ ℓ') where
+  no-eta-equality
+  field
+    equiv-proof : (y : B) → isContr (fiber f y)
+```
+
+namely:
+
+> This will make it so an element of isEquiv defined by copatterns will
+only be definitionally equal to itself, so things get compared by name
+and arguments.
+>
+> This is similar to what happens with functions defined by standard
+pattern matching, when they cannot reduce.
+>
+> pathToEquiv is defined by copatterns, but now without eta for isEquiv
+the typechecker will not try to observe what happens at each
+projection.
+>
+> Then eta can still be proven propositionally by pattern matching on
+the record constructor.
+(Or in cubical one can define the corresponding path also by copatterns).
+
+also see [eta expansion in the manual](https://agda.readthedocs.io/en/v2.6.0.1/language/record-types.html#eta-expansion)
+
+> The eta rule for a record type [...] states that every `x : R` is definitionally equal to `record { a = R.a x ; b = R.b x ; c = R.c x }`.
 
 ### example of "cluttered" normalized term
 
-E.g. `≤-≡-≤''` normalizes to 760 lines which might be fine for emacs, but it kills the atom plugin
+E.g. `≤-≡-≤''` normalizes to 760 lines which might be fine for emacs, but it kills the atom plugin.
+
+NOTE: These 760 lines are instantly normalized in emacs. This is totally an issue of the atom plugin displaying this term.
 
 ```agda
 bridges-R3-5 : ∀ x y z → [ x ≤ y ] → [ y < z ] → [ x < z ]

@@ -48,46 +48,116 @@ open import Cubical.HITs.PropositionalTruncation.Properties using (propTruncIsPr
 --       are and whether they could actually reduce some terms
 
 module Definitions where
-  isReflᵖ : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
-  isReflᵖ {ℓ} {ℓ'} {A = A} R = φ , φ-prop where
-    φ : Type (ℓ-max ℓ ℓ')
-    φ = (a : A) → [ R a a ]
-    φ-prop : isProp φ
-    abstract φ-prop = isPropΠ (λ(a : A) → isProp[] (R a a))
+  module OnRelations {ℓ ℓ' : Level} {A : Type ℓ} (R : hPropRel A A ℓ') where
+    isReflᵖ     =                      ∀[ a ]     R a a
+    isIrreflᵖ   =                      ∀[ a ] ¬ᵖ (R a a)
 
-  IsRefl : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
-  IsRefl R = [ isReflᵖ R ]
+    isTransᵖ    =                      ∀[ a ] ∀[ b ] ∀[ x ] R a b ⇒         R b x ⇒ R a x
+    isCotransᵖ  =                      ∀[ a ] ∀[ b ]        R a b ⇒ (∀[ x ] R a x ⊔ R x b)
+
+    isSymᵖ      =                      ∀[ a ] ∀[ b ]     R a b ⇒    R b a
+    isAsymᵖ     =                      ∀[ a ] ∀[ b ]     R a b ⇒ ¬ᵖ R b a
+    isAsymᵖ'    =                      ∀[ a ] ∀[ b ] ¬ᵖ (R a b ⊓    R b a)
+
+    isAntisymᵖ  =                      ∀[ a ] ∀[ b ]     R a b ⇒              R b a   ⇒            a ≡ₚ b
+    isAntisymˢ  = λ(isset : isSet A) → ∀[ a ] ∀[ b ]     R a b ⇒              R b a   ⇒ ([ isset ] a ≡ˢ b)
+    isAntisymᵖ' =                      ∀[ a ] ∀[ b ]     R a b ⇒ ¬ᵖ(          a ≡ₚ b) ⇒            R b a
+    isAntisymˢ' = λ(isset : isSet A) → ∀[ a ] ∀[ b ]     R a b ⇒ ¬ᵖ([ isset ] a ≡ˢ b) ⇒            R b a
+
+    isTightᵖ    =                      ∀[ a ] ∀[ b ]     ¬ᵖ R a b   ⇒ ¬ᵖ R b a      ⇒           a ≡ₚ b
+    isTightˢ    = λ(isset : isSet A) → ∀[ a ] ∀[ b ]     ¬ᵖ R a b   ⇒ ¬ᵖ R b a      ⇒ [ isset ] a ≡ˢ b
+    isTightᵖ'   =                      ∀[ a ] ∀[ b ]  ¬ᵖ (  R a b   ⊔    R b a   )  ⇒           a ≡ₚ b
+    isTightˢ'   = λ(isset : isSet A) → ∀[ a ] ∀[ b ]  ¬ᵖ (  R a b   ⊔    R b a   )  ⇒ [ isset ] a ≡ˢ b
+    isTightᵖ''  =                      ∀[ a ] ∀[ b ] (¬  ([ R a b ] ⊎  [ R b a ])) ᵗ⇒           a ≡ₚ b
+    isTightˢ''  = λ(isset : isSet A) → ∀[ a ] ∀[ b ] (¬  ([ R a b ] ⊎  [ R b a ])) ᵗ⇒ [ isset ] a ≡ˢ b
+    isTightᵖ''' =                      ∀[ a ] ∀[ b ]  ¬ᵖ    R a b                   ⇒           a ≡ₚ b
+    isTightˢ''' = λ(isset : isSet A) → ∀[ a ] ∀[ b ]  ¬ᵖ    R a b                   ⇒ [ isset ] a ≡ˢ b
+
+  isReflᵖ : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
+  -- isReflᵖ {ℓ} {ℓ'} {A = A} R = φ , φ-prop where
+  --   φ : Type (ℓ-max ℓ ℓ')
+  --   φ = (a : A) → [ R a a ]
+  --   φ-prop : isProp φ
+  --   abstract φ-prop = isPropΠ (λ(a : A) → isProp[] (R a a))
+  isReflᵖ R = ∀[ a ] R a a
+
+  -- IsRefl : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
+  -- IsRefl R = [ isReflᵖ R ]
 
   isIrreflᵖ : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
-  isIrreflᵖ {ℓ} {ℓ'} {A = A} R = φ , φ-prop where
-    φ : Type (ℓ-max ℓ ℓ')
-    φ = (a : A) → [ ¬ᵖ (R a a) ]
-    φ-prop : isProp φ
-    abstract φ-prop = isPropΠ (λ(a : A) → isProp[] (¬ᵖ (R a a)))
+  -- isIrreflᵖ {ℓ} {ℓ'} {A = A} R = φ , φ-prop where
+  --   φ : Type (ℓ-max ℓ ℓ')
+  --   φ = (a : A) → [ ¬ᵖ (R a a) ]
+  --   φ-prop : isProp φ
+  --   abstract φ-prop = isPropΠ (λ(a : A) → isProp[] (¬ᵖ (R a a)))
+  isIrreflᵖ R = ∀[ a ] ¬ᵖ (R a a)
 
-  IsIrrefl : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
-  IsIrrefl R = [ isIrreflᵖ R ]
+  -- IsIrrefl : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
+  -- IsIrrefl R = [ isIrreflᵖ R ]
+
+  -- isCotransᵖ : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
+  -- isCotransᵖ {ℓ} {ℓ'} {A = A} R = φ , φ-prop
+  --   where
+  --     φ : Type (ℓ-max ℓ ℓ')
+  --     φ = (a b : A) → [ R a b ⇒ (∀[ x ∶ A ] (R a x) ⊔ (R x b)) ]
+  --     φ-prop : isProp φ
+  --     abstract φ-prop = isPropΠ2 λ a b → snd (R a b ⇒ (∀[ x ∶ A ] (R a x) ⊔ (R x b)))
+
+  -- isCotransᵖ : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
+  -- isCotransᵖ R .fst =                                 ∀ a b →     [ R a b ⇒ (∀[ x ] R a x ⊔ R x b) ]
+  -- isCotransᵖ R .snd = φp where abstract φp = isPropΠ2 λ a b → snd ( R a b ⇒ (∀[ x ] R a x ⊔ R x b) )
+
+  -- rm MorePropAlgebra.agdai; time agda -v profile:7 MorePropAlgebra.agda
+  -- Total                        6,452ms           |   6,784ms
+  -- Miscellaneous                  219ms           |     259ms
+  -- Deserialization              3,565ms (4,000ms) |   3,697ms (4,142ms)
+  -- Deserialization.Compaction     435ms           |     444ms
+  -- Typing                          75ms   (874ms) |      81ms (1,001ms)
+  -- Typing.CheckRHS                517ms           |     616ms
+  -- Typing.TypeSig                 167ms           |     179ms
+  -- Typing.CheckLHS                 49ms           |      52ms
+  -- Typing.Generalize               36ms           |      40ms
+  -- Typing.OccursCheck              28ms           |      31ms
+  -- Parsing                         59ms   (519ms) |      59ms   (517ms)
+  -- Parsing.OperatorsExpr          421ms           |     420ms
+  -- Parsing.OperatorsPattern        37ms           |      37ms
+  -- Serialization                  316ms   (459ms) |     237ms   (482ms)
+  -- Serialization.BinaryEncode     102ms           |     203ms
+  -- Serialization.Compress          16ms           |      17ms
+  -- Serialization.BuildInterface    14ms           |      15ms
+  -- Import                         182ms           |     174ms
+  -- Scoping                         95ms   (109ms) |      95ms   (111ms)
+  -- Scoping.InverseScopeLookup      13ms           |      15ms
+  -- Highlighting                    35ms           |      38ms
+  -- Positivity                      26ms           |      30ms
+  -- Coverage                        17ms           |      19ms
+  -- DeadCode                        16ms           |      16ms
+
 
   isCotransᵖ : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
-  isCotransᵖ {ℓ} {ℓ'} {A = A} R = φ , φ-prop
-    where
-      φ : Type (ℓ-max ℓ ℓ')
-      φ = (a b : A) → [ R a b ⇒ (∀[ x ∶ A ] (R a x) ⊔ (R x b)) ]
-      φ-prop : isProp φ
-      abstract φ-prop = isPropΠ2 λ a b → snd (R a b ⇒ (∀[ x ∶ A ] (R a x) ⊔ (R x b)))
+  isCotransᵖ R = ∀[ a ] ∀[ b ] R a b ⇒ (∀[ x ] R a x ⊔ R x b)
+  -- isCotransᵖ {A = A} R =
+  --   ( ((a b : A) → fst (R a b) → (x : A) → ∥ fst (R a x) ⊎ fst (R x b) ∥)
+  --   , (λ f g i a b aRb c → squash (f a b aRb c) (g a b aRb c) i)
+  --   )
+  -- isCotransᵖ {A = A} R .fst = (a b : A) → fst (R a b) → (x : A) → ∥ fst (R a x) ⊎ fst (R x b) ∥
+  -- isCotransᵖ {A = A} R .snd f g i a b aRb c = squash (f a b aRb c) (g a b aRb c) i
 
-  IsCotrans : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
-  IsCotrans R = [ isCotransᵖ R ]
+  -- _ = {! λ {ℓ ℓ' : Level} {A : Type ℓ} (R : hPropRel A A ℓ') → isCotransᵖ R  !}
+
+  -- IsCotrans : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
+  -- IsCotrans R = [ isCotransᵖ R ]
 
   isSymᵖ : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
-  isSymᵖ {ℓ} {ℓ'} {A = A} R = φ , φ-prop where
-    φ : Type (ℓ-max ℓ ℓ')
-    φ = (a b : A) → [ R a b ⇒ R b a ]
-    φ-prop : isProp φ
-    abstract φ-prop = isPropΠ2 (λ a b → isProp[] (R a b ⇒ R b a))
+  -- isSymᵖ {ℓ} {ℓ'} {A = A} R = φ , φ-prop where
+  --   φ : Type (ℓ-max ℓ ℓ')
+  --   φ = (a b : A) → [ R a b ⇒ R b a ]
+  --   φ-prop : isProp φ
+  --   abstract φ-prop = isPropΠ2 (λ a b → isProp[] (R a b ⇒ R b a))
+  isSymᵖ R = ∀[ a ] ∀[ b ] R a b ⇒ R b a
 
-  IsSym : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
-  IsSym R = [ isSymᵖ R ]
+  -- IsSym : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
+  -- IsSym R = [ isSymᵖ R ]
 
   -- two variants of asymmetry
   --
@@ -103,24 +173,26 @@ module Definitions where
   --   ∀ a b → [ (¬ᵖ R b a) ⇒ R a b ]
 
   isAsymᵖ : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
-  isAsymᵖ {ℓ} {ℓ'} {A = A} R = φ , φ-prop where
-    φ : Type (ℓ-max ℓ ℓ')
-    φ = (a b : A) → [ R a b ⇒ ¬ᵖ R b a ]
-    φ-prop : isProp φ
-    abstract φ-prop = isPropΠ2 (λ a b → isProp[] (R a b ⇒ ¬ᵖ R b a))
+  -- isAsymᵖ {ℓ} {ℓ'} {A = A} R = φ , φ-prop where
+  --   φ : Type (ℓ-max ℓ ℓ')
+  --   φ = (a b : A) → [ R a b ⇒ ¬ᵖ R b a ]
+  --   φ-prop : isProp φ
+  --   abstract φ-prop = isPropΠ2 (λ a b → isProp[] (R a b ⇒ ¬ᵖ R b a))
+  isAsymᵖ R = ∀[ a ] ∀[ b ] R a b ⇒ ¬ᵖ R b a
 
-  IsAsym : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
-  IsAsym R = [ isAsymᵖ R ]
+  -- IsAsym : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
+  -- IsAsym R = [ isAsymᵖ R ]
 
   isAsymᵖ' : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
-  isAsymᵖ' {ℓ} {ℓ'} {A = A} R = φ , φ-prop where
-    φ : Type (ℓ-max ℓ ℓ')
-    φ = (a b : A) → [ ¬ᵖ (R a b ⊓ R b a) ]
-    φ-prop : isProp φ
-    abstract φ-prop = isPropΠ2 (λ a b → isProp[] (¬ᵖ (R a b ⊓ R b a)))
+  -- isAsymᵖ' {ℓ} {ℓ'} {A = A} R = φ , φ-prop where
+  --   φ : Type (ℓ-max ℓ ℓ')
+  --   φ = (a b : A) → [ ¬ᵖ (R a b ⊓ R b a) ]
+  --   φ-prop : isProp φ
+  --   abstract φ-prop = isPropΠ2 (λ a b → isProp[] (¬ᵖ (R a b ⊓ R b a)))
+  isAsymᵖ' R = ∀[ a ] ∀[ b ] ¬ᵖ (R a b ⊓ R b a)
 
-  IsAsym' : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
-  IsAsym' R = [ isAsymᵖ' R ]
+  -- IsAsym' : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
+  -- IsAsym' R = [ isAsymᵖ' R ]
 
   isAsymᵖ≡ᵖ' : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → isAsymᵖ R ≡ isAsymᵖ' R
   abstract isAsymᵖ≡ᵖ' _<_ =
@@ -157,15 +229,16 @@ module Definitions where
   --   ⇐∶ (λ f a b → {! [P⇒¬Q]⇒[Q⇒¬P] (b < a) (a < b)  !})
 
   isTransᵖ : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
-  isTransᵖ {ℓ} {ℓ'} {A = A} R = φ , φ-prop
-    where
-      φ : Type (ℓ-max ℓ ℓ')
-      φ = (a b c : A) → [ R a b ⇒ R b c ⇒ R a c ]
-      φ-prop : isProp φ
-      abstract φ-prop = isPropΠ3 λ a b c → snd (R a b ⇒ R b c ⇒ R a c)
+  -- isTransᵖ {ℓ} {ℓ'} {A = A} R = φ , φ-prop
+  --   where
+  --     φ : Type (ℓ-max ℓ ℓ')
+  --     φ = (a b c : A) → [ R a b ⇒ R b c ⇒ R a c ]
+  --     φ-prop : isProp φ
+  --     abstract φ-prop = isPropΠ3 λ a b c → snd (R a b ⇒ R b c ⇒ R a c)
+  isTransᵖ R = ∀[ a ] ∀[ b ] ∀[ c ] R a b ⇒ R b c ⇒ R a c
 
-  IsTrans : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
-  IsTrans R = [ isTransᵖ R ]
+  -- IsTrans : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
+  -- IsTrans R = [ isTransᵖ R ]
 
   irrefl+trans-implies-asym : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → [ isIrreflᵖ R ] → [ isTransᵖ R ] → [ isAsymᵖ R ]
   abstract irrefl+trans-implies-asym _<_ isIrrefl isTrans a b a<b b<a = isIrrefl _ (isTrans _ _ _ a<b b<a)
@@ -285,25 +358,27 @@ module Definitions where
   -- ≡-dne ¬¬[a≡b] = {!   !}
 
   isAntisymᵖ : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
-  isAntisymᵖ {ℓ} {ℓ'} {A = A} R = φ , φ-prop where
-    φ : Type (ℓ-max ℓ ℓ')
-    φ = ∀ a b → [ R a b ⇒ R b a ⇒ a ≡ₚ b ]
-    φ-prop : isProp φ
-    abstract φ-prop = isPropΠ2 (λ a b → isProp[] (R a b ⇒ R b a ⇒ a ≡ₚ b))
+  -- isAntisymᵖ {ℓ} {ℓ'} {A = A} R = φ , φ-prop where
+  --   φ : Type (ℓ-max ℓ ℓ')
+  --   φ = ∀ a b → [ R a b ⇒ R b a ⇒ a ≡ₚ b ]
+  --   φ-prop : isProp φ
+  --   abstract φ-prop = isPropΠ2 (λ a b → isProp[] (R a b ⇒ R b a ⇒ a ≡ₚ b))
+  isAntisymᵖ R = ∀[ a ] ∀[ b ] R a b ⇒ R b a ⇒ a ≡ₚ b
 
-  IsAntisym : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
-  IsAntisym R = [ isAntisymᵖ R ]
+  -- IsAntisym : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
+  -- IsAntisym R = [ isAntisymᵖ R ]
 
   -- a variant on sets to resolve ≡ₚ
   isAntisymˢ : {ℓ ℓ' : Level} {A : Type ℓ} → isSet A → (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
-  isAntisymˢ {ℓ = ℓ} {ℓ' = ℓ'} {A = A} isset R = φ , φ-prop where
-    φ : Type (ℓ-max ℓ ℓ')
-    φ = ∀ a b → [ R a b ] → [ R b a ] → a ≡ b
-    φ-prop : isProp φ
-    abstract φ-prop = isPropΠ2 (λ a b → isPropΠ2 λ a<b b<a → isset a b)
+  -- isAntisymˢ {ℓ = ℓ} {ℓ' = ℓ'} {A = A} isset R = φ , φ-prop where
+  --   φ : Type (ℓ-max ℓ ℓ')
+  --   φ = ∀ a b → [ R a b ] → [ R b a ] → a ≡ b
+  --   φ-prop : isProp φ
+  --   abstract φ-prop = isPropΠ2 (λ a b → isPropΠ2 λ a<b b<a → isset a b)
+  isAntisymˢ isset R = ∀[ a ] ∀[ b ] R a b ⇒ R b a ⇒ ([ isset ] a ≡ˢ b)
 
-  IsAntisymˢ : {ℓ ℓ' : Level} {A : Type ℓ} → isSet A → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
-  IsAntisymˢ isset R = [ isAntisymˢ isset R ]
+  -- IsAntisymˢ : {ℓ ℓ' : Level} {A : Type ℓ} → isSet A → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
+  -- IsAntisymˢ isset R = [ isAntisymˢ isset R ]
 
   -- NOTE: we also have isProp→Iso in `Cubical.Foundations.Isomorphism`
   isAntisym-ˢ≡ᵖ : {ℓ ℓ' : Level} {A : Type ℓ} → (isset : isSet A) → (R : hPropRel A A ℓ') → isAntisymˢ isset R ≡ isAntisymᵖ R
@@ -316,24 +391,26 @@ module Definitions where
       }))
 
   isAntisymᵖ' : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
-  isAntisymᵖ' {ℓ} {ℓ'} {A = A} R = φ , φ-prop where
-    φ : Type (ℓ-max ℓ ℓ')
-    φ = ∀ a b → [ R a b ⇒ ¬ᵖ (a ≡ₚ b) ⇒ R b a ]
-    φ-prop : isProp φ
-    abstract φ-prop = isPropΠ2 (λ a b → isProp[] (R a b ⇒ ¬ᵖ (a ≡ₚ b) ⇒ R b a))
+  -- isAntisymᵖ' {ℓ} {ℓ'} {A = A} R = φ , φ-prop where
+  --   φ : Type (ℓ-max ℓ ℓ')
+  --   φ = ∀ a b → [ R a b ⇒ ¬ᵖ (a ≡ₚ b) ⇒ R b a ]
+  --   φ-prop : isProp φ
+  --   abstract φ-prop = isPropΠ2 (λ a b → isProp[] (R a b ⇒ ¬ᵖ (a ≡ₚ b) ⇒ R b a))
+  isAntisymᵖ' R = ∀[ a ] ∀[ b ] R a b ⇒ ¬ᵖ (a ≡ₚ b) ⇒ R b a
 
-  IsAntisym' : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
-  IsAntisym' R = [ isAntisymᵖ' R ]
+  -- IsAntisym' : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
+  -- IsAntisym' R = [ isAntisymᵖ' R ]
 
   isAntisymˢ' : {ℓ ℓ' : Level} {A : Type ℓ} → isSet A → (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
-  isAntisymˢ' {ℓ = ℓ} {ℓ' = ℓ'} {A = A} isset R = φ , φ-prop where
-    φ : Type (ℓ-max ℓ ℓ')
-    φ = ∀ a b → [ R a b ] → ¬(a ≡ b) → [ R b a ]
-    φ-prop : isProp φ
-    abstract φ-prop = isPropΠ2 (λ a b → isPropΠ2 λ a<b ¬a≡b → isProp[] (R b a))
+  -- isAntisymˢ' {ℓ = ℓ} {ℓ' = ℓ'} {A = A} isset R = φ , φ-prop where
+  --   φ : Type (ℓ-max ℓ ℓ')
+  --   φ = ∀ a b → [ R a b ] → ¬(a ≡ b) → [ R b a ]
+  --   φ-prop : isProp φ
+  --   abstract φ-prop = isPropΠ2 (λ a b → isPropΠ2 λ a<b ¬a≡b → isProp[] (R b a))
+  isAntisymˢ' isset R = ∀[ a ] ∀[ b ] R a b ⇒ ¬ᵖ([ isset ] a ≡ˢ b) ⇒ R b a
 
-  IsAntisymˢ' : {ℓ ℓ' : Level} {A : Type ℓ} → isSet A → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
-  IsAntisymˢ' isset R = [ isAntisymˢ' isset R ]
+  -- IsAntisymˢ' : {ℓ ℓ' : Level} {A : Type ℓ} → isSet A → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
+  -- IsAntisymˢ' isset R = [ isAntisymˢ' isset R ]
 
   isAntisym-ˢ'≡ᵖ' : {ℓ ℓ' : Level} {A : Type ℓ} → (isset : isSet A) → (R : hPropRel A A ℓ') → isAntisymˢ' isset R ≡ isAntisymᵖ' R
   abstract
@@ -345,34 +422,6 @@ module Definitions where
   -- test'' f a = refl
 
   -- Σ≡Prop' pB {u} {v} p i = (p i) , isProp→PathP (λ i → pB (p i)) (u .snd) (v .snd) i
-
-  module Test1 {A : Type ℓ} {B : Type ℓ'} (i : Iso A B) where
-    open Iso i renaming ( fun to f; inv to g; rightInv to s; leftInv to t)
-
-    isoToIsEquiv⁰ : isEquiv f
-    -- ?0-Goal : A
-    -- ?1-Goal : f ?0 ≡ y
-    -- ?2-Goal (?0 , ?1) ≡ z
-    isoToIsEquiv⁰ = record { equiv-proof = λ y → ({!   !} , {!   !}) , λ z → {!    !} }
-
-    isoToIsEquivᵃ : isEquiv f
-    isoToIsEquivᵃ .equiv-proof y .fst .fst = {!  !} -- ?0-Goal : A
-    isoToIsEquivᵃ .equiv-proof y .fst .snd = {!  !} -- ?1-Goal : f ?0 ≡ y
-    isoToIsEquivᵃ .equiv-proof y .snd z    = {!  !} -- ?2-Goal : fst (isoToIsEquivᵃ .equiv-proof y) ≡ z
-
-    isoToIsEquivᵇ : isEquiv f
-    (fst (fst ((equiv-proof isoToIsEquivᵇ) y))   ) = {!  !} -- ?0-Goal : A
-    (snd (fst ((equiv-proof isoToIsEquivᵇ) y))   ) = {!  !} -- ?1-Goal : f ?0 ≡ y
-    (    (snd ((equiv-proof isoToIsEquivᵇ) y)) z ) = {!  !} -- ?2-Goal : fst (isoToIsEquiv .equiv-proof y) ≡ z
-
-
-
-
-
-
-
-
-    _ = {! λ(y : B) → snd (fst (equiv-proof isoToIsEquivᵇ y))  !}
 
   {- tightness is closely related to antisymmetry:
    -
@@ -428,24 +477,26 @@ module Definitions where
    -}
 
   isTightᵖ : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
-  isTightᵖ {ℓ} {ℓ'} {A = A} R = φ , φ-prop where
-    φ : Type (ℓ-max ℓ ℓ')
-    φ = ∀ a b → [ ¬ᵖ R a b ⇒ ¬ᵖ R b a ⇒ a ≡ₚ b ]
-    φ-prop : isProp φ
-    abstract φ-prop = isPropΠ2 (λ a b → isProp[] (¬ᵖ R a b ⇒ ¬ᵖ R b a ⇒ a ≡ₚ b))
+  -- isTightᵖ {ℓ} {ℓ'} {A = A} R = φ , φ-prop where
+  --   φ : Type (ℓ-max ℓ ℓ')
+  --   φ = ∀ a b → [ ¬ᵖ R a b ⇒ ¬ᵖ R b a ⇒ a ≡ₚ b ]
+  --   φ-prop : isProp φ
+  --   abstract φ-prop = isPropΠ2 (λ a b → isProp[] (¬ᵖ R a b ⇒ ¬ᵖ R b a ⇒ a ≡ₚ b))
+  isTightᵖ R = ∀[ a ] ∀[ b ] ¬ᵖ R a b ⇒ ¬ᵖ R b a ⇒ a ≡ₚ b
 
-  IsTight : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
-  IsTight R = [ isTightᵖ R ]
+  -- IsTight : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
+  -- IsTight R = [ isTightᵖ R ]
 
   isTightˢ : {ℓ ℓ' : Level} {A : Type ℓ} → isSet A → (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
-  isTightˢ {ℓ} {ℓ'} {A = A} isset R = φ , φ-prop where
-    φ : Type (ℓ-max ℓ ℓ')
-    φ = ∀ a b → [ ¬ᵖ R a b ] → [ ¬ᵖ R b a ] → a ≡ b
-    φ-prop : isProp φ
-    abstract φ-prop = isPropΠ2 (λ a b → isPropΠ2 λ ¬a<b ¬b<a → isset a b)
+  -- isTightˢ {ℓ} {ℓ'} {A = A} isset R = φ , φ-prop where
+  --   φ : Type (ℓ-max ℓ ℓ')
+  --   φ = ∀ a b → [ ¬ᵖ R a b ] → [ ¬ᵖ R b a ] → a ≡ b
+  --   φ-prop : isProp φ
+  --   abstract φ-prop = isPropΠ2 (λ a b → isPropΠ2 λ ¬a<b ¬b<a → isset a b)
+  isTightˢ isset R = ∀[ a ] ∀[ b ] ¬ᵖ R a b ⇒ ¬ᵖ R b a ⇒ [ isset ] a ≡ˢ b
 
-  IsTightˢ : {ℓ ℓ' : Level} {A : Type ℓ} → isSet A → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
-  IsTightˢ isset R = [ isTightˢ isset R ]
+  -- IsTightˢ : {ℓ ℓ' : Level} {A : Type ℓ} → isSet A → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
+  -- IsTightˢ isset R = [ isTightˢ isset R ]
 
   isTight-ˢ≡ᵖ : {ℓ ℓ' : Level} {A : Type ℓ} → (isset : isSet A) → (R : hPropRel A A ℓ') → isTightˢ isset R ≡ isTightᵖ R
   abstract
@@ -457,24 +508,26 @@ module Definitions where
       }))
 
   isTightᵖ' : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
-  isTightᵖ' {ℓ} {ℓ'} {A = A} R = φ , φ-prop where
-    φ : Type (ℓ-max ℓ ℓ')
-    φ = ∀ a b → [ ¬ᵖ (R a b ⊔ R b a) ⇒ a ≡ₚ b ]
-    φ-prop : isProp φ
-    abstract φ-prop = isPropΠ2 (λ a b → isProp[] (¬ᵖ (R a b ⊔ R b a) ⇒ a ≡ₚ b))
+  -- isTightᵖ' {ℓ} {ℓ'} {A = A} R = φ , φ-prop where
+  --   φ : Type (ℓ-max ℓ ℓ')
+  --   φ = ∀ a b → [ ¬ᵖ (R a b ⊔ R b a) ⇒ a ≡ₚ b ]
+  --   φ-prop : isProp φ
+  --   abstract φ-prop = isPropΠ2 (λ a b → isProp[] (¬ᵖ (R a b ⊔ R b a) ⇒ a ≡ₚ b))
+  isTightᵖ' R = ∀[ a ] ∀[ b ] ¬ᵖ (R a b ⊔ R b a) ⇒ a ≡ₚ b
 
-  IsTight' : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
-  IsTight' R = [ isTightᵖ' R ]
+  -- IsTight' : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
+  -- IsTight' R = [ isTightᵖ' R ]
 
   isTightˢ' : {ℓ ℓ' : Level} {A : Type ℓ} → isSet A → (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
-  isTightˢ' {ℓ} {ℓ'} {A = A} isset R = φ , φ-prop where
-    φ : Type (ℓ-max ℓ ℓ')
-    φ = ∀ a b → [ ¬ᵖ (R a b ⊔ R b a) ] → a ≡ b
-    φ-prop : isProp φ
-    abstract φ-prop = isPropΠ2 (λ a b → isPropΠ λ ¬[a<b⊔b<a] → isset a b)
+  -- isTightˢ' {ℓ} {ℓ'} {A = A} isset R = φ , φ-prop where
+  --   φ : Type (ℓ-max ℓ ℓ')
+  --   φ = ∀ a b → [ ¬ᵖ (R a b ⊔ R b a) ] → a ≡ b
+  --   φ-prop : isProp φ
+  --   abstract φ-prop = isPropΠ2 (λ a b → isPropΠ λ ¬[a<b⊔b<a] → isset a b)
+  isTightˢ' isset R = ∀[ a ] ∀[ b ] ¬ᵖ (R a b ⊔ R b a) ⇒ [ isset ] a ≡ˢ b
 
-  IsTightˢ' : {ℓ ℓ' : Level} {A : Type ℓ} → isSet A → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
-  IsTightˢ' isset R = [ isTightˢ' isset R ]
+  -- IsTightˢ' : {ℓ ℓ' : Level} {A : Type ℓ} → isSet A → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
+  -- IsTightˢ' isset R = [ isTightˢ' isset R ]
 
   isTight-ˢ'≡ᵖ' : {ℓ ℓ' : Level} {A : Type ℓ} → (isset : isSet A) → (R : hPropRel A A ℓ') → isTightˢ' isset R ≡ isTightᵖ' R
   abstract
@@ -486,24 +539,26 @@ module Definitions where
       }))
 
   isTightᵖ'' : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
-  isTightᵖ'' {ℓ} {ℓ'} {A = A} R = φ , φ-prop where
-    φ : Type (ℓ-max ℓ ℓ')
-    φ = ∀ a b → ¬ ([ R a b ] ⊎ [ R b a ]) → [ a ≡ₚ b ]
-    φ-prop : isProp φ
-    abstract φ-prop = isPropΠ2 (λ a b → isPropΠ λ p → isProp[] (a ≡ₚ b))
+  -- isTightᵖ'' {ℓ} {ℓ'} {A = A} R = φ , φ-prop where
+  --   φ : Type (ℓ-max ℓ ℓ')
+  --   φ = ∀ a b → ¬ ([ R a b ] ⊎ [ R b a ]) → [ a ≡ₚ b ]
+  --   φ-prop : isProp φ
+  --   abstract φ-prop = isPropΠ3 (λ a b p → isProp[] (a ≡ₚ b))
+  isTightᵖ'' R = ∀[ a ] ∀[ b ] (¬ ([ R a b ] ⊎ [ R b a ])) ᵗ⇒ a ≡ₚ b
 
-  IsTight'' : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
-  IsTight'' R = [ isTightᵖ'' R ]
+  -- IsTight'' : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
+  -- IsTight'' R = [ isTightᵖ'' R ]
 
   isTightˢ'' : {ℓ ℓ' : Level} {A : Type ℓ} → isSet A → (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
-  isTightˢ'' {ℓ} {ℓ'} {A = A} isset R = φ , φ-prop where
-    φ : Type (ℓ-max ℓ ℓ')
-    φ = ∀ a b → ¬ ([ R a b ] ⊎ [ R b a ]) → a ≡ b
-    φ-prop : isProp φ
-    abstract φ-prop = isPropΠ2 (λ a b → isPropΠ λ ¬[a<b⊎b<a] → isset a b)
+  -- isTightˢ'' {ℓ} {ℓ'} {A = A} isset R = φ , φ-prop where
+  --   φ : Type (ℓ-max ℓ ℓ')
+  --   φ = ∀ a b → ¬ ([ R a b ] ⊎ [ R b a ]) → a ≡ b
+  --   φ-prop : isProp φ
+  --   abstract φ-prop = isPropΠ2 (λ a b → isPropΠ λ ¬[a<b⊎b<a] → isset a b)
+  isTightˢ'' isset R = ∀[ a ] ∀[ b ] (¬ ([ R a b ] ⊎ [ R b a ])) ᵗ⇒ [ isset ] a ≡ˢ b
 
-  IsTightˢ'' : {ℓ ℓ' : Level} {A : Type ℓ} → isSet A → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
-  IsTightˢ'' isset R = [ isTightˢ'' isset R ]
+  -- IsTightˢ'' : {ℓ ℓ' : Level} {A : Type ℓ} → isSet A → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
+  -- IsTightˢ'' isset R = [ isTightˢ'' isset R ]
 
   isTight-ˢ''≡ᵖ'' : {ℓ ℓ' : Level} {A : Type ℓ} → (isset : isSet A) → (R : hPropRel A A ℓ') → isTightˢ'' isset R ≡ isTightᵖ'' R
   abstract
@@ -515,24 +570,26 @@ module Definitions where
       }))
 
   isTightᵖ''' : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
-  isTightᵖ''' {ℓ} {ℓ'} {A = A} R = φ , φ-prop where
-    φ : Type (ℓ-max ℓ ℓ')
-    φ = ∀ a b → [ ¬ᵖ R a b ⇒ a ≡ₚ b ]
-    φ-prop : isProp φ
-    abstract φ-prop = isPropΠ2 (λ a b → isPropΠ λ p → isProp[] (a ≡ₚ b))
+  -- isTightᵖ''' {ℓ} {ℓ'} {A = A} R = φ , φ-prop where
+  --   φ : Type (ℓ-max ℓ ℓ')
+  --   φ = ∀ a b → [ ¬ᵖ R a b ⇒ a ≡ₚ b ]
+  --   φ-prop : isProp φ
+  --   abstract φ-prop = isPropΠ2 (λ a b → isPropΠ λ p → isProp[] (a ≡ₚ b))
+  isTightᵖ''' R = ∀[ a ] ∀[ b ] ¬ᵖ R a b ⇒ a ≡ₚ b
 
-  IsTight''' : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
-  IsTight''' R = [ isTightᵖ''' R ]
+  -- IsTight''' : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
+  -- IsTight''' R = [ isTightᵖ''' R ]
 
   isTightˢ''' : {ℓ ℓ' : Level} {A : Type ℓ} → isSet A → (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
-  isTightˢ''' {ℓ} {ℓ'} {A = A} isset R = φ , φ-prop where
-    φ : Type (ℓ-max ℓ ℓ')
-    φ = ∀ a b → ¬ [ R a b ] → a ≡ b
-    φ-prop : isProp φ
-    abstract φ-prop = isPropΠ2 (λ a b → isPropΠ λ _ → isset a b)
+  -- isTightˢ''' {ℓ} {ℓ'} {A = A} isset R = φ , φ-prop where
+  --   φ : Type (ℓ-max ℓ ℓ')
+  --   φ = ∀ a b → ¬ [ R a b ] → a ≡ b
+  --   φ-prop : isProp φ
+  --   abstract φ-prop = isPropΠ2 (λ a b → isPropΠ λ _ → isset a b)
+  isTightˢ''' isset R = ∀[ a ] ∀[ b ] ¬ᵖ R a b ⇒ [ isset ] a ≡ˢ b
 
-  IsTightˢ''' : {ℓ ℓ' : Level} {A : Type ℓ} → isSet A → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
-  IsTightˢ''' isset R = [ isTightˢ''' isset R ]
+  -- IsTightˢ''' : {ℓ ℓ' : Level} {A : Type ℓ} → isSet A → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
+  -- IsTightˢ''' isset R = [ isTightˢ''' isset R ]
 
   isTight-ˢ'''≡ᵖ''' : {ℓ ℓ' : Level} {A : Type ℓ} → (isset : isSet A) → (R : hPropRel A A ℓ') → isTightˢ''' isset R ≡ isTightᵖ''' R
   abstract
@@ -565,7 +622,8 @@ module Definitions where
   _#'_ {_<_ = _<_} x y = (x < y) ⊔ (y < x)
 
   _#''_ : ∀{X : Type ℓ} {_<_ : hPropRel X X ℓ'} {<-asym : [ isAsymᵖ _<_ ]} → hPropRel X X ℓ'
-  _#''_ {_<_ = _<_} {<-asym = <-asym} x y = ([ x < y ] ⊎ [ y < x ]) , ⊎-isProp (x < y) (y < x) (inl (<-asym x y))
+  -- _#''_ {_<_ = _<_} {<-asym = <-asym} x y = ([ x < y ] ⊎ [ y < x ]) , ⊎-isProp (x < y) (y < x) (inl (<-asym x y))
+  _#''_ {_<_ = _<_} {<-asym = <-asym} x y = [ <-asym x y ] (x < y) ⊎ᵖ (y < x)
 
   module _ {ℓ ℓ' : Level} {A : Type ℓ} (_<_ : hPropRel A A ℓ') (let _#_ = λ x y → (x < y) ⊔ (y < x) ) {- (let _#_ = _#'_ {_<_ = _<_}) -} where
     isTight-ᵖ'≡ᵖ''' : isTightᵖ' _<_ ≡ isTightᵖ''' _#_
