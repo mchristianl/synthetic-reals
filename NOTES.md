@@ -581,6 +581,8 @@ we have that `λ(y : B) → (equiv-proof isoToIsEquivᵈ y)` normalizes to
   )
 ```
 
+But I guess that copatterns within a where block work as intended .. TODO: check this
+
 ### My theses
 
 - Patterns allow to split a "computation" (function) into several independent "pieces" (clauses), based on the type(-destructors/projections?) on the LHS.
@@ -2712,4 +2714,84 @@ record CompletePartiallyOrderedFieldWithSqrt {ℓ ℓ' : Level} : Type (ℓ-suc 
 
   field
     _⁻¹ : (x : Carrier) → {{p : [ x # 0f ]}} → Carrier
+```
+
+
+## antisymmetry and antisymmetry on sets
+
+we have
+
+```
+IsAntisym        R = ∀ a b → [ R a b   ⇒   R b a   ⇒ a ≡ₚ b ]
+IsAntisymˢ isset R = ∀ a b → [ R a b ] → [ R b a ] → a ≡  b
+```
+
+both are equivalent (on sets):
+
+```
+isAntisym-ˢ≡ᵖ : (isset : isSet A) → isAntisymˢ isset R ≡ isAntisymᵖ R
+```
+
+Wikipedia writes that
+
+```
+if R(a, b) with a ≠ b, then R(b, a) must not hold,
+```
+
+is equivalent to
+
+```
+if R(a, b) and R(b, a), then a = b.
+```
+
+but is this an equivalence constructively?
+I guess that `[ R a b ] → [ R b a ] → a ≡ b` implies `[ R a b ] →  [ a # b ] → [ ¬ R b a ]` in the following way:
+
+```
+[ R a b ] → [ R b a ] → a ≡ b        --
+[ R a b ] × [ R b a ] → a ≡ b        -- by curry/uncurry
+[ R a b   ⊓   R b a ] → a ≡ b        -- definitionally
+¬(a ≡ b) → ¬ [ R a b ⊓ R b a ]       -- by contraposition (NOTE: contraposition is not an equivalence)
+¬(a ≡ b) →   [ R a b ] → [ ¬ R b a ] -- by [P⇒¬Q]≡¬[P⊓Q]
+[ R a b ] →  ¬(a ≡ b)  → [ ¬ R b a ] -- swap arguments
+[ R a b ] →  [ a # b ] → [ ¬ R b a ] -- when `a # b ⇒ ¬(a ≡ b)` (by #-irrefl) (NOTE: also not an equivalence)
+```
+
+- Here we see that `antisymmetry + irreflexivity ⇒ asymmetry`
+  - wikipedia also writes `trans + irrefl ⇒ asym`
+
+```
+isTightᵖ _<_ ≡ isAntisymᵖ  (λ a b → ¬ᵖ (b < a))
+#-tight : [ ¬ (a < b) ] → [ ¬ (b < a) ] → a ≡ b
+          [ ¬ (a # b) ]                 → a ≡ b
+```
+
+- `<-irrefl ⇒ #-irrefl`
+  - which gives `a ≡ b → [ ¬ (a # b) ]`
+- so we do have `¬#-≡-≡` when `#` is tight?
+- on `¬#` we do have double negation elimintation (`¬¬¬# ≡ ¬#`)
+- so `#` gives us `≡-dne` ?? hmm......
+
+the other way could be
+
+```
+[ R a b ] → [ a # b ] → [ ¬ R b a  ]     --
+[ R a b ] → [ a # b ] → [   R b a  ] → ⊥ -- by ¬
+[ R a b ] → [ R b a ] → [   a # b  ] → ⊥ -- swap arguments
+[ R a b ] → [ R b a ] → [ ¬(a # b) ]     -- by ¬
+[ R a b ] → [ R b a ] →     a ≡ b        -- when `¬(a # b) ⇒ a ≡ b` (by #-tight)
+
+[ R a b ] →   ¬(a ≡ b)   → [   ¬ R b a   ]     --
+[ R a b ] →   ¬(a ≡ b)   → [     R b a   ] → ⊥ -- by ¬
+[ R a b ] → [   R b a  ] →     ¬(a ≡ b)    → ⊥ -- swap arguments
+[ R a b ] → [   R b a  ] →   ¬(¬(a ≡ b))       -- by ¬
+[ R a b ] → [   R b a  ] →       a ≡ b        -- when `¬(¬(a ≡ b)) ⇒ a ≡ b`
+```
+
+let's call the weaker one isAntisym'. we have then
+
+```
+isIrrefl _<_ → isAntisym _≤_ ≡ (isAntisym' _≤_ + dne-on-≡) ≡ isTight''' _#_
+isIrrefl _<_ ≡ isIrrefl _#_
+isIrrefl _#_ → isTight''' _#_ → dne-on-≡
 ```

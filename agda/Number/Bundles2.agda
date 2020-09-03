@@ -76,7 +76,7 @@ record CompletePartiallyOrderedFieldWithSqrt {ℓ ℓ' : Level} : Type (ℓ-suc 
   x # y = ([ x < y ] ⊎ [ y < x ]) , ⊎-isProp (x < y) (y < x) (inl (<-asym x y))
 
   field
-    #-tight : [ isTightˢ''' isset _#_ ]
+    #-tight : [ isTightˢ''' _#_ isset ]
 
   _≤_ : hPropRel Carrier Carrier ℓ'
   x ≤ y = ¬ᵖ(y < x)
@@ -111,8 +111,8 @@ record CompletePartiallyOrderedFieldWithSqrt {ℓ ℓ' : Level} : Type (ℓ-suc 
   --       Bridges lists tightness a property of _<_, so he seems to assume #-tight
   --       Booij assumes `≤-isLattice : IsLattice _≤_ min max` which gives ≤-refl, ≤-antisym and ≤-trans and proofs #-tight from it
   -- ≤-antisym : (∀ x y → [ ¬ᵖ (x # y) ] → x ≡ y) → [ isAntisymˢ isset _≤_ ]
-  ≤-antisym : [ isAntisymˢ isset _≤_ ]
-  ≤-antisym = pathTo⇒ (isTightˢ'''≡isAntisymˢ isset _<_ <-asym) #-tight
+  ≤-antisym : [ isAntisymˢ _≤_ isset ]
+  ≤-antisym = pathTo⇒ (isTightˢ'''≡isAntisymˢ _<_ isset <-asym) #-tight
 
   -- ≤-antisym x y y≤x x≤y
     -- let ¬[x#y] : [ ¬ᵖ (x # y) ]

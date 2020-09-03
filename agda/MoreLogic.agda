@@ -60,6 +60,7 @@ module Definitions where
   -- proof sketch:
   --   `∃! A B = isContr (Σ A B) = Σ[ x ∈ Σ A B ] ∀(  y : Σ A B) → x ≡ y`
   --   `Σᵖ[]-syntax A B          ≈ Σ[ c ∈ Σ A B ] ∀(x y : Σ A B) → x ≡ y`
+  -- NOTE: we also have isProp→Iso in `Cubical.Foundations.Isomorphism`
 
   Σᵖ[]-syntax : ∀{ℓ'} → {A : hProp ℓ'} → ([ A ] → hProp ℓ) → hProp _
   Σᵖ[]-syntax {A = A} P = Σ [ A ] ([_] ∘ P) , isPropΣ (isProp[] A) (isProp[] ∘ P)
