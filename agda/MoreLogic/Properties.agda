@@ -45,6 +45,12 @@ open import MoreLogic.Definitions
  ⇒∶ (λ ¬↑P P → lower (¬↑P P))
  ⇐∶ (λ  ¬P P → lift  ( ¬P P))
 
+¬¬-introᵗ : (P : Type ℓ) → P → ¬ᵗ ¬ᵗ P
+¬¬-introᵗ _ p ¬p = ¬p p
+
+¬¬-elimᵗ : (P : Type ℓ) → ¬ᵗ ¬ᵗ ¬ᵗ P → ¬ᵗ P
+¬¬-elimᵗ _ ¬¬¬p p = ¬¬¬p (λ ¬p → ¬p p)
+
 ¬¬-intro : (P : hProp ℓ) → [ P ] → [ ¬ ¬ P ]
 ¬¬-intro _ p ¬p = ¬p p
 
@@ -85,7 +91,7 @@ weak-LEMᵗ _ ¬[p⊔¬p] = ¬[p⊔¬p] (inr (λ p → ¬[p⊔¬p] (inl p)))
 ⊤-elimᵖ : {P : hProp ℓ} → P ≡ ⊤↑ → [ P ]
 ⊤-elimᵖ {ℓ = ℓ} {P = P} p≡⊤ = (
   [ ⊤↑ {ℓ} ] ⇒⟨ transport ( λ i → [ p≡⊤ (~ i) ]) ⟩
-  [ P     ] ◼) (lift tt)
+  [ P      ] ◼) (lift tt)
 
 contraposition : (P : hProp ℓ) (Q : hProp ℓ') → [ P ⇒ Q ] → [ ¬ Q ⇒ ¬ P ]
 contraposition P Q f ¬q p = ⊥-elim (¬q (f p))
@@ -167,11 +173,8 @@ abstract deMorgan₁-back {ℓ = ℓ} P Q [¬p⊔¬q] (p , q) = ⊔-elim (¬ P) 
 ¬-⊓-distrib  : (P Q : hProp ℓ) → [ ¬ (P ⊓ Q) ] → [ (P ⇒ ¬ Q) ⊓ (Q ⇒ ¬ P) ]
 ¬-⊓-distrib P Q ¬p⊓q = (λ p q → ¬p⊓q (p , q)) , (λ q p → ¬p⊓q (p , q))
 
-implicationᵖ : (P Q : hProp ℓ) → [ ¬ (P ⊓ Q) ] → [ P ⇒ ¬ Q ]
-implicationᵖ {ℓ = ℓ} P Q ¬[p⊓q] p q = ⊥-elim (¬[p⊓q] (p , q))
-
-contrapositionᵖ : (P Q : hProp ℓ) → [ P ⇒ Q ] → [ ¬ Q ⇒ ¬ P ]
-abstract contrapositionᵖ P Q f ¬q p = ⊥-elim (¬q (f p))
+implication : (P Q : hProp ℓ) → [ ¬ (P ⊓ Q) ] → [ P ⇒ ¬ Q ]
+implication {ℓ = ℓ} P Q ¬[p⊓q] p q = ⊥-elim (¬[p⊓q] (p , q))
 
 -- Q and P are disjoint if P ⇒ ¬ Q or equivalently Q ⇒ ¬ P
 

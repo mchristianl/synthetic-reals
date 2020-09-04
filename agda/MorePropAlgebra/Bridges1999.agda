@@ -42,7 +42,7 @@ module MorePropAlgebra.Bridges1999 where
 --       the idea here is to make as many assumptions to fields as possible even though some assumptions can be derived from each other
 --       such deriving happens at the "call site" where these definitions should be inlined
 --       also this way we get fixity
-record BridgesAssumptions {ℓ ℓ'} : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
+record BooijResultsForBridges {ℓ ℓ'} : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
   field
     Carrier   : Type ℓ
     0f        : Carrier
@@ -58,6 +58,7 @@ record BridgesAssumptions {ℓ ℓ'} : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
     <-trans   : [ isTrans    _<_ ]
     <-cotrans : [ isCotrans  _<_ ]
     is-set    : isSet Carrier
+    +-creates-< : [ ∀[ x ] ∀[ y ] ∀[ z ] x < y ⇔ x + z < y + z ] -- item-4
 
   _-_ : Carrier → Carrier → Carrier
   a - b = a + (- b)
@@ -94,8 +95,8 @@ record BridgesAssumptions {ℓ ℓ'} : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
   -- infixl 4 _≥_
   -- infixl 4 _>_
 
-module Results {ℓ ℓ'} (assumptions : BridgesAssumptions {ℓ} {ℓ'}) where
-  open BridgesAssumptions assumptions -- atlernative to module telescope
+module BridgesResultsFromBooij {ℓ ℓ'} (assumptions : BooijResultsForBridges {ℓ} {ℓ'}) where
+  open BooijResultsForBridges assumptions -- atlernative to module telescope
 
   -- NOTE: we are proving Bridges' properties with Booij's definition of _≤_
   --         which is some form of cheating
@@ -125,6 +126,9 @@ module Results {ℓ ℓ'} (assumptions : BridgesAssumptions {ℓ} {ℓ'}) where
   --
   -- infixr -4 [!]_
 
+  -- NOTE: Brigdes writes `x ≠ y`  where we write   `x # y`
+  --                and `¬(x = y)` where we write `¬(x ≡ y)`
+
   -- Heyting field axioms
   R1-1 = ∀[ x ] ∀[ y ]              [ is-set ]            x + y ≡ˢ y + x
   R1-2 = ∀[ x ] ∀[ y ] ∀[ z ]       [ is-set ]      (x + y) + z ≡ˢ x + (y + z)
@@ -138,9 +142,9 @@ module Results {ℓ ℓ'} (assumptions : BridgesAssumptions {ℓ} {ℓ'}) where
 
   -- _<_ axioms
   R2-1 = ∀[ x ] ∀[ y ]                                  ¬((x < y) ⊓ (y < x))
-  R2-2 = ∀[ x ] ∀[ y ]   ( y < x)            ⇒ (∀[ z ]    (z < x) ⊔ (y < z))
+  R2-2 = ∀[ x ] ∀[ y ]   ( x < y)            ⇒ (∀[ z ]    (z < y) ⊔ (x < z))
   R2-3 = ∀[ x ] ∀[ y ]  ¬( x # y)            ⇒ [ is-set ]       x ≡ˢ y
-  R2-4 = ∀[ x ] ∀[ y ]   ( y < x)            ⇒ (∀[ z ]    (y + z) < (x + z))
+  R2-4 = ∀[ x ] ∀[ y ]   ( x < y)            ⇒ (∀[ z ]    (x + z) < (y + z))
   R2-5 = ∀[ x ] ∀[ y ]   (0f < x) ⇒ (0f < y) ⇒                 0f < x · y
 
   -- derivable properties
@@ -167,6 +171,10 @@ module Results {ℓ ℓ'} (assumptions : BridgesAssumptions {ℓ} {ℓ'}) where
   R3-21 = ∀[ x ]               (   0f < x · x)            ⇒                   x # 0f
   R3-22 = ∀[ x ]               (   0f < x    )            ⇒ Σᵖ[ p ∶ x # 0f ] (0f ≤ (x ⁻¹) {{p}})
 
+
+  r1-4 : [ R1-4 ]
+  r1-4 x = {!   !}
+
   -- R3-23 `∀ m m' n n' → 0 < n → 0 < n' → (m / n > m' / n') ⇔ (m · n' > m' · n)`
   -- R3-24 `∀(n ∈ ℕ⁺) → (n ⁻¹ > 0)`
   -- R3-25 `x > 0 → y ≥ 0 → ∃[ n ∈ ℤ ] n · x > y`
@@ -191,6 +199,18 @@ module Results {ℓ ℓ'} (assumptions : BridgesAssumptions {ℓ} {ℓ'}) where
   -- Either x < z or y < x. The latter is ruled out by 4.
   r3-5 x y z x≤y y<z = ⊔-elim (y < x) (x < z) (λ _ → x < z) (λ y<x → ⊥-elim (x≤y y<x)) (λ x<z → x<z) (<-cotrans y z y<z x)
 
+  ≤''⇒≤ : ∀ x y → [ x ≤'' y ] → [ x ≤ y ]
+  ≤''⇒≤ x y x≤''y y<x = <-irrefl x (x≤''y x y<x)
+
+  ≤⇒≤'' : ∀ x y → [ x ≤ y ] → [ x ≤'' y ]
+  ≤⇒≤'' x y x≤y ε y<ε = r3-5 x y ε x≤y y<ε
+
+  ≤-⇔-≤'' : ∀ x y → [ (x ≤ y) ⇔ (x ≤'' y) ]
+  ≤-⇔-≤'' x y = (≤⇒≤'' x y) , (≤''⇒≤ x y)
+
+  ≤-≡-≤'' : ∀ x y → (Liftᵖ {ℓ'} {ℓ} (x ≤ y)) ≡ (x ≤'' y)
+  ≤-≡-≤'' x y = ⇔toPath ((≤⇒≤'' x y) ∘ (unliftᵖ (x ≤ y))) ((liftᵖ (x ≤ y)) ∘ (≤''⇒≤ x y))
+
   r3-6 : [ R3-6 ]
   r3-6 x y z x<y y≤z = ⊔-elim (x < z) (z < y) (λ _ → x < z) (λ x<z → x<z) (λ z<y → ⊥-elim (y≤z z<y)) (<-cotrans _ _ x<y z)
 
@@ -200,35 +220,30 @@ module Results {ℓ ℓ'} (assumptions : BridgesAssumptions {ℓ} {ℓ'}) where
 
   r3-12 : [ R3-12 ]
   fst (r3-12 x 0≤x) x≡0 y 0<y  = transport (λ i → [ x≡0 (~ i) < y ]) 0<y
+  -- suppose that x < ε for all ε > 0. If x > 0, then x < x, a contradiction; so 0 ≥ x. Thus x ≥ 0 and 0 ≥ x, and therefore x = 0.
+  -- this is just antisymmetry for different ≤s : ∀ x y → [ x ≤ y ] → [ y ≤'' x ] → x ≡ y
   snd (r3-12 x 0≤x) [∀ε>0∶x<ε] = let x≤0 : [ x ≤ 0f ]
                                      x≤0 0<x = <-irrefl x ([∀ε>0∶x<ε] x 0<x)
                                  in ≤-antisym x 0f x≤0 0≤x
 
-  -- suppose that x < ε for all ε > 0. If x > 0, then x < x, a contradiction; so 0 ≥ x. Thus x ≥ 0 and 0 ≥ x, and therefore x = 0.
-  bridges-R3-12 : ∀ x → [ 0f ≤ x ] → (∀ ε → [ 0f < ε ] → [ x < ε ]) → x ≡ 0f
-  bridges-R3-12 x 0≤x [∀ε>0∶x<ε] =
-    let x≤0 : [ x ≤ 0f ]
-        x≤0 0<x = <-irrefl x ([∀ε>0∶x<ε] x 0<x)
-    in ≤-antisym x 0f x≤0 0≤x
+  r3-14 : [ R3-14 ]
+  -- -x = 0 + (-x) < x + (-x) = 0
+  r3-14 x = (
+    [ 0f < x ]                 ⇒⟨ fst $ +-creates-< 0f x (- x) ⟩
+    [ 0f + (- x) < x + (- x) ] ⇒⟨ {! subst  !} ⟩
+    [ 0f + (- x) < 0f ] ⇒⟨ {! subst  !} ⟩
+    [  - x < 0f ] ◼)
 
-  ≤''⇒≤ : ∀ x y → [ x ≤'' y ] → [ x ≤ y ]
-  ≤''⇒≤ x y x≤''y y<x = <-irrefl x (x≤''y x y<x)
+  r3-15 : [ R3-15 ]
+  -- since -z > 0 we have
+  -- -xz = x(-z) > y(-z) = -yz
+  -- so -xz + yz + xz > -yz + yz + xz
+  r3-15 x y z x<y z<0 = {!   !}
 
-  ≤⇒≤'' : ∀ x y → [ x ≤ y ] → [ x ≤'' y ]
-  ≤⇒≤'' x y x≤y ε y<ε = r3-5 x y ε x≤y y<ε
+  r3-16 : [ R3-16 ]
+  r3-16 x (inl x<0) = {!   !}
+  r3-16 x (inr 0<x) = {!   !}
 
-  -- NOTE: it seems that `_⇔_` might be the "preferred" / "most performant" / "least cluttered" way to "store" a path when hProps are available
-  ≤-⇔-≤'' : ∀ x y → [ (x ≤ y) ⇔ (x ≤'' y) ]
-  ≤-⇔-≤'' x y = (≤⇒≤'' x y) , (≤''⇒≤ x y)
-
-  ≤-≡-≤'' : ∀ x y → (Liftᵖ {ℓ'} {ℓ} (x ≤ y)) ≡ (x ≤'' y)
-  ≤-≡-≤'' x y = ⇔toPath
-              ((≤⇒≤'' x y) ∘ (unliftᵖ (x ≤ y))) -- (λ{ (lift p) → ≤⇒≤'' x y p})
-              ((liftᵖ (x ≤ y)) ∘ (≤''⇒≤ x y))
-
-  -- ≤+preserves-<⇒≡ ... this is just antisymmetry for different ≤s : ∀ x y → [ x ≤ y ] → [ y ≤'' x ] → x ≡ y
-  bridges-R3-12' : ∀ x y → [ x ≤ y ] → (∀ ε → [ x < ε ] → [ y < ε ]) → x ≡ y
-  bridges-R3-12' x y x≤y [∀x<ε→y<ε] =
-    let y≤x : [ y ≤ x ]
-        y≤x x<y = <-irrefl y ([∀x<ε→y<ε] y x<y)
-    in ≤-antisym x y x≤y y≤x
+  r3-18 : [ R3-18 ]
+  -- suppose x² < 0. Then ¬(x ≠ 0) by 16; so x = 0 and therefore x² = 0, a contradiction. Hence ¬(x² < 0) and therefore x² ≥ 0.
+  r3-18 x x²<0 = {!   !}

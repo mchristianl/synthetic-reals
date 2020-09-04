@@ -96,6 +96,12 @@ record CompletePartiallyOrderedFieldWithSqrt {ℓ ℓ' : Level} : Type (ℓ-suc 
   ≤-antisym : [ isAntisymˢ _≤_ is-set ]
   ≤-antisym = fst (isTightˢ'''⇔isAntisymˢ _<_ is-set <-asym) #-tight
 
+  -- NOTE: we have `R3-8 = ∀[ x ] ∀[ y ] (¬(x ≤ y) ⇔ ¬ ¬(y < x))`
+  --       so I guess that we do not have `dne-over-< : ¬ ¬(y < x) ⇔ (y < x)`
+  --       and that would be my plan to prove `≤-cotrans` with `<-asym`
+  -- ≤-cotrans : [ isCotrans  _≤_ ]
+  -- ≤-cotrans x y x≤y z = [ (x ≤ z) ⊔ (z ≤ y) ] ∋  {! (≤-antisym x y x≤y)  !}
+
   abs : Carrier → Carrier
   abs x = max x (- x)
 
@@ -160,7 +166,7 @@ record CompletePartiallyOrderedFieldWithSqrt {ℓ ℓ' : Level} : Type (ℓ-suc 
 
 open import MorePropAlgebra.Bridges1999
 
-mkBridges : ∀{ℓ ℓ'} → CompletePartiallyOrderedFieldWithSqrt {ℓ} {ℓ'} → BridgesAssumptions  {ℓ} {ℓ'}
+mkBridges : ∀{ℓ ℓ'} → CompletePartiallyOrderedFieldWithSqrt {ℓ} {ℓ'} → BooijResults {ℓ} {ℓ'}
 mkBridges CPOFS = record { CompletePartiallyOrderedFieldWithSqrt CPOFS }
 
 

@@ -60,6 +60,15 @@ infix 1 ≡ˢ-syntax
 
 {-# DISPLAY ≡ˢ-syntax a b = a ≡ b #-}
 
+{-# DISPLAY ∀[]-syntax {A = A} P = P #-}
+
+∀ᵖ[∶]-syntax : ∀{ℓ ℓ'} {A : hProp ℓ'} → ([ A ] → hProp ℓ) → hProp _
+∀ᵖ[∶]-syntax {A = A} P = (∀ x → [ P x ]) , isPropΠ (isProp[] ∘ P)
+
+syntax ∀ᵖ[∶]-syntax {A = A} (λ a → P) = ∀ᵖ[ a ∶ A ] P
+
+{-# DISPLAY ∀ᵖ[∶]-syntax {A = A} P = P #-}
+
 -- for a function, to be an hProp, it suffices that the result is an hProp
 -- so in principle we might inject any non-hProps as arguments with `_ᵗ⇒_`
 _ᵗ⇒_ : ∀{ℓ ℓ'} (A : Type ℓ) → (B : hProp ℓ') → hProp _

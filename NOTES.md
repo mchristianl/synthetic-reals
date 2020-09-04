@@ -368,6 +368,12 @@ Properties.agda    (90×)
     - `Associative = [ associative ]` for the underlying type
     - `is-assoc : [ associative ]` for an instance (because this should not conflict with `sym` for pathes)
     - `+-assoc : [ associative ]` when multiple instances need to be distinguished
+    - `f-preserves-P : P x → P (f x)`
+    - `f-reflects-P : P (f x) → P x`
+    - `f-creates-P : P x ↔ P (f x)` (as suggested on the #agda freenode channel _"In category theory, a similar property of functors is called 'creates'. Like 'f creates Ps'. the idea of 'creates' is that you have a structure on A, and it completely determines the analogous structure in B via f"_)
+      - is this related to the nomer "extensional" as in "+ is <-extensional" ? (because the one single `+-<-extensional` property generates "all" properties that relate `_+_` and `_<_`)
+    - `over`, e.g. `dne-over-≡ : ∀[ x ] ∀[ y ] ¬ ¬ (x ≡ₚ y) ⇔ (x ≡ₚ y)` because in `¬ ¬ (x ≡ₚ y)`, when its syntax tree is drawn with the root node `¬_` on top, then it is "over" `_≡ₚ_` which is below
+    - `under`, the other way around (is this useful?)
 
 .
 
@@ -2314,6 +2320,53 @@ tmp6 x≤0 = {!!}
 ```
 
 ## convenient Goal/Have resolution
+
+when a clause is "evaluated" / "unfolded", then the imports from its context will be used at the "call-site"
+
+e.g.
+
+```agda
+NumberKindInterpretation : (x : NumberKind) → Type (NumberKindLevel x)
+NumberKindInterpretation isNat     = ℕ*.ℕ
+NumberKindInterpretation isInt     = ℤ*.ℤ
+NumberKindInterpretation isRat     = ℚ*.ℚ
+NumberKindInterpretation isReal    = ℝ*.ℝ
+NumberKindInterpretation isComplex = ℂ*.ℂ
+```
+
+will result in displaying `ℕ*.ℕ` even when `ℕ*` is opened at the call-site and `ℕ` would be directly available.
+
+This can be adjusted with opening the module `ℕ*` in the pattern
+
+```
+NumberKindInterpretation : (x : NumberKind) → Type (NumberKindLevel x)
+NumberKindInterpretation isNat     = let open ℕ* in ℕ
+NumberKindInterpretation isInt     = let open ℤ* in ℤ
+NumberKindInterpretation isRat     = let open ℚ* in ℚ
+NumberKindInterpretation isReal    = let open ℝ* in ℝ
+NumberKindInterpretation isComplex = let open ℂ* in ℂ
+```
+
+This is also the reason, why `x - y` or `x + (- y)` will show up: it will be the way that is used in the "evaluated" / "unfolded" clause.
+Which is quite the only thing it can do:
+
+- although `_-_` is defined in terms of `-_`, it will not be unfolded (until forced with C-u C-u C-,)
+- and `-_` will not consume the `_+_` to produce a `_-_` unless we set this up with a `DISPLAY` pragma.
+
+There might be some other magic that forces `[_]` to display everytime when dealing with hprops.
+Well ... when thinking about that, it might just be that `[ ∀[ x ] x ≤ x ] y` reduces to `[ y ≤ y ]` "because" that is how `∀[_]` is implemented:
+
+```agda
+∀[]-syntax {A = A} P = (∀ x → [ P x ]) , isPropΠ (isProp[] ∘ P)
+```
+
+So no "magic" is involved. It's just that `[_]` occurs at many places being the reason that it shows up again, even after applying `y`:
+
+```
+  [ ∀[ x ]   x ≤ x ]  y
+⊢  (∀  x → [ x ≤ x ]) y
+⊢          [ y ≤ y ]
+```
 
 ### result
 

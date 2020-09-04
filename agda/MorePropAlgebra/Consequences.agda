@@ -185,6 +185,7 @@ module _ {ℓ : Level} {A : Type ℓ} (R : hPropRel A A ℓ)
       γ .Iso.leftInv  g       = isProp[] (¬ (a #  b)) _ g
 
     [¬ᵗ#]⇔[≡ˢ]⇒dne-over-≡ˢ [¬ᵗ#]⇔[≡ˢ] a b = snd ( -- this first proof works better with `_≡⟨_⟩_`
+      -- ( ¬ ¬ ([ is-set ]     a ≡ˢ b)) ⇔⟨ (map-× (subst (λ p → fst p → snd p) (cong₂ _,_ {! ¬¬-introᵗ (a ≡ b)  !} {!   !})) {!   !} $ swap $ [¬ᵗ#]⇔[≡ˢ] a b) ⟩
       ( ¬ ¬ ([ is-set ]     a ≡ˢ b)) ⇔⟨ (map-× (λ z z₁ z₂ → z₂ (λ z₃ → z₁ (λ z₄ → z z₄ z₃))) (λ z z₁ z₂ → z₂ (z (λ z₃ → z₁ (λ z₄ → z₄ z₃)))) $ swap $ [¬ᵗ#]⇔[≡ˢ] a b) ⟩
       ( ¬              ¬ ¬ (a #  b)) ⇔⟨ ¬¬-involutive (a # b) ⟩
       ( ¬                  (a #  b)) ⇔⟨ [¬ᵗ#]⇔[≡ˢ] a b ⟩
