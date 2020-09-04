@@ -7,10 +7,20 @@ open import Agda.Primitive renaming (_⊔_ to ℓ-max; lsuc to ℓ-suc; lzero to
 open import Cubical.Foundations.Everything renaming (_⁻¹ to _⁻¹ᵖ; assoc to ∙-assoc)
 open import Cubical.Relation.Nullary.Base renaming (¬_ to ¬ᵗ_)-- ¬ᵗ_
 open import Cubical.Data.Sum.Base renaming (_⊎_ to infixr 4 _⊎_)
-open import Cubical.Foundations.Logic renaming (inl to inlᵖ; inr to inrᵖ)
+open import Cubical.Foundations.Logic renaming
+  ( inl to inlᵖ
+  ; inr to inrᵖ
+  ; _⇒_ to infixr 0 _⇒_                  -- shifting by -6
+  ; _⇔_ to infixr -2 _⇔_                 --
+  ; ∃[]-syntax to infix  -4 ∃[]-syntax   --
+  ; ∃[∶]-syntax to infix  -4 ∃[∶]-syntax --
+  ; ∀[∶]-syntax to infix  -4 ∀[∶]-syntax --
+  ; ∀[]-syntax to infix  -4 ∀[]-syntax   --
+  )
+
 
 import MoreLogic
-open import MoreLogic.Definitions
+open import MoreLogic.Definitions renaming (_ᵗ⇒_ to infixr 0 _ᵗ⇒_)
 
 -- hProps of relations
 module _ {ℓ ℓ' : Level} {A : Type ℓ} (R : hPropRel A A ℓ') where

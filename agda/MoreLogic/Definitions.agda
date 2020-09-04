@@ -55,6 +55,9 @@ syntax ⊎ᵖ-syntax P Q {P⇒¬Q} = [ P⇒¬Q ] P ⊎ᵖ Q
 
 syntax ≡ˢ-syntax a b {isset} = [ isset ] a ≡ˢ b
 
+infix 1 ⊎ᵖ-syntax
+infix 1 ≡ˢ-syntax
+
 {-# DISPLAY ≡ˢ-syntax a b = a ≡ b #-}
 
 -- for a function, to be an hProp, it suffices that the result is an hProp

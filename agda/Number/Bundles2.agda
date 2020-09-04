@@ -42,7 +42,6 @@ open import Number.Structures2
 | K    | Field               |   ✓   |  ✓  |       |   ✓    |         |  ?  | CompleteApartnessFieldWithAbsIntoCompletePartiallyOrderedFieldWithSqrt |
 -}
 
-
 -- NOTE: this smells like "CPO" https://en.wikipedia.org/wiki/Complete_partial_order
 record CompletePartiallyOrderedFieldWithSqrt {ℓ ℓ' : Level} : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
   field
@@ -55,8 +54,8 @@ record CompletePartiallyOrderedFieldWithSqrt {ℓ ℓ' : Level} : Type (ℓ-suc 
     _+_     : Carrier → Carrier → Carrier
     _·_     : Carrier → Carrier → Carrier
     -_      : Carrier → Carrier
-    <-irrefl  : [ isIrrefl  _<_ ]
-    <-trans   : [ isTrans  _<_ ]
+    <-irrefl  : [ isIrrefl   _<_ ]
+    <-trans   : [ isTrans    _<_ ]
     <-cotrans : [ isCotrans  _<_ ]
     is-set   : isSet Carrier
 
@@ -77,6 +76,9 @@ record CompletePartiallyOrderedFieldWithSqrt {ℓ ℓ' : Level} : Type (ℓ-suc 
 
   _≤_ : hPropRel Carrier Carrier ℓ'
   x ≤ y = ¬ᵖ(y < x)
+
+  _>_ = flip _<_
+  _≥_ = flip _≤_
 
   ≤-refl : [ isRefl _≤_ ]
   ≤-refl = <-irrefl
@@ -126,8 +128,8 @@ record CompletePartiallyOrderedFieldWithSqrt {ℓ ℓ' : Level} : Type (ℓ-suc 
   --   sqrt (y · y) · sqrt (y · y) ≡ y · sqrt (y · y) ≡⟨ {!   !} ⟩
   --   sqrt (y · y) · sqrt (y · y) ≡ y · y ≡⟨ {! λ x → x  !} ⟩
   --   sqrt x · sqrt x ≡ x ∎) (sqrt-of-² y)
---    {!   !} ⇒⟨ {!   !} ⟩
---    {!   !} ◼) {! (sqrt-of-² y ) !}
+  --    {!   !} ⇒⟨ {!   !} ⟩
+  --    {!   !} ◼) {! (sqrt-of-² y ) !}
   -- sqrt (x · x) ≡ x
   -- sqrt (x · x) · sqrt (x · x) ≡ x · sqrt (x · x)
   -- sqrt (x · x) · sqrt (x · x) ≡ x · x
@@ -142,14 +144,25 @@ record CompletePartiallyOrderedFieldWithSqrt {ℓ ℓ' : Level} : Type (ℓ-suc 
   field
     _⁻¹ : (x : Carrier) → {{p : [ x # 0f ]}} → Carrier
 
+  _/_ : (x y : Carrier) → {{p : [ y # 0f ]}} → Carrier
+  (x / y) {{p}} = x · (y ⁻¹) {{p}}
+
   infix  9 _⁻¹
   infixl 7 _·_
+  infixl 7 _/_
   infix  6 -_
   infix  5 _-_
   infixl 5 _+_
   infixl 4 _#_
   infixl 4 _≤_
   infixl 4 _<_
+
+
+open import MorePropAlgebra.Bridges1999
+
+mkBridges : ∀{ℓ ℓ'} → CompletePartiallyOrderedFieldWithSqrt {ℓ} {ℓ'} → BridgesAssumptions  {ℓ} {ℓ'}
+mkBridges CPOFS = record { CompletePartiallyOrderedFieldWithSqrt CPOFS }
+
 
 -----------8<--------------------------------------------8<------------------------------------------8<------------------
 

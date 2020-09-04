@@ -14,9 +14,17 @@ open import Cubical.Relation.Binary.Base
 open import Cubical.Data.Sum.Base renaming (_⊎_ to infixr 4 _⊎_)
 open import Cubical.Data.Sigma renaming (_×_ to infixr 4 _×_)
 open import Cubical.Data.Empty renaming (elim to ⊥-elim; ⊥ to ⊥⊥) -- `⊥` and `elim`
-open import Cubical.Foundations.Logic renaming (inl to inlᵖ; inr to inrᵖ)
 open import Function.Base using (_∋_; _$_)
-
+open import Cubical.Foundations.Logic renaming
+  ( inl to inlᵖ
+  ; inr to inrᵖ
+  ; _⇒_ to infixr 0 _⇒_                  -- shifting by -6
+  ; _⇔_ to infixr -2 _⇔_                 --
+  ; ∃[]-syntax to infix  -4 ∃[]-syntax   --
+  ; ∃[∶]-syntax to infix  -4 ∃[∶]-syntax --
+  ; ∀[∶]-syntax to infix  -4 ∀[∶]-syntax --
+  ; ∀[]-syntax to infix  -4 ∀[]-syntax   --
+  )
 
 import Data.Sum
 import Cubical.Data.Sigma
@@ -28,7 +36,7 @@ import Agda.Builtin.Cubical.Glue
 import Cubical.Foundations.Id
 
 open import MoreLogic.Reasoning
-open import MoreLogic.Definitions
+open import MoreLogic.Definitions renaming (_ᵗ⇒_ to infixr 0 _ᵗ⇒_)
 open import MoreLogic.Properties
 
 open import Utils -- deMorgan₂'
@@ -158,7 +166,7 @@ module _ {ℓ : Level} {A : Type ℓ} (R : hPropRel A A ℓ)
     [¬ᵗ#]⇔[≡ˢ] = ∀[ a ] ∀[ b ]             ¬ (a # b) ⇔ [ is-set ] a ≡ˢ b
 
     -- double negation elimination over _≡_ on sets
-    dne-over-≡ˢ  = ∀[ a ] ∀[ b ] ¬ ¬ [ is-set ] a ≡ˢ b ⇔ [ is-set ] a ≡ˢ b
+    dne-over-≡ˢ  = ∀[ a ] ∀[ b ] ¬ ¬ ([ is-set ] a ≡ˢ b) ⇔ [ is-set ] a ≡ˢ b
 
     irrefl+tight⇒[¬ᵗ#]⇔[≡ˢ]   : [ isIrrefl  _#_ ] → [ isTightˢ''' _#_ is-set ] → [ [¬ᵗ#]⇔[≡ˢ] ]
     [¬ᵗ#]⇔[≡ˢ]⇒dne-over-≡ˢ    : [ [¬ᵗ#]⇔[≡ˢ] ]                                 → [ dne-over-≡ˢ ]
@@ -177,10 +185,10 @@ module _ {ℓ : Level} {A : Type ℓ} (R : hPropRel A A ℓ)
       γ .Iso.leftInv  g       = isProp[] (¬ (a #  b)) _ g
 
     [¬ᵗ#]⇔[≡ˢ]⇒dne-over-≡ˢ [¬ᵗ#]⇔[≡ˢ] a b = snd ( -- this first proof works better with `_≡⟨_⟩_`
-       ¬ ¬ [ is-set ]      a ≡ˢ b  ⇔⟨ (map-× (λ z z₁ z₂ → z₂ (λ z₃ → z₁ (λ z₄ → z z₄ z₃))) (λ z z₁ z₂ → z₂ (z (λ z₃ → z₁ (λ z₄ → z₄ z₃)))) $ swap $ [¬ᵗ#]⇔[≡ˢ] a b) ⟩
-       ¬              ¬ ¬ (a #  b) ⇔⟨ ¬¬-involutive (a # b) ⟩
-       ¬                  (a #  b) ⇔⟨ [¬ᵗ#]⇔[≡ˢ] a b ⟩
-           [ is-set ]      a ≡ˢ b  ∎ᵖ)
+      ( ¬ ¬ ([ is-set ]     a ≡ˢ b)) ⇔⟨ (map-× (λ z z₁ z₂ → z₂ (λ z₃ → z₁ (λ z₄ → z z₄ z₃))) (λ z z₁ z₂ → z₂ (z (λ z₃ → z₁ (λ z₄ → z₄ z₃)))) $ swap $ [¬ᵗ#]⇔[≡ˢ] a b) ⟩
+      ( ¬              ¬ ¬ (a #  b)) ⇔⟨ ¬¬-involutive (a # b) ⟩
+      ( ¬                  (a #  b)) ⇔⟨ [¬ᵗ#]⇔[≡ˢ] a b ⟩
+      (      [ is-set ]     a ≡ˢ b ) ∎ᵖ)
 
     irrefl+tight⇒dne-over-≡ˢ  #-irrefl #-tight = [¬ᵗ#]⇔[≡ˢ]⇒dne-over-≡ˢ (irrefl+tight⇒[¬ᵗ#]⇔[≡ˢ] #-irrefl #-tight)
 
