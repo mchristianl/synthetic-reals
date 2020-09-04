@@ -256,6 +256,198 @@ record isEquiv {ℓ ℓ'} {A : Set ℓ} {B : Set ℓ'} (f : A → B) : Set (ℓ 
     equiv-proof : (y : B) → isContr (fiber f y)
 ```
 
+in `Algebra.Consequences.Propositional` shows how type of module parameters can be deduced by its corresponding definitions
+
+```agda
+module _ {_•_ _⁻¹ ε} where
+
+  assoc+id+invʳ⇒invˡ-unique : Associative _•_ → Identity ε _•_ →
+                              RightInverse ε _⁻¹ _•_ →
+                              ∀ x y → (x • y) ≡ ε → x ≡ (y ⁻¹)
+  assoc+id+invʳ⇒invˡ-unique = Base.assoc+id+invʳ⇒invˡ-unique (cong₂ _)
+```
+
+in `Relation.Binary.PropositionalEquality.Properties` we have some "default instances"
+
+```agda
+isEquivalence        :                         IsEquivalence    {A = A} _≡_
+isDecEquivalence     : Decidable _≡_         → IsDecEquivalence {A = A} _≡_
+isPreorder           :                         IsPreorder       {A = A} _≡_ _≡_
+setoid               : Set a                 → Setoid _ _
+decSetoid            : Decidable {A = A} _≡_ → DecSetoid _ _
+preorder             : Set a                 → Preorder _ _ _
+
+isEquivalence        = record { refl = refl ; sym = sym ; trans = trans }
+isDecEquivalence _≟_ = record { isEquivalence = isEquivalence ; _≟_ = _≟_ }
+isPreorder           = record { isEquivalence = isEquivalence ; reflexive = id ; trans = trans }
+setoid A             = record { Carrier = A ; _≈_ = _≡_ ; isEquivalence = isEquivalence }
+decSetoid _≟_        = record { _≈_ = _≡_ ; isDecEquivalence = isDecEquivalence _≟_ }
+preorder A           = record { Carrier = A; _≈_ = _≡_; _∼_ = _≡_; isPreorder = isPreorder}
+```
+
+[in the manual](https://agda.readthedocs.io/en/v2.6.1/language/record-types.html#) it is written:
+
+- _"if x is an implicit or instance field, then it is omitted from new-fields."_
+
+_"The reason for treating implicit and instance fields specially is to allow code like the following:"_
+
+```agda
+data Vec (A : Set) : Nat → Set where
+[] : Vec A zero
+_∷_ : ∀{n} → A → Vec A n → Vec A (suc n)
+
+record R : Set where
+field
+{length} : Nat
+vec      : Vec Nat length
+-- More fields ...
+
+xs : R
+xs = record { vec = 0 ∷ 1 ∷ 2 ∷ [] }
+
+ys = record xs { vec = 0 ∷ [] }
+```
+
+_"Without the special treatment the last expression would need to include a new binding for length (for instance length = _)"_.
+
+Irrelevant record fields are [prefixed with a dot](https://agda.readthedocs.io/en/v2.6.1/language/irrelevance.html#irrelevant-record-fields):
+
+```agda
+record InterestingNumbers : Set where
+  field
+    n      : Nat
+    m      : Nat
+    .prop1 : n + m ≡ n * m + 2
+    .prop2 : suc m ≤ n
+```
+
+these are called ["irrelevancy annotations"](https://agda.readthedocs.io/en/v2.6.1/language/irrelevance.html#irrelevant-record-fields)
+
+## naming scheme
+
+- my personal (LEGACY) approach was:
+  - there is `Properties` and `Consequences`
+    - the difference somehow is, that we do want to open `Consequences` directly
+    - but we do not want to open `Properties` directly, because it might have a name clash
+    - e.g. there is `Properties.Group` which clashes with `Cubical.Structures.Group.Group` when opening `Properties`
+    - but it is totally fine to open `Properties.Group` directly because it does not export a `Group`
+  - this does also not help much, since we would need a single `Properties` module anyways
+  - having a sub-folder `Group.Properties` would help
+
+### how the non-cubical Agda standard library does it:
+
+common file names are `find . -iname "*.agda" | awk 'sub( /.\/.*\//,"",$0 )' | sort | uniq -c | sort -h`
+
+```
+Instances.agda     ( 9×)
+Literals.agda      ( 9×)
+Indexed.agda       (10×)
+All.agda           (12×)
+Categorical.agda   (12×)
+WithK.agda         (18×)
+Core.agda          (21×)
+Setoid.agda        (22×)
+Propositional.agda (23×)
+Base.agda          (31×)
+Properties.agda    (90×)
+```
+
+- there are some deprecation warnings that "document" the design decisions
+  - "Algebra.FunctionProperties.Consequences.Propositional was deprecated in v1.3. Use Algebra.Consequences.Propositional instead."
+  - "Algebra.FunctionProperties.Consequences was deprecated in v1.3. Use Algebra.Consequences.Setoid instead."
+- the non-cubical standard library has two folders in `Algebra`: `Consequences` and `Properties` to collect them for each sub-structure
+  - e.g. `Consequences` contains `Propositional` and `Setoid`
+  - and `Properties` contains `Group`, `Lattice`, `Ring`, ...
+- there can be both: a `Properties` module and a `Properties` folder which provide what we need
+- we have that "Properties" are parametrized modules by their corresponding algebraic structure, e.g. `module Algebra.Properties.AbelianGroup {a ℓ} (G : AbelianGroup a ℓ) where`
+- and "Consequences" makes use of "raw" Definitions, e.g. `Associative`, `Identity`, ...
+- where I do annotate hProps with `ᵖ`, in the cubical standard library they are just lowercased
+  - my reason is to have the unannotated version as a record field of some combined property
+  - but maybe we just use a "short name" for this purpose, e.g.
+    - `associative` for the hProp
+    - `Associative = [ associative ]` for the underlying type
+    - `assoc : [ associative ]` for an instance
+    - `+-assoc : [ associative ]` when multiple instances need to be distinguished
+
+.
+
+In the 1.4-rc1 changelog we see that the wording NonZero, Positive, Negative, NonPositive and NonNegative already corresponds to our wording (TODO: adjust the case).
+But they seem to suffix a number with `ℤ` where we use `ᶻ`, e.g. `0ℤ` instead of `0ᶻ`.
+I found that superscript letters carry a little less weight and make formulas more readable when they make heavy use of different number types and I use the "fat" `ℤ` prefix for properties or functions that carry a "written out" name.
+
+> * Added new types and constructors to `Data.Integer.Base`
+>
+> ```agda
+> NonZero     : Pred ℤ 0ℓ
+> Positive    : Pred ℤ 0ℓ
+> Negative    : Pred ℤ 0ℓ
+> NonPositive : Pred ℤ 0ℓ
+> NonNegative : Pred ℤ 0ℓ
+>
+> ≢-nonZero   : p ≢ 0ℤ → NonZero p
+> >-nonZero   : p > 0ℤ → NonZero p
+> <-nonZero   : p < 0ℤ → NonZero p
+> positive    : p > 0ℤ → Positive p
+> negative    : p < 0ℤ → Negative p
+> nonPositive : p ≤ 0ℤ → NonPositive p
+> nonNegative : p ≥ 0ℤ → NonNegative p
+> ```
+
+They write _"See `Data.Nat.Base` for a discussion on the design of these"_.
+
+> Simple predicates
+>
+> Defining `NonZero` in terms of `⊤` and `⊥` allows Agda to
+> automatically infer nonZero-ness for any natural of the form
+> `suc n`. Consequently in many circumstances this eliminates the need
+> to explicitly pass a proof when the NonZero argument is either an
+> implicit or an instance argument.
+>
+> It could alternatively be defined using a datatype with an instance
+> constructor but then it would not be inferrable when passed as an
+> implicit argument.
+>
+> See `Data.Nat.DivMod` for an example.
+
+### naming of lemmas
+
+in `Algebra.Consequences.Setoid {a ℓ} (S : Setoid a ℓ)` we have
+
+```agda
+comm+cancelˡ⇒cancelʳ        : LeftCancellative _•_   → RightCancellative _•_
+comm+cancelʳ⇒cancelˡ        : RightCancellative _•_  → LeftCancellative _•_
+comm+idˡ⇒idʳ                : LeftIdentity e _•_     → RightIdentity e _•_
+comm+idʳ⇒idˡ                : RightIdentity e _•_    → LeftIdentity e _•_
+comm+zeˡ⇒zeʳ                : LeftZero e _•_         → RightZero e _•_
+comm+zeʳ⇒zeˡ                : RightZero e _•_        → LeftZero e _•_
+comm+invˡ⇒invʳ              : LeftInverse e _⁻¹ _•_  → RightInverse e _⁻¹ _•_
+comm+invʳ⇒invˡ              : RightInverse e _⁻¹ _•_ → LeftInverse e _⁻¹ _•_
+assoc+id+invʳ⇒invˡ-unique   : Associative _•_ → Identity e _•_ → RightInverse e _⁻¹ _•_ → ∀ x y → (x • y) ≈ e → x ≈ (y ⁻¹)
+assoc+id+invˡ⇒invʳ-unique   : Associative _•_ → Identity e _•_ → LeftInverse  e _⁻¹ _•_ → ∀ x y → (x • y) ≈ e → y ≈ (x ⁻¹)
+comm+distrˡ⇒distrʳ          : _•_ DistributesOverˡ _◦_ → _•_ DistributesOverʳ _◦_
+comm+distrʳ⇒distrˡ          : _•_ DistributesOverʳ _◦_ → _•_ DistributesOverˡ _◦_
+comm⇒sym[distribˡ]          : ∀ x → Symmetric (λ y z → (x ◦ (y • z)) ≈ ((x ◦ y) • (x ◦ z)))
+assoc+distribʳ+idʳ+invʳ⇒zeˡ : Associative _+_ → _*_ DistributesOverʳ _+_ → RightIdentity 0# _+_ → RightInverse 0# _⁻¹ _+_ → LeftZero 0# _*_
+assoc+distribˡ+idʳ+invʳ⇒zeʳ : Associative _+_ → _*_ DistributesOverˡ _+_ → RightIdentity 0# _+_ → RightInverse 0# _⁻¹ _+_ → RightZero 0# _*_
+subst+comm⇒sym              : Symmetric (λ a b → P (f a b))
+wlog                        : ∀ {r} {_R_ : Rel _ r} → Total _R_ → (∀ a b → a R b → P (f a b)) → ∀ a b → P (f a b)
+```
+
+in `Algebra.Consequences.Propositional` we have
+
+```agda
+assoc+id+invʳ⇒invˡ-unique   : Associative _•_ → Identity ε _•_ → RightInverse ε _⁻¹ _•_ → ∀ x y → (x • y) ≡ ε → x ≡ (y ⁻¹)
+assoc+id+invˡ⇒invʳ-unique   : Associative _•_ → Identity ε _•_ → LeftInverse ε _⁻¹ _•_ → ∀ x y → (x • y) ≡ ε → y ≡ (x ⁻¹)
+assoc+distribʳ+idʳ+invʳ⇒zeˡ : Associative _+_ → _*_ DistributesOverʳ _+_ → RightIdentity 0# _+_ → RightInverse 0# -_ _+_ → LeftZero 0# _*_
+assoc+distribˡ+idʳ+invʳ⇒zeʳ : Associative _+_ → _*_ DistributesOverˡ _+_ → RightIdentity 0# _+_ → RightInverse 0# -_ _+_ → RightZero 0# _*_
+comm+distrˡ⇒distrʳ          : _•_ DistributesOverˡ _◦_ → _•_ DistributesOverʳ _◦_
+comm+distrʳ⇒distrˡ          : _•_ DistributesOverʳ _◦_ → _•_ DistributesOverˡ _◦_
+comm⇒sym[distribˡ]          : ∀ x → Symmetric (λ y z → (x ◦ (y • z)) ≡ ((x ◦ y) • (x ◦ z)))
+sel⇒idem                    : Selective _•_ → Idempotent _•_
+subst+comm⇒sym              : ∀ {f} (f-comm : Commutative f) → Symmetric (λ a b → P (f a b))
+wlog                        : ∀ {f} (f-comm : Commutative f) → ∀ {r} {_R_ : Rel _ r} → Total _R_ → (∀ a b → a R b → P (f a b)) → ∀ a b → P (f a b)
+```
+
 ## open module afterwards in where clause
 
 https://agda.readthedocs.io/en/v2.6.1/language/copatterns.html#copatterns
@@ -1438,7 +1630,7 @@ So only the last way in `module Test4` works out nicely. This simple syntax with
         a + x  <  x + b  ⇒⟨ +-<-extensional b a x x ⟩
        (a < x) ⊎ (x < b) ◼) a<b
   }
-```  
+```
 
 ```agda
 open IsPartialOrder ≤-isPartialOrder public
@@ -1481,7 +1673,7 @@ module _ (x y : F) (x·y≡1 : x · y ≡ 1f) where
       x     ≡ y ⁻¹ᶠ     ◼) x·y≡1
 
   ·-linv-unique : (x y : F) → ((x · y) ≡ 1f) → Σ[ p ∈ y # 0f ] x ≡ (_⁻¹ᶠ y {{p}})
-  ·-linv-unique = ·-linv-unique'      
+  ·-linv-unique = ·-linv-unique'
 ```
 
 (* ) IMPORTANT!
@@ -1920,7 +2112,7 @@ data NumberKind : Type where
   isInt     : NumberKind
   isRat     : NumberKind
   isReal    : NumberKind
-  isComplex : NumberKind  
+  isComplex : NumberKind
 ```
 
 the final approach to lift `_≤_`, `min` and `max` from ℕ ended up in `Enumeration.agda`. We get:
@@ -2794,4 +2986,54 @@ let's call the weaker one isAntisym'. we have then
 isIrrefl _<_ → isAntisym _≤_ ≡ (isAntisym' _≤_ + dne-on-≡) ≡ isTight''' _#_
 isIrrefl _<_ ≡ isIrrefl _#_
 isIrrefl _#_ → isTight''' _#_ → dne-on-≡
+```
+
+## splitting the reals
+
+```agda
+≤-split : ∀ x → [ 0f ≤ x ] → ( x ≡ 0f ) ⊎ [ 0f < x ]
+≤-split x p = let _ = {! [ 0f ≤'' x ]  !} in {! λ(ε : Carrier) → λ(0<ε : [ 0f < ε ]) → <-cotrans 0f ε 0<ε x  !}
+```
+
+- well, I think that this is not possible
+- to obtain the RHS `( x ≡ 0f ) ⊎ [ 0f < x ]` or `[ x ≡ᵖ 0f ⊔ 0f < x ]`
+- we need to decide `inlᵖ` or `inrᵖ`
+- on the LHS which is `[ ¬ (x < 0f) ]` or `∀ ε → [ x < ε ] → [ 0f < ε ]`
+- in either case, we need to split x
+- recalling that we do NOT have `∀ x → [ x # 0 ] ⊎ x ≡ 0` nor `∀ x → [ x # 0 ⊔ x ≡ᵖ 0 ]`
+- we cannot split x at all
+- because we cannot split a real number
+- but what we might be able to do is, to provide an eliminator `≤-elim`
+
+```agda
+≤-elim : ∀{ℓ} → (P : Carrier → Carrier → Type ℓ) → ∀ x y → [ x ≤ y ] → (x ≡ y → P x y) → ([ x < y ] → P x y) → P x y
+≤-elim P x y x≤y f g = {!   !}
+```
+
+- this way we do not decide anything ... or do we?
+- e.g. we might want something like `[ x < 0 ⊔ x ≡ 0 ⊔ 0 < x ]`
+- but this is trichotomy and we do not have it on the reals
+- so an eliminator dealing with all the cases is not complete
+- because we cannot proof that these are all cases
+- since that would constructively amount to picking one of the cases
+- I guess this is what it means that "you cannot split the reals"
+- nonetheless, I think that
+
+```agda
+bridges-R3-5 : ∀ x y z → [ x ≤ y ] → [ y < z ] → [ x < z ]
+bridges-R3-6 : ∀ x y z → [ x < y ] → [ y ≤ z ] → [ x < z ]
+```
+
+- already have what it takes to implement the generic number functions on subspaces of ℝ
+- so we might continue anyways
+
+the following `(ε : Carrier) (0<ε : [ 0f < ε ]) → [ 0f < x ⊔ x < ε ]`
+
+does not imply `[ (0f < x) ⊔ (∀[ ε ] ∀[ 0<ε : [ 0f < ε ] ] x < ε) ]`
+
+or does it?
+
+```
+-- (ε : Carrier) (0<ε : [ 0f < ε ]) → [ 0f < x ⊔ x < ε ]
+-- (ε : Carrier) (0<ε : [ 0f < ε ]) → [ 0f < x ] ⊎ [ x < ε ]
 ```

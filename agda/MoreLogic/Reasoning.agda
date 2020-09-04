@@ -1,0 +1,65 @@
+{-# OPTIONS --cubical --no-import-sorts #-}
+
+module MoreLogic.Reasoning where -- hProp logic
+
+open import Cubical.Foundations.Everything renaming (_⁻¹ to _⁻¹ᵖ; assoc to ∙-assoc)
+open import Cubical.Foundations.Logic renaming (inl to inlᵖ; inr to inrᵖ)
+
+-- "implicational" reaoning
+
+infix  3 _◼ᵖ
+infixr 2 _⇒ᵖ⟨_⟩_
+
+_⇒ᵖ⟨_⟩_ : ∀{ℓ ℓ' ℓ''} {Q : hProp ℓ'} {R : hProp ℓ''} → (P : hProp ℓ) → [ P ⇒ Q ] → [ Q ⇒ R ] → [ P ⇒ R ]
+_ ⇒ᵖ⟨ pq ⟩ qr = qr ∘ pq
+
+_◼ᵖ : ∀{ℓ} (A : hProp ℓ) → [ A ] → [ A ]
+_ ◼ᵖ = λ x → x
+
+infix  3 _◼
+infixr 2 _⇒⟨_⟩_
+
+_⇒⟨_⟩_ : ∀{ℓ ℓ' ℓ''} {Q : Type ℓ'} {R : Type ℓ''} → (P : Type ℓ) → (P → Q) → (Q → R) → (P → R)
+_ ⇒⟨ pq ⟩ qr = qr ∘ pq
+
+_◼ : ∀{ℓ} (A : Type ℓ) → A → A
+_ ◼ = λ x → x
+
+{- NOTE: in the CHANGELOG.md of the v1.3 non-cubical standard library, it is explained:
+
+* Previously all equational reasoning combinators (e.g. `_≈⟨_⟩_`, `_≡⟨_⟩_`, `_≤⟨_⟩_`)
+  were defined in the following style:
+  ```agda
+  infixr 2 _≡⟨_⟩_
+
+  _≡⟨_⟩_ : ∀ x {y z : A} → x ≡ y → y ≡ z → x ≡ z
+  _ ≡⟨ x≡y ⟩ y≡z = trans x≡y y≡z
+  ```
+  The type checker therefore infers the RHS of the equational step from the LHS + the
+  type of the proof. For example for `x ≈⟨ x≈y ⟩ y ∎` it is inferred that `y ∎`
+  must have type `y IsRelatedTo y` from `x : A` and `x≈y : x ≈ y`.
+
+* There are two problems with this. Firstly, it means that the reasoning combinators are
+  not compatible with macros (i.e. tactics) that attempt to automatically generate proofs
+  for `x≈y`. This is because the reflection machinary does not have access to the type of RHS
+  as it cannot be inferred. In practice this meant that the new reflective solvers
+  `Tactic.RingSolver` and `Tactic.MonoidSolver` could not be used inside the equational
+  reasoning. Secondly the inference procedure itself is slower as described in this
+  [exchange](https://lists.chalmers.se/pipermail/agda/2016/009090.html)
+  on the Agda mailing list.
+
+* Therefore, as suggested on the mailing list, the order of arguments to the combinators
+  have been reversed so that instead the type of the proof is inferred from the LHS + RHS.
+  ```agda
+  infixr -2 step-≡
+
+  step-≡ : ∀ x {y z : A} → y ≡ z → x ≡ y → x ≡ z
+  step-≡ y≡z x≡y = trans x≡y y≡z
+
+  syntax step-≡ x y≡z x≡y = x ≡⟨ x≡y ⟩ y≡z
+  ```
+  where the `syntax` declaration is then used to recover the original order of the arguments.
+  This change enables the use of macros and anecdotally speeds up type checking by a
+  factor of 5.
+
+-} -- TODO: that might be "correct" the way to implement these reasoning operators

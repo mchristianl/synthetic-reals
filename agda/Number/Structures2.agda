@@ -6,13 +6,10 @@ open import Agda.Primitive renaming (_⊔_ to ℓ-max; lsuc to ℓ-suc; lzero to
 open import Cubical.Foundations.Everything renaming (_⁻¹ to _⁻¹ᵖ; assoc to ∙-assoc)
 open import Cubical.Foundations.Logic
 
-
-import MoreLogic
-open MoreLogic.Definitions
-open MoreLogic.Properties
-import MorePropAlgebra
-open MorePropAlgebra.Definitions
-open MorePropAlgebra.Consequences
+open import MoreLogic.Definitions
+open import MoreLogic.Properties
+open import MorePropAlgebra.Definitions
+open import MorePropAlgebra.Consequences
 
 -- hPropRel : ∀ {ℓ} (A B : Type ℓ) (ℓ' : Level) → Type (ℓ-max ℓ (ℓ-suc ℓ'))
 -- hPropRel A B ℓ' = A → B → hProp ℓ'

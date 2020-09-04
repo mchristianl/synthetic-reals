@@ -39,6 +39,34 @@ deMorgan₂-back' (¬p , ¬q) (inr q) = ¬q q
 -- hPropRel : ∀ {ℓ} (A B : Type ℓ) (ℓ' : Level) → Type (ℓ-max ℓ (ℓ-suc ℓ'))
 -- hPropRel A B ℓ' = A → B → hProp ℓ'
 
+{- NOTE: there is also `Relation.Binary.PropositionalEquality` where they write:
+
+-- Inspect can be used when you want to pattern match on the result r
+-- of some expression e, and you also need to "remember" that r ≡ e.
+
+-- See README.Inspect for an explanation of how/why to use this.
+
+record Reveal_·_is_ {A : Set a} {B : A → Set b}
+                    (f : (x : A) → B x) (x : A) (y : B x) :
+                    Set (a ⊔ b) where
+  constructor [_]
+  field eq : f x ≡ y
+
+inspect : ∀ {A : Set a} {B : A → Set b}
+          (f : (x : A) → B x) (x : A) → Reveal f · x is f x
+inspect f x = [ refl ]
+
+-}
+
+{- NOTE: an example is
+
+plus-eq-with : ∀ m n → Plus-eq m n (m + n)
+plus-eq-with m n with m + n | inspect (m +_) n
+... | zero  | [ m+n≡0   ] = m+n≡0⇒m≡0 m m+n≡0 , m+n≡0⇒n≡0 m m+n≡0
+... | suc p | [ m+n≡1+p ] = m+n≡1+p
+
+-} -- so this looks like a mechanism for "@-pattern-disribution over `with` cases"
+
 record !_ {ℓ} (X : Type ℓ) : Type ℓ where
   inductive
   constructor !!_

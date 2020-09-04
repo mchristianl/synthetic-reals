@@ -2,8 +2,7 @@
 ## general TODOs
 
 - make use of .lagda.md for the parts that literally follow Booij's thesis
-- check out `abstract` for performance
-  - also, likely due to [#1646](https://github.com/agda/agda/issues/1646) we might flatten-out the module hierarchy for better performance
+- likely due to [#1646](https://github.com/agda/agda/issues/1646) we might flatten-out the module hierarchy for better performance
 - merge the notes with Hit.agda
 - use equivalences intstead of `lemma` and `lemma-back`
 - can we use `preserves` and `reflects` instead of `lemma` and `lemma-back`?
@@ -39,6 +38,22 @@
 
   postulate coerce : {{_ : Coercible A B}} → A → B
   ```
+- check out what is meant by "Instance modules" in non-cubical 1.4-rc1
+  ```agda
+  Category.Monad.Partiality.Instances
+  Codata.Stream.Instances
+  Codata.Covec.Instances
+  Data.List.Instances
+  Data.List.NonEmpty.Instances
+  Data.Maybe.Instances
+  Data.Vec.Instances
+  Function.Identity.Instances
+  ```
+  - check out _"New standardised numeric predicates `NonZero`, `Positive`, `Negative`, `NonPositive`, `NonNegative`, especially designed to work as instance arguments."_
+  - the use of instances seems to be very recent, since they also write _"First instance modules, which provide `Functor`, `Monad`, `Applicative` instances for various datatypes. Found under `Data.X.Instances`."_
+- check out ["irrelevancy annotations"](https://agda.readthedocs.io/en/v2.6.1/language/irrelevance.html#irrelevant-record-fields) and whether they serve as some form of "term abstractification" (i.e. blocking the term normalization)
+  - does this work with `--cubical`? what is its intention?
+- can't we just use ℚ from the non-cubical standard library?
 - subsets and embeddings
   - checkout `Cubical.Foundations.Logic`
     ```agda
@@ -59,28 +74,12 @@
     _↪_ : Type ℓ → Type ℓ → Type ℓ
     A ↪ B = Σ[ f ∈ (A → B) ] hasPropFibers f
     ```
+  - there is also
 - use `hProp`s
   - ~~checkout `Cubical.Structures.Poset`~~
-  - apply the "hProp-record-idiom" to all the definitions and the hierarchy
   - provide a Σ-theory similar to `CommRingΣTheory` with axioms and structure
 - get the absolute value function `abs` into the number hierarchy
 - get the square root function `sqrt` into the number hierarchy
 - complete all necessary axioms in the number hierarchy
   - then divide into necessary axioms and derivable theorems
     - and try to proof the theorems
-- case-splitting for `⊔` would be great instead of using `⊔-elim` all the time .. I came up with
-  ```agda
-  ⊎-implies-⊔ : ∀ {ℓ ℓ'} (P : hProp ℓ) (Q : hProp ℓ') → [ P ] ⊎ [ Q ] → [ P ⊔ Q ]
-  ⊎-implies-⊔ P Q (inl x) = inlᵖ x
-  ⊎-implies-⊔ P Q (inr x) = inrᵖ x
-
-  -- NOTE: need to explcitly state the props `P` and `Q`, as well as the returned prop `R z`
-  --       to make agda resolving all the metas
-  case[_⊔_]_return_of_ : ∀ {ℓ ℓ'} (P : hProp ℓ) (Q : hProp ℓ')
-                    → (z : [ P ⊔ Q ])
-                    → (R : [ P ⊔ Q ] → hProp ℓ'')
-                    → (S : (x : [ P ] ⊎ [ Q ]) → [ R (⊎-implies-⊔ P Q x) ] )
-                    → [ R z ]
-  case[_⊔_]_return_of_ P Q z R S = ⊔-elim P Q R (λ p → S (inl p)) (λ q → S (inr q)) z
-  ```
-  - or can we even have something like `⊔⊎-iso : (P : hProp ℓ) (Q : hProp ℓ') → Iso ([ P ⊔ Q ]) ([ P ] ⊎ [ Q ])` ?

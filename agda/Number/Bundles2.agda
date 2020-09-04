@@ -21,16 +21,13 @@ open import Cubical.HITs.PropositionalTruncation --.Properties
 
 
 open import Utils using (!_; !!_)
-import MoreLogic
-open MoreLogic.Definitions
-open MoreLogic.Properties
-import MorePropAlgebra
-open MorePropAlgebra.Definitions
-open MorePropAlgebra.Consequences
+open import MoreLogic.Reasoning
+open import MoreLogic.Definitions
+open import MoreLogic.Properties
+open import MorePropAlgebra.Definitions hiding (_≤''_)
+open import MorePropAlgebra.Consequences
 open import Number.Structures2
 
-
-open MoreLogic.Reasoning
 
 {-
 | name | struct              | apart | abs | order | cauchy | sqrt₀⁺  | exp | final name                                                             |
@@ -67,7 +64,7 @@ record CompletePartiallyOrderedFieldWithSqrt {ℓ ℓ' : Level} : Type (ℓ-suc 
   --       e.g. they show up in goal contexts and they do not allow for `where` blocks
 
   <-asym : [ isAsymᵖ _<_ ]
-  <-asym = irrefl+trans-implies-asym _<_ <-irrefl <-trans
+  <-asym = irrefl+trans⇒asym _<_ <-irrefl <-trans
 
   _-_ : Carrier → Carrier → Carrier
   a - b = a + (- b)
@@ -116,7 +113,7 @@ record CompletePartiallyOrderedFieldWithSqrt {ℓ ℓ' : Level} : Type (ℓ-suc 
 
   -- ≤-antisym x y y≤x x≤y
     -- let ¬[x#y] : [ ¬ᵖ (x # y) ]
-    --     ¬[x#y] p = (deMorgan₂-back (x < y) (y < x) (x≤y , y≤x)) (⊎-implies-⊔ (x < y) (y < x) p)
+    --     ¬[x#y] p = (deMorgan₂-back (x < y) (y < x) (x≤y , y≤x)) (⊎⇒⊔ (x < y) (y < x) p)
     -- in #-tight x y ¬[x#y]
 
   -- R-antisym : [    R a b ] → [    R b a ] → a ≡ b
@@ -142,7 +139,7 @@ record CompletePartiallyOrderedFieldWithSqrt {ℓ ℓ' : Level} : Type (ℓ-suc 
   -- #-tight≡≤-antisym = {!  !}
   --   ⇒∶ (λ #-tight x y y≤x x≤y →
   --         let ¬[x#y] : [ ¬ᵖ (x # y) ]
-  --             ¬[x#y] p = (deMorgan₂-back (x < y) (y < x) (x≤y , y≤x)) (⊎-implies-⊔ (x < y) (y < x) p)
+  --             ¬[x#y] p = (deMorgan₂-back (x < y) (y < x) (x≤y , y≤x)) (⊎⇒⊔ (x < y) (y < x) p)
   --           in #-tight x y ¬[x#y])
   --   ⇐∶ (λ ≤-antisym x y ¬[[x<y]⊎[y<x]] →
   --         let (¬[x<y] , ¬[y<x]) = Utils.deMorgan₂' ¬[[x<y]⊎[y<x]]
@@ -176,24 +173,22 @@ record CompletePartiallyOrderedFieldWithSqrt {ℓ ℓ' : Level} : Type (ℓ-suc 
   _≤''_ : hPropRel Carrier Carrier (ℓ-max ℓ ℓ')
   x ≤'' y = (∀ ε → [ y < ε ] → [ x < ε ]) , isPropΠ2 (λ ε y<ε → isProp[] (x < ε))
 
-  ≤''-implies-≤ : ∀ x y → [ x ≤'' y ] → [ x ≤ y ]
-  ≤''-implies-≤ x y x≤''y y<x = <-irrefl x (x≤''y x y<x)
+  ≤''⇒≤ : ∀ x y → [ x ≤'' y ] → [ x ≤ y ]
+  ≤''⇒≤ x y x≤''y y<x = <-irrefl x (x≤''y x y<x)
 
-  ≤-implies-≤'' : ∀ x y → [ x ≤ y ] → [ x ≤'' y ]
-  ≤-implies-≤'' x y x≤y ε y<ε = bridges-R3-5 x y ε x≤y y<ε
+  ≤⇒≤'' : ∀ x y → [ x ≤ y ] → [ x ≤'' y ]
+  ≤⇒≤'' x y x≤y ε y<ε = bridges-R3-5 x y ε x≤y y<ε
 
+  -- NOTE: it seems that `_⇔_` might be the "preferred" / "most performant" / "least cluttered" way to "store" a path when hProps are available
+  ≤-⇔-≤'' : ∀ x y → [ (x ≤ y) ⇔ (x ≤'' y) ]
+  ≤-⇔-≤'' x y = (≤⇒≤'' x y) , (≤''⇒≤ x y)
 
   ≤-≡-≤'' : ∀ x y → (Liftᵖ {ℓ'} {ℓ} (x ≤ y)) ≡ (x ≤'' y)
   ≤-≡-≤'' x y = ⇔toPath
-                ((≤-implies-≤'' x y) ∘ (unliftᵖ (x ≤ y))) -- (λ{ (lift p) → ≤-implies-≤'' x y p})
-                ((liftᵖ (x ≤ y)) ∘ (≤''-implies-≤ x y))
+                ((≤⇒≤'' x y) ∘ (unliftᵖ (x ≤ y))) -- (λ{ (lift p) → ≤⇒≤'' x y p})
+                ((liftᵖ (x ≤ y)) ∘ (≤''⇒≤ x y))
 
-  -- NOTE: it seems that `_⇔_` might be the "preferred" / "most performant" / "least cluttered" way to "store" a path when hProps are available
-
-  ≤-⇔-≤'' : ∀ x y → [ (x ≤ y) ⇔ (x ≤'' y) ]
-  ≤-⇔-≤'' x y = (≤-implies-≤'' x y) , (≤''-implies-≤ x y)
-
-  -- ≤+preserves-<-implies-≡ ... this is just antisymmetry for different ≤s : ∀ x y → [ x ≤ y ] → [ y ≤'' x ] → x ≡ y
+  -- ≤+preserves-<⇒≡ ... this is just antisymmetry for different ≤s : ∀ x y → [ x ≤ y ] → [ y ≤'' x ] → x ≡ y
   bridges-R3-12' : ∀ x y → [ x ≤ y ] → (∀ ε → [ x < ε ] → [ y < ε ]) → x ≡ y
   bridges-R3-12' x y x≤y [∀x<ε→y<ε] =
     let y≤x : [ y ≤ x ]
@@ -207,40 +202,7 @@ record CompletePartiallyOrderedFieldWithSqrt {ℓ ℓ' : Level} : Type (ℓ-suc 
     0≤sqrt : ∀ x → {{ p : ! [ 0f ≤ x ] }} → [ 0f ≤ sqrt x {{p}} ]
     0≤x² : ∀ x → [ 0f ≤ (x · x) ]
 
-  -- well, I think that this is not possible
-  -- to obtain the RHS `( x ≡ 0f ) ⊎ [ 0f < x ]` or `[ x ≡ᵖ 0f ⊔ 0f < x ]`
-  -- we need to decide `inlᵖ` or `inrᵖ`
-  -- on the LHS which is `[ ¬ (x < 0f) ]` or `∀ ε → [ x < ε ] → [ 0f < ε ]`
-  -- in either case, we need to split x
-  -- recalling that we do NOT have `∀ x → [ x # 0 ] ⊎ x ≡ 0` nor `∀ x → [ x # 0 ⊔ x ≡ᵖ 0 ]`
-  -- we cannot split x at all
-  -- because we cannot split a real number
-  ≤-split : ∀ x → [ 0f ≤ x ] → ( x ≡ 0f ) ⊎ [ 0f < x ]
-  ≤-split x p = let _ = {! [ 0f ≤'' x ]  !} in {! λ(ε : Carrier) → λ(0<ε : [ 0f < ε ]) → <-cotrans 0f ε 0<ε x  !}
-  -- but what we might be able to do is, to provide an eliminator `≤-elim`
-  ≤-elim : ∀{ℓ} → (P : Carrier → Carrier → Type ℓ) → ∀ x y → [ x ≤ y ] → (x ≡ y → P x y) → ([ x < y ] → P x y) → P x y
-  ≤-elim P x y x≤y f g = {!   !}
-  -- this way we do not decide anything ... or do we?
-  -- e.g. we might want something like [ x < 0 ⊔ x ≡ 0 ⊔ 0 < x ]
-  -- but this is trichotomy and we do not have it on the reals
-  -- so an eliminator dealing with all the cases is not complete
-  -- because we cannot proof that these are all cases
-  -- since that would constructively amount to picking one of the cases
-  -- I guess this is what it means that "you cannot split the reals"
-  -- nonetheless, I think that
-  --   bridges-R3-5 : ∀ x y z → [ x ≤ y ] → [ y < z ] → [ x < z ]
-  --   bridges-R3-6 : ∀ x y z → [ x < y ] → [ y ≤ z ] → [ x < z ]
-  -- already have what it takes to implement the generic number functions on subspaces of ℝ
-  -- so we might continue anyways
 
-  -- the following
-  --   (ε : Carrier) (0<ε : [ 0f < ε ]) → [ 0f < x ⊔ x < ε ]
-  -- does not imply
-  --   [ (0f < x) ⊔ (∀[ ε ] ∀[ 0<ε : [ 0f < ε ] ] x < ε) ]
-  -- or does it?
-
-  -- (ε : Carrier) (0<ε : [ 0f < ε ]) → [ 0f < x ⊔ x < ε ]
-  -- (ε : Carrier) (0<ε : [ 0f < ε ]) → [ 0f < x ] ⊎ [ x < ε ]
 
   instance _ = λ {x} → !! 0≤x² x
 
@@ -249,11 +211,7 @@ record CompletePartiallyOrderedFieldWithSqrt {ℓ ℓ' : Level} : Type (ℓ-suc 
     -- sqrt-of-²  : ∀ x → {{ p₁ : ! [ 0f ≤ x ] }} → {{ p₂ : ! [ 0f ≤ x · x ] }} → sqrt (x · x) {{p₂}} ≡ x
     -- sqrt-unique-existence : ∀ x → {{ p : ! [ 0f ≤ x ] }} → Σ[ y ∈ Carrier ] y · y ≡ x
     -- sqrt-uniqueness : ∀ x y z → {{ p : ! [ 0f ≤ x ] }} → y · y ≡ x → z · z ≡ x → y ≡ z
-
-
-
     ·-uniqueness : ∀ x y → {{ p₁ : ! [ 0f ≤ x ] }} → {{ p₂ : ! [ 0f ≤ y ] }} → x · x ≡ y · y → x ≡ y
-
     sqrt-existence   : ∀ x   → {{ p  : ! [ 0f ≤ x ] }} → sqrt x {{p}} · sqrt x {{p}} ≡ x
     sqrt-preserves-· : ∀ x y → {{ p₁ : ! [ 0f ≤ x ] }} → {{ p₁ : ! [ 0f ≤ y ] }} → {{ p₁ : ! [ 0f ≤ x · y ] }} → sqrt (x · y) ≡ sqrt x · sqrt y
     sqrt0≡0 : {{ p : ! [ 0f ≤ 0f ] }} → sqrt 0f {{p}} ≡ 0f
