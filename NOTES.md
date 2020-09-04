@@ -783,6 +783,8 @@ But I guess that copatterns within a where block work as intended .. TODO: check
 - A term will only "normalize further", when it is able to determine a single "piece" (clause). Otherwise it is "blocked" or "already normalized".
 - splitting into copatterns makes sense to allow the partial computation of a partially applied function without "waiting" for its arguments
 
+Also note that case splitting on `_⊎_` blocks further evaluation until `inl` or `inr` is known of the argument.
+
 Therefore I would propose to define algebraic properties with copatterns like so:
 
 ```agda

@@ -54,6 +54,8 @@ module _ {ℓ ℓ' : Level} {A : Type ℓ} (R : hPropRel A A ℓ')
   irrefl+trans⇒asym    : [ isIrrefl  R ] → [ isTrans  R ] → [ isAsym  R ]
   irrefl+trans⇒asym'   : [ isIrrefl  R ] → [ isTrans  R ] → [ isAsym' R ]
 
+  <-cotrans⇒≤-trans    : [ isCotrans _<_ ] → [ isTrans (λ x y → ¬(y < x)) ]
+
   isAsym⇔isAsym'       :                              [ isAsym     R  ⇔ isAsym'                    R                           ]
   isTight⇔isTight'     :                              [ isTight    R  ⇔ isTight'                   R                           ]
   isTight'⇔isTight''   :                              [ isTight'   R  ⇔ isTight''                  R                           ]
@@ -64,6 +66,11 @@ module _ {ℓ ℓ' : Level} {A : Type ℓ} (R : hPropRel A A ℓ')
   irrefl+trans⇒asym isIrrefl isTrans a b a<b b<a = isIrrefl _ (isTrans _ _ _ a<b b<a)
 
   irrefl+trans⇒asym' isIrrefl isTrans a b (a<b , b<a) = isIrrefl _ (isTrans _ _ _ a<b b<a)
+
+  <-cotrans⇒≤-trans <-cotrans a b c ¬b<a ¬c<b c<a = ⊔-elim (c < b) (b < a) (λ _ → ⊥)
+                                                     (λ c<b → ¬c<b c<b)
+                                                     (λ b<a → ¬b<a b<a)
+                                                     (<-cotrans _ _ c<a b)
 
   isAsym⇔isAsym' .fst <-asym a b (a<b , b<a) = <-asym a b a<b b<a
   isAsym⇔isAsym' .snd <-asym a b = fst (¬-⊓-distrib (a < b) (b < a) (<-asym a b))
