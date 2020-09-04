@@ -15,7 +15,8 @@ open import Cubical.Data.Sum.Base renaming (_⊎_ to infixr 4 _⊎_)
 open import Cubical.Data.Sigma renaming (_×_ to infixr 4 _×_)
 open import Cubical.Data.Empty renaming (elim to ⊥-elim; ⊥ to ⊥⊥) -- `⊥` and `elim`
 open import Cubical.Foundations.Logic renaming (inl to inlᵖ; inr to inrᵖ)
-open import Function.Base using (_∋_)
+open import Function.Base using (_∋_; _$_)
+
 
 import Data.Sum
 import Cubical.Data.Sigma
@@ -49,110 +50,71 @@ module _ {ℓ ℓ' : Level} {A : Type ℓ} (R : hPropRel A A ℓ')
   (let _≤_ = R)
   (let _#_ = R)
   where
-  abstract
-    irrefl+trans⇒asym : [ isIrreflᵖ R ] → [ isTransᵖ R ] → [ isAsymᵖ R ]
-    irrefl+trans⇒asym isIrrefl isTrans a b a<b b<a = isIrrefl _ (isTrans _ _ _ a<b b<a)
+  -- abstract
+  irrefl+trans⇒asym    : [ isIrrefl  R ] → [ isTrans  R ] → [ isAsym  R ]
+  irrefl+trans⇒asym'   : [ isIrrefl  R ] → [ isTrans  R ] → [ isAsym' R ]
 
-    irrefl+trans⇒asym' : [ isIrreflᵖ R ] → [ isTransᵖ R ] → [ isAsymᵖ' R ]
-    irrefl+trans⇒asym' isIrrefl isTrans a b (a<b , b<a) = isIrrefl _ (isTrans _ _ _ a<b b<a)
+  isAsym⇔isAsym'       :                              [ isAsym     R  ⇔ isAsym'                    R                           ]
+  isTight⇔isTight'     :                              [ isTight    R  ⇔ isTight'                   R                           ]
+  isTight'⇔isTight''   :                              [ isTight'   R  ⇔ isTight''                  R                           ]
+  isTight'⇔isTight'''  :                              [ isTight'  _<_ ⇔ isTight''' (λ x y →                (x < y) ⊔  (y < x)) ]
+  isTight''⇔isTight''' : (<-asym : [ isAsym  _<_ ]) → [ isTight'' _<_ ⇔ isTight''' (λ x y → [ <-asym x y ] (x < y) ⊎ᵖ (y < x)) ]
+  isTight⇔isAntisym    :                              [ isTight   _<_ ⇔ isAntisym  (λ x y →                   ¬ (y < x))       ]
 
-    isAsymᵖ≡ᵖ' : isAsymᵖ R ≡ isAsymᵖ' R
-    isAsymᵖ≡ᵖ' =
-      ⇒∶ (λ{ <-asym a b (a<b , b<a) → <-asym a b a<b b<a })
-      ⇐∶ (λ  <-asym a b → fst (¬-⊓-distrib (a < b) (b < a) (<-asym a b)) )
+  irrefl+trans⇒asym isIrrefl isTrans a b a<b b<a = isIrrefl _ (isTrans _ _ _ a<b b<a)
 
-    isAntisym-ˢ≡ᵖ : (isset : isSet A) → isAntisymˢ R isset ≡ isAntisymᵖ R
-    isAntisym-ˢ≡ᵖ isset = hProp≡ (isoToPath (record
-      { fun      = λ ≤-antisymˢ a b a≤b b≤a → ∣ ≤-antisymˢ a b a≤b b≤a ∣
-      ; inv      = λ ≤-antisymᵖ a b a≤b b≤a → ∣∣-elim (λ c → isset a b) (λ x → x) (≤-antisymᵖ a b a≤b b≤a)
-      ; rightInv = λ f → isProp[] (isAntisymᵖ R      ) _ f
-      ; leftInv  = λ g → isProp[] (isAntisymˢ R isset) _ g
-      }))
+  irrefl+trans⇒asym' isIrrefl isTrans a b (a<b , b<a) = isIrrefl _ (isTrans _ _ _ a<b b<a)
 
-    isAntisym-ˢ'≡ᵖ' : (isset : isSet A) → isAntisymˢ' R isset ≡ isAntisymᵖ' R
-    isAntisym-ˢ'≡ᵖ' isset =
-      ⇒∶ (λ ≤-antisymˢ' a b a≤b ¬ᵗa≡b → ≤-antisymˢ' a b a≤b (λ  z  → ¬ᵗa≡b ∣ z ∣))
-      ⇐∶ (λ ≤-antisymᵖ' a b a≤b ¬ᵗa≡b → ≤-antisymᵖ' a b a≤b (λ ∣z∣ → ∣∣-elim {P = λ _ → ⊥⊥} (λ _ → isProp⊥) ¬ᵗa≡b ∣z∣))
+  isAsym⇔isAsym' .fst <-asym a b (a<b , b<a) = <-asym a b a<b b<a
+  isAsym⇔isAsym' .snd <-asym a b = fst (¬-⊓-distrib (a < b) (b < a) (<-asym a b))
 
-    isTight-ˢ≡ᵖ : (isset : isSet A) → isTightˢ R isset ≡ isTightᵖ R
-    isTight-ˢ≡ᵖ isset = hProp≡ (isoToPath (record
-      { fun      = λ <-tightˢ a b a<b b<a → ∣ <-tightˢ a b a<b b<a ∣
-      ; inv      = λ <-tightᵖ a b a<b b<a → ∣∣-elim (λ c → isset a b) (λ x → x) (<-tightᵖ a b a<b b<a)
-      ; rightInv = λ f → isProp[] (isTightᵖ _<_      ) _ f
-      ; leftInv  = λ g → isProp[] (isTightˢ _<_ isset) _ g
-      }))
+  isTight⇔isTight' .fst <-tightᵖ  a b ¬ᵗ[a<b⊔b<a]     = let (¬ᵗ[a<b] , ¬ᵗ[b<a]) = deMorgan₂ (a < b) (b < a) ¬ᵗ[a<b⊔b<a] in <-tightᵖ a b ¬ᵗ[a<b] ¬ᵗ[b<a]
+  isTight⇔isTight' .snd <-tightᵖ' a b ¬ᵗ[a<b] ¬ᵗ[b<a] = <-tightᵖ' a b (deMorgan₂-back (a < b) (b < a) (¬ᵗ[a<b] , ¬ᵗ[b<a]))
 
-    isTight-ˢ'≡ᵖ' : (isset : isSet A) → isTightˢ' R isset ≡ isTightᵖ' R
-    isTight-ˢ'≡ᵖ' isset = hProp≡ (isoToPath (record
-      { fun      = λ <-tightˢ' a b ¬ᵗ[a<b⊔b<a] → ∣ <-tightˢ' a b ¬ᵗ[a<b⊔b<a] ∣
-      ; inv      = λ <-tightᵖ' a b ¬ᵗ[a<b⊔b<a] → ∣∣-elim (λ c → isset a b) (λ x → x) (<-tightᵖ' a b ¬ᵗ[a<b⊔b<a])
-      ; rightInv = λ f → isProp[] (isTightᵖ' _<_      ) _ f
-      ; leftInv  = λ g → isProp[] (isTightˢ' _<_ isset) _ g
-      }))
+  isTight'⇔isTight'' .fst <-tightᵖ'  a b ¬ᵗ[a<b⊎b<a] = <-tightᵖ'  a b (pathTo⇒ (∥¬A∥≡¬∥A∥ _) ∣ ¬ᵗ[a<b⊎b<a] ∣)
+  isTight'⇔isTight'' .snd <-tightᵖ'' a b ¬ᵗ[a<b⊔b<a] = <-tightᵖ'' a b (λ [a<b⊎b<a] → ¬ᵗ[a<b⊔b<a] (⊎⇒⊔ (a < b) (b < a) [a<b⊎b<a]))
 
-    isTight-ˢ''≡ᵖ'' : (isset : isSet A) → isTightˢ'' R isset ≡ isTightᵖ'' R
-    isTight-ˢ''≡ᵖ'' isset = hProp≡ (isoToPath (record
-      { fun      = λ <-tightˢ'' a b ¬ᵗ[a<b⊎b<a] → ∣ <-tightˢ'' a b ¬ᵗ[a<b⊎b<a] ∣
-      ; inv      = λ <-tightᵖ'' a b ¬ᵗ[a<b⊎b<a] → ∣∣-elim (λ c → isset a b) (λ x → x) (<-tightᵖ'' a b ¬ᵗ[a<b⊎b<a])
-      ; rightInv = λ f → isProp[] (isTightᵖ'' _<_      ) _ f
-      ; leftInv  = λ g → isProp[] (isTightˢ'' _<_ isset) _ g
-      }))
+  isTight'⇔isTight''' .fst x = x
+  isTight'⇔isTight''' .snd x = x
 
-    isTight-ˢ'''≡ᵖ''' : (isset : isSet A) → isTightˢ''' R isset ≡ isTightᵖ''' R
-    isTight-ˢ'''≡ᵖ''' isset = hProp≡ (isoToPath (record
-      { fun      = λ #-tightˢ''' a b ¬ᵗ[a#b] → ∣ #-tightˢ''' a b ¬ᵗ[a#b] ∣
-      ; inv      = λ #-tightᵖ''' a b ¬ᵗ[a#b] → ∣∣-elim (λ c → isset a b) (λ x → x) (#-tightᵖ''' a b ¬ᵗ[a#b])
-      ; rightInv = λ f → isProp[] (isTightᵖ''' _#_      ) _ f
-      ; leftInv  = λ g → isProp[] (isTightˢ''' _#_ isset) _ g
-      }))
+  isTight''⇔isTight''' <-asym .fst x = x
+  isTight''⇔isTight''' <-asym .snd x = x
 
-    isTight-ᵖ≡ᵖ' : isTightᵖ R ≡ isTightᵖ' R
-    isTight-ᵖ≡ᵖ' = hProp≡ (isoToPath (record
-      { fun      = λ <-tightᵖ  a b ¬ᵗ[a<b⊔b<a]    → let (¬ᵗ[a<b] , ¬ᵗ[b<a]) = deMorgan₂ (a < b) (b < a) ¬ᵗ[a<b⊔b<a] in <-tightᵖ a b ¬ᵗ[a<b] ¬ᵗ[b<a]
-      ; inv      = λ <-tightᵖ' a b ¬ᵗ[a<b] ¬ᵗ[b<a] → <-tightᵖ' a b (deMorgan₂-back (a < b) (b < a) (¬ᵗ[a<b] , ¬ᵗ[b<a]))
-      ; rightInv = λ f → isProp[] (isTightᵖ' _<_) _ f
-      ; leftInv  = λ g → isProp[] (isTightᵖ  _<_) _ g
-      }))
+  isTight⇔isAntisym .fst <-tight   a b a≤b b≤a = <-tight   a b b≤a a≤b
+  isTight⇔isAntisym .snd ≤-antisym a b b≤a a≤b = ≤-antisym a b a≤b b≤a
 
-    isTight-ᵖ'≡ᵖ'' : isTightᵖ' R ≡ isTightᵖ'' R
-    isTight-ᵖ'≡ᵖ'' = hProp≡ (isoToPath (record
-      { fun      = λ <-tightᵖ'  a b ¬ᵗ[a<b⊎b<a] → <-tightᵖ'  a b (pathTo⇒ (∥¬A∥≡¬∥A∥ _) ∣ ¬ᵗ[a<b⊎b<a] ∣)
-      ; inv      = λ <-tightᵖ'' a b ¬ᵗ[a<b⊔b<a] → <-tightᵖ'' a b (λ [a<b⊎b<a] → ¬ᵗ[a<b⊔b<a] (⊎⇒⊔ (a < b) (b < a) [a<b⊎b<a]))
-      ; rightInv = λ f → isProp[] (isTightᵖ'' _<_) _ f
-      ; leftInv  = λ g → isProp[] (isTightᵖ'  _<_) _ g
-      }))
+  -- consequences on sets
+  module _ (is-set : isSet A) where
+    -- abstract
+    isAntisymˢ⇔isAntisym    :                               [ isAntisymˢ  R is-set ⇔ isAntisym  R ]
+    isAntisymˢ'⇔isAntisym'  :                               [ isAntisymˢ' R is-set ⇔ isAntisym' R ]
+    isTightˢ⇔isTight        :                               [ isTightˢ    R is-set ⇔ isTight    R ]
+    isTightˢ'⇔isTight'      :                               [ isTightˢ'   R is-set ⇔ isTight'   R ]
+    isTightˢ''⇔isTight''    :                               [ isTightˢ''  R is-set ⇔ isTight''  R ]
+    isTightˢ'''⇔isTight'''  :                               [ isTightˢ''' R is-set ⇔ isTight''' R ]
+    isTightˢ'''⇔isAntisymˢ  : (<-asym : [ isAsym  _<_ ])  → [ isTightˢ''' (λ x y → [ <-asym x y ] (x < y) ⊎ᵖ (y < x)) is-set
+                                                            ⇔ isAntisymˢ  (λ x y →                   ¬ (y < x)      ) is-set ]
 
-    module _ (let _#_ = λ x y → (x < y) ⊔ (y < x) ) where
-      abstract -- this actually holds definitionally with `refl`, but due to our frequent use of `abstract` for the prop, we need `isPropIsProp`
-        isTight-ᵖ'≡ᵖ''' : isTightᵖ' _<_ ≡ isTightᵖ''' _#_
-        isTight-ᵖ'≡ᵖ''' = ΣPathP (refl , isPropIsProp _ _)
+    isAntisymˢ⇔isAntisym .fst ≤-antisymˢ a b a≤b b≤a = ∣ ≤-antisymˢ a b a≤b b≤a ∣
+    isAntisymˢ⇔isAntisym .snd ≤-antisym  a b a≤b b≤a = ∣∣-elim (λ c → is-set a b) (λ x → x) (≤-antisym  a b a≤b b≤a)
 
-    module _ (<-asym : [ isAsymᵖ _<_ ]) (let _#_ = _#''_ {_<_ = _<_} {<-asym = <-asym}) where
-      abstract -- this actually holds definitionally with `refl`, but due to our frequent use of `abstract` for the prop, we need `isPropIsProp`
-        isTight-ᵖ''≡ᵖ''' : isTightᵖ'' _<_ ≡ isTightᵖ''' _#_
-        isTight-ᵖ''≡ᵖ''' = ΣPathP (refl , isPropIsProp _ _)
+    isAntisymˢ'⇔isAntisym' .fst ≤-antisymˢ' a b a≤b ¬ᵗa≡b = ≤-antisymˢ' a b a≤b (λ  z  → ¬ᵗa≡b ∣ z ∣)
+    isAntisymˢ'⇔isAntisym' .snd ≤-antisym'  a b a≤b ¬ᵗa≡b = ≤-antisym'  a b a≤b (λ ∣z∣ → ∣∣-elim {P = λ _ → ⊥⊥} (λ _ → isProp⊥) ¬ᵗa≡b ∣z∣)
 
-    module _ (let _≤_ = λ x y → ¬ (y < x))  where
-      abstract
-        isTightᵖ≡isAntisymᵖ : isTightᵖ _<_ ≡ isAntisymᵖ _≤_
-        isTightᵖ≡isAntisymᵖ = hProp≡ (isoToPath (record
-          { fun      = λ <-tight   a b a≤b b≤a → <-tight   a b b≤a a≤b
-          ; inv      = λ ≤-antisym a b b≤a a≤b → ≤-antisym a b a≤b b≤a
-          ; rightInv = λ f → isProp[] (isAntisymᵖ _≤_) _ f
-          ; leftInv  = λ g → isProp[] (isTightᵖ   _<_) _ g
-          }))
+    isTightˢ⇔isTight .fst <-tightˢ a b a<b b<a = ∣ <-tightˢ a b a<b b<a ∣
+    isTightˢ⇔isTight .snd <-tightᵖ a b a<b b<a = ∣∣-elim (λ c → is-set a b) (λ x → x) (<-tightᵖ a b a<b b<a)
 
-    module _ (isset : isSet A) (<-asym : [ isAsymᵖ _<_ ])
-             (let _≤_ = λ x y → ¬ (y < x))
-             (let _#_ = _#''_ {_<_ = _<_} {<-asym = <-asym}) where
-      abstract
-        isTightˢ'''≡isAntisymˢ : (isTightˢ''' _#_ isset) ≡ (isAntisymˢ _≤_ isset)
-        isTightˢ'''≡isAntisymˢ = hProp≡ (isoToPath (record
-          { fun      = λ #-tight a b a≤b b≤a → #-tight a b (deMorgan₂-back' (b≤a , a≤b))
-          ; inv      = λ ≤-antisym a b ¬ᵗa#b → let (b≤a , a≤b) = deMorgan₂' ¬ᵗa#b in ≤-antisym a b a≤b b≤a
-          ; rightInv = λ f → isProp[] (isAntisymˢ  _≤_ isset) _ f
-          ; leftInv  = λ g → isProp[] (isTightˢ''' _#_ isset) _ g
-          }))
+    isTightˢ'⇔isTight' .fst <-tightˢ' a b ¬ᵗ[a<b⊔b<a] = ∣ <-tightˢ' a b ¬ᵗ[a<b⊔b<a] ∣
+    isTightˢ'⇔isTight' .snd <-tightᵖ' a b ¬ᵗ[a<b⊔b<a] = ∣∣-elim (λ c → is-set a b) (λ x → x) (<-tightᵖ' a b ¬ᵗ[a<b⊔b<a])
+
+    isTightˢ''⇔isTight'' .fst <-tightˢ'' a b ¬ᵗ[a<b⊎b<a] = ∣ <-tightˢ'' a b ¬ᵗ[a<b⊎b<a] ∣
+    isTightˢ''⇔isTight'' .snd <-tightᵖ'' a b ¬ᵗ[a<b⊎b<a] = ∣∣-elim (λ c → is-set a b) (λ x → x) (<-tightᵖ'' a b ¬ᵗ[a<b⊎b<a])
+
+    isTightˢ'''⇔isTight''' .fst #-tightˢ''' a b ¬ᵗ[a#b] = ∣ #-tightˢ''' a b ¬ᵗ[a#b] ∣
+    isTightˢ'''⇔isTight''' .snd #-tightᵖ''' a b ¬ᵗ[a#b] = ∣∣-elim (λ c → is-set a b) (λ x → x) (#-tightᵖ''' a b ¬ᵗ[a#b])
+
+    isTightˢ'''⇔isAntisymˢ <-asym .fst #-tight a b a≤b b≤a = #-tight a b (deMorgan₂-back' (b≤a , a≤b))
+    isTightˢ'''⇔isAntisymˢ <-asym .snd ≤-antisym a b ¬ᵗa#b = let (b≤a , a≤b) = deMorgan₂' ¬ᵗa#b in ≤-antisym a b a≤b b≤a
 
 -- for these pathes, `A` and `hProp.fst` need to be in the same universe to omit ugly lifting into `ℓ-max ℓ ℓ'`
 --   although this would be possible to have (with lifting)
@@ -161,35 +123,61 @@ module _ {ℓ : Level} {A : Type ℓ} (R : hPropRel A A ℓ)
   (let _≤_ = R)
   (let _#_ = R)
   where
+  -- equivalence of "not apart" and "equal"
+  [¬ᵗ#]⇔[≡]  : hProp ℓ
+  [¬ᵗ#]⇔[≡]  = ∀[ a ] ∀[ b ] ¬ (a # b) ⇔ a ≡ₚ b
+  [¬ᵗ#]⇔[≡]ᵗ : Type (ℓ-suc ℓ)
+  [¬ᵗ#]⇔[≡]ᵗ = ∀ a b → (¬ᵗ [ a # b ]) ≡ (a ≡ b)
+
+  -- double negation elimination over _≡_
+  dne-over-≡ᵗ : Type (ℓ-suc ℓ)
+  dne-over-≡ᵗ = ∀(a b : A) → (¬ᵗ ¬ᵗ (a ≡ b)) ≡ (a ≡ b)
+
   abstract
-    irrefl+tight⇒[¬ᵗ#]≡[≡ᵖ] : [ isIrreflᵖ _#_ ] → [ isTightᵖ''' _#_ ] → ∀ a b → ¬ (a # b) ≡ (a ≡ₚ b)
-    irrefl+tight⇒[¬ᵗ#]≡[≡ᵖ] #-irrefl #-tight a b = hProp≡ (isoToPath (record
-      { fun      = λ ¬ᵗ[a#b] → #-tight a b ¬ᵗ[a#b]
-      ; inv      = λ a≡b a#b → #-irrefl b (substₚ (λ x → x # b) a≡b a#b)
-      ; rightInv = λ f → isProp[] (    a ≡ₚ b) _ f
-      ; leftInv  = λ g → isProp[] (¬ (a #  b)) _ g
-      }))
+    irrefl+tight⇒[¬ᵗ#]⇔[≡] : [ isIrrefl  _#_ ] → [ isTight''' _#_ ] → [ [¬ᵗ#]⇔[≡] ]
+    irrefl+tight⇒[¬ᵗ#]⇔[≡] #-irrefl #-tight a b .fst ¬ᵗ[a#b] = #-tight a b ¬ᵗ[a#b]
+    irrefl+tight⇒[¬ᵗ#]⇔[≡] #-irrefl #-tight a b .snd a≡b a#b = #-irrefl b (substₚ (λ x → x # b) a≡b a#b)
 
-    irrefl+tight⇒[¬ᵗ#]≡[≡ˢ] : (isset : isSet A) → [ isIrreflᵖ _#_ ] → [ isTightˢ''' _#_ isset ]
-                                 → ∀ a b → (¬ᵗ [ a # b ]) ≡ (a ≡ b)
-    irrefl+tight⇒[¬ᵗ#]≡[≡ˢ] isset #-irrefl #-tight a b = (isoToPath (record
-      { fun      = λ ¬ᵗ[a#b] → #-tight a b ¬ᵗ[a#b]
-      ; inv      = λ a≡b a#b → #-irrefl b (subst (λ x → [ x # b ]) a≡b a#b)
-      ; rightInv = λ f → isset a b _ f
-      ; leftInv  = λ g → isProp[] (¬ (a #  b)) _ g
-      }))
-
-    [¬ᵗ#]≡[≡]⇒dne-on-≡ : (∀ a b → (¬ᵗ [ a # b ]) ≡ (a ≡ b))
-                             → ∀(a b : A) → (¬ᵗ ¬ᵗ (a ≡ b)) ≡ (a ≡ b)
-    [¬ᵗ#]≡[≡]⇒dne-on-≡ [¬ᵗ#]≡[≡] a b =
+    [¬ᵗ#]≡[≡]⇒dne-over-≡ : [¬ᵗ#]⇔[≡]ᵗ → dne-over-≡ᵗ
+    [¬ᵗ#]≡[≡]⇒dne-over-≡ [¬ᵗ#]≡[≡] a b =
       (    ¬ᵗ ¬ᵗ ( a ≡ b ) ≡⟨ (λ i → ¬ᵗ ¬ᵗ [¬ᵗ#]≡[≡] a b (~ i)) ⟩
-        ¬ᵗ ¬ᵗ ¬ᵗ [ a # b ] ≡⟨ ¬¬-involutive [ a # b ] ⟩
+        ¬ᵗ ¬ᵗ ¬ᵗ [ a # b ] ≡⟨ ¬¬-involutiveᵗ [ a # b ] ⟩
               ¬ᵗ [ a # b ] ≡⟨ [¬ᵗ#]≡[≡] a b ⟩
                    a ≡ b   ∎)
 
-    irrefl+tight⇒dne-on-≡ˢ : (isset : isSet A) → [ isIrreflᵖ _#_ ] → [ isTightˢ''' _#_ isset ]
-                                   → ∀(a b : A) → (¬ᵗ ¬ᵗ (a ≡ b)) ≡ (a ≡ b)
-    irrefl+tight⇒dne-on-≡ˢ isset #-irrefl #-tight = [¬ᵗ#]≡[≡]⇒dne-on-≡ (irrefl+tight⇒[¬ᵗ#]≡[≡ˢ] isset #-irrefl #-tight)
+  -- consequences on sets
+  module _ (is-set : isSet A) where
+    -- equivalence of "not apart" and "equal" on sets
+    [¬ᵗ#]⇔[≡ˢ] = ∀[ a ] ∀[ b ]             ¬ (a # b) ⇔ [ is-set ] a ≡ˢ b
+
+    -- double negation elimination over _≡_ on sets
+    dne-over-≡ˢ  = ∀[ a ] ∀[ b ] ¬ ¬ [ is-set ] a ≡ˢ b ⇔ [ is-set ] a ≡ˢ b
+
+    irrefl+tight⇒[¬ᵗ#]⇔[≡ˢ]   : [ isIrrefl  _#_ ] → [ isTightˢ''' _#_ is-set ] → [ [¬ᵗ#]⇔[≡ˢ] ]
+    [¬ᵗ#]⇔[≡ˢ]⇒dne-over-≡ˢ    : [ [¬ᵗ#]⇔[≡ˢ] ]                                 → [ dne-over-≡ˢ ]
+    irrefl+tight⇒dne-over-≡ˢ  : [ isIrrefl  _#_ ] → [ isTightˢ''' _#_ is-set ] → [ dne-over-≡ˢ ]
+    irrefl+tight⇒[¬ᵗ#]≡[≡ˢ]   : [ isIrrefl  _#_ ] → [ isTightˢ''' _#_ is-set ] → ∀ a b → (¬ᵗ [ a # b ]) ≡ (a ≡ b)
+    irrefl+tight⇒dne-over-≡ˢᵗ : [ isIrrefl  _#_ ] → [ isTightˢ''' _#_ is-set ] → ∀(a b : A) → (¬ᵗ ¬ᵗ (a ≡ b)) ≡ (a ≡ b)
+
+    irrefl+tight⇒[¬ᵗ#]⇔[≡ˢ] #-irrefl #-tight a b .fst ¬ᵗ[a#b] = #-tight a b ¬ᵗ[a#b]
+    irrefl+tight⇒[¬ᵗ#]⇔[≡ˢ] #-irrefl #-tight a b .snd a≡b a#b = #-irrefl b (subst (λ x → [ x # b ]) a≡b a#b)
+
+    irrefl+tight⇒[¬ᵗ#]≡[≡ˢ] #-irrefl #-tight a b = isoToPath γ where
+      γ : Iso _ _
+      γ .Iso.fun      ¬ᵗ[a#b] = #-tight a b ¬ᵗ[a#b]
+      γ .Iso.inv      a≡b a#b = #-irrefl b (subst (λ x → [ x # b ]) a≡b a#b)
+      γ .Iso.rightInv f       = is-set a b _ f
+      γ .Iso.leftInv  g       = isProp[] (¬ (a #  b)) _ g
+
+    [¬ᵗ#]⇔[≡ˢ]⇒dne-over-≡ˢ [¬ᵗ#]⇔[≡ˢ] a b = snd ( -- this first proof works better with `_≡⟨_⟩_`
+       ¬ ¬ [ is-set ]      a ≡ˢ b  ⇔⟨ (map-× (λ z z₁ z₂ → z₂ (λ z₃ → z₁ (λ z₄ → z z₄ z₃))) (λ z z₁ z₂ → z₂ (z (λ z₃ → z₁ (λ z₄ → z₄ z₃)))) $ swap $ [¬ᵗ#]⇔[≡ˢ] a b) ⟩
+       ¬              ¬ ¬ (a #  b) ⇔⟨ ¬¬-involutive (a # b) ⟩
+       ¬                  (a #  b) ⇔⟨ [¬ᵗ#]⇔[≡ˢ] a b ⟩
+           [ is-set ]      a ≡ˢ b  ∎ᵖ)
+
+    irrefl+tight⇒dne-over-≡ˢ  #-irrefl #-tight = [¬ᵗ#]⇔[≡ˢ]⇒dne-over-≡ˢ (irrefl+tight⇒[¬ᵗ#]⇔[≡ˢ] #-irrefl #-tight)
+
+    irrefl+tight⇒dne-over-≡ˢᵗ #-irrefl #-tight = [¬ᵗ#]≡[≡]⇒dne-over-≡   (irrefl+tight⇒[¬ᵗ#]≡[≡ˢ] #-irrefl #-tight)
 
 abstract
   -- Lemma 4.1.7.
@@ -197,17 +185,17 @@ abstract
   -- 1. we have an apartness relation defined by
   --    x # y := (x < y) ∨ (y < x), and
 
-  #'-isApartnessRel : ∀{X : Type ℓ} {_<_ : hPropRel X X ℓ'} → (isSPO : [ isStrictPartialOrderᵖ _<_ ]) → [ isApartnessRelᵖ (_#'_ {_<_ = _<_}) ]
+  #'-isApartnessRel : ∀{X : Type ℓ} {_<_ : hPropRel X X ℓ'} → (isSPO : [ isStrictPartialOrder  _<_ ]) → [ isApartnessRel  (_#'_ {_<_ = _<_}) ]
   #'-isApartnessRel {ℓ} {ℓ'} {X = X} {_<_ = _<_} <-SPO =
     let (isstrictpartialorder <-irrefl <-trans <-cotrans) = <-SPO
     in λ where
-      .IsApartnessRel.isIrrefl  a   p   → ⊔-elim (a < a) (a < a) (λ p → ⊥)
+      .IsApartnessRel.is-irrefl  a   p   → ⊔-elim (a < a) (a < a) (λ p → ⊥)
                                           (λ a<a → <-irrefl _ a<a)
                                           (λ a<a → <-irrefl _ a<a)
                                           p
-      .IsApartnessRel.isSym     a b p   → pathTo⇒ (⊔-comm (a < b) (b < a)) p
+      .IsApartnessRel.is-sym     a b p   → pathTo⇒ (⊔-comm (a < b) (b < a)) p
       -- NOTE: it would be much nicer to have case splitting on _⊔_
-      .IsApartnessRel.isCotrans a b p x → let _#''_ = _#'_ {_<_ = _<_} in
+      .IsApartnessRel.is-cotrans a b p x → let _#''_ = _#'_ {_<_ = _<_} in
                                           ⊔-elim (a < b) (b < a) (λ p → (a #'' x) ⊔ (x #'' b))
                                           ( λ a<b → ⊔-elim (a < x) (x < b) (λ q → (a #'' x) ⊔ (x #'' b))
                                                     (λ a<x → inlᵖ (inlᵖ a<x))
@@ -229,16 +217,16 @@ abstract
 
 
   -- variant without copatterns: "just" move the `λ where` "into" the record
-  #'-isApartnessRel' : ∀{X : Type ℓ} (_<_ : hPropRel X X ℓ') → [ isStrictPartialOrderᵖ _<_ ] → [ isApartnessRelᵖ (_#'_ {_<_ = _<_}) ]
+  #'-isApartnessRel' : ∀{X : Type ℓ} (_<_ : hPropRel X X ℓ') → [ isStrictPartialOrder  _<_ ] → [ isApartnessRel  (_#'_ {_<_ = _<_}) ]
   #'-isApartnessRel' {X = X} _<_ <-SPO =
     let (isstrictpartialorder <-irrefl <-trans <-cotrans) = <-SPO
         _#''_ = _#'_ {_<_ = _<_}
     in record
-      { isIrrefl  = λ a a#a → case[ a < a ⊔ a < a ] a#a return (λ _ → ⊥) of λ where
+      { is-irrefl  = λ a a#a → case[ a < a ⊔ a < a ] a#a return (λ _ → ⊥) of λ where
                             (inl a<a) → <-irrefl _ a<a
                             (inr a<a) → <-irrefl _ a<a
-      ; isSym     = λ a b p → pathTo⇒ (⊔-comm (a < b) (b < a)) p
-      ; isCotrans = λ a b p → case[ a < b ⊔ b < a ] p return (λ _ → ∀[ x ] (a #'' x) ⊔ (x #'' b)) of λ where
+      ; is-sym     = λ a b p → pathTo⇒ (⊔-comm (a < b) (b < a)) p
+      ; is-cotrans = λ a b p → case[ a < b ⊔ b < a ] p return (λ _ → ∀[ x ] (a #'' x) ⊔ (x #'' b)) of λ where
           (inl a<b) x → case[ a < x ⊔ x < b ] (<-cotrans _ _ a<b x) return (λ _ → (a #'' x) ⊔ (x #'' b)) of λ where
             (inl a<x) → inlᵖ (inlᵖ a<x)
             (inr x<b) → inrᵖ (inlᵖ x<b)
@@ -258,12 +246,12 @@ abstract
   -- 2. we have a preorder defined by
   --    x ≤ y := ¬ᵗ(y < x).
 
-  ≤-isPreorder' : ∀{X : Type ℓ} (_<_ : hPropRel X X ℓ') → [ isStrictPartialOrderᵖ _<_ ] → [ isPreorderᵖ (_≤'_ {_<_ = _<_}) ]
+  ≤-isPreorder' : ∀{X : Type ℓ} (_<_ : hPropRel X X ℓ') → [ isStrictPartialOrder  _<_ ] → [ isPreorder  (_≤'_ {_<_ = _<_}) ]
   ≤-isPreorder' {X = X} _<_ <-SPO =
     let (isstrictpartialorder <-irrefl <-trans <-cotrans) = <-SPO
     in λ where
-     .IsPreorder.isRefl → <-irrefl
-     .IsPreorder.isTrans a b c ¬ᵗb<a ¬ᵗc<b c<a →
+     .IsPreorder.is-refl → <-irrefl
+     .IsPreorder.is-trans a b c ¬ᵗb<a ¬ᵗc<b c<a →
        ⊔-elim (c < b) (b < a) (λ _ → ⊥)
        (λ c<b → ¬ᵗc<b c<b)
        (λ b<a → ¬ᵗb<a b<a)

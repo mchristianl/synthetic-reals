@@ -9,16 +9,17 @@ open import Cubical.Relation.Nullary.Base renaming (¬_ to ¬ᵗ_)-- ¬ᵗ_
 open import Cubical.Data.Sum.Base renaming (_⊎_ to infixr 4 _⊎_)
 open import Cubical.Foundations.Logic renaming (inl to inlᵖ; inr to inrᵖ)
 
+import MoreLogic
 open import MoreLogic.Definitions
 
 -- hProps of relations
 module _ {ℓ ℓ' : Level} {A : Type ℓ} (R : hPropRel A A ℓ') where
 
-  isReflᵖ     =                      ∀[ a ]    R a a
-  isIrreflᵖ   =                      ∀[ a ] ¬ (R a a)
+  isRefl      =                      ∀[ a ]    R a a
+  isIrrefl    =                      ∀[ a ] ¬ (R a a)
 
-  isTransᵖ    =                      ∀[ a ] ∀[ b ] ∀[ x ] R a b ⇒         R b x ⇒ R a x
-  isCotransᵖ  =                      ∀[ a ] ∀[ b ]        R a b ⇒ (∀[ x ] R a x ⊔ R x b)
+  isTrans     =                      ∀[ a ] ∀[ b ] ∀[ x ] R a b ⇒         R b x ⇒ R a x
+  isCotrans   =                      ∀[ a ] ∀[ b ]        R a b ⇒ (∀[ x ] R a x ⊔ R x b)
 
   -- two variants of asymmetry
   --
@@ -27,20 +28,20 @@ module _ {ℓ ℓ' : Level} {A : Type ℓ} (R : hPropRel A A ℓ') where
   --
   -- which are equivalent
   --
-  --   isAsymᵖ≡ᵖ' :  isAsymᵖ R ≡ isAsymᵖ' R
+  --   isAsymᵖ≡'  :  isAsym  R ≡ isAsym'  R
   --
   -- but it seems that this one is not equivalent:
   --
   --   ∀ a b → [ (¬ R b a) ⇒ R a b ]
 
-  isSymᵖ      =                      ∀[ a ] ∀[ b ]     R a b ⇒   R b a
-  isAsymᵖ     =                      ∀[ a ] ∀[ b ]     R a b ⇒ ¬ R b a
-  isAsymᵖ'    =                      ∀[ a ] ∀[ b ] ¬ (R a b ⊓    R b a)
-  isAsymᵖ''   =                      ∀[ a ] ∀[ b ] ¬  R a b ⇒    R b a  -- not equivalent! (weaker)
+  isSym       =                      ∀[ a ] ∀[ b ]     R a b ⇒   R b a
+  isAsym      =                      ∀[ a ] ∀[ b ]     R a b ⇒ ¬ R b a
+  isAsym'     =                      ∀[ a ] ∀[ b ] ¬ (R a b ⊓    R b a)
+  isAsym''    =                      ∀[ a ] ∀[ b ] ¬  R a b ⇒    R b a  -- not equivalent! (weaker)
 
-  isAntisymᵖ  =                      ∀[ a ] ∀[ b ]     R a b ⇒             R b a   ⇒            a ≡ₚ b
+  isAntisym   =                      ∀[ a ] ∀[ b ]     R a b ⇒             R b a   ⇒            a ≡ₚ b
   isAntisymˢ  = λ(isset : isSet A) → ∀[ a ] ∀[ b ]     R a b ⇒             R b a   ⇒ ([ isset ] a ≡ˢ b)
-  isAntisymᵖ' =                      ∀[ a ] ∀[ b ]     R a b ⇒ ¬(          a ≡ₚ b) ⇒            R b a
+  isAntisym'  =                      ∀[ a ] ∀[ b ]     R a b ⇒ ¬(          a ≡ₚ b) ⇒            R b a
   isAntisymˢ' = λ(isset : isSet A) → ∀[ a ] ∀[ b ]     R a b ⇒ ¬([ isset ] a ≡ˢ b) ⇒            R b a
 
   -- tightness is closely related to antisymmetry:
@@ -55,8 +56,8 @@ module _ {ℓ ℓ' : Level} {A : Type ℓ} (R : hPropRel A A ℓ') where
   --
   -- and indeed, we get
   --
-  --   isTightᵖ  _<_ ≡ isAntisymᵖ  (λ a b → ¬ (b < a))
-  --   isTightᵖ' _<_ ≡ isTightᵖ''' (λ a b → (a < b) ⊔ (b < a))
+  --   isTight   _<_ ≡ isAntisym   (λ a b → ¬ (b < a))
+  --   isTight'  _<_ ≡ isTight'''  (λ a b → (a < b) ⊔ (b < a))
   --
   -- In that case, `≤-antisym` and `#-tight` are almost the same, definitionally:
   --
@@ -71,10 +72,10 @@ module _ {ℓ ℓ' : Level} {A : Type ℓ} (R : hPropRel A A ℓ') where
   --
   --   IsTight           R = ∀ a b → [ ¬    R a b   ⇒   ¬ R b a      ⇒   a ≡ₚ b ] -- on _<_, "canonical"
   --   IsTightˢ    isset R = ∀ a b → [ ¬    R a b ] → [ ¬ R b a ]    →   a ≡  b   -- on _<_
-  --   IsTight'          R = ∀ a b → [ ¬ (  R a b   ⊔      R b a  )   ⇒   a ≡ₚ b ] -- on _<_, definitional `isTight-ᵖ'≡ᵖ'''`
-  --   IsTightˢ'   isset R = ∀ a b → [ ¬ (  R a b   ⊔      R b a  ) ] →   a ≡  b   -- on _<_
-  --   IsTight''         R = ∀ a b →   ¬ᵗ  ([ R a b ] ⊎ [    R b a ])   → [ a ≡ₚ b ] -- on _<_, definitional `isTight-ᵖ''≡ᵖ'''`
-  --   IsTightˢ''  isset R = ∀ a b →   ¬ᵗ  ([ R a b ] ⊎ [    R b a ])   →   a ≡  b   -- on _<_, "convenient"
+  --   IsTight'          R = ∀ a b → [ ¬ (  R a b   ⊔      R b a  )   ⇒   a ≡ₚ b ] -- on _<_, definitional `isTight-ᵖ'≡'''`
+   --   IsTightˢ'   isset R = ∀ a b → [ ¬ (  R a b   ⊔      R b a  ) ] →   a ≡  b   -- on _<_
+  --   IsTight''         R = ∀ a b →   ¬ᵗ  ([ R a b ] ⊎ [    R b a ])   → [ a ≡ₚ b ] -- on _<_, definitional `isTight-ᵖ''≡'''`
+   --   IsTightˢ''  isset R = ∀ a b →   ¬ᵗ  ([ R a b ] ⊎ [    R b a ])   →   a ≡  b   -- on _<_, "convenient"
   --   IsTight'''        R = ∀ a b → [ ¬    R a b                     ⇒   a ≡ₚ b ] -- on _#_
   --   IsTightˢ''' isset R = ∀ a b →   ¬ᵗ   [ R a b ]                   →   a ≡  b   -- on _#_, also "convenient"
   --
@@ -84,24 +85,24 @@ module _ {ℓ ℓ' : Level} {A : Type ℓ} (R : hPropRel A A ℓ') where
   --
   -- These tightness definitions are all equivalent in the following sense:
   --
-  --   isTight-ˢ≡ᵖ       : (isset : isSet A)          → isTightˢ    isset _<_ ≡ isTightᵖ    _<_
-  --   isTight-ˢ'≡ᵖ'     : (isset : isSet A)          → isTightˢ'   isset _<_ ≡ isTightᵖ'   _<_
-  --   isTight-ˢ''≡ᵖ''   : (isset : isSet A)          → isTightˢ''  isset _<_ ≡ isTightᵖ''  _<_
-  --   isTight-ˢ'''≡ᵖ''' : (isset : isSet A)          → isTightˢ''' isset _#_ ≡ isTightᵖ''' _#_
-  --   isTight-ᵖ≡ᵖ'      :                              isTightᵖ          _<_ ≡ isTightᵖ'   _<_
-  --   isTight-ᵖ'≡ᵖ''    :                              isTightᵖ'         _<_ ≡ isTightᵖ''  _<_
-  --   isTight-ᵖ'≡ᵖ'''   :                              isTightᵖ'         _<_ ≡ isTightᵖ''' (λ a b →  ( a < b ) ⊔ ( b < a )   )
-  --   isTight-ᵖ''≡ᵖ'''  : (<-asym : [ isAsymᵖ _<_ ]) → isTightᵖ''        _<_ ≡ isTightᵖ''' (λ a b → ([ a < b ] ⊎ [ b < a ]) , ⊎-isProp (a < b) (b < a) (inl (<-asym a b)))
+  --   isTight-ˢ≡        : (is-set : isSet A)         → isTightˢ    is-set _<_ ≡ isTight     _<_
+  --   isTight-ˢ'≡'      : (is-set : isSet A)         → isTightˢ'   is-set _<_ ≡ isTight'    _<_
+  --   isTight-ˢ''≡''    : (is-set : isSet A)         → isTightˢ''  is-set _<_ ≡ isTight''   _<_
+  --   isTight-ˢ'''≡'''  : (is-set : isSet A)         → isTightˢ''' is-set _#_ ≡ isTight'''  _#_
+  --   isTight-≡'        :                              isTight            _<_ ≡ isTight'    _<_
+  --   isTight-'≡''      :                              isTight'           _<_ ≡ isTight''   _<_
+  --   isTight-'≡'''     :                              isTight'           _<_ ≡ isTight'''  (λ a b →                (a < b) ⊔  (b < a))
+  --   isTight-''≡'''    : (<-asym : [ isAsym  _<_ ]) → isTight''          _<_ ≡ isTight'''  (λ a b → [ <-asym a b ] (a < b) ⊎ᵖ (b < a))
   --
-  -- where `isTight-ᵖ'≡ᵖ'''` and `isTight-ᵖ''≡ᵖ'''` hold definitionally.
+  -- where `isTight-ᵖ'≡'''`  and `isTight-ᵖ''≡'''`  hold definitionally.
 
-  isTightᵖ    =                      ∀[ a ] ∀[ b ]      ¬ R a b   ⇒  ¬ R b a      ⇒           a ≡ₚ b
+  isTight     =                      ∀[ a ] ∀[ b ]      ¬ R a b   ⇒  ¬ R b a      ⇒           a ≡ₚ b
   isTightˢ    = λ(isset : isSet A) → ∀[ a ] ∀[ b ]      ¬ R a b   ⇒  ¬ R b a      ⇒ [ isset ] a ≡ˢ b
-  isTightᵖ'   =                      ∀[ a ] ∀[ b ]  ¬  (  R a b   ⊔    R b a   )  ⇒           a ≡ₚ b
+  isTight'    =                      ∀[ a ] ∀[ b ]  ¬  (  R a b   ⊔    R b a   )  ⇒           a ≡ₚ b
   isTightˢ'   = λ(isset : isSet A) → ∀[ a ] ∀[ b ]  ¬  (  R a b   ⊔    R b a   )  ⇒ [ isset ] a ≡ˢ b
-  isTightᵖ''  =                      ∀[ a ] ∀[ b ] (¬ᵗ ([ R a b ] ⊎  [ R b a ])) ᵗ⇒           a ≡ₚ b
+  isTight''   =                      ∀[ a ] ∀[ b ] (¬ᵗ ([ R a b ] ⊎  [ R b a ])) ᵗ⇒           a ≡ₚ b
   isTightˢ''  = λ(isset : isSet A) → ∀[ a ] ∀[ b ] (¬ᵗ ([ R a b ] ⊎  [ R b a ])) ᵗ⇒ [ isset ] a ≡ˢ b
-  isTightᵖ''' =                      ∀[ a ] ∀[ b ]  ¬     R a b                   ⇒           a ≡ₚ b
+  isTight'''  =                      ∀[ a ] ∀[ b ]  ¬     R a b                   ⇒           a ≡ₚ b
   isTightˢ''' = λ(isset : isSet A) → ∀[ a ] ∀[ b ]  ¬     R a b                   ⇒ [ isset ] a ≡ˢ b
 
 -- common definitions of less equal _≤_ and apartness _#_ with respect to _<_
@@ -111,7 +112,7 @@ module _ {ℓ ℓ'} {X : Type ℓ} {_<_ : hPropRel X X ℓ'} where
   _#'_ x y = (x < y) ⊔ (y < x)
 
   -- a variant that omits propositional truncation by using asymmetry of _<_
-  _#''_ : {<-asym : [ isAsymᵖ _<_ ]} → hPropRel X X ℓ'
+  _#''_ : {<-asym : [ isAsym  _<_ ]} → hPropRel X X ℓ'
   _#''_ {<-asym = <-asym} x y = [ <-asym x y ] (x < y) ⊎ᵖ (y < x)
 
   _≤'_ : hPropRel X X ℓ'
@@ -127,46 +128,46 @@ module _ {ℓ ℓ' : Level} {A : Type ℓ} (R : hPropRel A A ℓ') where
   record IsApartnessRel : Type (ℓ-max ℓ ℓ') where
     constructor isapartnessrel
     field
-      isIrrefl  : [ isIrreflᵖ  R ]
-      isSym     : [ isSymᵖ     R ]
-      isCotrans : [ isCotransᵖ R ]
+      is-irrefl  : [ isIrrefl   R ]
+      is-sym     : [ isSym      R ]
+      is-cotrans : [ isCotrans  R ]
 
-  isApartnessRelᵖ : hProp (ℓ-max ℓ ℓ')
-  isApartnessRelᵖ .fst = IsApartnessRel
-  isApartnessRelᵖ .snd (isapartnessrel a₀ b₀ c₀) (isapartnessrel a₁ b₁ c₁) = φ where
-    abstract φ = λ i → isapartnessrel (snd (isIrreflᵖ R) a₀ a₁ i) (snd (isSymᵖ R) b₀ b₁ i) (snd (isCotransᵖ R) c₀ c₁ i)
+  isApartnessRel  : hProp (ℓ-max ℓ ℓ')
+  isApartnessRel  .fst = IsApartnessRel
+  isApartnessRel  .snd (isapartnessrel a₀ b₀ c₀) (isapartnessrel a₁ b₁ c₁) = φ where
+    abstract φ = λ i → isapartnessrel (snd (isIrrefl  R) a₀ a₁ i) (snd (isSym  R) b₀ b₁ i) (snd (isCotrans  R) c₀ c₁ i)
 
   record IsStrictPartialOrder : Type (ℓ-max ℓ ℓ') where
     constructor isstrictpartialorder
     field
-      isIrrefl  : [ isIrreflᵖ  R ]
-      isTrans   : [ isTransᵖ   R ]
-      isCotrans : [ isCotransᵖ R ]
+      is-irrefl  : [ isIrrefl   R ]
+      is-trans   : [ isTrans    R ]
+      is-cotrans : [ isCotrans  R ]
 
-  isStrictPartialOrderᵖ : hProp (ℓ-max ℓ ℓ')
-  isStrictPartialOrderᵖ .fst = IsStrictPartialOrder
-  isStrictPartialOrderᵖ .snd (isstrictpartialorder a₀ b₀ c₀) (isstrictpartialorder a₁ b₁ c₁) = φ where
-    abstract φ = λ i → isstrictpartialorder (snd (isIrreflᵖ R) a₀ a₁ i) (snd (isTransᵖ R) b₀ b₁ i) (snd (isCotransᵖ R) c₀ c₁ i)
+  isStrictPartialOrder  : hProp (ℓ-max ℓ ℓ')
+  isStrictPartialOrder  .fst = IsStrictPartialOrder
+  isStrictPartialOrder  .snd (isstrictpartialorder a₀ b₀ c₀) (isstrictpartialorder a₁ b₁ c₁) = φ where
+    abstract φ = λ i → isstrictpartialorder (snd (isIrrefl  R) a₀ a₁ i) (snd (isTrans  R) b₀ b₁ i) (snd (isCotrans  R) c₀ c₁ i)
 
   record IsPreorder : Type (ℓ-max ℓ ℓ') where
     constructor ispreorder
     field
-      isRefl    : [ isReflᵖ  R ]
-      isTrans   : [ isTransᵖ R ]
+      is-refl    : [ isRefl   R ]
+      is-trans   : [ isTrans  R ]
 
-  isPreorderᵖ : hProp (ℓ-max ℓ ℓ')
-  isPreorderᵖ .fst = IsPreorder
-  isPreorderᵖ .snd (ispreorder a₀ b₀) (ispreorder a₁ b₁) = φ where
-    abstract φ = λ i → ispreorder (snd (isReflᵖ R) a₀ a₁ i) (snd (isTransᵖ R) b₀ b₁ i)
+  isPreorder  : hProp (ℓ-max ℓ ℓ')
+  isPreorder  .fst = IsPreorder
+  isPreorder  .snd (ispreorder a₀ b₀) (ispreorder a₁ b₁) = φ where
+    abstract φ = λ i → ispreorder (snd (isRefl  R) a₀ a₁ i) (snd (isTrans  R) b₀ b₁ i)
 
   record IsPartialOrder : Type (ℓ-max ℓ ℓ') where
     constructor ispartialorder
     field
-      isRefl    : [ isReflᵖ    R ]
-      isAntisym : [ isAntisymᵖ R ]
-      isTrans   : [ isTransᵖ   R ]
+      is-refl    : [ isRefl     R ]
+      is-antisym : [ isAntisym  R ]
+      is-trans   : [ isTrans    R ]
 
-  isParialOrderᵖ : hProp (ℓ-max ℓ ℓ')
-  isParialOrderᵖ .fst = IsPartialOrder
-  isParialOrderᵖ .snd (ispartialorder a₀ b₀ c₀) (ispartialorder a₁ b₁ c₁) = φ where
-    abstract φ = λ i → ispartialorder (snd (isReflᵖ R) a₀ a₁ i) (snd (isAntisymᵖ R) b₀ b₁ i) (snd (isTransᵖ R) c₀ c₁ i)
+  isParialOrder  : hProp (ℓ-max ℓ ℓ')
+  isParialOrder  .fst = IsPartialOrder
+  isParialOrder  .snd (ispartialorder a₀ b₀ c₀) (ispartialorder a₁ b₁ c₁) = φ where
+    abstract φ = λ i → ispartialorder (snd (isRefl  R) a₀ a₁ i) (snd (isAntisym  R) b₀ b₁ i) (snd (isTrans  R) c₀ c₁ i)

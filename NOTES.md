@@ -366,7 +366,7 @@ Properties.agda    (90×)
   - but maybe we just use a "short name" for this purpose, e.g.
     - `associative` for the hProp
     - `Associative = [ associative ]` for the underlying type
-    - `assoc : [ associative ]` for an instance
+    - `is-assoc : [ associative ]` for an instance (because this should not conflict with `sym` for pathes)
     - `+-assoc : [ associative ]` when multiple instances need to be distinguished
 
 .

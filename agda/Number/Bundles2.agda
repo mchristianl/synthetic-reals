@@ -55,15 +55,15 @@ record CompletePartiallyOrderedFieldWithSqrt {ℓ ℓ' : Level} : Type (ℓ-suc 
     _+_     : Carrier → Carrier → Carrier
     _·_     : Carrier → Carrier → Carrier
     -_      : Carrier → Carrier
-    <-irrefl  : [ isIrreflᵖ _<_ ]
-    <-trans   : [ isTransᵖ _<_ ]
-    <-cotrans : [ isCotransᵖ _<_ ]
-    isset   : isSet Carrier
+    <-irrefl  : [ isIrrefl  _<_ ]
+    <-trans   : [ isTrans  _<_ ]
+    <-cotrans : [ isCotrans  _<_ ]
+    is-set   : isSet Carrier
 
   -- NOTE: these intermediate definitions are restricted and behave like let-definitions
   --       e.g. they show up in goal contexts and they do not allow for `where` blocks
 
-  <-asym : [ isAsymᵖ _<_ ]
+  <-asym : [ isAsym  _<_ ]
   <-asym = irrefl+trans⇒asym _<_ <-irrefl <-trans
 
   _-_ : Carrier → Carrier → Carrier
@@ -73,22 +73,22 @@ record CompletePartiallyOrderedFieldWithSqrt {ℓ ℓ' : Level} : Type (ℓ-suc 
   x # y = ([ x < y ] ⊎ [ y < x ]) , ⊎-isProp (x < y) (y < x) (inl (<-asym x y))
 
   field
-    #-tight : [ isTightˢ''' _#_ isset ]
+    #-tight : [ isTightˢ''' _#_ is-set ]
 
   _≤_ : hPropRel Carrier Carrier ℓ'
   x ≤ y = ¬ᵖ(y < x)
 
-  ≤-refl : [ isReflᵖ _≤_ ]
+  ≤-refl : [ isRefl  _≤_ ]
   ≤-refl = <-irrefl
 
-  ≤-trans : [ isTransᵖ _≤_ ]
+  ≤-trans : [ isTrans  _≤_ ]
   ≤-trans a b c ¬b<a ¬c<b c<a =
     ⊔-elim (c < b) (b < a) (λ _ → ⊥)
     (λ c<b → ¬c<b c<b)
     (λ b<a → ¬b<a b<a)
     (<-cotrans _ _ c<a b)
 
-  -- ≤-cotrans : [ isCotransᵖ _≤_ ]
+  -- ≤-cotrans : [ isCotrans  _≤_ ]
   -- ≤-cotrans a b a≤b x =
   --   let γ : [ (b < x) ⊓ (x < a) ] → [ b < a ]
   --       γ p = <-trans b x a (fst p) (snd p)
@@ -107,9 +107,9 @@ record CompletePartiallyOrderedFieldWithSqrt {ℓ ℓ' : Level} : Type (ℓ-suc 
   --       so I guess that we have to assume one of them?
   --       Bridges lists tightness a property of _<_, so he seems to assume #-tight
   --       Booij assumes `≤-isLattice : IsLattice _≤_ min max` which gives ≤-refl, ≤-antisym and ≤-trans and proofs #-tight from it
-  -- ≤-antisym : (∀ x y → [ ¬ᵖ (x # y) ] → x ≡ y) → [ isAntisymˢ isset _≤_ ]
-  ≤-antisym : [ isAntisymˢ _≤_ isset ]
-  ≤-antisym = pathTo⇒ (isTightˢ'''≡isAntisymˢ _<_ isset <-asym) #-tight
+  -- ≤-antisym : (∀ x y → [ ¬ᵖ (x # y) ] → x ≡ y) → [ isAntisymˢ is-set _≤_ ]
+  ≤-antisym : [ isAntisymˢ _≤_ is-set ]
+  ≤-antisym = pathTo⇒ (isTightˢ'''≡isAntisymˢ _<_ is-set <-asym) #-tight
 
   -- ≤-antisym x y y≤x x≤y
     -- let ¬[x#y] : [ ¬ᵖ (x # y) ]
@@ -128,14 +128,14 @@ record CompletePartiallyOrderedFieldWithSqrt {ℓ ℓ' : Level} : Type (ℓ-suc 
   -- #-tight   : [ ¬ᵖ (a < b) ] × [ ¬ᵖ (b < a) ] → a ≡ b -- by curry/uncurry
   -- #-tight   : ¬ ( [ a < b ]  ⊎     [ b < a ]) → a ≡ b -- by <-irrefl
 
-  -- #-tight : [ isAntisymˢ isset _≤_ ] → ∀ x y → [ ¬ᵖ (x # y) ] → x ≡ y
+  -- #-tight : [ isAntisymˢ is-set _≤_ ] → ∀ x y → [ ¬ᵖ (x # y) ] → x ≡ y
 
-  -- #-tight : [ isAntisymˢ isset _≤_ ] → [ isTightˢ'' isset _<_ ]
+  -- #-tight : [ isAntisymˢ is-set _≤_ ] → [ isTightˢ'' is-set _<_ ]
   -- #-tight ≤-antisym x y ¬[[x<y]⊎[y<x]] =
   --   let (¬[x<y] , ¬[y<x]) = Utils.deMorgan₂' ¬[[x<y]⊎[y<x]]
   --   in ≤-antisym _ _ ¬[y<x] ¬[x<y]
   --
-  -- #-tight≡≤-antisym : (!! isTightˢ'' isset _<_) ≡ (!! isAntisymˢ isset _≤_)
+  -- #-tight≡≤-antisym : (!! isTightˢ'' is-set _<_) ≡ (!! isAntisymˢ is-set _≤_)
   -- #-tight≡≤-antisym = {!  !}
   --   ⇒∶ (λ #-tight x y y≤x x≤y →
   --         let ¬[x#y] : [ ¬ᵖ (x # y) ]
@@ -263,7 +263,7 @@ module _ -- mathematical structures with `abs` into the real numbers
   (ℝbundle : CompletePartiallyOrderedFieldWithSqrt {ℝℓ} {ℝℓ'})
   where
   module ℝ = CompletePartiallyOrderedFieldWithSqrt ℝbundle
-  open ℝ using () renaming (Carrier to ℝ; isset to issetʳ; _≤_ to _≤ʳ_; 0f to 0ʳ; 1f to 1ʳ; _+_ to _+ʳ_; _·_ to _·ʳ_; -_ to -ʳ_; _-_ to _-ʳ_)
+  open ℝ using () renaming (Carrier to ℝ; is-set to is-setʳ; _≤_ to _≤ʳ_; 0f to 0ʳ; 1f to 1ʳ; _+_ to _+ʳ_; _·_ to _·ʳ_; -_ to -ʳ_; _-_ to _-ʳ_)
 
   -- this makes the complex numbers ℂ
   module EuclideanTwoProductOfCompletePartiallyOrderedFieldWithSqrt where
@@ -289,8 +289,8 @@ module _ -- mathematical structures with `abs` into the real numbers
     -_ : Carrier → Carrier
     - (ar , ai) = (-ʳ ar , -ʳ ai)
 
-    isset : isSet Carrier
-    isset = isSetΣ ℝ.isset (λ _ → ℝ.isset)
+    is-set : isSet Carrier
+    is-set = isSetΣ ℝ.is-set (λ _ → ℝ.is-set)
 
 
 
@@ -328,7 +328,7 @@ module _ -- mathematical structures with `abs` into the real numbers
       _#_     : hPropRel Carrier Carrier ℓ'
       _⁻¹     : (x : Carrier) → {{p : [ x # 0f ]}} → Carrier
       abs     : Carrier → ℝ
-      isset   : isSet Carrier
-      isAbs   : [ isAbsᵖ isset 0f _+_ _·_ _#_ abs issetʳ 0ʳ _+ʳ_ _·ʳ_ _≤ʳ_ ]
+      is-set  : isSet Carrier
+      is-abs  : [ isAbs is-set 0f _+_ _·_ _#_ abs is-setʳ 0ʳ _+ʳ_ _·ʳ_ _≤ʳ_ ]
 
     -- TODO: complete this

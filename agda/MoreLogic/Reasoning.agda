@@ -4,6 +4,7 @@ module MoreLogic.Reasoning where -- hProp logic
 
 open import Cubical.Foundations.Everything renaming (_⁻¹ to _⁻¹ᵖ; assoc to ∙-assoc)
 open import Cubical.Foundations.Logic renaming (inl to inlᵖ; inr to inrᵖ)
+open import Cubical.Data.Sigma renaming (_×_ to infixr 4 _×_)
 
 -- "implicational" reaoning
 
@@ -18,6 +19,21 @@ _ ◼ᵖ = λ x → x
 
 infix  3 _◼
 infixr 2 _⇒⟨_⟩_
+
+infix  3 _∎ᵖ
+infixr 2 ⇔⟨⟩-syntax -- _⇔⟨_⟩_
+--
+⇔⟨⟩-syntax : ∀{ℓ ℓ' ℓ''} → (P : hProp ℓ'') → (((Q , R) , _) : Σ[ (Q , R) ∈ hProp ℓ' × hProp ℓ ] [ Q ⇔ R ]) → [ P ⇔ Q ] → Σ[ (P , R) ∈ hProp ℓ'' × hProp ℓ ] [ P ⇔ R ]
+⇔⟨⟩-syntax P ((Q , R) , q⇔r) p⇔q .fst = P , R -- x⇔y ∙ y⇔z
+⇔⟨⟩-syntax P ((Q , R) , q⇔r) p⇔q .snd .fst = fst q⇔r ∘ fst p⇔q
+⇔⟨⟩-syntax P ((Q , R) , q⇔r) p⇔q .snd .snd = snd p⇔q ∘ snd q⇔r
+--
+syntax ⇔⟨⟩-syntax P QRq⇔r p⇔q = P ⇔⟨ p⇔q ⟩ QRq⇔r
+
+_∎ᵖ : ∀{ℓ} → (P : hProp ℓ) → Σ[ (Q , R) ∈ hProp ℓ × hProp ℓ ] [ Q ⇔ R ]
+_∎ᵖ P .fst        = P , P
+_∎ᵖ P .snd .fst x = x
+_∎ᵖ P .snd .snd x = x
 
 _⇒⟨_⟩_ : ∀{ℓ ℓ' ℓ''} {Q : Type ℓ'} {R : Type ℓ''} → (P : Type ℓ) → (P → Q) → (Q → R) → (P → R)
 _ ⇒⟨ pq ⟩ qr = qr ∘ pq

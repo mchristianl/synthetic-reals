@@ -47,11 +47,15 @@ isProp⊎ˡ pA pB A⇒¬B (inr x) (inl y) = ⊥-elim (A⇒¬B y x)
 
 syntax ⊎ᵖ-syntax P Q {P⇒¬Q} = [ P⇒¬Q ] P ⊎ᵖ Q
 
+{-# DISPLAY ⊎ᵖ-syntax a b = a ⊎ b #-}
+
 -- hProp-syntax for equality on sets to omit propositional truncation
 ≡ˢ-syntax : {ℓ : Level} {A : Type ℓ} → A → A → {isset : isSet A} → hProp ℓ
 ≡ˢ-syntax a b {isset} = (a ≡ b) , isset a b
 
 syntax ≡ˢ-syntax a b {isset} = [ isset ] a ≡ˢ b
+
+{-# DISPLAY ≡ˢ-syntax a b = a ≡ b #-}
 
 -- for a function, to be an hProp, it suffices that the result is an hProp
 -- so in principle we might inject any non-hProps as arguments with `_ᵗ⇒_`

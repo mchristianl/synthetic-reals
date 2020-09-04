@@ -15,9 +15,12 @@ open import Cubical.Data.Sum.Base renaming (_⊎_ to infixr 4 _⊎_)
 open import Cubical.Data.Sigma.Base renaming (_×_ to infixr 4 _×_)
 open import Cubical.Data.Empty renaming (elim to ⊥-elim) -- `⊥` and `elim`
 
-swap : ∀{x : Type ℓ} {y : Type ℓ'} → x ⊎ y → y ⊎ x
-swap (inl x) = inr x
-swap (inr x) = inl x
+⊎-swap : ∀{x : Type ℓ} {y : Type ℓ'} → x ⊎ y → y ⊎ x
+⊎-swap (inl x) = inr x
+⊎-swap (inr x) = inl x
+
+swap : ∀{x : Type ℓ} {y : Type ℓ'} → x × y → y × x
+swap (x , y) = (y , x)
 
 curry : ∀{ℓ ℓ' ℓ''} {A : Type ℓ} {B : A → Type ℓ'} {C : (a : A) → (b : B a) → Type ℓ''}
         → ((p : Σ A B) → C (fst p) (snd p))

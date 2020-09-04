@@ -31,7 +31,7 @@ module _
   { ℓ  ℓ' : Level} {F : Type ℓ }
   (isset  : isSet F) (0f : F) (_+_  _·_  : F → F → F) (_#_  : hPropRel F F  ℓ')
   {Rℓ Rℓ' : Level} {R : Type Rℓ} (abs : F → R)
-  (issetᴿ : isSet R) (0ᴿ : R) (_+ᴿ_ _·ᴿ_ : R → R → R) (_≤ᴿ_ : hPropRel R R Rℓ')
+  (is-setᴿ : isSet R) (0ᴿ : R) (_+ᴿ_ _·ᴿ_ : R → R → R) (_≤ᴿ_ : hPropRel R R Rℓ')
   where
 
   -- NOTE: do we need to use `Cubical.HITs.PropositionalTruncation.MagicTrick` here?
@@ -55,19 +55,19 @@ module _
     -- abs-preserves-·' =  λ x y → let z = {! abs-preserves-· x y  !}
     --                             in  {! transport (propTruncIdempotent (isProp[] ((abs (x · y)) ≡ₚ (abs x ·ᴿ abs y))))   !}
 
-  isAbsᵖ : hProp (ℓ-suc (ℓ-max (ℓ-max ℓ ℓ') (ℓ-max Rℓ Rℓ')))
-  isAbsᵖ = IsAbs , φ-prop where
+  isAbs : hProp (ℓ-suc (ℓ-max (ℓ-max ℓ ℓ') (ℓ-max Rℓ Rℓ')))
+  isAbs = IsAbs , φ-prop where
     φ-prop : isProp IsAbs
     φ-prop (isabs 0≤abs₀ abs-preserves-0₀ abs-reflects-0₀ abs-preserves-·₀ triangle-ineq₀)
            (isabs 0≤abs₁ abs-preserves-0₁ abs-reflects-0₁ abs-preserves-·₁ triangle-ineq₁) =
            -- NOTE: in a function with potentially multiple arguments, we only need to proof the result to be isProp
       λ i → isabs (isPropΠ  (λ x   → isProp[] (           0ᴿ ≤ᴿ (abs x)         )) 0≤abs₀ 0≤abs₁ i)
                   -- (isPropΠ  (λ x   → isProp[] (     x ≡ₚ 0f  ⇒ abs x ≡ₚ 0ᴿ      )) abs-preserves-0₀ abs-preserves-0₁ i)
-                  (isPropΠ2  (λ x p → issetᴿ (abs x) 0ᴿ) abs-preserves-0₀ abs-preserves-0₁ i)
+                  (isPropΠ2  (λ x p → is-setᴿ (abs x) 0ᴿ) abs-preserves-0₀ abs-preserves-0₁ i)
                   --(isPropΠ  (λ x   → isProp[] ( abs x ≡ₚ 0ᴿ  ⇒     x ≡ₚ 0f      )) abs-reflects-0₀  abs-reflects-0₁  i)
                   (isPropΠ2 {A = F} {B = λ x → abs x ≡ 0ᴿ} {C = λ x p → x ≡ 0f} (λ x p → isset x 0f) abs-reflects-0₀ abs-reflects-0₁ i)
                   -- (isPropΠ2 (λ x y → isProp[] ((abs (x · y)) ≡ₚ (abs x ·ᴿ abs y))) abs-preserves-·₀ abs-preserves-·₁ i)
-                  -- (isPropΠ2 {A = F} {B = λ x → F} {C = λ x y → (abs (x · y)) ≡ (abs x ·ᴿ abs y)} (λ x y → issetᴿ (abs (x · y)) (abs x ·ᴿ abs y)) abs-preserves-·₀ abs-preserves-·₁ i)
-                  (isPropΠ2 (λ x y → issetᴿ (abs (x · y)) (abs x ·ᴿ abs y))  abs-preserves-·₀       abs-preserves-·₁      i)
-                  --        (λ x y → issetᴿ (abs (x · y)) (abs x ·ᴿ abs y)  (abs-preserves-·₀ x y) (abs-preserves-·₁ x y) i)
+                  -- (isPropΠ2 {A = F} {B = λ x → F} {C = λ x y → (abs (x · y)) ≡ (abs x ·ᴿ abs y)} (λ x y → is-setᴿ (abs (x · y)) (abs x ·ᴿ abs y)) abs-preserves-·₀ abs-preserves-·₁ i)
+                  (isPropΠ2 (λ x y → is-setᴿ (abs (x · y)) (abs x ·ᴿ abs y))  abs-preserves-·₀       abs-preserves-·₁      i)
+                  --        (λ x y → is-setᴿ (abs (x · y)) (abs x ·ᴿ abs y)  (abs-preserves-·₀ x y) (abs-preserves-·₁ x y) i)
                   (isPropΠ2 (λ x y → isProp[] ( abs (x + y)  ≤ᴿ (abs x +ᴿ abs y))) triangle-ineq₀   triangle-ineq₁   i)

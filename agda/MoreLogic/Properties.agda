@@ -51,15 +51,13 @@ open import MoreLogic.Definitions
 ¬¬-elim : (P : hProp ℓ) → [ ¬ ¬ ¬ P ] → [ ¬ P ]
 ¬¬-elim _ ¬¬¬p p = ¬¬¬p (λ ¬p → ¬p p)
 
-¬¬-involutiveᵖ : (P : hProp ℓ) → ¬ ¬ ¬ P ≡ ¬ P
-abstract
-  ¬¬-involutiveᵖ P =
-   ⇒∶ ¬¬-elim     P
-   ⇐∶ ¬¬-intro (¬ P)
+¬¬-involutive : (P : hProp ℓ) → [ ¬ ¬ ¬ P ⇔ ¬ P ]
+¬¬-involutive P .fst = ¬¬-elim     P
+¬¬-involutive P .snd = ¬¬-intro (¬ P)
 
-¬¬-involutive : (A : Type ℓ) → (¬ᵗ ¬ᵗ ¬ᵗ A) ≡ (¬ᵗ A)
+¬¬-involutiveᵗ : (A : Type ℓ) → (¬ᵗ ¬ᵗ ¬ᵗ A) ≡ (¬ᵗ A)
 abstract
-  ¬¬-involutive A = isoToPath λ where
+  ¬¬-involutiveᵗ A = isoToPath λ where
     .Iso.fun      ¬¬¬a a → ¬¬¬a (λ ¬a → ¬a a)
     .Iso.inv      ¬a ¬¬a → ¬¬a ¬a
     .Iso.rightInv ¬a     → refl
