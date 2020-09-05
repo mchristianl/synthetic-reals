@@ -61,6 +61,12 @@ open import MoreLogic.Definitions
 ¬¬-involutive P .fst = ¬¬-elim     P
 ¬¬-involutive P .snd = ¬¬-intro (¬ P)
 
+[path]To⇒ : (P Q : hProp ℓ) → [ P ] ≡ [ Q ] → [ P ⇒ Q ]
+[path]To⇒ P Q [P]≡[Q] p = transport [P]≡[Q] p
+
+[path]To⇐ : (P Q : hProp ℓ) → [ P ] ≡ [ Q ] → [ Q ⇒ P ]
+[path]To⇐ P Q [P]≡[Q] q = transport (sym [P]≡[Q]) q
+
 ¬¬-involutiveᵗ : (A : Type ℓ) → (¬ᵗ ¬ᵗ ¬ᵗ A) ≡ (¬ᵗ A)
 abstract
   ¬¬-involutiveᵗ A = isoToPath λ where

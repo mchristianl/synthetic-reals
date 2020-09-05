@@ -100,6 +100,7 @@ module BooijResults {ℓ ℓ'} (assumptions : BooijAssumptions {ℓ} {ℓ'}) whe
   --       because we do not have a single theorem that relates `_+_` and `_<_`
   --       only `+-<-extensional` establishes these properties, so we need to bootstrap the ⊎-version of `+-<-extensional` with itself
   --       we will need only item-4 for this
+  --       well... we have +-#-Extensional. Maybe that suffices?
   -- 6. (†)
   +-<-extensional = λ(disj : [ +-<-extensional-disjointness ])
                   → ∀[ w ] ∀[ x ] ∀[ y ] ∀[ z ] ∀ᵖ[ p ∶ (x + y) < (z + w) ] [ disj w x y z p ] (x < z) ⊎ᵖ (y < w)

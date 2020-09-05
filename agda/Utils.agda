@@ -72,15 +72,16 @@ plus-eq-with m n with m + n | inspect (m +_) n
 
 record !_ {ℓ} (X : Type ℓ) : Type ℓ where
   inductive
-  constructor !!_
-  field x : X
+  constructor !!_ -- map "into"   `!!_  : X → ! X`
+  field !!!_ : X  -- map "out of" `!!!_ : ! X → X`
+  infix 1 !!!_
 
-open !_ hiding (x)
+open !_ public -- brings !!!_ into scope
 infix 1 !!_
 infix 1 !_
 
 !-iso : ∀{ℓ} {X : Type ℓ} → Iso (! X) X
-Iso.fun      !-iso = !_.x
+Iso.fun      !-iso = !!!_
 Iso.inv      !-iso = !!_
 Iso.rightInv !-iso = λ      x  → refl
 Iso.leftInv  !-iso = λ{ (!! x) → refl }
@@ -89,4 +90,4 @@ Iso.leftInv  !-iso = λ{ (!! x) → refl }
 !-≡ {X = X} = isoToPath !-iso
 
 !-equiv : ∀{ℓ} {X : Type ℓ} → (! X) ≃ X
-!-equiv = !_.x , λ where .equiv-proof x → ((!! x) , refl) , λ{ ((!! y) , p) → λ i → (!! p (~ i)) , (λ j → p (~ i ∨ j)) }
+!-equiv = !!!_ , λ where .equiv-proof x → ((!! x) , refl) , λ{ ((!! y) , p) → λ i → (!! p (~ i)) , (λ j → p (~ i ∨ j)) }

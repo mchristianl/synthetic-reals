@@ -177,7 +177,7 @@ module _ {ℓ ℓ' : Level} {A : Type ℓ} (R : hPropRel A A ℓ') where
       is-antisym : [ isAntisym  R ]
       is-trans   : [ isTrans    R ]
 
-  isParialOrder  : hProp (ℓ-max ℓ ℓ')
-  isParialOrder  .fst = IsPartialOrder
-  isParialOrder  .snd (ispartialorder a₀ b₀ c₀) (ispartialorder a₁ b₁ c₁) = φ where
+  isPartialOrder  : hProp (ℓ-max ℓ ℓ')
+  isPartialOrder  .fst = IsPartialOrder
+  isPartialOrder  .snd (ispartialorder a₀ b₀ c₀) (ispartialorder a₁ b₁ c₁) = φ where
     abstract φ = λ i → ispartialorder (snd (isRefl  R) a₀ a₁ i) (snd (isAntisym  R) b₀ b₁ i) (snd (isTrans  R) c₀ c₁ i)

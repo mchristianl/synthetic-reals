@@ -12,11 +12,18 @@ import Cubical.Data.Empty as Empty
 open import Cubical.Data.Unit.Base
 
 open import MoreLogic.Reasoning
+open import Utils
 
 -- lifted versions of ⊥ and ⊤
 
 hPropRel : ∀ {ℓ} (A B : Type ℓ) (ℓ' : Level) → Type (ℓ-max ℓ (ℓ-suc ℓ'))
 hPropRel A B ℓ' = A → B → hProp ℓ'
+
+isSetIsProp : ∀{ℓ} {A : Type ℓ} → isProp (isSet A)
+isSetIsProp is-set₀ is-set₁ = funExt (λ x → funExt λ y → isPropIsProp (is-set₀ x y) (is-set₁ x y))
+
+isSetᵖ : ∀{ℓ} (A : Type ℓ) → hProp ℓ
+isSetᵖ A = isSet A , isSetIsProp
 
 -- hProp-syntax for Σ types of hProps to omit propositional truncation
 -- this should be equivalent to ∃! from the standard library but ∃! is not an hProp
@@ -60,12 +67,42 @@ infix 1 ≡ˢ-syntax
 
 {-# DISPLAY ≡ˢ-syntax a b = a ≡ b #-}
 
+-- pretty print ∀-syntax from cubical standard library
 {-# DISPLAY ∀[]-syntax {A = A} P = P #-}
 
-∀ᵖ[∶]-syntax : ∀{ℓ ℓ'} {A : hProp ℓ'} → ([ A ] → hProp ℓ) → hProp _
+-- ∀-syntax to quantify over hProps (without needing to `[_]` them)
+∀ᵖ[∶]-syntax : ∀{ℓ ℓ'} {A : hProp ℓ'} → ([ A ] → hProp ℓ) → hProp (ℓ-max ℓ ℓ')
 ∀ᵖ[∶]-syntax {A = A} P = (∀ x → [ P x ]) , isPropΠ (isProp[] ∘ P)
 
 syntax ∀ᵖ[∶]-syntax {A = A} (λ a → P) = ∀ᵖ[ a ∶ A ] P
+
+{-# DISPLAY ∀ᵖ[∶]-syntax {A = A} P = P #-}
+
+-- isPropΠ for a function with an instance argument
+isPropΠⁱ : ∀{ℓ ℓ'} {A : Type ℓ} {B : {{p : A}} → Type ℓ'} (h : (x : A) → isProp (B {{x}})) → isProp ({{x : A}} → B {{x}})
+isPropΠⁱ h f g i {{x}} = (h x) (f {{x}}) (g {{x}}) i
+
+-- ∀-syntax to quantify over hProps (without needing to `[_]` them) which produces an intance argument
+∀ᵖ〚∶〛-syntax : ∀{ℓ ℓ'} {A : hProp ℓ'} → ([ A ] → hProp ℓ) → hProp (ℓ-max ℓ ℓ')
+∀ᵖ〚∶〛-syntax {A = A} P = (∀ {{x}} → [ P x ]) , isPropΠⁱ (isProp[] ∘ P)
+
+syntax ∀ᵖ〚∶〛-syntax {A = A} (λ a → P) = ∀ᵖ〚 a ∶ A 〛 P
+
+!isProp : ∀{ℓ} {P : Type ℓ} → isProp P → isProp (! P)
+!isProp is-prop (!! x) (!! y) = subst (λ z → (!! x) ≡ (!! z)) (is-prop x y) refl
+
+∀ᵖ!〚∶〛-syntax : ∀{ℓ ℓ'} {A : hProp ℓ'} → (! [ A ] → hProp ℓ) → hProp (ℓ-max ℓ ℓ')
+∀ᵖ!〚∶〛-syntax {A = A} P = (∀ {{x}} → [ P x ]) , isPropΠⁱ (λ p → isProp[] (P (p))) -- isPropΠⁱ (isProp[] ∘ P) -- isPropΠⁱ (!isProp ∘ isProp[] ∘ P) --  --
+
+syntax ∀ᵖ!〚∶〛-syntax {A = A} (λ a → P) = ∀ᵖ!〚 a ∶ A 〛 P
+
+{-# DISPLAY ∀ᵖ[∶]-syntax {A = A} P = P #-}
+
+-- ∀-syntax which produces an intance argument
+∀〚∶〛-syntax : ∀{ℓ ℓ'} {A : Type ℓ'} → (A → hProp ℓ) → hProp _
+∀〚∶〛-syntax {A = A} P = (∀ {{x}} → [ P x ]) , isPropΠⁱ (isProp[] ∘ P)
+
+syntax ∀〚∶〛-syntax {A = A} (λ a → P) = ∀〚 a ∶ A 〛 P
 
 {-# DISPLAY ∀ᵖ[∶]-syntax {A = A} P = P #-}
 
@@ -99,13 +136,12 @@ infix 10 ¬↑_
 ¬↑_ : ∀{ℓ} → hProp ℓ → hProp ℓ
 ¬↑_ {ℓ} A = ([ A ] → Lift {j = ℓ} Empty.⊥) , isPropΠ λ _ → isOfHLevelLift 1 Empty.isProp⊥
 
--- isPropΠ for a function with an instance argument
-isPropΠⁱ : ∀{ℓ ℓ'} {A : Type ℓ} {B : {{p : A}} → Type ℓ'} (h : (x : A) → isProp (B {{x}})) → isProp ({{x : A}} → B {{x}})
-isPropΠⁱ h f g i {{x}} = (h x) (f {{x}}) (g {{x}}) i
-
 -- negation with an instance argument
 ¬ⁱ_ : ∀{ℓ} → hProp ℓ → hProp ℓ
 ¬ⁱ A = ({{p : [ A ]}} → ⊥⊥) , isPropΠⁱ {A = [ A ]} λ _ → isProp⊥
+
+¬'_ : ∀{ℓ} → Type ℓ → hProp ℓ
+¬' A = (A → ⊥⊥) , isPropΠ λ _ → isProp⊥
 
 ¬-≡-¬ⁱ : ∀{ℓ} (P : hProp ℓ) → ¬ P ≡ ¬ⁱ P
 ¬-≡-¬ⁱ P =

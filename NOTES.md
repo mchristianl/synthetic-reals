@@ -864,6 +864,9 @@ also see [eta expansion in the manual](https://agda.readthedocs.io/en/v2.6.0.1/l
 
 > The eta rule for a record type [...] states that every `x : R` is definitionally equal to `record { a = R.a x ; b = R.b x ; c = R.c x }`.
 
+There is a note in the cubical standard library, both in the definitions of `IsSemigroup` and `IsMonoid`:
+_"TODO: add no-eta-equality for efficiency? This breaks some proofs later"_.
+
 ### example of "cluttered" normalized term
 
 E.g. `≤-≡-≤''` normalizes to 760 lines which might be fine for emacs, but it kills the atom plugin.
