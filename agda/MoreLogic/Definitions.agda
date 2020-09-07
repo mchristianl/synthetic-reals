@@ -35,12 +35,14 @@ isSetᵖ A = isSet A , isSetIsProp
 Σᵖ[]-syntax : ∀{ℓ ℓ'} → {A : hProp ℓ'} → ([ A ] → hProp ℓ) → hProp _
 Σᵖ[]-syntax {A = A} P = Σ [ A ] ([_] ∘ P) , isPropΣ (isProp[] A) (isProp[] ∘ P)
 
-syntax Σᵖ[]-syntax (λ x → P) = Σᵖ[ x ] P
+syntax  Σᵖ[]-syntax (λ x → P) = Σᵖ[ x ] P
+infix 2 Σᵖ[]-syntax
 
 Σᵖ[∶]-syntax : ∀{ℓ ℓ'} → {A : hProp ℓ'} → ([ A ] → hProp ℓ) → hProp _
 Σᵖ[∶]-syntax {A = A} P = Σ [ A ] ([_] ∘ P) , isPropΣ (isProp[] A) (isProp[] ∘ P)
 
-syntax Σᵖ[∶]-syntax {A = A} (λ x → P) = Σᵖ[ x ∶ A ] P
+syntax  Σᵖ[∶]-syntax {A = A} (λ x → P) = Σᵖ[ x ∶ A ] P
+infix 2 Σᵖ[∶]-syntax
 
 isProp⊎ˡ : ∀{ℓ ℓ'} {A : Type ℓ} {B : Type ℓ'} → isProp A → isProp B → (A → ¬ᵗ B) → isProp (A ⊎ B)
 isProp⊎ˡ pA pB A⇒¬B (inl x) (inl y) = cong inl (pA x y)
@@ -69,12 +71,16 @@ infix 1 ≡ˢ-syntax
 
 -- pretty print ∀-syntax from cubical standard library
 {-# DISPLAY ∀[]-syntax {A = A} P = P #-}
+-- {-# DISPLAY ∀[]-syntax {A = A} P = ∃ P #-}
+-- {-# DISPLAY ∀[]-syntax (λ a → P) = ∀[ a ] P #-}
+-- {-# DISPLAY ∃[]-syntax (λ x → P) = ∃[ x ] P #-}
 
 -- ∀-syntax to quantify over hProps (without needing to `[_]` them)
 ∀ᵖ[∶]-syntax : ∀{ℓ ℓ'} {A : hProp ℓ'} → ([ A ] → hProp ℓ) → hProp (ℓ-max ℓ ℓ')
 ∀ᵖ[∶]-syntax {A = A} P = (∀ x → [ P x ]) , isPropΠ (isProp[] ∘ P)
 
 syntax ∀ᵖ[∶]-syntax {A = A} (λ a → P) = ∀ᵖ[ a ∶ A ] P
+infix 2 ∀ᵖ[∶]-syntax
 
 {-# DISPLAY ∀ᵖ[∶]-syntax {A = A} P = P #-}
 
@@ -87,6 +93,7 @@ isPropΠⁱ h f g i {{x}} = (h x) (f {{x}}) (g {{x}}) i
 ∀ᵖ〚∶〛-syntax {A = A} P = (∀ {{x}} → [ P x ]) , isPropΠⁱ (isProp[] ∘ P)
 
 syntax ∀ᵖ〚∶〛-syntax {A = A} (λ a → P) = ∀ᵖ〚 a ∶ A 〛 P
+infix 2 ∀ᵖ〚∶〛-syntax
 
 !isProp : ∀{ℓ} {P : Type ℓ} → isProp P → isProp (! P)
 !isProp is-prop (!! x) (!! y) = subst (λ z → (!! x) ≡ (!! z)) (is-prop x y) refl
@@ -95,6 +102,7 @@ syntax ∀ᵖ〚∶〛-syntax {A = A} (λ a → P) = ∀ᵖ〚 a ∶ A 〛 P
 ∀ᵖ!〚∶〛-syntax {A = A} P = (∀ {{x}} → [ P x ]) , isPropΠⁱ (λ p → isProp[] (P (p))) -- isPropΠⁱ (isProp[] ∘ P) -- isPropΠⁱ (!isProp ∘ isProp[] ∘ P) --  --
 
 syntax ∀ᵖ!〚∶〛-syntax {A = A} (λ a → P) = ∀ᵖ!〚 a ∶ A 〛 P
+infix 2 ∀ᵖ!〚∶〛-syntax
 
 {-# DISPLAY ∀ᵖ[∶]-syntax {A = A} P = P #-}
 
@@ -103,8 +111,34 @@ syntax ∀ᵖ!〚∶〛-syntax {A = A} (λ a → P) = ∀ᵖ!〚 a ∶ A 〛 P
 ∀〚∶〛-syntax {A = A} P = (∀ {{x}} → [ P x ]) , isPropΠⁱ (isProp[] ∘ P)
 
 syntax ∀〚∶〛-syntax {A = A} (λ a → P) = ∀〚 a ∶ A 〛 P
+infix 2 ∀〚∶〛-syntax
 
-{-# DISPLAY ∀ᵖ[∶]-syntax {A = A} P = P #-}
+{-# DISPLAY ∀〚∶〛-syntax {A = A} P = P #-}
+
+⊎⇒⊔ : ∀ {ℓ ℓ'} (P : hProp ℓ) (Q : hProp ℓ') → [ P ] ⊎ [ Q ] → [ P ⊔ Q ]
+⊎⇒⊔ P Q (inl x) = inlᵖ x
+⊎⇒⊔ P Q (inr x) = inrᵖ x
+
+-- pretty `⊔-elim`
+case[⊔]-syntaxᵈ : ∀ {ℓ ℓ' ℓ''} (P : hProp ℓ) (Q : hProp ℓ')
+                  → (z : [ P ⊔ Q ])
+                  → (R : [ P ⊔ Q ] → hProp ℓ'')
+                  → (S : (x : [ P ] ⊎ [ Q ]) → [ R (⊎⇒⊔ P Q x) ] )
+                  → [ R z ]
+case[⊔]-syntaxᵈ P Q z R S = ⊔-elim P Q R (λ p → S (inl p)) (λ q → S (inr q)) z
+
+syntax case[⊔]-syntaxᵈ P Q z (λ x → R) S = case z as x ∶ P ⊔ Q ⇒ R of S
+
+case[⊔]-syntax : ∀ {ℓ ℓ' ℓ''} (P : hProp ℓ) (Q : hProp ℓ')
+                  → (z : [ P ⊔ Q ])
+                  → (R : hProp ℓ'')
+                  → (S : (x : [ P ] ⊎ [ Q ]) → [ R ] )
+                  → [ R ]
+case[⊔]-syntax P Q z R S = ⊔-elim P Q (λ _ → R) (λ p → S (inl p)) (λ q → S (inr q)) z
+
+syntax case[⊔]-syntax P Q z R S = case z as P ⊔ Q ⇒ R of S
+
+-- {-# DISPLAY case[⊔]-syntax P Q z R S = case z of S #-}
 
 -- for a function, to be an hProp, it suffices that the result is an hProp
 -- so in principle we might inject any non-hProps as arguments with `_ᵗ⇒_`

@@ -283,19 +283,6 @@ abstract
 --              → a ⊎ (∀ b → f b)    -- either a holds or fb holds forall b
 -- ∀-⊎-distribʳ a f a→¬fb fb→¬a g = {!   !}
 
-
-
-⊎⇒⊔ : ∀ {ℓ ℓ'} (P : hProp ℓ) (Q : hProp ℓ') → [ P ] ⊎ [ Q ] → [ P ⊔ Q ]
-⊎⇒⊔ P Q (inl x) = inlᵖ x
-⊎⇒⊔ P Q (inr x) = inrᵖ x
-
-case[_⊔_]_return_of_ : ∀ {ℓ ℓ'} (P : hProp ℓ) (Q : hProp ℓ')
-                  → (z : [ P ⊔ Q ])
-                  → (R : [ P ⊔ Q ] → hProp ℓ'')
-                  → (S : (x : [ P ] ⊎ [ Q ]) → [ R (⊎⇒⊔ P Q x) ] )
-                  → [ R z ]
-case[_⊔_]_return_of_ P Q z R S = ⊔-elim P Q R (λ p → S (inl p)) (λ q → S (inr q)) z
-
 -- hProp-union and Σ-Type-union are equivalent when the two disjuncts are disjoint such that one disproves the other and vice versa
 
 ⊎-Level : ∀{A : Type ℓ}{B : Type ℓ'} → A ⊎ B → Level

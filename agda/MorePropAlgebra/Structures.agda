@@ -28,10 +28,6 @@ open import Cubical.Foundations.Logic renaming
   ; ∀[]-syntax to infix  -4 ∀[]-syntax   --
   )
 
--- open import Cubical.Structures.CommRing
--- open import Cubical.Structures.Ring
--- open import Cubical.Structures.Poset
-
 open import Utils
 open import MoreLogic.Reasoning
 open import MoreLogic.Definitions renaming
@@ -52,82 +48,6 @@ open import MorePropAlgebra.Consequences
 --   IsAbGroup
 --   IsRing
 --   IsCommRing
-
--- properties tied to some operation `R` on sets
-module _ {ℓ : Level} {A : Type ℓ} (R : A → A → A) (is-set : isSet A)
-  (let _·_  = R
-       _+_  = R
-       _≡ˢ_ = λ(x y : A) → [ is-set ] x ≡ˢ y
-       infixl 7 _·_
-       infixl 5 _+_
-       infixl 4 _≡ˢ_
-  ) where
-
-  isAssociativeˢ =            ∀[ x ] ∀[ y ] ∀[ z ]   x · (y · z) ≡ˢ (x · y) · z
-  isIdentityˢ    = λ(ε : A) → ∀[ x ]               ( x · ε ≡ˢ x) ⊓ ( ε · x ≡ˢ x)
-  isCommutativeˢ =            ∀[ x ] ∀[ y ]                x + y ≡ˢ y + x
-
-
--- other properties
-module _ {ℓ : Level} {A : Type ℓ} where
-  is-+-#-Extensional  :             (_+_     : A → A → A)              → ∀{ℓ'} → (_#_ : hPropRel A A ℓ')                                                → hProp _
-  is-+-<-Extensional  :             (_+_     : A → A → A)              → ∀{ℓ'} → (_<_ : hPropRel A A ℓ')                                                → hProp _
-  is-+-<-ExtensionalDisjoint :      (_+_     : A → A → A)              → ∀{ℓ'} → (_<_ : hPropRel A A ℓ')                                                → hProp _
-  is-+-<-Extensional' :             (_+_     : A → A → A)              → ∀{ℓ'} → (_<_ : hPropRel A A ℓ') → [ is-+-<-ExtensionalDisjoint _+_ _<_ ]       → hProp _
-
-  is-+-#-Extensional         _+_ _#_      = ∀[ w ] ∀[ x ] ∀[ y ] ∀[ z ]         (w + x) # (y + z) ⇒                    (w # y) ⊔  (x # z)
-  is-+-<-Extensional         _+_ _<_      = ∀[ w ] ∀[ x ] ∀[ y ] ∀[ z ]         (w + x) < (y + z) ⇒                    (w < y) ⊔  (x < z)
-  is-+-<-ExtensionalDisjoint _+_ _<_      = ∀[ w ] ∀[ x ] ∀[ y ] ∀[ z ]         (w + x) < (y + z) ⇒                    (w < y) ⇒ ¬(x < z)
-  is-+-<-Extensional'        _+_ _<_ disj = ∀[ w ] ∀[ x ] ∀[ y ] ∀[ z ] ∀ᵖ[ p ∶ (w + x) < (y + z) ] [ disj w x y z p ] (w < y) ⊎ᵖ (x < z)
-
-  isMin : ∀{ℓ'} → (_≤_ : hPropRel A A ℓ') (min : A → A → A) → hProp _
-  isMax : ∀{ℓ'} → (_≤_ : hPropRel A A ℓ') (max : A → A → A) → hProp _
-
-  isMin _≤_ min  = ∀[ x ] ∀[ y ] ∀[ z ] z ≤ (min x y) ⇔ z ≤ x ⊓ z ≤ y
-  isMax _≤_ max  = ∀[ x ] ∀[ y ] ∀[ z ] (max x y) ≤ z ⇔ x ≤ z ⊓ y ≤ z
-
-  operation_preserves_when_ : (op : A → A → A) → ∀{ℓ'} → (R : hPropRel A A ℓ') → ∀{ℓ''} → (A → hProp ℓ'') → hProp _
-  operation _·_ preserves _<_ when P = ∀[ x ] ∀[ y ] ∀[ z ] P z ⇒ x < y ⇒ (x · z) < (y · z)
-
--- other properties on sets
-module _ {ℓ : Level} {A : Type ℓ} (is-set : isSet A)
-  (let _≡ˢ_ = λ(x y : A) → [ is-set ] x ≡ˢ y; infixl 4 _≡ˢ_) where
-
-  -- NOTE: the left  inverse is "on the right" of `_⊓_` (you get it with `snd`)
-  --   and the right inverse is "on the left"  of `_⊓_` (you get it with `fst`)
-  --   .. this is how it's done in the cubical standard library
-
-  isInverseˢ          : (0g    : A) (_+_     : A → A → A) (-_ : A → A)                                                                                  → hProp _
-  isDistributiveˢ     :             (_+_ _·_ : A → A → A)                                                                                               → hProp _
-  isNonzeroInverseˢ'  : (0f 1f : A) (    _·_ : A → A → A)                                                  (_⁻¹ : (x : A) → {{ ! [ ¬'(x ≡ 0f) ] }} → A) → hProp _
-  isNonzeroInverseˢ   : (0f 1f : A) (    _·_ : A → A → A)              → ∀{ℓ'} → (_#_ : hPropRel A A ℓ') → (_⁻¹ : (x : A) → {{   [    x # 0f  ] }} → A) → hProp _
-  isNonzeroInverseˢ'' : (0f 1f : A) (    _·_ : A → A → A)              → ∀{ℓ'} → (_#_ : hPropRel A A ℓ')                                                → hProp _
-  isInverseNonzeroˢ   : (0f 1f : A) (    _·_ : A → A → A)              → ∀{ℓ'} → (_#_ : hPropRel A A ℓ')                                                → hProp _
-
-  isInverseˢ          0g _+_ -_         = ∀[ x ]                 (   x  + (- x) ≡ˢ 0g)
-                                                               ⊓ ((- x) +    x  ≡ˢ 0g)
-
-  isDistributiveˢ     _+_ _·_           = ∀[ x ] ∀[ y ] ∀[ z ]   ( x · (y +  z) ≡ˢ (x · y) + (x · z))
-                                                               ⊓ ((x +  y) · z  ≡ˢ (x · z) + (y · z))
-
-  -- classical notion of inverse operating on `¬(x ≡ 0)`
-  --   `∀ᵖ!〚_〛_` creates in instance argument of type `!_`
-  --   because `¬'(x ≡ 0f)` is a function type with an explicit argument and won't be considered in instance search
-  isNonzeroInverseˢ'  0f 1f _·_ _⁻¹     = ∀[ x ] ∀ᵖ!〚 p ∶ ¬'(x ≡ 0f) 〛    (x · (x ⁻¹) {{ p }} ≡ˢ 1f)
-                                                                        ⊓ ((x ⁻¹) {{ p }} · x ≡ˢ 1f)
-
-  -- constructive notion of inverse operating on `x # 0`
-  --   `∀ᵖ〚_〛_` creates in instance argument
-  isNonzeroInverseˢ   0f 1f _·_ _#_ _⁻¹ = ∀[ x ] ∀ᵖ〚 p ∶ x # 0f 〛         (x · (x ⁻¹) {{ p }} ≡ˢ 1f)
-                                                                        ⊓ ((x ⁻¹) {{ p }} · x ≡ˢ 1f)
-
-  -- this is the formulation in Booij2020
-  --   we need to proof uniqueness of inverses to obtain `_⁻¹` for `isNonzeroInverseˢ`
-  isNonzeroInverseˢ'' 0f 1f _·_ _#_     = ∀[ x ]        (∃[ y ] x · y ≡ˢ 1f) ⇔ x # 0f
-
-  isInverseNonzeroˢ   0f 1f _·_ _#_     = ∀[ x ] ∀[ y ] x · y ≡ˢ 1f ⇒ x # 0f ⊓ y # 0f
-
-  -- TODO: comm+invnz''⇒nzinv
 
 record IsSemigroup {A : Type ℓ} (_·_ : A → A → A) : Type ℓ where
   constructor issemigroup
@@ -252,10 +172,10 @@ record IsCommRing {R : Type ℓ} (0r 1r : R) (_+_ _·_ : R → R → R) (-_ : R 
   constructor iscommring
   field
     is-set  : [ isSetᵖ R ]
-    is-ring : [ isRing 0r 1r _+_ _·_ -_ ]
+    is-Ring : [ isRing 0r 1r _+_ _·_ -_ ]
     ·-comm  : [ isCommutativeˢ _·_ is-set ]
 
-  open IsRing is-ring hiding (is-set) public
+  open IsRing is-Ring hiding (is-set) public
 
 isCommRing : {R : Type ℓ} (0r 1r : R) (_+_ _·_ : R → R → R) (-_ : R → R) → hProp ℓ
 isCommRing 0r 1r _+_ _·_ -_ .fst = IsCommRing 0r 1r _+_ _·_ -_
@@ -272,7 +192,9 @@ record IsClassicalField {F : Type ℓ} (0f 1f : F) (_+_ _·_ : F → F → F) (-
   field
     is-set      : [ isSetᵖ F ]
     is-CommRing : [ isCommRing 0f 1f _+_ _·_ -_ ]
-    ·-inv       : [ isNonzeroInverseˢ' is-set 0f 1f _·_ _⁻¹ ]
+    -- WARNING: this is not directly Booij's definition, since Booij does not talk about an inverse operation `_⁻¹`
+    --          we need to somehow obtain this operation
+    ·-inv       : [ isNonzeroInverseˢ' is-set 0f 1f _·_ _⁻¹ ] -- classical version of `isNonzeroInverse`
 
   ·-linv : (x : F) {{ p : ! [ ¬' (x ≡ 0f) ] }} → ((x ⁻¹) · x) ≡ 1f -- wow, uses `p` already in `⁻¹`
   ·-linv x {{p}} = snd (·-inv x)
@@ -357,7 +279,6 @@ isLattice _≤_ min max .fst = IsLattice _≤_ min max
 isLattice _≤_ min max .snd (islattice a₀ b₀ c₀) (islattice a₁ b₁ c₁) = φ where
   abstract φ = λ i → islattice (snd (isPartialOrder _≤_) a₀ a₁ i) (snd (isMin _≤_ min) b₀ b₁ i) (snd (isMax _≤_ max) c₀ c₁ i)
 
-
 -- Definition 4.1.10.
 -- An ordered field is a set F together with constants 0, 1, operations +, ·, min, max, and a binary relation < such that:
 -- 1. (F, 0, 1, +, ·) is a commutative ring with unit;
@@ -375,6 +296,10 @@ isLattice _≤_ min max .snd (islattice a₀ b₀ c₀) (islattice a₁ b₁ c�
 record IsAlmostOrderedField {F : Type ℓ} (0f 1f : F) (_+_ _·_ : F → F → F) (-_ : F → F) (_<_ : hPropRel F F ℓ') (min max : F → F → F) {- (_⁻¹ᶠ : (x : F) → {{x # 0f}} → F) -} : Type (ℓ-max ℓ ℓ') where
   constructor isalmostorderedfield
 
+  infixl 4 _#_
+  infixl 4 _≤_
+
+  -- ≤, as in Lemma 4.1.7
   _≤_ : hPropRel F F ℓ'
   x ≤ y = ¬ (y < x)
 
@@ -395,6 +320,7 @@ record IsAlmostOrderedField {F : Type ℓ} (0f 1f : F) (_+_ _·_ : F → F → F
   <-asym : [ isAsym _<_ ]
   <-asym = irrefl+trans⇒asym _<_ <-irrefl <-trans
 
+  -- # is defined as in Lemma 4.1.7
   _#_ : hPropRel F F ℓ'
   x # y = [ <-asym x y ] (x < y) ⊎ᵖ (y < x)
 
@@ -416,7 +342,7 @@ isAlmostOrderedField {ℓ = ℓ} {ℓ' = ℓ'} {F = F} 0f 1f _+_ _·_ -_ _<_ min
 isAlmostOrderedField {ℓ = ℓ} {ℓ' = ℓ'} {F = F} 0f 1f _+_ _·_ -_ _<_ min max {- _⁻¹ -} .snd (isalmostorderedfield a₀ b₀ c₀ d₀ e₀) (isalmostorderedfield a₁ b₁ c₁ d₁ e₁) = φ where
   abstract φ = λ i → let -- we are doing basically "the same" as in `IsAlmostOrderedField`
                          _≤_                  : hPropRel F F ℓ'
-                         x ≤ y                = ¬ (y < x)
+                         x ≤ y                = ¬ (y < x) -- ≤, as in Lemma 4.1.7
                          is-set               = isSetIsProp a₀ a₁ i
                          is-CommRing          = snd (isCommRing 0f 1f _+_ _·_ -_) b₀ b₁ i
                          <-StrictPartialOrder = snd (isStrictPartialOrder _<_) c₀ c₁ i
@@ -428,7 +354,7 @@ isAlmostOrderedField {ℓ = ℓ} {ℓ' = ℓ'} {F = F} 0f 1f _+_ _·_ -_ _<_ min
                          <-asym               : [ isAsym _<_ ]
                          <-asym               = irrefl+trans⇒asym _<_ <-irrefl <-trans
                          _#_                  : hPropRel F F ℓ'
-                         x # y                = [ <-asym x y ] (x < y) ⊎ᵖ (y < x)
+                         x # y                = [ <-asym x y ] (x < y) ⊎ᵖ (y < x) -- # is defined as in Lemma 4.1.7
                          ·-inv''              = snd (isNonzeroInverseˢ'' is-set 0f 1f _·_ _#_) d₀ d₁ i
                          ≤-isLattice          = snd (isLattice _≤_ min max) e₀ e₁ i
                      in isalmostorderedfield is-set is-CommRing <-StrictPartialOrder ·-inv'' ≤-isLattice

@@ -83,3 +83,8 @@
 - complete all necessary axioms in the number hierarchy
   - then divide into necessary axioms and derivable theorems
     - and try to proof the theorems
+
+## later TODOs
+
+- in `Cubical.Functions.Bundle` we have a definition of fibre bundle
+- the `Categories` part of the cubical standard library is quite readable!

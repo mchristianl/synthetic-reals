@@ -467,6 +467,8 @@ backward-2 e a = backward (backward a)
 
 ## dot-postfix notation for record fields / projections (copatterns?)
 
+NOTE: there is [`--postfix-projection`](https://github.com/agda/agda/issues/1963) leading to _"Now the prefix dot is used, ambiguously, both for postfix projections and for names that are not in scope"_.
+
 This does only works for "(co)patterns" somehow. It somehow only works on "projections" from "constructor-projection-pairs", meaning that it works on the field-projection functions of a record but not on general functions.
 
 (Is the important "property" of patterns and copatterns here, that they make a "normalized term"?)

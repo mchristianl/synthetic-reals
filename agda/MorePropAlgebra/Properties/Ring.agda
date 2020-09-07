@@ -1,14 +1,38 @@
 {-# OPTIONS --cubical --no-import-sorts  #-}
 
--- open import Agda.Primitive renaming (_⊔_ to ℓ-max; lsuc to ℓ-suc; lzero to ℓ-zero)
 open import Cubical.Foundations.Everything renaming (_⁻¹ to _⁻¹ᵖ; assoc to ∙-assoc)
+open import Function.Base using (_∋_; _$_)
 
-open import Cubical.Structures.Ring
+open import MorePropAlgebra.Bundles
+import Cubical.Structures.Ring as Std
 
-module MorePropAlgebra.Properties.Ring {ℓ} (R : Ring {ℓ}) where
+module MorePropAlgebra.Properties.Ring {ℓ} (assumptions : Ring {ℓ}) where
+open Ring assumptions renaming (Carrier to R)
 
-open Ring R
-open Cubical.Structures.Ring.Theory R
+import MorePropAlgebra.Properties.AbGroup
+module AbGroup'Properties = MorePropAlgebra.Properties.AbGroup   (record { Ring assumptions renaming (+-AbGroup to is-AbGroup) })
+module AbGroup'           =                            AbGroup   (record { Ring assumptions renaming (+-AbGroup to is-AbGroup) })
+(      AbGroup')          =                            AbGroup ∋ (record { Ring assumptions renaming (+-AbGroup to is-AbGroup) })
+
+import MorePropAlgebra.Properties.Monoid
+module Monoid'Properties = MorePropAlgebra.Properties.Monoid   (record { Ring assumptions renaming (·-Monoid to is-Monoid) })
+module Monoid'           =                            Monoid   (record { Ring assumptions renaming (·-Monoid to is-Monoid) })
+(      Monoid')          =                            Monoid ∋ (record { Ring assumptions renaming (·-Monoid to is-Monoid) })
+
+stdIsRing : Std.IsRing 0r 1r _+_ _·_ (-_)
+stdIsRing  .Std.IsRing.+-isAbGroup = AbGroup'Properties.stdIsAbGroup
+stdIsRing  .Std.IsRing.·-isMonoid  = Monoid'Properties.stdIsMonoid
+stdIsRing  .Std.IsRing.dist        = is-dist
+
+stdRing : Std.Ring {ℓ}
+stdRing = record { Ring assumptions ; isRing = stdIsRing }
+
+module RingTheory' = Std.Theory stdRing
+
+{-
+
+
+
 
 -- NOTE: a few facts about rings that might be collected from elsewhere
 a+b-b≡a : ∀ a b → a ≡ (a + b) - b
@@ -56,3 +80,5 @@ a·b-a·c≡a·[b-c] a b c =
       Q : a · b - a · c ≡ a · (b + - c)
       Q = transport (λ i →  a · b + a·-b≡-a·b a c i ≡ a · (b + - c) ) P
   in  Q
+
+-}

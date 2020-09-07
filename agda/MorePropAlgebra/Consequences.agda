@@ -25,21 +25,20 @@ open import Cubical.Foundations.Logic renaming
   ; ∀[∶]-syntax to infix  -4 ∀[∶]-syntax --
   ; ∀[]-syntax to infix  -4 ∀[]-syntax   --
   )
+open import Cubical.HITs.PropositionalTruncation.Base -- ∣_∣
+open import Cubical.HITs.PropositionalTruncation.Properties using (propTruncIsProp) renaming (elim to ∣∣-elim)
 
-import Data.Sum
-import Cubical.Data.Sigma
-
-import Cubical.Structures.CommRing
-
-import Cubical.Core.Primitives
-import Agda.Builtin.Cubical.Glue
-import Cubical.Foundations.Id
-
+open import Utils
 open import MoreLogic.Reasoning
-open import MoreLogic.Definitions renaming (_ᵗ⇒_ to infixr 0 _ᵗ⇒_)
+open import MoreLogic.Definitions renaming
+  ( _ᵗ⇒_ to infixr 0 _ᵗ⇒_
+  ; ∀ᵖ[∶]-syntax to infix -4 ∀ᵖ[∶]-syntax
+  ; ∀ᵖ〚∶〛-syntax to infix -4 ∀ᵖ〚∶〛-syntax
+  ; ∀ᵖ!〚∶〛-syntax to infix -4 ∀ᵖ!〚∶〛-syntax
+  ; ∀〚∶〛-syntax to infix -4 ∀〚∶〛-syntax
+  )
 open import MoreLogic.Properties
-
-open import Utils -- deMorgan₂'
+open import MorePropAlgebra.Definitions
 
 -- NOTE: hProps need to be explicit arguments (that is not a necessity, but we need to give them completely and not just their witnesses)
 -- NOTE: I think one can make all `isProp` implementations `abstract` to save some compilation time
@@ -47,11 +46,6 @@ open import Utils -- deMorgan₂'
 --       but for the logic part, it depends on how coslty
 --         ⊔-elim, ⊥-elim, ⇒∶_⇐∶_, isoToPath, hProp≡, etc.
 --       are and whether they could actually reduce some terms
-
-open import Cubical.HITs.PropositionalTruncation.Base -- ∣_∣
-open import Cubical.HITs.PropositionalTruncation.Properties using (propTruncIsProp) renaming (elim to ∣∣-elim)
-
-open import MorePropAlgebra.Definitions
 
 module _ {ℓ ℓ' : Level} {A : Type ℓ} (R : hPropRel A A ℓ')
   (let _<_ = R)
@@ -64,9 +58,9 @@ module _ {ℓ ℓ' : Level} {A : Type ℓ} (R : hPropRel A A ℓ')
 
   <-cotrans⇒≤-trans    : [ isCotrans _<_ ] → [ isTrans (λ x y → ¬(y < x)) ]
 
-  isAsym⇔isAsym'       :                              [ isAsym     R  ⇔ isAsym'                    R                           ]
-  isTight⇔isTight'     :                              [ isTight    R  ⇔ isTight'                   R                           ]
-  isTight'⇔isTight''   :                              [ isTight'   R  ⇔ isTight''                  R                           ]
+  isAsym⇔isAsym'       :                              [ isAsym     R  ⇔ isAsym'                                    R           ]
+  isTight⇔isTight'     :                              [ isTight    R  ⇔ isTight'                                   R           ]
+  isTight'⇔isTight''   :                              [ isTight'   R  ⇔ isTight''                                  R           ]
   isTight'⇔isTight'''  :                              [ isTight'  _<_ ⇔ isTight''' (λ x y →                (x < y) ⊔  (y < x)) ]
   isTight''⇔isTight''' : (<-asym : [ isAsym  _<_ ]) → [ isTight'' _<_ ⇔ isTight''' (λ x y → [ <-asym x y ] (x < y) ⊎ᵖ (y < x)) ]
   isTight⇔isAntisym    :                              [ isTight   _<_ ⇔ isAntisym  (λ x y →                   ¬ (y < x))       ]
@@ -134,9 +128,9 @@ module _ {ℓ ℓ' : Level} {A : Type ℓ} (R : hPropRel A A ℓ')
 -- for these pathes, `A` and `hProp.fst` need to be in the same universe to omit ugly lifting into `ℓ-max ℓ ℓ'`
 --   although this would be possible to have (with lifting)
 module _ {ℓ : Level} {A : Type ℓ} (R : hPropRel A A ℓ)
-  (let _<_ = R)
-  (let _≤_ = R)
-  (let _#_ = R)
+  (let _<_ = R) -- different semantics
+  (let _≤_ = R) --
+  (let _#_ = R) --
   where
   -- equivalence of "not apart" and "equal"
   [¬ᵗ#]⇔[≡]  : hProp ℓ
@@ -186,7 +180,7 @@ module _ {ℓ : Level} {A : Type ℓ} (R : hPropRel A A ℓ)
 
     [¬ᵗ#]⇔[≡ˢ]⇒dne-over-≡ˢ [¬ᵗ#]⇔[≡ˢ] a b = snd ( -- this first proof works better with `_≡⟨_⟩_`
       -- ( ¬ ¬ ([ is-set ]     a ≡ˢ b)) ⇔⟨ (map-× (subst (λ p → fst p → snd p) (cong₂ _,_ {! ¬¬-introᵗ (a ≡ b)  !} {!   !})) {!   !} $ swap $ [¬ᵗ#]⇔[≡ˢ] a b) ⟩
-      ( ¬ ¬ ([ is-set ]     a ≡ˢ b)) ⇔⟨ (map-× (λ z z₁ z₂ → z₂ (λ z₃ → z₁ (λ z₄ → z z₄ z₃))) (λ z z₁ z₂ → z₂ (z (λ z₃ → z₁ (λ z₄ → z₄ z₃)))) $ swap $ [¬ᵗ#]⇔[≡ˢ] a b) ⟩
+      ( ¬ ¬ ([ is-set ]     a ≡ˢ b)) ⇔⟨ (map-× (λ z z₁ z₂ → z₂ (λ z₃ → z₁ (λ z₄ → z z₄ z₃))) (λ z z₁ z₂ → z₂ (z (λ z₃ → z₁ (λ z₄ → z₄ z₃)))) $ swap $ [¬ᵗ#]⇔[≡ˢ] a b) ⟩ -- how did Agsy find this out??
       ( ¬              ¬ ¬ (a #  b)) ⇔⟨ ¬¬-involutive (a # b) ⟩
       ( ¬                  (a #  b)) ⇔⟨ [¬ᵗ#]⇔[≡ˢ] a b ⟩
       (      [ is-set ]     a ≡ˢ b ) ∎ᵖ)
@@ -194,6 +188,15 @@ module _ {ℓ : Level} {A : Type ℓ} (R : hPropRel A A ℓ)
     irrefl+tight⇒dne-over-≡ˢ  #-irrefl #-tight = [¬ᵗ#]⇔[≡ˢ]⇒dne-over-≡ˢ (irrefl+tight⇒[¬ᵗ#]⇔[≡ˢ] #-irrefl #-tight)
 
     irrefl+tight⇒dne-over-≡ˢᵗ #-irrefl #-tight = [¬ᵗ#]≡[≡]⇒dne-over-≡   (irrefl+tight⇒[¬ᵗ#]≡[≡ˢ] #-irrefl #-tight)
+
+module _ {ℓ : Level} {A : Type ℓ}  (is-set : isSet A) where
+
+  nzinvˢ''+comm⇒invnzˢ : (0f 1f : A) (_·_ : A → A → A) → ∀{ℓ'} → (_#_ : hPropRel A A ℓ')
+                       → [ isNonzeroInverseˢ'' is-set 0f 1f _·_ _#_ ⊓ isCommutativeˢ _·_ is-set
+                         ⇒ isInverseNonzeroˢ   is-set 0f 1f _·_ _#_ ]
+  nzinvˢ''+comm⇒invnzˢ 0f 1f _·_ _#_ (is-nzinv , ·-comm) x y x·y≡1 .fst = fst (is-nzinv x) ∣ y ,              x·y≡1 ∣
+  nzinvˢ''+comm⇒invnzˢ 0f 1f _·_ _#_ (is-nzinv , ·-comm) x y x·y≡1 .snd = fst (is-nzinv y) ∣ x , ·-comm y x ∙ x·y≡1 ∣
+
 
 abstract
   -- Lemma 4.1.7.
@@ -238,15 +241,15 @@ abstract
     let (isstrictpartialorder <-irrefl <-trans <-cotrans) = <-SPO
         _#''_ = _#'_ {_<_ = _<_}
     in record
-      { is-irrefl  = λ a a#a → case[ a < a ⊔ a < a ] a#a return (λ _ → ⊥) of λ where
+      { is-irrefl  = λ a a#a → case a#a as a < a ⊔ a < a ⇒ ⊥ of λ where
                             (inl a<a) → <-irrefl _ a<a
                             (inr a<a) → <-irrefl _ a<a
       ; is-sym     = λ a b p → pathTo⇒ (⊔-comm (a < b) (b < a)) p
-      ; is-cotrans = λ a b p → case[ a < b ⊔ b < a ] p return (λ _ → ∀[ x ] (a #'' x) ⊔ (x #'' b)) of λ where
-          (inl a<b) x → case[ a < x ⊔ x < b ] (<-cotrans _ _ a<b x) return (λ _ → (a #'' x) ⊔ (x #'' b)) of λ where
+      ; is-cotrans = λ a b p → case p as a < b ⊔ b < a ⇒ ∀[ x ] (a #'' x) ⊔ (x #'' b) of λ where
+          (inl a<b) x → case (<-cotrans _ _ a<b x) as a < x ⊔ x < b ⇒ (a #'' x) ⊔ (x #'' b) of λ where
             (inl a<x) → inlᵖ (inlᵖ a<x)
             (inr x<b) → inrᵖ (inlᵖ x<b)
-          (inr b<a) x → case[ b < x ⊔ x < a ] (<-cotrans _ _ b<a x) return (λ _ → (a #'' x) ⊔ (x #'' b)) of λ where
+          (inr b<a) x → case (<-cotrans _ _ b<a x) as b < x ⊔ x < a ⇒ (a #'' x) ⊔ (x #'' b) of λ where
             (inl b<x) → inrᵖ (inrᵖ b<x)
             (inr x<a) → inlᵖ (inrᵖ x<a)
        -- NOTE: this makes a disjointness-proof necessary, so using _⊎_ in the first place would be better

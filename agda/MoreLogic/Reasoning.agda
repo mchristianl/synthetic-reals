@@ -54,6 +54,18 @@ _ ⇒⟨ p⇒q ⟩ q⇒r = q⇒r ∘ p⇒q
 _◼ : ∀{ℓ} (A : Type ℓ) → A → A
 _ ◼ = λ x → x
 
+-- ⊎⇒⊔ : ∀ {ℓ ℓ'} (P : hProp ℓ) (Q : hProp ℓ') → [ P ] ⊎ [ Q ] → [ P ⊔ Q ]
+-- ⊎⇒⊔ P Q (inl x) = inlᵖ x
+-- ⊎⇒⊔ P Q (inr x) = inrᵖ x
+--
+-- case[_⊔_]_return_of_ : ∀ {ℓ ℓ'} (P : hProp ℓ) (Q : hProp ℓ')
+--                   → (z : [ P ⊔ Q ])
+--                   → (R : [ P ⊔ Q ] → hProp ℓ'')
+--                   → (S : (x : [ P ] ⊎ [ Q ]) → [ R (⊎⇒⊔ P Q x) ] )
+--                   → [ R z ]
+-- case[_⊔_]_return_of_ P Q z R S = ⊔-elim P Q R (λ p → S (inl p)) (λ q → S (inr q)) z
+
+
 {- NOTE: in the CHANGELOG.md of the v1.3 non-cubical standard library, it is explained:
 
 * Previously all equational reasoning combinators (e.g. `_≈⟨_⟩_`, `_≡⟨_⟩_`, `_≤⟨_⟩_`)
