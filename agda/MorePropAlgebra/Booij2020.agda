@@ -6,7 +6,7 @@ open import Cubical.Relation.Binary.Base
 open import Cubical.Data.Sum.Base renaming (_⊎_ to infixr 4 _⊎_)
 open import Cubical.Data.Sigma renaming (_×_ to infixr 4 _×_)
 open import Cubical.Data.Empty renaming (elim to ⊥-elim; ⊥ to ⊥⊥) -- `⊥` and `elim`
-open import Function.Base using (_∋_; _$_)
+open import Function.Base using (_∋_; _$_; it)
 open import Cubical.Foundations.Logic renaming
   ( inl to inlᵖ
   ; inr to inrᵖ
@@ -127,9 +127,9 @@ module BooijResults {ℓ ℓ'} (assumptions : AlmostOrderedField {ℓ} {ℓ'}) w
     -dist' a b = GroupLemmas'.invDistr a b
     -dist  a b = -dist' a b ∙ +-comm _ _
 
-    inv#0 : ∀ x y → x · y ≡ 1f → [ (x # 0f) ⊓ (y # 0f) ]
-    inv#0 x y x·y≡1 .fst = ·-inv'' x .fst ∣ (y ,              x·y≡1) ∣
-    inv#0 x y x·y≡1 .snd = ·-inv'' y .fst ∣ (x , ·-comm y x ∙ x·y≡1) ∣
+    ·-inv#0 : ∀ x y → x · y ≡ 1f → [ (x # 0f) ⊓ (y # 0f) ]
+    ·-inv#0 x y x·y≡1 .fst = ·-inv'' x .fst ∣ (y ,              x·y≡1) ∣
+    ·-inv#0 x y x·y≡1 .snd = ·-inv'' y .fst ∣ (x , ·-comm y x ∙ x·y≡1) ∣
 
     -- ∀(a b c : F) → {{_ : [ c # 0f ]}} → [ (a · c ≡ˢ b · c) ⇒ (a ≡ˢ b) ]
     ·-reflects-≡ : [ operation _·_ reflects _≡ˢ_ when (λ c → c # 0f) ]
@@ -142,8 +142,8 @@ module BooijResults {ℓ ℓ'} (assumptions : AlmostOrderedField {ℓ} {ℓ'}) w
          b ∎
 
     -- uniqueness of inverses from `·-assoc` + `·-comm` + `·-lid` + `·-rid`
-    ·-linv-unique'' : (x y z : F) → [ x · y ≡ˢ 1f ] → [ x · z ≡ˢ 1f ] → [ y ≡ˢ z ]
-    ·-linv-unique'' x y z x·y≡1 x·z≡1 =
+    ·-rinv-unique'' : (x y z : F) → [ x · y ≡ˢ 1f ] → [ x · z ≡ˢ 1f ] → [ y ≡ˢ z ]
+    ·-rinv-unique'' x y z x·y≡1 x·z≡1 =
       (      x  · y  ≡ˢ     1f ⇒ᵖ⟨ (λ x·y≡1 i → z · x·y≡1 i) ⟩
         z · (x  · y) ≡ˢ z · 1f ⇒ᵖ⟨ pathTo⇒ (λ i → ·-assoc z x y i ≡ˢ ·-rid z i) ⟩
        (z ·  x) · y  ≡ˢ z      ⇒ᵖ⟨ pathTo⇒ (λ i → (·-comm z x i) · y  ≡ˢ z) ⟩
@@ -151,11 +151,11 @@ module BooijResults {ℓ ℓ'} (assumptions : AlmostOrderedField {ℓ} {ℓ'}) w
           1f    · y  ≡ˢ z      ⇒ᵖ⟨ pathTo⇒ (λ i → ·-lid y i ≡ˢ z) ⟩
                   y  ≡ˢ z      ◼ᵖ) .snd x·y≡1
 
-    -- inverse function from `·-linv-unique''` and `∀[ x ] (∃[ y ] x · y ≡ˢ 1f) ⇔ x # 0f`
+    -- inverse function from `·-rinv-unique''` and `∀[ x ] (∃[ y ] x · y ≡ˢ 1f) ⇔ x # 0f`
     _⁻¹'' : ∀ x → {{[ x # 0f ]}} → Σ[ y ∈ F ] x · y ≡ 1f
     (x ⁻¹'') {{x#0f}} = PTrunc.rec γ (λ p → p) (·-inv'' x .snd x#0f) where
        γ : isProp (Σ[ y ∈ F ] x · y ≡ 1f)
-       γ (a , x·a≡1) (b , x·b≡1) = let a≡b = ·-linv-unique'' x a b x·a≡1 x·b≡1
+       γ (a , x·a≡1) (b , x·b≡1) = let a≡b = ·-rinv-unique'' x a b x·a≡1 x·b≡1
                                    in Σ≡Prop (λ c → isProp[] (x · c ≡ˢ 1f)) a≡b
 
     _⁻¹ : ∀ x → {{[ x # 0f ]}} → F
@@ -168,6 +168,9 @@ module BooijResults {ℓ ℓ'} (assumptions : AlmostOrderedField {ℓ} {ℓ'}) w
 
     ·-linv : ∀ x → (p : [ x # 0f ]) → [ (x ⁻¹) {{p}} · x ≡ˢ 1f ]
     ·-linv x p = ·-comm _ _ ∙ ·-rinv x p
+
+    ·-linv-unique : (x y : F) → x · y ≡ 1f → (p : [ y # 0f ]) → x ≡ (y ⁻¹) {{p}}
+    ·-linv-unique x y x·y≡1 p = sym $ ·-rinv-unique'' y ((y ⁻¹) {{p}}) x (·-rinv y p) (·-comm _ _ ∙ x·y≡1)
 
     -- ·-preserves-≡ : [ operation _·_ preserves _≡ˢ_ when (λ c → c # 0f) ]
     -- ·-preserves-≡ a b c p a≡b i = a≡b i · c
@@ -184,7 +187,7 @@ module BooijResults {ℓ ℓ'} (assumptions : AlmostOrderedField {ℓ} {ℓ'}) w
     --
   -- -- ·-linv-unique : (x y : F) (x·y≡1 : (x ·₁ y) ≡ 1f) → x ≡ (y ⁻¹ᶠ₁)
   -- module _ (x y : F) (x·y≡1 : x · y ≡ 1f) where
-  --   y#0 = snd (·-inv-back _ _ x·y≡1) -- duplicated inhabitant (see notes)
+  --   y#0 = snd (·-inv#0 _ _ x·y≡1) -- duplicated inhabitant (see notes)
   --   instance _ = y # 0f ∋ y#0
   --   import Cubical.Structures.Group
   --
@@ -320,7 +323,7 @@ module BooijResults {ℓ ℓ'} (assumptions : AlmostOrderedField {ℓ} {ℓ'}) w
       item-10 : [ Item-10 ]
 
       ⁻¹-preserves-sign : ∀ z z⁻¹ → [ 0f < z ] → z · z⁻¹ ≡ 1f → [ 0f < z⁻¹ ]
-      ⁻¹-preserves-sign z z⁻¹ 0<z z·z⁻¹≡1 with snd (inv#0 z z⁻¹ z·z⁻¹≡1)
+      ⁻¹-preserves-sign z z⁻¹ 0<z z·z⁻¹≡1 with snd (·-inv#0 z z⁻¹ z·z⁻¹≡1)
       ... | inl z⁻¹<0 = snd (
         z⁻¹     < 0f     ⇒ᵖ⟨ ·-preserves-< _ _ z 0<z ⟩
         z⁻¹ · z < 0f · z ⇒ᵖ⟨ transport (λ i → [ (·-comm _ _ ∙ z·z⁻¹≡1) i < RingTheory'.0-leftNullifies z i ]) ⟩
@@ -342,114 +345,93 @@ module BooijResults {ℓ ℓ'} (assumptions : AlmostOrderedField {ℓ} {ℓ'}) w
                                                                ( λ i → (z · x) + sym (RingTheory'.-commutesWithRight-· z y) i )) ⟩
                                0f < (z · x) + (z · (- y)) ⇒ᵖ⟨ pathTo⇒ (cong₂ _<_ refl (sym (fst (is-dist z x (- y))))) ⟩ -- [XX]
                                0f <  z · (x - y)          ◼ᵖ) .snd y·z<x·z
-        z·[x-y]#0 = [ z · (x - y) # 0f ] ∋ inr i
+        instance z·[x-y]#0 = [ z · (x - y) # 0f ] ∋ inr i
         -- and so, being apart from 0, z (x − y) has a multiplicative inverse w.
-        w-squash : [ ∃[ w ] (z · (x - y)) · w ≡ˢ 1f ]
-        w-squash = ·-inv'' (z · (x - y)) .snd z·[x-y]#0
-        ii  : [ ∃[ w ] 1f ≡ˢ (z · (x - y)) · w ]
-        ii  = subst fst (λ i → ∃[ w ] ≡ˢ-symᵗ ((z · (x - y)) · w) 1f i) w-squash
-        -- -- Hence z itself has a multiplicative inverse w (x − y),
-        iii : [ ∃[ w ] 1f ≡ˢ z · ((x - y) · w) ]
-        iii = subst fst (λ i → ∃[ w ] 1f ≡ˢ ·-assoc z (x - y) w (~ i)) ii
-        z#0f = [ z # 0f ] ∋ {! PTrunc.rec   !} -- (·-inv-back _ _ (sym iii))
-        -- -- and so 0 < z ∨ z < 0, where the latter case contradicts the assumption 0 ≤ z, so that we have 0 < z.
-        -- instance _    = 0f < z ∋ case z#0f of λ where
-        --                 (inl z<0) → ⊥-elim (0≤z z<0)
-        --                 (inr 0<z) → 0<z
-        -- -- Now w (x − y) has multiplicative inverse z, so it is apart from 0,
-        -- iv  :  (x - y) · w # 0f
-        -- iv  = snd (·-inv-back _ _ (sym iii))
+        w   = (z · (x - y)) ⁻¹
+        ii  : 1f ≡ (z · (x - y)) · w
+        ii  = sym (·-rinv _ _)
+        -- Hence z itself has a multiplicative inverse w (x − y),
+        iii : 1f ≡ z · ((x - y) · w)
+        iii = transport (λ i → 1f ≡ ·-assoc z (x - y) w (~ i)) ii
+        instance z#0f = [ z # 0f ] ∋ fst (·-inv#0 _ _ (sym iii))
+        -- and so 0 < z ∨ z < 0, where the latter case contradicts the assumption 0 ≤ z, so that we have 0 < z.
+        instance _    = [ 0f < z ] ∋ case z#0f of λ where
+                        (inl z<0) → ⊥-elim (0≤z z<0)
+                        (inr 0<z) → 0<z
+        -- Now w (x − y) has multiplicative inverse z, so it is apart from 0,
+        iv  : [ (x - y) · w # 0f ]
+        iv  = snd (·-inv#0 _ _ (sym iii))
         -- that is (0 < w (x − y)) ∨ (w (x − y) < 0).
-        in {!!} {-case iv of λ where
+        in case iv of λ where
           -- By (∗), from 0 < w (x − y) and yz < xz we get yzw (x − y) < xzw (x − y), so y < x, contradicting our assumption that x ≤ y.
           (inr 0<[x-y]·w) → (
-             y ·  z                   <  x ·  z                    ⇒⟨ ·-preserves-< _ _ _ 0<[x-y]·w ⟩
-            (y ·  z) · ((x - y) · w)  < (x ·  z) · ((x - y) · w)   ⇒⟨ transport (λ i →
+             y ·  z                   <  x ·  z                    ⇒ᵖ⟨ ·-preserves-< _ _ _ 0<[x-y]·w ⟩
+            (y ·  z) · ((x - y) · w)  < (x ·  z) · ((x - y) · w)   ⇒ᵖ⟨ pathTo⇒ (λ i →
                                                                           (·-assoc y z ((x - y) · w)) (~ i)
                                                                         < (·-assoc x z ((x - y) · w)) (~ i)) ⟩
-             y · (z  · ((x - y) · w)) <  x · (z  · ((x - y) · w))  ⇒⟨ transport (λ i →
+             y · (z  · ((x - y) · w)) <  x · (z  · ((x - y) · w))  ⇒ᵖ⟨ pathTo⇒ (λ i →
                                                                          y · (iii (~ i)) < x · (iii (~ i))) ⟩
-             y · 1f                   <  x · 1f                    ⇒⟨ transport (cong₂ _<_
+             y · 1f                   <  x · 1f                    ⇒ᵖ⟨ pathTo⇒ (cong₂ _<_
                                                                         (fst (·-identity y)) (fst (·-identity x))) ⟩
-             y                        <  x                         ⇒⟨ x≤y ⟩
-            ⊥ ◼) y·z<x·z
+             y                        <  x                         ⇒ᵖ⟨ x≤y ⟩
+                                      ⊥                            ◼ᵖ) .snd y·z<x·z
           -- In the latter case, from (∗) we get zw (x − y) < 0, i.e.
           -- 1 < 0 which contradicts item 10, so that we have 0 < w (x − y).
           (inl p) → (
-                 (x - y) · w      < 0f     ⇒⟨ ·-preserves-< _ _ _ it ⟩
-                ((x - y) · w) · z < 0f · z ⇒⟨ transport (cong₂ _<_ (·-comm _ _) (0-leftNullifies z)) ⟩
-            z · ((x - y) · w)     < 0f     ⇒⟨ ( transport λ i → iii (~ i) < 0f) ⟩
-                               1f < 0f     ⇒⟨ <-trans _ _ _  item-10 ⟩
-                               0f < 0f     ⇒⟨ <-irrefl _ ⟩
-            ⊥ ◼) p-}
+                 (x - y) · w      < 0f     ⇒ᵖ⟨ ·-preserves-< _ _ _ it ⟩
+                ((x - y) · w) · z < 0f · z ⇒ᵖ⟨ pathTo⇒ (cong₂ _<_ (·-comm _ _) (RingTheory'.0-leftNullifies z)) ⟩
+            z · ((x - y) · w)     < 0f     ⇒ᵖ⟨ pathTo⇒ (λ i → iii (~ i) < 0f) ⟩
+                               1f < 0f     ⇒ᵖ⟨ <-trans _ _ _  item-10 ⟩
+                               0f < 0f     ⇒ᵖ⟨ <-irrefl _ ⟩
+                                  ⊥        ◼ᵖ) .snd p
 
-
-                  {-
       --  9. 0 < z ⇒ (x < y ⇔ x z < y z),
-      item-9 : ∀ x y z → 0f < z → (x < y → x · z < y · z)
-      item-9 = ·-preserves-<
-
-      item-9-back : ∀ x y z → 0f < z → (x · z < y · z → x < y)
+      item-9 : [ Item-9 ]
+      item-9 x y z 0<z .fst = ·-preserves-< x y z 0<z
       -- For the other direction of item 9, assume 0 < z and xz < yz,
-      item-9-back x y z 0<z x·z<y·z = let
-        instance _ = (          x · z  <  y · z            ⇒⟨ +-preserves-< _ _ _ ⟩
-                     (x · z) - (x · z) < (y · z) - (x · z) ⇒⟨ transport (cong₂ _<_ (+-rinv (x · z)) refl) ⟩
-                                    0f < (y · z) - (x · z) ◼) x·z<y·z
-                 _ = (y · z) - (x · z) # 0f ∋ inr it
+      item-9 x y z 0<z .snd x·z<y·z = let
+        instance _ = (          x · z  <  y · z            ⇒ᵖ⟨ +-preserves-< _ _ _ ⟩
+                     (x · z) - (x · z) < (y · z) - (x · z) ⇒ᵖ⟨ pathTo⇒ (cong₂ _<_ (+-rinv (x · z)) refl) ⟩
+                                    0f < (y · z) - (x · z) ◼ᵖ) .snd x·z<y·z
+                 _ = [ (y · z) - (x · z) # 0f ] ∋ inr it
         -- so that yz − xz has a multiplicative inverse w,
-        w = ((y · z) - (x · z)) ⁻¹ᶠ
-        o = ( (y · z) - (   x  · z) ≡⟨ ( λ i → (y · z) + (-commutesWithLeft-· x z) (~ i)) ⟩
-              (y · z) + ((- x) · z) ≡⟨ sym (snd (dist y (- x) z)) ⟩
-              (y - x) · z ∎)
-        instance _ = (y - x) · z # 0f ∋  transport (λ i → o i # 0f) it
+        w = ((y · z) - (x · z)) ⁻¹
+        o = ( (y · z) - (   x  · z) ≡⟨ ( λ i → (y · z) + (RingTheory'.-commutesWithLeft-· x z) (~ i)) ⟩
+              (y · z) + ((- x) · z) ≡⟨ sym (snd (is-dist y (- x) z)) ⟩
+              (y - x) · z           ∎)
+        instance _ = [ (y - x) · z # 0f ] ∋ pathTo⇒ (λ i → o i # 0f) it
         -- and so z itself has multiplicative inverse w (y − x).
-        1≡z·[w·[y-x]] = γ
-        iii = 1≡z·[w·[y-x]]
+        instance _ = (          x · z  <  y · z            ⇒ᵖ⟨ +-preserves-< _ _ _ ⟩
+                     (x · z) - (x · z) < (y · z) - (x · z) ⇒ᵖ⟨ pathTo⇒ (cong₂ _<_ (+-rinv (x · z)) refl) ⟩
+                                    0f < (y · z) - (x · z) ◼ᵖ) .snd x·z<y·z
+                 _ = [ (y · z) - (x · z) # 0f ] ∋ inr it
+        1≡z·[w·[y-x]] = (
+          1f                      ≡⟨ (λ i → ·-linv ((y · z) - (x · z)) it (~ i)) ⟩
+          w · ((y · z) - (x · z)) ≡⟨ (λ i → w · o i) ⟩
+          w · ((y - x) · z)       ≡⟨ (λ i → w · ·-comm (y - x) z i ) ⟩
+          w · (z · (y - x))       ≡⟨ (λ i → ·-assoc w z (y - x) i) ⟩
+          (w · z) · (y - x)       ≡⟨ (λ i → ·-comm w z i · (y - x)) ⟩
+          (z · w) · (y - x)       ≡⟨ (λ i → ·-assoc z w (y - x) (~ i)) ⟩
+          z · (w · (y - x))       ∎)
         1≡[w·[y-x]]·z : 1f ≡ (w · (y - x)) · z
         1≡[w·[y-x]]·z = transport (λ i → 1f ≡ ·-comm z (w · (y - x)) i) 1≡z·[w·[y-x]]
         -- Then since 0 < z and xz < yz, by (∗), we get xzw (y − x) < yzw (y − x), and hence x < y.
-        instance _ = z # 0f ∋ inr 0<z
+        instance _ = [ z # 0f ] ∋ inr 0<z
         z⁻¹ = w · (y - x)
-        z⁻¹≡w·[y-x] : z ⁻¹ᶠ ≡ (w · (y - x))
-        z⁻¹≡w·[y-x] = let tmp = sym (snd (·-linv-unique (w · (y - x)) z (sym 1≡[w·[y-x]]·z)))
-                      in transport (cong (λ z#0 → _⁻¹ᶠ z {{z#0}} ≡ (w · (y - x))) (#-isProp z 0f _ _)) tmp
-        0<z⁻¹ : 0f < z ⁻¹ᶠ
-        0<z⁻¹ = ⁻¹ᶠ-preserves-sign z 0<z
-        instance _ = 0f < w · (y - x) ∋ transport (λ i → 0f < z⁻¹≡w·[y-x] i) 0<z⁻¹
-        -- instance _ = 0f < z⁻¹ ∋ ?
-        in (  x ·  z         <  y ·  z         ⇒⟨ ·-preserves-< _ _ z⁻¹ it ⟩
-             (x ·  z) · z⁻¹  < (y ·  z) · z⁻¹  ⇒⟨ transport (λ i → ·-assoc x z z⁻¹ (~ i) < ·-assoc y z z⁻¹ (~ i)) ⟩
-              x · (z  · z⁻¹) <  y · (z  · z⁻¹) ⇒⟨ transport (λ i → x · iii (~ i) < y · iii (~ i)) ⟩
-              x · 1f         <  y · 1f         ⇒⟨ transport (cong₂ _<_ (fst (·-identity x)) (fst (·-identity y))) ⟩
-              x              <  y              ◼) x·z<y·z
-        where
-          abstract -- NOTE: `abstract` is only allowed in `where` blocks and `where` blocks are not allowed in `let` blocks
-            γ =
-              let -- NOTE: for some reason the instance resolution does only work in let-blocks
-              -- I get a "Terms marked as eligible for instance search should end with a name, so `instance' is ignored here. when checking the definition of my-instance"
-              instance my-instance = (          x · z  <  y · z            ⇒⟨ +-preserves-< _ _ _ ⟩
-                           (x · z) - (x · z) < (y · z) - (x · z) ⇒⟨ transport (cong₂ _<_ (+-rinv (x · z)) refl) ⟩
-                                          0f < (y · z) - (x · z) ◼) x·z<y·z
-                       _ = (y · z) - (x · z) # 0f ∋ inr it
-              -- so that yz − xz has a multiplicative inverse w,
-              w = ((y · z) - (x · z)) ⁻¹ᶠ
-              o = ( (y · z) - (   x  · z) ≡⟨ ( λ i → (y · z) + (-commutesWithLeft-· x z) (~ i)) ⟩
-                    (y · z) + ((- x) · z) ≡⟨ sym (snd (dist y (- x) z)) ⟩
-                    (y - x) · z ∎)
-              instance _ = (y - x) · z # 0f ∋  transport (λ i → o i # 0f) it
-              in (
-                1f                      ≡⟨ (λ i → ·-linv ((y · z) - (x · z)) it (~ i)) ⟩
-                w · ((y · z) - (x · z)) ≡⟨ (λ i → w · o i) ⟩
-                w · ((y - x) · z)       ≡⟨ (λ i → w · ·-comm (y - x) z i ) ⟩
-                w · (z · (y - x))       ≡⟨ (λ i → ·-assoc w z (y - x) i) ⟩
-                (w · z) · (y - x)       ≡⟨ (λ i → ·-comm w z i · (y - x)) ⟩
-                (z · w) · (y - x)       ≡⟨ (λ i → ·-assoc z w (y - x) (~ i)) ⟩
-                z · (w · (y - x))       ∎)
-
-                -}
+        z⁻¹≡w·[y-x] : z ⁻¹ ≡ (w · (y - x))
+        z⁻¹≡w·[y-x] = sym ((·-linv-unique (w · (y - x)) z (sym 1≡[w·[y-x]]·z)) it)
+        instance _ = 0<z
+        0<z⁻¹ : [ 0f < z ⁻¹ ]
+        0<z⁻¹ = ⁻¹-preserves-sign z (z ⁻¹) it (·-rinv z it)
+        instance _ = [ 0f < w · (y - x) ] ∋ pathTo⇒ (λ i → 0f < z⁻¹≡w·[y-x] i) 0<z⁻¹
+        in (  x ·  z         <  y ·  z         ⇒ᵖ⟨ ·-preserves-< _ _ z⁻¹ it ⟩
+             (x ·  z) · z⁻¹  < (y ·  z) · z⁻¹  ⇒ᵖ⟨ pathTo⇒ (λ i → ·-assoc x z z⁻¹ (~ i) < ·-assoc y z z⁻¹ (~ i)) ⟩
+              x · (z  · z⁻¹) <  y · (z  · z⁻¹) ⇒ᵖ⟨ pathTo⇒ (λ i → x · 1≡z·[w·[y-x]] (~ i) < y · 1≡z·[w·[y-x]] (~ i)) ⟩
+              x · 1f         <  y · 1f         ⇒ᵖ⟨ pathTo⇒ (cong₂ _<_ (fst (·-identity x)) (fst (·-identity y))) ⟩
+              x              <  y              ◼ᵖ) .snd x·z<y·z
 
       -- 10. 0 < 1.
-      item-10 with inv#0 _ _ (·-identity 1f .fst) .fst
+      item-10 with ·-inv#0 _ _ (·-identity 1f .fst) .fst
       -- For item 10, since 1 has multiplicative inverse 1, it is apart from 0, hence 0 < 1 ∨ 1 < 0.
       ... | inl 1<0 = snd (
         -- If 1 < 0 then by item 4 we have 0 < −1 and so by (∗) we get 0 < (−1) · (−1), that is, 0 < 1, so by transitivity 1 < 1, contradicting irreflexivity of <.
