@@ -212,10 +212,12 @@ module _ {ℓ : Level} {A : Type ℓ} where
   operation_preserves_when_ : (op : A → A → A) → ∀{ℓ'} → (R : hPropRel A A ℓ') → ∀{ℓ''} → (A → hProp ℓ'') → hProp _
   operation_reflects_when_  : (op : A → A → A) → ∀{ℓ'} → (R : hPropRel A A ℓ') → ∀{ℓ''} → (A → hProp ℓ'') → hProp _
   operation_reflects_〚when〛 : (op : A → A → A) → ∀{ℓ'} → (R : hPropRel A A ℓ') → ∀{ℓ''} → (A → hProp ℓ'') → hProp _
+  operation_creates_when_  : (op : A → A → A) → ∀{ℓ'} → (R : hPropRel A A ℓ') → ∀{ℓ''} → (A → hProp ℓ'') → hProp _
 
-  operation _·_ preserves _<_ when  P   = ∀[ x ] ∀[ y ] ∀[ z ] P z ⇒ x < y ⇒ (x · z) < (y · z)
-  operation _·_ reflects  _<_ when  P   = ∀[ x ] ∀[ y ] ∀[ z ] P z ⇒ (x · z) < (y · z) ⇒ x < y
+  operation _·_ preserves _<_  when  P = ∀[ x ] ∀[ y ] ∀[ z ] P z ⇒ x < y ⇒ (x · z) < (y · z)
+  operation _·_ reflects  _<_  when  P = ∀[ x ] ∀[ y ] ∀[ z ] P z ⇒ (x · z) < (y · z) ⇒ x < y
   operation _·_ reflects  _<_ 〚when〛 P = ∀[ x ] ∀[ y ] ∀[ z ] ∀〚 _ ∶ [ P z ] 〛 (x · z) < (y · z) ⇒ x < y
+  operation _·_ creates   _<_  when  P = ∀[ x ] ∀[ y ] ∀[ z ] P z ⇒ (x < y ⇔ (x · z) < (y · z))
 
 -- other properties on sets
 module _ {ℓ : Level} {A : Type ℓ} (is-set : isSet A)

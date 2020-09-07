@@ -26,8 +26,8 @@ open import MorePropAlgebra.Structures
 record Semigroup : Type (ℓ-suc ℓ) where
   constructor semigroup
   field
-    Carrier     : Type ℓ
-    _·_         : Carrier → Carrier → Carrier
+    Carrier      : Type ℓ
+    _·_          : Carrier → Carrier → Carrier
     is-Semigroup : IsSemigroup _·_
 
   infixl 7 _·_
@@ -37,9 +37,9 @@ record Semigroup : Type (ℓ-suc ℓ) where
 record Monoid : Type (ℓ-suc ℓ) where
   constructor monoid
   field
-    Carrier  : Type ℓ
-    ε        : Carrier
-    _·_      : Carrier → Carrier → Carrier
+    Carrier   : Type ℓ
+    ε         : Carrier
+    _·_       : Carrier → Carrier → Carrier
     is-Monoid : IsMonoid ε _·_
 
   infixl 7 _·_
@@ -49,10 +49,10 @@ record Monoid : Type (ℓ-suc ℓ) where
 record Group : Type (ℓ-suc ℓ) where
   constructor group
   field
-    Carrier : Type ℓ
-    0g      : Carrier
-    _+_     : Carrier → Carrier → Carrier
-    -_      : Carrier → Carrier
+    Carrier  : Type ℓ
+    0g       : Carrier
+    _+_      : Carrier → Carrier → Carrier
+    -_       : Carrier → Carrier
     is-Group : IsGroup 0g _+_ -_
 
   infix  8 -_
@@ -63,10 +63,10 @@ record Group : Type (ℓ-suc ℓ) where
 record AbGroup : Type (ℓ-suc ℓ) where
   constructor abgroup
   field
-    Carrier   : Type ℓ
-    0g        : Carrier
-    _+_       : Carrier → Carrier → Carrier
-    -_        : Carrier → Carrier
+    Carrier    : Type ℓ
+    0g         : Carrier
+    _+_        : Carrier → Carrier → Carrier
+    -_         : Carrier → Carrier
     is-AbGroup : IsAbGroup 0g _+_ -_
 
   infix  8 -_
@@ -94,12 +94,12 @@ record Ring : Type (ℓ-suc ℓ) where
 record CommRing : Type (ℓ-suc ℓ) where
   constructor commring
   field
-    Carrier    : Type ℓ
-    0r         : Carrier
-    1r         : Carrier
-    _+_        : Carrier → Carrier → Carrier
-    _·_        : Carrier → Carrier → Carrier
-    -_         : Carrier → Carrier
+    Carrier     : Type ℓ
+    0r          : Carrier
+    1r          : Carrier
+    _+_         : Carrier → Carrier → Carrier
+    _·_         : Carrier → Carrier → Carrier
+    -_          : Carrier → Carrier
     is-CommRing : IsCommRing 0r 1r _+_ _·_ -_
 
   infix  8 -_
@@ -111,12 +111,12 @@ record CommRing : Type (ℓ-suc ℓ) where
 record ClassicalField : Type (ℓ-suc ℓ) where
   field
     Carrier : Type ℓ
-    0f   : Carrier
-    1f   : Carrier
-    _+_  : Carrier → Carrier → Carrier
-    _·_  : Carrier → Carrier → Carrier
-    -_   : Carrier → Carrier
-    _⁻¹  : (x : Carrier) → {{ ! ¬ᵗ(x ≡ 0f) }} → Carrier -- WARNING: we do not have `_⁻¹` as an assuption
+    0f      : Carrier
+    1f      : Carrier
+    _+_     : Carrier → Carrier → Carrier
+    _·_     : Carrier → Carrier → Carrier
+    -_      : Carrier → Carrier
+    _⁻¹     : (x : Carrier) → {{ ! ¬ᵗ(x ≡ 0f) }} → Carrier -- WARNING: we do not have `_⁻¹` as an assuption
     is-ClassicalField : [ isClassicalField 0f 1f _+_ _·_ -_ _⁻¹ ]
 
   infix  9 _⁻¹
@@ -130,16 +130,14 @@ record ConstructiveField : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
   constructor constructivefield
   field
     Carrier : Type ℓ
-    0f   : Carrier
-    1f   : Carrier
-    _+_  : Carrier → Carrier → Carrier
-    _·_  : Carrier → Carrier → Carrier
-    -_   : Carrier → Carrier
-    _#_  : hPropRel Carrier Carrier ℓ'
-    -- _⁻¹ : (x : Carrier) → {{[ x # 0f ]}} → Carrier
+    0f      : Carrier
+    1f      : Carrier
+    _+_     : Carrier → Carrier → Carrier
+    _·_     : Carrier → Carrier → Carrier
+    -_      : Carrier → Carrier
+    _#_     : hPropRel Carrier Carrier ℓ'
     is-ConstructiveField : [ isConstructiveField 0f 1f _+_ _·_ -_ _#_ ]
 
-  -- infix  9 _⁻¹
   infixl 7 _·_
   infix  6 -_
   infixl 5 _+_
@@ -169,15 +167,9 @@ record AlmostOrderedField : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
     _·_     : Carrier → Carrier → Carrier
     min max : Carrier → Carrier → Carrier
     _<_     : hPropRel Carrier Carrier ℓ'
-
-  -- _#_ = _#'_ {_<_ = _<_}
-  -- _≤_ = _≤'_ {_<_ = _<_}
-
   field
-    -- _⁻¹    : (x : Carrier) → {{x # 0f}} → Carrier
     is-AlmostOrderedField : [ isAlmostOrderedField 0f 1f _+_ _·_ -_ _<_ min max {- _⁻¹ -} ] -- defines `_≤_` and `_#_`
 
-  -- infix  9 _⁻¹
   infixl 7 _·_
   infix  6 -_
   infixl 5 _+_
@@ -196,14 +188,9 @@ record OrderedField : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
     min max : Carrier → Carrier → Carrier
     _<_     : hPropRel Carrier Carrier ℓ'
 
-  -- _#_ = _#'_ {_<_ = _<_}
-  -- _≤_ = _≤'_ {_<_ = _<_}
-
   field
-    -- _⁻¹    : (x : Carrier) → {{x # 0f}} → Carrier
     is-OrderedField : [ isOrderedField 0f 1f _+_ _·_ -_ _<_ min max ] -- defines `_≤_` and `_#_`
 
-  -- infix  9 _⁻¹
   infixl 7 _·_
   infix  6 -_
   infixl 5 _+_

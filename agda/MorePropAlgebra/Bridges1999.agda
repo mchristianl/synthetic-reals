@@ -152,8 +152,8 @@ module BridgesResultsFromBooij {ℓ ℓ'} (assumptions : BooijResultsForBridges 
   R3-2  = ∀[ x ]                                                              x ≤ x
   R3-3  = ∀[ x ] ∀[ y ] ∀[ z ] (    x < y    ) ⇒ (y < z ) ⇒                   x < z
   R3-4  = ∀[ x ] ∀[ y ]                                               ¬((x < y) ⊓ (y ≤ x))
-  R3-5  = ∀[ x ] ∀[ y ] ∀[ z ] (    x ≤ y    ) ⇒ (y < z ) ⇒                   x < z
-  R3-6  = ∀[ x ] ∀[ y ] ∀[ z ] (    x < y    ) ⇒ (y ≤ z ) ⇒                   x < z
+  R3-5  = ∀[ x ] ∀[ y ] ∀[ z ] (    x ≤ y    ) ⇒ (y < z ) ⇒                   x < z           -- Booij item-7
+  R3-6  = ∀[ x ] ∀[ y ] ∀[ z ] (    x < y    ) ⇒ (y ≤ z ) ⇒                   x < z           -- Booij item-6
   R3-7  = ∀[ x ] ∀[ y ]                                               (¬(x < y) ⇔    (y ≤ x))
   R3-8  = ∀[ x ] ∀[ y ]                                               (¬(x ≤ y) ⇔ ¬ ¬(y < x))
   R3-9  = ∀[ x ] ∀[ y ] ∀[ z ] (    y ≤ z    )            ⇒           ( (x ≤ y) ⇔    (x ≤ z))
