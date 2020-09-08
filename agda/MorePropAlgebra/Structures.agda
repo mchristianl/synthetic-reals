@@ -335,7 +335,10 @@ record IsAlmostOrderedField {F : Type ℓ} (0f 1f : F) (_+_ _·_ : F → F → F
     -- 5.
     ≤-isLattice : [ isLattice _≤_ min max ]
 
-  open IsLattice ≤-isLattice public
+  open IsLattice ≤-isLattice renaming (≤-antisym to ≤-antisymᵗ) public
+
+  ≤-antisym : [ isAntisymˢ _≤_ is-set ]
+  ≤-antisym = isAntisymˢ⇔isAntisym _≤_ is-set .snd ≤-antisymᵗ
 
 isAlmostOrderedField : {F : Type ℓ} (0f 1f : F) (_+_ _·_ : F → F → F) (-_ : F → F) (_<_ : hPropRel F F ℓ') (min max : F → F → F) {- (_⁻¹ᶠ : (x : F) → {{x # 0f}} → F) -} → hProp (ℓ-max ℓ ℓ')
 isAlmostOrderedField {ℓ = ℓ} {ℓ' = ℓ'} {F = F} 0f 1f _+_ _·_ -_ _<_ min max {- _⁻¹ -} .fst = IsAlmostOrderedField 0f 1f _+_ _·_ -_ _<_ min max {- _⁻¹ -}

@@ -6,7 +6,7 @@ open import Cubical.Relation.Binary.Base
 open import Cubical.Data.Sum.Base renaming (_⊎_ to infixr 4 _⊎_)
 open import Cubical.Data.Sigma renaming (_×_ to infixr 4 _×_)
 open import Cubical.Data.Empty renaming (elim to ⊥-elim; ⊥ to ⊥⊥) -- `⊥` and `elim`
-open import Function.Base using (_∋_; _$_; it)
+open import Function.Base using (_∋_; _$_; it; typeOf)
 open import Cubical.Foundations.Logic renaming
   ( inl to inlᵖ
   ; inr to inrᵖ
@@ -38,171 +38,9 @@ open import MorePropAlgebra.Bundles
 
 module MorePropAlgebra.Booij2020 where
 
-{-
-record BooijAssumptions {ℓ ℓ'} : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
-  field
-    Carrier   : Type ℓ
-    0f        : Carrier
-    1f        : Carrier
-    _<_       : hPropRel Carrier Carrier ℓ'
-    min       : Carrier → Carrier → Carrier
-    max       : Carrier → Carrier → Carrier
-    _+_       : Carrier → Carrier → Carrier
-    _·_       : Carrier → Carrier → Carrier
-    -_        : Carrier → Carrier
-    <-asym    : [ isAsym     _<_ ]
-    <-irrefl  : [ isIrrefl   _<_ ]
-    <-trans   : [ isTrans    _<_ ]
-    <-cotrans : [ isCotrans  _<_ ]
-    is-set    : isSet Carrier
-
-  _-_ : Carrier → Carrier → Carrier
-  a - b = a + (- b)
-
-  _#_   : hPropRel Carrier Carrier ℓ'
-  x # y = [ <-asym x y ] (x < y) ⊎ᵖ (y < x) -- Booij's and Bridges' definition of _#_
-
-  _≤_   : hPropRel Carrier Carrier ℓ'
-  x ≤ y = ¬(y < x)                          -- Booij's  definition of _≤_
-
-  _≤''_ : hPropRel Carrier Carrier (ℓ-max ℓ ℓ')
-  x ≤'' y = ∀[ ε ] (y < ε) ⇒ (x < ε)        -- Bridges' definition of _≤_
-
-  -- _>_ = flip _<_
-  -- _≥_ = flip _≤_
-
-  field
-    _⁻¹       : (x : Carrier) → {{p : [ x # 0f ]}} → Carrier
-    ≤-refl    : [ isRefl _≤_ ]
-    ≤-antisym : [ isAntisymˢ _≤_ is-set ]
-
-  _/_ : (x y : Carrier) → {{p : [ y # 0f ]}} → Carrier
-  (x / y) {{p}} = x · (y ⁻¹) {{p}}
-
-  infix  9 _⁻¹
-  infixl 7 _·_
-  infixl 7 _/_
-  infix  6 -_
-  infix  5 _-_
-  infixl 5 _+_
-  infixl 4 _#_
-  infixl 4 _≤_
-  infixl 4 _<_
-  -- infixl 4 _≥_
-  -- infixl 4 _>_
--}
-
-module BooijResults {ℓ ℓ'} (assumptions : AlmostOrderedField {ℓ} {ℓ'}) where
-  -- NOTE: modules with overlapping operations need to be defined first to not be chosen as "the" prefix in Goal/Have display
-  import MorePropAlgebra.Properties.Group
-  module Group'Properties  = MorePropAlgebra.Properties.Group   record { AlmostOrderedField assumptions ; is-Group = AlmostOrderedField.+-Group assumptions }
-  module Group'            =                            Group   record { AlmostOrderedField assumptions ; is-Group = AlmostOrderedField.+-Group assumptions }
-  (      Group')           =                            Group ∋ record { AlmostOrderedField assumptions ; is-Group = AlmostOrderedField.+-Group assumptions }
-  module GroupLemmas'      = Group'Properties.GroupLemmas'
-
-  import MorePropAlgebra.Properties.Ring
-  module Ring'Properties  = MorePropAlgebra.Properties.Ring   record { AlmostOrderedField assumptions }
-  module Ring'            =                            Ring   record { AlmostOrderedField assumptions }
-  (      Ring')           =                            Ring ∋ record { AlmostOrderedField assumptions }
-  module RingTheory'      = Ring'Properties.RingTheory'
-
+module Chapter4 {ℓ ℓ'} (assumptions : AlmostOrderedField {ℓ} {ℓ'}) where
+  open import MorePropAlgebra.Properties.AlmostOrderedField assumptions
   open AlmostOrderedField assumptions renaming (Carrier to F; _-_ to _-_) -- atlernative to module telescope
-
-  private
-    infixl 4 _≡ˢ_
-    _≡ˢ_ = λ(x y : F) → MoreLogic.Definitions.≡ˢ-syntax x y {is-set} -- [ is-set ] x ≡ˢ y
-
-    ≡ˢ-sym : ∀ a b → [ (a ≡ˢ b) ⇔ (b ≡ˢ a) ]
-    ≡ˢ-sym a b .fst a≡b = sym a≡b
-    ≡ˢ-sym a b .snd b≡a = sym b≡a
-
-  import Cubical.HITs.PropositionalTruncation.Properties as PTrunc
-
-  abstract
-    ≡ˢ-symᵗ : ∀ a b → (a ≡ˢ b) ≡ (b ≡ˢ a)
-    ≡ˢ-symᵗ a b = let (p , q) = ≡ˢ-sym a b in ⇔toPath p q
-
-    -dist' : [ ∀[ a ] ∀[ b ] -(a + b) ≡ˢ (- b) + (- a) ]
-    -dist  : [ ∀[ a ] ∀[ b ] -(a + b) ≡ˢ (- a) + (- b) ]
-    -dist' a b = GroupLemmas'.invDistr a b
-    -dist  a b = -dist' a b ∙ +-comm _ _
-
-    ·-inv#0 : ∀ x y → x · y ≡ 1f → [ (x # 0f) ⊓ (y # 0f) ]
-    ·-inv#0 x y x·y≡1 .fst = ·-inv'' x .fst ∣ (y ,              x·y≡1) ∣
-    ·-inv#0 x y x·y≡1 .snd = ·-inv'' y .fst ∣ (x , ·-comm y x ∙ x·y≡1) ∣
-
-    -- ∀(a b c : F) → {{_ : [ c # 0f ]}} → [ (a · c ≡ˢ b · c) ⇒ (a ≡ˢ b) ]
-    ·-reflects-≡ : [ operation _·_ reflects _≡ˢ_ when (λ c → c # 0f) ]
-    ·-reflects-≡ a b c p = PTrunc.rec (isProp[] ((a · c ≡ˢ b · c) ⇒ (a ≡ˢ b) )) γ (·-inv'' c .snd p) where
-      γ : Σ[ c⁻¹ ∈ F ] [ c · c⁻¹ ≡ˢ 1f ] → [ (a · c ≡ˢ b · c) ⇒ a ≡ˢ b ]
-      γ (c⁻¹ , c·c⁻¹≡1) a·c≡b·c =
-         a              ≡⟨ sym (fst (·-identity a)) ∙ cong (a ·_) (sym c·c⁻¹≡1) ∙ ·-assoc _ _ _ ⟩
-        (a · c) · (c⁻¹) ≡⟨ cong (_· c⁻¹) a·c≡b·c ⟩
-        (b · c) · (c⁻¹) ≡⟨ sym (·-assoc _ _ _) ∙ cong (b ·_) c·c⁻¹≡1 ∙ fst (·-identity b)  ⟩
-         b ∎
-
-    -- uniqueness of inverses from `·-assoc` + `·-comm` + `·-lid` + `·-rid`
-    ·-rinv-unique'' : (x y z : F) → [ x · y ≡ˢ 1f ] → [ x · z ≡ˢ 1f ] → [ y ≡ˢ z ]
-    ·-rinv-unique'' x y z x·y≡1 x·z≡1 =
-      (      x  · y  ≡ˢ     1f ⇒ᵖ⟨ (λ x·y≡1 i → z · x·y≡1 i) ⟩
-        z · (x  · y) ≡ˢ z · 1f ⇒ᵖ⟨ pathTo⇒ (λ i → ·-assoc z x y i ≡ˢ ·-rid z i) ⟩
-       (z ·  x) · y  ≡ˢ z      ⇒ᵖ⟨ pathTo⇒ (λ i → (·-comm z x i) · y  ≡ˢ z) ⟩
-       (x ·  z) · y  ≡ˢ z      ⇒ᵖ⟨ pathTo⇒ (λ i → x·z≡1 i · y  ≡ˢ z) ⟩
-          1f    · y  ≡ˢ z      ⇒ᵖ⟨ pathTo⇒ (λ i → ·-lid y i ≡ˢ z) ⟩
-                  y  ≡ˢ z      ◼ᵖ) .snd x·y≡1
-
-    -- inverse function from `·-rinv-unique''` and `∀[ x ] (∃[ y ] x · y ≡ˢ 1f) ⇔ x # 0f`
-    _⁻¹'' : ∀ x → {{[ x # 0f ]}} → Σ[ y ∈ F ] x · y ≡ 1f
-    (x ⁻¹'') {{x#0f}} = PTrunc.rec γ (λ p → p) (·-inv'' x .snd x#0f) where
-       γ : isProp (Σ[ y ∈ F ] x · y ≡ 1f)
-       γ (a , x·a≡1) (b , x·b≡1) = let a≡b = ·-rinv-unique'' x a b x·a≡1 x·b≡1
-                                   in Σ≡Prop (λ c → isProp[] (x · c ≡ˢ 1f)) a≡b
-
-    _⁻¹ : ∀ x → {{[ x # 0f ]}} → F
-    (x ⁻¹) {{p}} = (x ⁻¹'') .fst
-
-    infix  9 _⁻¹
-
-    ·-rinv : ∀ x → (p : [ x # 0f ]) → [ x · (x ⁻¹) {{p}} ≡ˢ 1f ]
-    ·-rinv x p = (x ⁻¹'') {{p}} .snd
-
-    ·-linv : ∀ x → (p : [ x # 0f ]) → [ (x ⁻¹) {{p}} · x ≡ˢ 1f ]
-    ·-linv x p = ·-comm _ _ ∙ ·-rinv x p
-
-    ·-linv-unique : (x y : F) → x · y ≡ 1f → (p : [ y # 0f ]) → x ≡ (y ⁻¹) {{p}}
-    ·-linv-unique x y x·y≡1 p = sym $ ·-rinv-unique'' y ((y ⁻¹) {{p}}) x (·-rinv y p) (·-comm _ _ ∙ x·y≡1)
-
-    -- ·-preserves-≡ : [ operation _·_ preserves _≡ˢ_ when (λ c → c # 0f) ]
-    -- ·-preserves-≡ a b c p a≡b i = a≡b i · c
-
-    -- _⁻¹ : ∀(c : F) → {{_ : [ c # 0f ]}} →
-    -- (c ⁻¹) {{p}} = {!   !}
-
-    -- ·-preserves-< : ∀ x y z → [ 0f < z ] → [ x < y ] → [ (x · z) < (y · z) ]
-    -- ·-preserves-< = {!   !}
-    --
-    -- ·-reflects-<0 : ∀ x y → [ 0f < x · y ] → [ (0f < x) ⊓ (0f < y) ]
-    -- ·-reflects-<0 = {!   !}
-    --
-    --
-  -- -- ·-linv-unique : (x y : F) (x·y≡1 : (x ·₁ y) ≡ 1f) → x ≡ (y ⁻¹ᶠ₁)
-  -- module _ (x y : F) (x·y≡1 : x · y ≡ 1f) where
-  --   y#0 = snd (·-inv#0 _ _ x·y≡1) -- duplicated inhabitant (see notes)
-  --   instance _ = y # 0f ∋ y#0
-  --   import Cubical.Structures.Group
-  --
-  --   -- NOTE: ported from Cubical.Structures.Group.GroupLemmas
-  --   abstract
-  --     ·-linv-unique' : Σ[ p ∈ y # 0f ] (x ≡ _⁻¹ᶠ y {{p}})
-  --     ·-linv-unique' = it , (
-  --       x · y ≡ 1f        ⇒⟨ transport (λ i → x · y ≡ ·-linv y it (~ i)) ⟩
-  --       x · y ≡ y ⁻¹ᶠ · y ⇒⟨ simplR _  ⟩
-  --       x     ≡ y ⁻¹ᶠ     ◼) x·y≡1
-
-  -- Bridges' definition of _≤__
-  _≤''_ : hPropRel F F (ℓ-max ℓ ℓ')
-  x ≤'' y = ∀[ ε ] (y < ε) ⇒ (x < ε)
-  infixl 4 _≤''_
 
   Item-1  = ∀[ x ] ∀[ y ]                                 x ≤ y ⇔ ¬(y < x)                          -- (definition of _≤_)
   Item-2  = ∀[ x ] ∀[ y ]                                 x # y ⇔ [ <-asym x y ] (x < y) ⊎ᵖ (y < x) -- (definition of _#_)
@@ -215,40 +53,49 @@ module BooijResults {ℓ ℓ'} (assumptions : AlmostOrderedField {ℓ} {ℓ'}) w
   Item-9  = ∀[ x ] ∀[ y ] ∀[ z ] 0f < z     ⇒            (x < y ⇔ x · z < y · z)                    -- ·-creates-<
   Item-10 =                      0f < 1f                                                            -- 0<1
 
-  -- see Bridges1999.agda for
-  --   <-cotrans⇒Item-6
-  --   <-cotrans⇒Item-7
-  --   Item-7+<-irrefl⇒[≤-⇔-≤'']
-  --   <-cotrans+<-irrefl⇒[≤-⇔-≤'']
+  item-1 : ∀ x y   → [ x ≤ y ⇔                          ¬(y < x) ]; _ = [ Item-1 ] ∋ item-1
+  item-2 : ∀ x y   → [ x # y ⇔ [ <-asym x y ] (x < y) ⊎ᵖ (y < x) ]; _ = [ Item-2 ] ∋ item-2
+
+  item-6 : ∀ x y z → [ x < y ⇒ y ≤ z ⇒ x < z ]; _ : [ Item-6 ]; _ = item-6
+  item-7 : ∀ x y z → [ x ≤ y ⇒ y < z ⇒ x < z ]; _ : [ Item-7 ]; _ = item-7
 
   --  1. x ≤ y ⇔ ¬(y < x),
-  item-1 : [ Item-1 ]
   item-1 _ _ .fst x≤y = x≤y -- holds definitionally
   item-1 _ _ .snd x≤y = x≤y
 
   --  2. x # y ⇔ (x < y) ∨ (y < x)
-  item-2 : [ Item-2 ]
   item-2 _ _ .fst  x#y        =  x#y -- holds definitionally
   item-2 _ _ .snd [x<y]⊎[y<x] = [x<y]⊎[y<x]
 
-  item-6' : [ Item-6 ]
-  item-6' x y z x<y y≤z = ⊔-elim (x < z) (z < y) (λ _ → x < z) (λ x<z → x<z) (λ z<y → ⊥-elim (y≤z z<y)) (<-cotrans _ _ x<y z)
-
-  item-7' : [ Item-7 ]
-  item-7' x y z x≤y y<z = ⊔-elim (y < x) (x < z) (λ _ → x < z) (λ y<x → ⊥-elim (x≤y y<x)) (λ x<z → x<z) (<-cotrans y z y<z x)
-
-  -- Booij's _≤_ ⇔ Brigdes' _≤''_
-  ≤-⇔-≤'' : ∀ x y → [ (x ≤ y) ⇔ (x ≤'' y) ]
-  ≤-⇔-≤'' x y .fst x≤y ε y<ε = item-7' x y ε x≤y y<ε
-  ≤-⇔-≤'' x y .snd x≤''y y<x = <-irrefl x (x≤''y x y<x)
+  item-6 = <-≤-trans
+  item-7 = ≤-<-trans
 
   module +-<-ext+·-preserves-<⇒
     (+-<-ext       : [ is-+-<-Extensional _+_ _<_ ])
     (·-preserves-< : [ operation _·_ preserves _<_ when (λ z → 0f < z) ])
     where
     abstract
+      +-reflects-<      : ∀ x y z → [       x + z < y + z ⇒     x < y      ]
+      +-preserves-<     : ∀ a b x → [           a < b     ⇒ a + x < b + x  ]
+      +-creates-<       : ∀ x y z → [           x < y     ⇔ x + z < y + z  ]; _ : [ Item-4  ]; _ = +-creates-<
+      +-creates-≤       : ∀ x y z → [           x ≤ y     ⇔ x + z ≤ y + z  ]; _ : [ Item-3  ]; _ = +-creates-≤
+      ·-creates-<       : ∀ x y z → [ 0f < z ⇒ (x < y     ⇔ x · z < y · z) ]; _ : [ Item-9  ]; _ = ·-creates-<
+      ·-preserves-≤     : ∀ x y z → [  x ≤ y ⇒ 0f ≤ z     ⇒ x · z ≤ y · z  ]; _ : [ Item-8  ]; _ = ·-preserves-≤
+
+      0<-reflects-+     : ∀ x y   → [ 0f < x + y ⇒ (0f < x) ⊔ (0f < y)     ]; _ : [ Item-5  ]; _ = 0<-reflects-+
+
+      ⁻¹-preserves-sign : ∀ z z⁻¹ → [ 0f < z ] → z · z⁻¹ ≡ 1f → [ 0f < z⁻¹ ]
+
+      is-0<1            :           [ 0f < 1f ]                             ; _ : [ Item-10 ]; _ = is-0<1
+
+      item-3            : [ Item-3 ]
+      item-4            : [ Item-4 ]
+      item-5            : [ Item-5 ]
+      item-8            : [ Item-8 ]
+      item-9            : [ Item-9 ]
+      item-10           : [ Item-10 ]
+
       -- NOTE: just a plain copy of the previous proof
-      +-preserves-< : ∀ a b x → [ a < b ] → [ a + x < b + x ]
       +-preserves-< a b x = snd (
          a            <  b            ⇒ᵖ⟨ transport (λ i → [ sym (fst (+-identity a)) i < sym (fst (+-identity b)) i ]) ⟩
          a +    0f    <  b +    0f    ⇒ᵖ⟨ transport (λ i → [ a + sym (+-rinv x) i < b + sym (+-rinv x) i ]) ⟩
@@ -260,7 +107,6 @@ module BooijResults {ℓ ℓ'} (assumptions : AlmostOrderedField {ℓ} {ℓ'}) w
                                           }) ⟩
          a + x < b + x ◼ᵖ)
 
-      +-reflects-< : ∀ x y z → [ x + z < y + z ] → [ x < y ]
       +-reflects-< x y z = snd
         ( x + z < y + z              ⇒ᵖ⟨ +-preserves-< _ _ (- z) ⟩
           (x + z) - z  < (y + z) - z ⇒ᵖ⟨ transport (λ i → [ +-assoc x z (- z) (~ i) < +-assoc y z (- z) (~ i) ]) ⟩
@@ -268,61 +114,59 @@ module BooijResults {ℓ ℓ'} (assumptions : AlmostOrderedField {ℓ} {ℓ'}) w
           x + 0f < y + 0f            ⇒ᵖ⟨ transport (λ i → [ fst (+-identity x) i < fst (+-identity y) i ]) ⟩
           x < y                      ◼ᵖ)
 
-
       --  3. x ≤ y ⇔ x + z ≤ y + z,
-      item-3 : [ Item-3 ] -- ∀ x y z → x ≤ y → x + z ≤ y + z
-      item-3 x y z .fst = snd ( -- unfold the definition
+      +-creates-≤ x y z .fst = snd ( -- unfold the definition
          x     ≤ y          ⇒ᵖ⟨ (λ z → z) ⟩
         (y     < x     ⇒ ⊥) ⇒ᵖ⟨ (λ f → f ∘ (+-reflects-< y x z) ) ⟩
         (y + z < x + z ⇒ ⊥) ⇒ᵖ⟨ (λ z → z) ⟩
          x + z ≤ y + z      ◼ᵖ) -- refold the definition
-      item-3 x y z .snd = snd (
+      +-creates-≤ x y z .snd = snd (
          x + z ≤ y + z      ⇒ᵖ⟨ (λ z → z) ⟩ -- unfold the definition
         (y + z < x + z ⇒ ⊥) ⇒ᵖ⟨ (λ f p → f (+-preserves-< y x z p)) ⟩ -- just a variant of the above
         (y     < x     ⇒ ⊥) ⇒ᵖ⟨ (λ z → z) ⟩ -- refold the definition
          x     ≤ y          ◼ᵖ)
 
-    --  4. x < y ⇔ x + z < y + z,
-    item-4 : [ Item-4 ]
-    item-4 x y z .fst = +-preserves-< x y z
-    item-4 x y z .snd = +-reflects-<  x y z
+      item-3 = +-creates-≤
 
-    abstract
+      --  4. x < y ⇔ x + z < y + z,
+      +-creates-< x y z .fst = +-preserves-< x y z
+      +-creates-< x y z .snd = +-reflects-<  x y z
+
+      item-4 = +-creates-<
+
       --  5. 0 < x + y ⇒ 0 < x ∨ 0 < y,
-      item-5 : [ Item-5 ]
-      item-5 x y = snd (
+      0<-reflects-+ x y = snd (
         (0f      < x + y)   ⇒ᵖ⟨ transport (λ i → [ fst (+-identity 0f) (~ i) < x + y ]) ⟩
         (0f + 0f < x + y)   ⇒ᵖ⟨ +-<-ext 0f 0f x y ⟩
         (0f < x) ⊔ (0f < y) ◼ᵖ)
 
-      --  6. x < y ≤ z ⇒ x < z,
-      item-6 : [ Item-6 ]
-      item-6 x y z x<y y≤z = snd (
-         x      <  y      ⇒ᵖ⟨ +-preserves-< _ _ _ ⟩
-         x + z  <  y + z  ⇒ᵖ⟨ pathTo⇒ (λ i → x + z < +-comm y z i) ⟩
-         x + z  <  z + y  ⇒ᵖ⟨ +-<-ext x z z y ⟩
-        (x < z) ⊔ (z < y) ⇒ᵖ⟨ (λ q → case q as (x < z) ⊔ (z < y) ⇒ (x < z) of λ
-                              { (inl x<z) → x<z
-                              ; (inr z<y) → ⊥-elim (y≤z z<y)
-                              }) ⟩
-         x < z            ◼ᵖ) x<y
+      item-5 = 0<-reflects-+
 
-      --  7. x ≤ y < z ⇒ x < z,
-      item-7 : [ Item-7 ]
-      item-7 x y z x≤y = snd ( -- very similar to the previous one
-         y      <  z      ⇒ᵖ⟨ +-preserves-< y z x ⟩
-         y + x  <  z + x  ⇒ᵖ⟨ pathTo⇒ (λ i → +-comm y x i < z + x) ⟩
-         x + y  <  z + x  ⇒ᵖ⟨ +-<-ext x y z x ⟩
-        (x < z) ⊔ (y < x) ⇒ᵖ⟨ (λ q → case q as (x < z) ⊔ (y < x) ⇒ (x < z) of λ
-                              { (inl x<z) → x<z
-                              ; (inr y<x) → ⊥-elim (x≤y y<x)
-                              }) ⟩
-         x < z  ◼ᵖ)
+      -- --  6. x < y ≤ z ⇒ x < z,
+      -- item-6 x y z x<y y≤z = snd (
+      --    x      <  y      ⇒ᵖ⟨ +-preserves-< _ _ _ ⟩
+      --    x + z  <  y + z  ⇒ᵖ⟨ pathTo⇒ (λ i → x + z < +-comm y z i) ⟩
+      --    x + z  <  z + y  ⇒ᵖ⟨ +-<-ext x z z y ⟩
+      --   (x < z) ⊔ (z < y) ⇒ᵖ⟨ (λ q → case q as (x < z) ⊔ (z < y) ⇒ (x < z) of λ
+      --                         { (inl x<z) → x<z
+      --                         ; (inr z<y) → ⊥-elim (y≤z z<y)
+      --                         }) ⟩
+      --    x < z            ◼ᵖ) x<y
+      --
+      -- --  7. x ≤ y < z ⇒ x < z,
+      -- item-7 x y z x≤y = snd ( -- very similar to the previous one
+      --    y      <  z      ⇒ᵖ⟨ +-preserves-< y z x ⟩
+      --    y + x  <  z + x  ⇒ᵖ⟨ pathTo⇒ (λ i → +-comm y x i < z + x) ⟩
+      --    x + y  <  z + x  ⇒ᵖ⟨ +-<-ext x y z x ⟩
+      --   (x < z) ⊔ (y < x) ⇒ᵖ⟨ (λ q → case q as (x < z) ⊔ (y < x) ⇒ (x < z) of λ
+      --                         { (inl x<z) → x<z
+      --                         ; (inr y<x) → ⊥-elim (x≤y y<x)
+      --                         }) ⟩
+      --    x < z  ◼ᵖ)
 
       -- 10. 0f < 1f
-      item-10 : [ Item-10 ]
+      item-10 = is-0<1
 
-      ⁻¹-preserves-sign : ∀ z z⁻¹ → [ 0f < z ] → z · z⁻¹ ≡ 1f → [ 0f < z⁻¹ ]
       ⁻¹-preserves-sign z z⁻¹ 0<z z·z⁻¹≡1 with snd (·-inv#0 z z⁻¹ z·z⁻¹≡1)
       ... | inl z⁻¹<0 = snd (
         z⁻¹     < 0f     ⇒ᵖ⟨ ·-preserves-< _ _ z 0<z ⟩
@@ -334,10 +178,8 @@ module BooijResults {ℓ ℓ'} (assumptions : AlmostOrderedField {ℓ} {ℓ'}) w
       ... | inr 0<z⁻¹ = 0<z⁻¹
 
       --  8. x ≤ y ∧ 0 ≤ z ⇒ x z ≤ y z,
-      -- item-8 : ∀ x y z → x ≤ y → 0f ≤ z → x · z ≤ y · z
-      item-8 : [ Item-8 ]
       -- For item 8, suppose x ≤ y and 0 ≤ z and yz < xz.
-      item-8 x y z x≤y 0≤z y·z<x·z = let
+      ·-preserves-≤ x y z x≤y 0≤z y·z<x·z = let
         -- Then 0 < z (x − y) by (†),
         i   = (  y · z            <  x · z                ⇒ᵖ⟨ pathTo⇒ (λ i → ·-comm y z i < ·-comm x z i) ⟩
                  z · y            <  z · x                ⇒ᵖ⟨ +-preserves-< _ _ _ ⟩
@@ -385,11 +227,12 @@ module BooijResults {ℓ ℓ'} (assumptions : AlmostOrderedField {ℓ} {ℓ'}) w
                                0f < 0f     ⇒ᵖ⟨ <-irrefl _ ⟩
                                   ⊥        ◼ᵖ) .snd p
 
+      item-8 = ·-preserves-≤
+
       --  9. 0 < z ⇒ (x < y ⇔ x z < y z),
-      item-9 : [ Item-9 ]
-      item-9 x y z 0<z .fst = ·-preserves-< x y z 0<z
+      ·-creates-< x y z 0<z .fst = ·-preserves-< x y z 0<z
       -- For the other direction of item 9, assume 0 < z and xz < yz,
-      item-9 x y z 0<z .snd x·z<y·z = let
+      ·-creates-< x y z 0<z .snd x·z<y·z = let
         instance _ = (          x · z  <  y · z            ⇒ᵖ⟨ +-preserves-< _ _ _ ⟩
                      (x · z) - (x · z) < (y · z) - (x · z) ⇒ᵖ⟨ pathTo⇒ (cong₂ _<_ (+-rinv (x · z)) refl) ⟩
                                     0f < (y · z) - (x · z) ◼ᵖ) .snd x·z<y·z
@@ -430,8 +273,10 @@ module BooijResults {ℓ ℓ'} (assumptions : AlmostOrderedField {ℓ} {ℓ'}) w
               x · 1f         <  y · 1f         ⇒ᵖ⟨ pathTo⇒ (cong₂ _<_ (fst (·-identity x)) (fst (·-identity y))) ⟩
               x              <  y              ◼ᵖ) .snd x·z<y·z
 
+      item-9 = ·-creates-<
+
       -- 10. 0 < 1.
-      item-10 with ·-inv#0 _ _ (·-identity 1f .fst) .fst
+      is-0<1 with ·-inv#0 _ _ (·-identity 1f .fst) .fst
       -- For item 10, since 1 has multiplicative inverse 1, it is apart from 0, hence 0 < 1 ∨ 1 < 0.
       ... | inl 1<0 = snd (
         -- If 1 < 0 then by item 4 we have 0 < −1 and so by (∗) we get 0 < (−1) · (−1), that is, 0 < 1, so by transitivity 1 < 1, contradicting irreflexivity of <.
@@ -456,8 +301,9 @@ module BooijResults {ℓ ℓ'} (assumptions : AlmostOrderedField {ℓ} {ℓ'}) w
     (item-9 : [ Item-9 ]) -- ∀[ x ] ∀[ y ] ∀[ z ] 0f < z              ⇒   (x < y ⇔ x · z < y · z)
     where
     abstract
-      item-4' : ∀ x y → [ 0f < x - y ] → [ y < x ]
-      +-<-ext : [ is-+-<-Extensional _+_ _<_ ]
+      item-4'       : ∀ x y     → [      0f <  x - y  ⇒  y < x            ]
+      +-<-ext       : ∀ x y z w → [ (x + y) < (z + w) ⇒ (x < z) ⊔ (y < w) ]; _ : [ is-+-<-Extensional _+_ _<_ ]; _ = +-<-ext
+      ·-preserves-< : ∀ x y z   → [  0f < z ⇒  x < y  ⇒ (x · z) < (y · z) ]; _ : [ operation _·_ preserves _<_ when (λ z → 0f < z) ]; _ = ·-preserves-<
       private
         lemma : ∀ x y z w → (z + w) + ((- x) + (- y)) ≡ (z - x) + (w - y)
 
@@ -493,6 +339,5 @@ module BooijResults {ℓ ℓ'} (assumptions : AlmostOrderedField {ℓ} {ℓ'}) w
                                                             }) ⟩
         ( x < z    ) ⊔ ( y < w    ) ◼ᵖ)
 
-    -- 6. (∗)
-    ·-preserves-< : [ operation _·_ preserves _<_ when (λ z → 0f < z) ] -- ∀ x y z → 0f < z → x < y → (x · z) < (y · z)
-    ·-preserves-< x y z 0<z = item-9 x y z 0<z .fst
+      -- 6. (∗)
+      ·-preserves-< x y z 0<z = item-9 x y z 0<z .fst

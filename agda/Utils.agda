@@ -91,3 +91,11 @@ Iso.leftInv  !-iso = λ{ (!! x) → refl }
 
 !-equiv : ∀{ℓ} {X : Type ℓ} → (! X) ≃ X
 !-equiv = !!!_ , λ where .equiv-proof x → ((!! x) , refl) , λ{ ((!! y) , p) → λ i → (!! p (~ i)) , (λ j → p (~ i ∨ j)) }
+
+-- `A unfold refl to B` checks `A` and `B` to be definitionally equal (with `refl`) and then uses `B`
+--   this allows for a nicer Goal/Have at the very beginning of implementing and when using something
+unfold' : ∀{ℓ A} → (x y : A) → _≡_ {ℓ} x y → _
+unfold' x y p = y
+infix -8 unfold'
+syntax unfold' x y p = x unfold p to y
+{-# DISPLAY unfold' x y p = p #-}

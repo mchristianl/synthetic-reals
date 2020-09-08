@@ -973,39 +973,39 @@ THESIS: Maybe we can also make use of copatterns in the `MorePropAlgebra` module
 Booij writes "we identify elements of HProp with ... their first projection". Therefore Agda's first projection `[_]` is not present in Booij's writing (it's implicit).
 
 | Booij                                  | Agda                                                                     |
-| -------------------------------------- | ------------------------------------------------------------------------ |
+|----------------------------------------|--------------------------------------------------------------------------|
 | `⊤              := 1                 ` | `⊤ : hProp _                                                           ` |
 |                                        | `⊤ = Unit , (λ _ _ _ → tt)                                             ` |
-| -------------------------------------- | ------------------------------------------------------------------------ |
+|----------------------------------------|--------------------------------------------------------------------------|
 | `⊥              := 0                 ` | `⊥ : hProp _                                                           ` |
 |                                        | `⊥ = ⊥.⊥ , λ ()                                                        ` |
-| -------------------------------------- | ------------------------------------------------------------------------ |
+|----------------------------------------|--------------------------------------------------------------------------|
 | `P ∧ Q          := P × Q             ` | `A ⊓′ B = A × B                                                        ` |
 |                                        | `A ⊓ B = [ A ] ⊓′ [ B ] , isOfHLevelΣ 1 (isProp[] A) (\ _ → isProp[] B)` |
-| -------------------------------------- | ------------------------------------------------------------------------ |
+|----------------------------------------|--------------------------------------------------------------------------|
 | `P ⇒ Q          := P → Q             ` | `A ⇒ B = ([ A ] → [ B ]) , isPropΠ λ _ → isProp[] B                    ` |
-| -------------------------------------- | ------------------------------------------------------------------------ |
+|----------------------------------------|--------------------------------------------------------------------------|
 | `P ⇔ Q          := P = Q             ` | `A ⇔ B = (A ⇒ B) ⊓ (B ⇒ A)                                             ` |
 |                                        | `⇔toPath : [ P ⇒ Q ] → [ Q ⇒ P ] → P ≡ Q                               ` |
 |                                        | `pathTo⇒ : P ≡ Q → [ P ⇒ Q ]                                           ` |
 |                                        | `pathTo⇐ : P ≡ Q → [ Q ⇒ P ]                                           ` |
-| -------------------------------------- | ------------------------------------------------------------------------ |
+|----------------------------------------|--------------------------------------------------------------------------|
 | `¬P             := P → 0             ` | `¬ A = ([ A ] → ⊥.⊥) , isPropΠ λ _ → ⊥.isProp⊥                         ` |
 |                                        | `x ≢ₚ y = ¬ x ≡ₚ y                                                     ` |
-| -------------------------------------- | ------------------------------------------------------------------------ |
+|----------------------------------------|--------------------------------------------------------------------------|
 | `P ∨ Q          := ∥ P + Q ∥         ` | `A ⊔′ B = ∥ A ⊎ B ∥                                                    ` |
 |                                        | `P ⊔ Q = ∥ [ P ] ⊎ [ Q ] ∥ₚ                                            ` |
-| -------------------------------------- | ------------------------------------------------------------------------ |
+|----------------------------------------|--------------------------------------------------------------------------|
 | `(∀ x : X) R(x) :=  (Π x : X) R(x)   ` | `∀[∶]-syntax {A = A} P = (∀ x → [ P x ]) , isPropΠ (isProp[] ∘ P)      ` |
 |                                        | `∀[]-syntax  {A = A} P = (∀ x → [ P x ]) , isPropΠ (isProp[] ∘ P)      ` |
 |                                        | `syntax ∀[∶]-syntax {A = A} (λ a → P) = ∀[ a ∶ A ] P                   ` |
 |                                        | `syntax  ∀[]-syntax (λ a → P)          = ∀[ a ] P                      ` |
-| -------------------------------------- | ------------------------------------------------------------------------ |
+|----------------------------------------|--------------------------------------------------------------------------|
 | `(∃ x : X) R(x) := ∥ (Σ x : X) R(x) ∥` | `∃[∶]-syntax {A = A} P = ∥ Σ A ([_] ∘ P) ∥ₚ                            ` |
 |                                        | `∃[]-syntax  {A = A} P = ∥ Σ A ([_] ∘ P) ∥ₚ                            ` |
 |                                        | `syntax ∃[∶]-syntax {A = A} (λ x → P) = ∃[ x ∶ A ] P                   ` |
 |                                        | `syntax ∃[]-syntax          (λ x → P) = ∃[ x ] P                       ` |
-| -------------------------------------- | ------------------------------------------------------------------------ |
+|----------------------------------------|--------------------------------------------------------------------------|
 | `isHProp(P)   := (Π p, q : P)(p =ₚ q)` | `isProp A = (x y : A) → x ≡ y                                          ` |
 | `HProp       := (Σ P : 𝓤) isHProp(P)` | `hProp  ℓ = Σ[ A ∈ Type ℓ ] isProp A                                   ` |
 
@@ -2372,6 +2372,84 @@ So no "magic" is involved. It's just that `[_]` occurs at many places being the 
 ⊢  (∀  x → [ x ≤ x ]) y
 ⊢          [ y ≤ y ]
 ```
+
+### using different signatures for hProp-functions
+
+Suppose we have different hProps to "implement":
+
+```agda
+Item-1  = ∀[ x ] ∀[ y ]                                 x ≤ y ⇔ ¬(y < x)                          -- (definition of _≤_)
+Item-2  = ∀[ x ] ∀[ y ]                                 x # y ⇔ [ <-asym x y ] (x < y) ⊎ᵖ (y < x) -- (definition of _#_)
+Item-6  = ∀[ x ] ∀[ y ] ∀[ z ]  x < y     ⇒  y ≤ z ⇒    x     <     z                             -- <-≤-trans
+Item-7  = ∀[ x ] ∀[ y ] ∀[ z ]  x ≤ y     ⇒  y < z ⇒    x     <     z                             -- ≤-<-trans
+```
+
+These hProps come with a Type such as `[ Item-6 ]` and a proof being an hProp `isProp[] Item-6` and we are tempted to use them in our definitions
+
+```agda
+item-6' : [ Item-6 ]
+item-6' = ...
+```
+
+Unfortunately this leads to showing just `Goal [ Item-6 ]` and when using `item-6` we only get `Have [ Item-6 ]`.
+
+An alternative would be to write this out as
+
+```
+<-≤-trans : [ ∀[ x ] ∀[ y ] ∀[ z ]  x < y     ⇒  y ≤ z ⇒    x     <     z ]
+
+item-6 : [ Item-6 ]
+item-6 = <-≤-trans
+```
+
+Now, `item-6` still gives `Have [ Item-6 ]`, but `<-≤-trans` gives `Have [ (λ x y z → x < y ⇒ y ≤ z ⇒ x < z) ]` (with a certain `DISPLAY` directive to suppress the `∀[]-syntax`).
+
+This approach also checks in `item-6 = <-≤-trans` that `<-≤-trans` really matches `[ Item-6 ]` definitionally. Another variant would be to use
+
+```agda
+_ = typeOf <-≤-trans ≡ [ Item-6 ] ∋ refl
+```
+
+or something like
+
+```agda
+item-2 : [ Item-2 unfold refl to ∀[ x ] ∀[ y ] x # y ⇔ [ <-asym x y ] (x < y) ⊎ᵖ (y < x) ]
+item-2 = ...
+```
+
+where
+
+```agda
+unfold' : ∀{ℓ A} → (x y : A) → _≡_ {ℓ} x y → _
+unfold' x y p = y
+infix -8 unfold'
+syntax unfold' x y p = x unfold p to y
+{-# DISPLAY unfold' x y p = p #-}
+```
+
+but I found more convenient to use
+
+```agda
+<-≤-trans : [ ∀[ x ] ∀[ y ] ∀[ z ] x < y ⇒ y ≤ z ⇒ x < z ]; item-6 = [ Item-6 ] ∋ <-≤-trans
+```
+
+to get `Have [ (λ x y z → x < y ⇒ y ≤ z ⇒ x < z) ]` for `<-≤-trans`, or even
+
+```
+item-1    : ∀ x y   → [ x ≤ y ⇔ ¬(y < x)      ]; _ = [ Item-1 ] ∋ item-1
+≤-<-trans : ∀ x y z → [ x ≤ y ⇒ y < z ⇒ x < z ]; _ = [ Item-7 ] ∋ ≤-<-trans
+```
+
+or, because it somehow better resolves implicit level arguments, even
+
+```
+item-1    : ∀ x y   → [ x ≤ y ⇔ ¬(y < x)      ]; _ = [ Item-1 ]; _ = item-1
+≤-<-trans : ∀ x y z → [ x ≤ y ⇒ y < z ⇒ x < z ]; _ = [ Item-7 ]; _ = ≤-<-trans
+```
+
+to get `Have (x y z : F) → [ x ≤ y ⇒ y < z ⇒ x < z ]` for `≤-<-trans`.
+
+Again, the `...; _ = [ Item-7 ] ∋ ≤-<-trans` amendment is just to ensure that this signature is still definitionally equal to `[ Item-7 ]`.
 
 ### result
 
