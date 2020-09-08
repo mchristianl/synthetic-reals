@@ -53,7 +53,10 @@ record IsSemigroup {A : Type ℓ} (_·_ : A → A → A) : Type ℓ where
   constructor issemigroup
   field
     is-set   : [ isSetᵖ A ]
-    is-assoc : [ isAssociativeˢ _·_ is-set ]
+    is-assoc : ∀ x y z → x · (y · z) ≡ (x · y) · z
+
+  _ : [ isSetᵖ A                  ]; _ = is-set
+  _ : [ isAssociativeˢ _·_ is-set ]; _ = is-assoc
 
 isSemigroup : {A : Type ℓ} (_·_ : A → A → A) → hProp ℓ
 isSemigroup _·_ .fst = IsSemigroup _·_
@@ -65,7 +68,11 @@ record IsMonoid {A : Type ℓ} (ε : A) (_·_ : A → A → A) : Type ℓ where
   field
     is-set       : [ isSetᵖ A ]
     is-Semigroup : [ isSemigroup _·_ ]
-    is-identity  : [ isIdentityˢ _·_ is-set ε ]
+    is-identity  : ∀ x → (x · ε ≡ x) × (ε · x ≡ x)
+
+  _ : [ isSetᵖ A                 ]; _ = is-set
+  _ : [ isSemigroup _·_          ]; _ = is-Semigroup
+  _ : [ isIdentityˢ _·_ is-set ε ]; _ = is-identity
 
   open IsSemigroup is-Semigroup hiding (is-set) public
 
@@ -85,7 +92,11 @@ record IsGroup {G : Type ℓ} (0g : G) (_+_ : G → G → G) (-_ : G → G) : Ty
   field
     is-set     : [ isSetᵖ G ]
     is-Monoid  : [ isMonoid 0g _+_ ]
-    is-inverse : [ isInverseˢ is-set 0g _+_ -_ ]
+    is-inverse : ∀ x → (x + (- x) ≡ 0g) × ((- x) + x ≡ 0g)
+
+  _ : [ isSetᵖ G                    ]; _ = is-set
+  _ : [ isMonoid 0g _+_             ]; _ = is-Monoid
+  _ : [ isInverseˢ is-set 0g _+_ -_ ]; _ = is-inverse
 
   open IsMonoid is-Monoid hiding (is-set) public
 
@@ -110,7 +121,11 @@ record IsAbGroup {G : Type ℓ} (0g : G) (_+_ : G → G → G) (-_ : G → G) : 
   field
     is-set   : [ isSetᵖ G ]
     is-Group : [ isGroup 0g _+_ -_ ]
-    is-comm  : [ isCommutativeˢ _+_ is-set ]
+    is-comm  : ∀ x y → x + y ≡ y + x
+
+  _ : [ isSetᵖ G                  ]; _ = is-set
+  _ : [ isGroup 0g _+_ -_         ]; _ = is-Group
+  _ : [ isCommutativeˢ _+_ is-set ]; _ = is-comm
 
   open IsGroup is-Group hiding (is-set) public
 
@@ -125,7 +140,12 @@ record IsRing {R : Type ℓ} (0r 1r : R) (_+_ _·_ : R → R → R) (-_ : R → 
     is-set    : [ isSetᵖ R ]
     +-AbGroup : [ isAbGroup 0r _+_ -_ ]
     ·-Monoid  : [ isMonoid  1r _·_ ]
-    is-dist   : [ isDistributiveˢ is-set _+_ _·_ ]
+    is-dist   : ∀ x y z → (x · (y +  z) ≡ (x · y) + (x · z)) × ((x +  y) · z  ≡ (x · z) + (y · z))
+
+  _ : [ isSetᵖ R                       ]; _ = is-set
+  _ : [ isAbGroup 0r _+_ -_            ]; _ = +-AbGroup
+  _ : [ isMonoid  1r _·_               ]; _ = ·-Monoid
+  _ : [ isDistributiveˢ is-set _+_ _·_ ]; _ = is-dist
 
   open IsAbGroup +-AbGroup hiding (is-set) public
     renaming
@@ -173,7 +193,11 @@ record IsCommRing {R : Type ℓ} (0r 1r : R) (_+_ _·_ : R → R → R) (-_ : R 
   field
     is-set  : [ isSetᵖ R ]
     is-Ring : [ isRing 0r 1r _+_ _·_ -_ ]
-    ·-comm  : [ isCommutativeˢ _·_ is-set ]
+    ·-comm  : ∀ x y → x · y ≡ y · x
+
+  _ : [ isSetᵖ R                  ]; _ = is-set
+  _ : [ isRing 0r 1r _+_ _·_ -_   ]; _ = is-Ring
+  _ : [ isCommutativeˢ _·_ is-set ]; _ = ·-comm
 
   open IsRing is-Ring hiding (is-set) public
 
@@ -223,13 +247,13 @@ record IsConstructiveField {F : Type ℓ} (0f 1f : F) (_+_ _·_ : F → F → F)
   field
     is-set      : [ isSetᵖ F ]
     is-CommRing : [ isCommRing 0f 1f _+_ _·_ -_ ]
-    ·-inv''     : [ isNonzeroInverseˢ'' is-set 0f 1f _·_ _#_ ]
+    ·-inv''     : ∀ x → [ (∃[ y ] [ is-set ] x · y ≡ˢ 1f) ⇔ x # 0f ]
     -- these should follow:
     --   ·-inv       : [ isNonzeroInverseˢ is-set 0f 1f _·_ _#_ _⁻¹ ]
     --   ·-invnz     : [ isInverseNonzeroˢ is-set 0f 1f _·_ _#_ ]
     --   ·-inv-back : ∀ x y → (x · y ≡ 1f) → [ x # 0f ] × [ y # 0f ]
-    +-#-ext     : [ is-+-#-Extensional _+_ _#_ ]
-    #-tight     : [ isTightˢ''' _#_ is-set ]
+    +-#-ext     : ∀ w x y z → [ (w + x) # (y + z) ] → [ (w # y) ⊔ (x # z) ]
+    #-tight     : ∀ a b → [ ¬(a # b) ] → a ≡ b
     -- #-ApartnessRel  : [ isApartnessRel _#_ ]
   --
   -- ·-linv : (x : F) {{ p : [ x # 0f ] }} → ((x ⁻¹) · x) ≡ 1f -- wow, uses `p` already in `⁻¹`
@@ -237,7 +261,13 @@ record IsConstructiveField {F : Type ℓ} (0f 1f : F) (_+_ _·_ : F → F → F)
   --
   -- ·-rinv : (x : F) {{ p : [ x # 0f ] }} → (x · (x ⁻¹)) ≡ 1f
   -- ·-rinv x {{p}} = fst (·-inv x)
-  --
+
+  _ : [ isSetᵖ F                                 ]; _ = is-set
+  _ : [ isCommRing 0f 1f _+_ _·_ -_              ]; _ = is-CommRing
+  _ : [ isNonzeroInverseˢ'' is-set 0f 1f _·_ _#_ ]; _ = ·-inv''
+  _ : [ is-+-#-Extensional _+_ _#_               ]; _ = +-#-ext
+  _ : [ isTightˢ''' _#_ is-set                   ]; _ = #-tight
+
   open IsCommRing is-CommRing hiding (is-set) public
   -- open IsApartnessRelᵖ isApartnessRel public
   --   renaming
@@ -261,12 +291,16 @@ record IsLattice {A : Type ℓ} (_≤_ : hPropRel A A ℓ') (min max : A → A �
   constructor islattice
   field
     ≤-PartialOrder : [ isPartialOrder _≤_ ]
-    is-min         : [ isMin _≤_ min ]
-    is-max         : [ isMax _≤_ max ]
+    is-min         : ∀ x y z → [ z ≤ (min x y) ⇔ z ≤ x ⊓ z ≤ y ]
+    is-max         : ∀ x y z → [ (max x y) ≤ z ⇔ x ≤ z ⊓ y ≤ z ]
     -- glb      : ∀ x y z → z ≤ min x y → z ≤ x × z ≤ y
     -- glb-back : ∀ x y z → z ≤ x × z ≤ y → z ≤ min x y
     -- lub      : ∀ x y z → max x y ≤ z → x ≤ z × y ≤ z
     -- lub-back : ∀ x y z → x ≤ z × y ≤ z → max x y ≤ z
+
+  _ : [ isPartialOrder _≤_ ]; _ = ≤-PartialOrder
+  _ : [ isMin _≤_ min      ]; _ = is-min
+  _ : [ isMax _≤_ max      ]; _ = is-max
 
   open IsPartialOrder ≤-PartialOrder public
     renaming
@@ -326,7 +360,7 @@ record IsAlmostOrderedField {F : Type ℓ} (0f 1f : F) (_+_ _·_ : F → F → F
 
   field
     -- 3.
-    ·-inv''     : [ isNonzeroInverseˢ'' is-set 0f 1f _·_ _#_ ]
+    ·-inv''     : ∀ x → [ (∃[ y ] [ is-set ] x · y ≡ˢ 1f) ⇔ x # 0f ]
     -- ·-rinv     : (x : F) → (p : x # 0f) → x · (_⁻¹ᶠ x {{p}}) ≡ 1f
     -- ·-linv     : (x : F) → (p : x # 0f) → (_⁻¹ᶠ x {{p}}) · x ≡ 1f
     -- ·-inv-back : (x y : F) → (x · y ≡ 1f) → x # 0f × y # 0f
@@ -334,6 +368,12 @@ record IsAlmostOrderedField {F : Type ℓ} (0f 1f : F) (_+_ _·_ : F → F → F
     -- ≤-isPartialOrder : IsPartialOrder _≤_
     -- 5.
     ≤-isLattice : [ isLattice _≤_ min max ]
+
+  _ : isSet F                                     ; _ = is-set
+  _ : [ isCommRing 0f 1f _+_ _·_ (-_)            ]; _ = is-CommRing
+  _ : [ isStrictPartialOrder _<_                 ]; _ = <-StrictPartialOrder
+  _ : [ isNonzeroInverseˢ'' is-set 0f 1f _·_ _#_ ]; _ = ·-inv''
+  _ : [ isLattice _≤_ min max                    ]; _ = ≤-isLattice
 
   open IsLattice ≤-isLattice renaming (≤-antisym to ≤-antisymᵗ) public
 
@@ -368,10 +408,14 @@ record IsOrderedField {F : Type ℓ} (0f 1f : F) (_+_ _·_ : F → F → F) (-_ 
     -- 1. 2. 3. 4. 5.
     is-AlmostOrderedField : [ isAlmostOrderedField 0f 1f _+_ _·_ -_ _<_ min max {- _⁻¹ᶠ -} ]
     -- 6. (†)
-    -- NOTE: this is 'shifted' from the pevious definition of #-extensionality for + .. does the name still fit?
-    +-<-ext : [ is-+-<-Extensional _+_ _<_ ] -- ∀ w x y z → (x + y) < (z + w) → (x < z) ⊎ (y < w)
+    +-<-ext : ∀ w x y z → [ (w + x) < (y + z) ] → [ (w < y) ⊔ (x < z) ]
     -- 6. (∗)
-    ·-preserves-< : [ operation _·_ preserves _<_ when (λ z → 0f < z) ] -- ∀ x y z → 0f < z → x < y → (x · z) < (y · z)
+    ·-preserves-< : ∀ x y z → [ 0f < z ] → [ x < y ] → [ (x · z) < (y · z) ]
+
+  _ : [ isAlmostOrderedField 0f 1f _+_ _·_ -_ _<_ min max ]; _ = is-AlmostOrderedField
+  _ : [ is-+-<-Extensional _+_ _<_                        ]; _ = +-<-ext
+  _ : [ operation _·_ preserves _<_ when (λ z → 0f < z)   ]; _ = ·-preserves-<
+
   open IsAlmostOrderedField is-AlmostOrderedField public
 
 isOrderedField : {F : Type ℓ} (0f 1f : F) (_+_ _·_ : F → F → F) (-_ : F → F) (_<_ : hPropRel F F ℓ') (min max : F → F → F) {- (_⁻¹ᶠ : (x : F) → {{x # 0f}} → F) -} → hProp (ℓ-max ℓ ℓ')

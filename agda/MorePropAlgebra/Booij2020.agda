@@ -304,11 +304,11 @@ module Chapter4 {ℓ ℓ'} (assumptions : AlmostOrderedField {ℓ} {ℓ'}) where
     (item-9 : [ Item-9 ]) -- ∀[ x ] ∀[ y ] ∀[ z ] 0f < z              ⇒   (x < y ⇔ x · z < y · z)
     where
     abstract
-      item-4'       : ∀ x y     → [      0f <  x - y  ⇒  y < x            ]
       +-<-ext       : ∀ x y z w → [ (x + y) < (z + w) ⇒ (x < z) ⊔ (y < w) ]; _ : [ is-+-<-Extensional _+_ _<_ ]; _ = +-<-ext
       ·-preserves-< : ∀ x y z   → [  0f < z ⇒  x < y  ⇒ (x · z) < (y · z) ]; _ : [ operation _·_ preserves _<_ when (λ z → 0f < z) ]; _ = ·-preserves-<
       private
-        lemma : ∀ x y z w → (z + w) + ((- x) + (- y)) ≡ (z - x) + (w - y)
+        item-4'     : ∀ x y     → [      0f <  x - y  ⇒  y < x            ]
+        lemma       : ∀ x y z w → (z + w) + ((- x) + (- y)) ≡ (z - x) + (w - y)
 
       item-4' x y = snd (
         0f     <  x - y         ⇒ᵖ⟨ fst (item-4 0f (x + (- y)) y) ⟩

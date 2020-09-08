@@ -137,9 +137,13 @@ module _ {ℓ ℓ' : Level} {A : Type ℓ} (R : hPropRel A A ℓ') where
   record IsApartnessRel : Type (ℓ-max ℓ ℓ') where
     constructor isapartnessrel
     field
-      is-irrefl  : [ isIrrefl   R ]
-      is-sym     : [ isSym      R ]
-      is-cotrans : [ isCotrans  R ]
+      is-irrefl  : ∀ a → [ ¬ R a a ]
+      is-sym     : ∀ a b → [ R a b ] → [ R b a ]
+      is-cotrans : ∀ a b → [ R a b ] → ∀ x → [ R a x ⊔ R x b ]
+
+    _ : [ isIrrefl   R ]; _ = is-irrefl
+    _ : [ isSym      R ]; _ = is-sym
+    _ : [ isCotrans  R ]; _ = is-cotrans
 
   isApartnessRel  : hProp (ℓ-max ℓ ℓ')
   isApartnessRel  .fst = IsApartnessRel
@@ -149,9 +153,13 @@ module _ {ℓ ℓ' : Level} {A : Type ℓ} (R : hPropRel A A ℓ') where
   record IsStrictPartialOrder : Type (ℓ-max ℓ ℓ') where
     constructor isstrictpartialorder
     field
-      is-irrefl  : [ isIrrefl   R ]
-      is-trans   : [ isTrans    R ]
-      is-cotrans : [ isCotrans  R ]
+      is-irrefl  : ∀ a → [ ¬ R a a ]
+      is-trans   : ∀ a b x → [ R a b ] → [ R b x ] → [ R a x ]
+      is-cotrans : ∀ a b → [ R a b ] → ∀ x → [ R a x ⊔ R x b ]
+
+    _ : [ isIrrefl   R ]; _ = is-irrefl
+    _ : [ isTrans    R ]; _ = is-trans
+    _ : [ isCotrans  R ]; _ = is-cotrans
 
   isStrictPartialOrder  : hProp (ℓ-max ℓ ℓ')
   isStrictPartialOrder  .fst = IsStrictPartialOrder
@@ -161,8 +169,11 @@ module _ {ℓ ℓ' : Level} {A : Type ℓ} (R : hPropRel A A ℓ') where
   record IsPreorder : Type (ℓ-max ℓ ℓ') where
     constructor ispreorder
     field
-      is-refl    : [ isRefl   R ]
-      is-trans   : [ isTrans  R ]
+      is-refl    : ∀ a → [ R a a ]
+      is-trans   : ∀ a b x → [ R a b ] → [ R b x ] → [ R a x ]
+
+    _ : [ isRefl   R ]; _ = is-refl
+    _ : [ isTrans  R ]; _ = is-trans
 
   isPreorder  : hProp (ℓ-max ℓ ℓ')
   isPreorder  .fst = IsPreorder
@@ -172,9 +183,13 @@ module _ {ℓ ℓ' : Level} {A : Type ℓ} (R : hPropRel A A ℓ') where
   record IsPartialOrder : Type (ℓ-max ℓ ℓ') where
     constructor ispartialorder
     field
-      is-refl    : [ isRefl     R ]
-      is-antisym : [ isAntisym  R ]
-      is-trans   : [ isTrans    R ]
+      is-refl    : ∀ a → [ R a a ]
+      is-antisym : ∀ a b → [ R a b ] → [ R b a  ] → [ a ≡ₚ b ]
+      is-trans   : ∀ a b x → [ R a b ] → [ R b x ] → [ R a x ]
+
+    _ : [ isRefl     R ]; _ = is-refl
+    _ : [ isAntisym  R ]; _ = is-antisym
+    _ : [ isTrans    R ]; _ = is-trans
 
   isPartialOrder  : hProp (ℓ-max ℓ ℓ')
   isPartialOrder  .fst = IsPartialOrder
