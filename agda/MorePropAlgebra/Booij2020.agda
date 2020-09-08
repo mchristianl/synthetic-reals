@@ -75,12 +75,13 @@ module Chapter4 {ℓ ℓ'} (assumptions : AlmostOrderedField {ℓ} {ℓ'}) where
     (·-preserves-< : [ operation _·_ preserves _<_ when (λ z → 0f < z) ])
     where
     abstract
-      +-reflects-<      : ∀ x y z → [       x + z < y + z ⇒     x < y      ]
-      +-preserves-<     : ∀ a b x → [           a < b     ⇒ a + x < b + x  ]
-      +-creates-<       : ∀ x y z → [           x < y     ⇔ x + z < y + z  ]; _ : [ Item-4  ]; _ = +-creates-<
-      +-creates-≤       : ∀ x y z → [           x ≤ y     ⇔ x + z ≤ y + z  ]; _ : [ Item-3  ]; _ = +-creates-≤
-      ·-creates-<       : ∀ x y z → [ 0f < z ⇒ (x < y     ⇔ x · z < y · z) ]; _ : [ Item-9  ]; _ = ·-creates-<
-      ·-preserves-≤     : ∀ x y z → [  x ≤ y ⇒ 0f ≤ z     ⇒ x · z ≤ y · z  ]; _ : [ Item-8  ]; _ = ·-preserves-≤
+      +-reflects-<      : ∀ x y z → [           x + z < y + z ⇒     x < y      ]
+      +-preserves-<     : ∀ x y z → [               x < y     ⇒ x + z < y + z  ]
+      +-creates-<       : ∀ x y z → [               x < y     ⇔ x + z < y + z  ]; _ : [ Item-4  ]; _ = +-creates-<
+      +-creates-≤       : ∀ x y z → [               x ≤ y     ⇔ x + z ≤ y + z  ]; _ : [ Item-3  ]; _ = +-creates-≤
+      ·-reflects-<      : ∀ x y z → [ 0f < z ⇒ (x · z < y · z ⇒ x < y        ) ]
+      ·-creates-<       : ∀ x y z → [ 0f < z ⇒ (    x < y     ⇔ x · z < y · z) ]; _ : [ Item-9  ]; _ = ·-creates-<
+      ·-preserves-≤     : ∀ x y z → [  x ≤ y ⇒     0f ≤ z     ⇒ x · z ≤ y · z  ]; _ : [ Item-8  ]; _ = ·-preserves-≤
 
       0<-reflects-+     : ∀ x y   → [ 0f < x + y ⇒ (0f < x) ⊔ (0f < y)     ]; _ : [ Item-5  ]; _ = 0<-reflects-+
 
@@ -272,6 +273,8 @@ module Chapter4 {ℓ ℓ'} (assumptions : AlmostOrderedField {ℓ} {ℓ'}) where
               x · (z  · z⁻¹) <  y · (z  · z⁻¹) ⇒ᵖ⟨ pathTo⇒ (λ i → x · 1≡z·[w·[y-x]] (~ i) < y · 1≡z·[w·[y-x]] (~ i)) ⟩
               x · 1f         <  y · 1f         ⇒ᵖ⟨ pathTo⇒ (cong₂ _<_ (fst (·-identity x)) (fst (·-identity y))) ⟩
               x              <  y              ◼ᵖ) .snd x·z<y·z
+
+      ·-reflects-< x y z 0<z = ·-creates-< x y z 0<z .snd
 
       item-9 = ·-creates-<
 

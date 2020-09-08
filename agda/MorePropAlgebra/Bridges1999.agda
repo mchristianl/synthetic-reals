@@ -36,20 +36,36 @@ open import Utils
 
 open import MorePropAlgebra.Bundles
 open import MorePropAlgebra.Definitions as Defs hiding (_≤''_)
+open import MorePropAlgebra.Consequences
 
 module MorePropAlgebra.Bridges1999 {ℓ ℓ'} (assumptions : OrderedField {ℓ} {ℓ'}) where
 
 import MorePropAlgebra.Properties.AlmostOrderedField
-module AlmostOrderedField'Properties  = MorePropAlgebra.Properties.AlmostOrderedField   record { OrderedField assumptions }
-module AlmostOrderedField'            =                            AlmostOrderedField   record { OrderedField assumptions }
-(      AlmostOrderedField')           =                            AlmostOrderedField ∋ record { OrderedField assumptions }
+-- module AlmostOrderedField'Properties  = MorePropAlgebra.Properties.AlmostOrderedField   record { OrderedField assumptions }
+-- module AlmostOrderedField'            =                            AlmostOrderedField   record { OrderedField assumptions }
+-- (      AlmostOrderedField')           =                            AlmostOrderedField ∋ record { OrderedField assumptions }
 
-open OrderedField assumptions renaming (Carrier to F; _-_ to _-_)
+-- module This = OrderedField assumptions renaming (Carrier to F; _-_ to _-_)
+
+-- import MorePropAlgebra.Booij2020
+-- -- open MorePropAlgebra.Booij2020.Chapter4 AlmostOrderedField' public
+-- open MorePropAlgebra.Booij2020.Chapter4 (record { OrderedField assumptions }) public
+-- open +-<-ext+·-preserves-<⇒ (OrderedField.+-<-ext assumptions) (OrderedField.·-preserves-< assumptions) public
+-- -- open AlmostOrderedField'Properties -- using (_⁻¹; _≤''_)
+-- -- open MorePropAlgebra.Properties.AlmostOrderedField (record { OrderedField assumptions }) public
+
+-- remember opening this as the last one to omit prefixes
+-- open import MorePropAlgebra.Properties.OrderedField assumptions
+-- open OrderedField assumptions renaming (Carrier to F; _-_ to _-_)
 
 import MorePropAlgebra.Booij2020
-open MorePropAlgebra.Booij2020.Chapter4 AlmostOrderedField' public
-open +-<-ext+·-preserves-<⇒ +-<-ext ·-preserves-< public
-open AlmostOrderedField'Properties -- using (_⁻¹; _≤''_)
+open MorePropAlgebra.Booij2020.Chapter4 (record { OrderedField assumptions })
+open +-<-ext+·-preserves-<⇒ (OrderedField.+-<-ext assumptions) (OrderedField.·-preserves-< assumptions)
+-- open MorePropAlgebra.Properties.AlmostOrderedField (record { OrderedField assumptions }) hiding (_⁻¹)
+open import MorePropAlgebra.Properties.OrderedField assumptions
+open OrderedField assumptions renaming (Carrier to F; _-_ to _-_) hiding (_#_; _≤_)
+open AlmostOrderedField' using (_#_; _≤_)
+open AlmostOrderedField'Properties -- using (_⁻¹)
 
 -- NOTE: we are proving Bridges' properties with Booij's definition of _≤_
 --         which is some form of cheating
@@ -105,8 +121,8 @@ R3-1  = ∀[ x ]                                                            ¬(x
 R3-2  = ∀[ x ]                                                              x ≤ x
 R3-3  = ∀[ x ] ∀[ y ] ∀[ z ] (    x < y    ) ⇒ (y < z ) ⇒                   x < z
 R3-4  = ∀[ x ] ∀[ y ]                                               ¬((x < y) ⊓ (y ≤ x))
-R3-5  = ∀[ x ] ∀[ y ] ∀[ z ] (    x ≤ y    ) ⇒ (y < z ) ⇒                   x < z           -- Booij item-7
-R3-6  = ∀[ x ] ∀[ y ] ∀[ z ] (    x < y    ) ⇒ (y ≤ z ) ⇒                   x < z           -- Booij item-6
+R3-5  = ∀[ x ] ∀[ y ] ∀[ z ] (    x ≤ y    ) ⇒ (y < z ) ⇒                   x < z
+R3-6  = ∀[ x ] ∀[ y ] ∀[ z ] (    x < y    ) ⇒ (y ≤ z ) ⇒                   x < z
 R3-7  = ∀[ x ] ∀[ y ]                                               (¬(x < y) ⇔    (y ≤ x))
 R3-8  = ∀[ x ] ∀[ y ]                                               (¬(x ≤ y) ⇔ ¬ ¬(y < x))
 R3-9  = ∀[ x ] ∀[ y ] ∀[ z ] (    y ≤ z    )            ⇒           ( (x ≤ y) ⇔    (x ≤ z))
@@ -124,9 +140,28 @@ R3-20 = ∀[ x ]               ( - 1f < x    ) ⇒ (x < 1f) ⇒       ¬((x < x 
 R3-21 = ∀[ x ]               (   0f < x · x)            ⇒                   x # 0f
 R3-22 = ∀[ x ]               (   0f < x    )            ⇒ Σᵖ[ p ∶ x # 0f ] (0f ≤ (x ⁻¹) {{p}})
 
+r1-1 : ∀ x y                      →            x + y ≡ y + x        ; _ : [ R1-1 ]; _ = r1-1
+r1-2 : ∀ x y z                    →      (x + y) + z ≡ x + (y + z)  ; _ : [ R1-2 ]; _ = r1-2
+r1-3 : ∀ x                        →           0f + x ≡ x            ; _ : [ R1-3 ]; _ = r1-3
+r1-4 : ∀ x                        →        x + (- x) ≡ 0f           ; _ : [ R1-4 ]; _ = r1-4
+r1-5 : ∀ x y                      →            x · y ≡ y · x        ; _ : [ R1-5 ]; _ = r1-5
+r1-6 : ∀ x y z                    →      (x · y) · z ≡ x · (y · z)  ; _ : [ R1-6 ]; _ = r1-6
+r1-7 : ∀ x                        →           1f · x ≡ x            ; _ : [ R1-7 ]; _ = r1-7
+r1-8 : ∀ x     → (p : [ x # 0f ]) → x · (x ⁻¹) {{p}} ≡ 1f           ; _ : [ R1-8 ]; _ = r1-8
+r1-9 : ∀ x y z                    →      x · (y + z) ≡ x · y + x · z; _ : [ R1-9 ]; _ = r1-9
 
-r1-4 : [ R1-4 ]
-r1-4 x = {!   !}
+r1-1       =       +-comm
+r1-2 x y z = sym $ +-assoc    x y z
+r1-3 x     =       +-identity x .snd
+r1-4 x     =       +-inv      x .fst
+r1-5       =       ·-comm
+r1-6 x y z = sym $ ·-assoc    x y z
+r1-7 x     =       ·-identity x .snd
+r1-8       =       ·-rinv
+r1-9 x y z =       is-dist    x y z .fst
+
+r2-3 : ∀ x y → [ ¬( x # y) ] → x ≡ y; _ : [ R2-3 ]; _ = r2-3
+r2-3 = #-tight
 
 -- R3-23 `∀ m m' n n' → 0 < n → 0 < n' → (m / n > m' / n') ⇔ (m · n' > m' · n)`
 -- R3-24 `∀(n ∈ ℕ⁺) → (n ⁻¹ > 0)`
@@ -176,24 +211,75 @@ snd (r3-12 x 0≤x) [∀ε>0∶x<ε] = let x≤0 : [ x ≤ 0f ]
                                    x≤0 0<x = <-irrefl x ([∀ε>0∶x<ε] x 0<x)
                                in ≤-antisym x 0f x≤0 0≤x
 
-r3-14 : [ R3-14 ]
+r3-14 : ∀ x → [ 0f < x ⇒ - x < 0f ]; _ : [ R3-14 ]; _ = r3-14
 -- -x = 0 + (-x) < x + (-x) = 0
-r3-14 x = (
-  [ 0f < x ]                 ⇒⟨ fst $ +-creates-< 0f x (- x) ⟩
-  [ 0f + (- x) < x + (- x) ] ⇒⟨ {! subst  !} ⟩
-  [ 0f + (- x) < 0f ] ⇒⟨ {! subst  !} ⟩
-  [  - x < 0f ] ◼)
+r3-14 x =
+  [ 0f         < x         ] ⇒⟨ +-preserves-< 0f x (- x) ⟩
+  [ 0f + (- x) < x + (- x) ] ⇒⟨ subst (λ p → [ 0f - x < p ]) (+-rinv x) ⟩
+  [ 0f + (- x) < 0f        ] ⇒⟨ subst (λ p → [ p < 0f ]) (+-identity (- x) .snd) ⟩
+  [       - x  < 0f        ] ◼
 
-r3-15 : [ R3-15 ]
+
+r3-14' : ∀ x → [ x < 0f ⇒ 0f < - x ]
+-- -x = 0 + (-x) < x + (-x) = 0
+r3-14' x =
+  [ x         < 0f         ] ⇒⟨ +-preserves-< x 0f (- x) ⟩
+  [ x + (- x) < 0f + (- x) ] ⇒⟨ subst (λ p → [ x - x < p ]) (+-identity (- x) .snd) ⟩
+  [ x + (- x) < (- x)      ] ⇒⟨ subst (λ p → [ p < - x ]) (+-rinv x) ⟩
+  [       0f  < (- x)      ] ◼
+
+-swaps-<ˡ : ∀ x y → [ (- x) < (- y) ⇒ y < x ]
+-swaps-<ˡ x y =
+  [ - x     < - y             ] ⇒⟨ +-preserves-< _ _ _ ⟩
+  [ - x + x < - y + x         ] ⇒⟨ subst (λ p → [ p < - y + x ]) (+-linv x) ⟩
+  [  0f     < - y + x         ] ⇒⟨ subst (λ p → [ 0f < p ]) (+-comm (- y) x) ⟩
+  [  0f     <   x - y         ] ⇒⟨ +-preserves-< _ _ _ ⟩
+  [  0f + y <  (x - y) + y    ] ⇒⟨ subst (λ p → [ p < (x - y) + y ]) (+-identity y .snd) ⟩
+  [       y <  (x - y) + y    ] ⇒⟨ subst (λ p → [ y < p ]) (sym $ +-assoc x (- y) y) ⟩
+  [       y <   x + (- y + y) ] ⇒⟨ subst (λ p → [ y < x + p ]) (+-linv y) ⟩
+  [       y <   x + 0f        ] ⇒⟨ subst (λ p → [ y < p ]) (+-identity x .fst) ⟩
+  [       y <   x             ] ◼
+
+-- invInvo
+-swaps-<ʳ : ∀ x y → [ x < y ⇒ (- y) < (- x) ]
+-swaps-<ʳ x y =
+  [     x <     y ] ⇒⟨ subst (λ p → [ p < y ]) (sym $ GroupLemmas'.invInvo x) ⟩
+  [ - - x <     y ] ⇒⟨ subst (λ p → [ - - x < p ]) (sym $ GroupLemmas'.invInvo y) ⟩
+  [ - - x < - - y ] ⇒⟨ -swaps-<ˡ (- x) (- y) ⟩
+  [   - y <   - x ] ◼
+
+-swaps-< : ∀ x y → [ x < y ⇔ (- y) < (- x) ]
+-swaps-< x y .fst = -swaps-<ʳ x y
+-swaps-< x y .snd = -swaps-<ˡ y x
+
+r3-15 : ∀ x y z → [ (    x < y    ) ⇒ (z < 0f) ⇒               y · z < x · z ]; _ : [ R3-15 ]; _ = r3-15
 -- since -z > 0 we have
 -- -xz = x(-z) > y(-z) = -yz
 -- so -xz + yz + xz > -yz + yz + xz
-r3-15 x y z x<y z<0 = {!   !}
+r3-15 x y z x<y z<0 = (
+  [    x         <    y         ] ⇒⟨ ·-preserves-< x y (- z) (r3-14' z z<0) ⟩
+  [    x · (- z) <    y · (- z) ] ⇒⟨ subst (λ p → [ p < y · (- z) ]) (RingTheory'.-commutesWithRight-· x z) ⟩
+  [ - (x ·    z) <    y · (- z) ] ⇒⟨ subst (λ p → [ -(x · z) < p ]) (RingTheory'.-commutesWithRight-· y z) ⟩
+  [ - (x ·    z) < - (y ·    z) ] ⇒⟨ -swaps-< (y · z) (x · z) .snd ⟩
+  [    y ·    z  <    x ·    z  ] ◼) x<y
 
-r3-16 : [ R3-16 ]
-r3-16 x (inl x<0) = {!   !}
-r3-16 x (inr 0<x) = {!   !}
+r3-16 : ∀ x → [               (    x # 0f   )            ⇒                  0f < x · x ]; _ : [ R3-16 ]; _ = r3-16
+r3-16 x (inl x<0) = (
+  [         x  < 0f            ] ⇒⟨ r3-14' x ⟩
+  [ 0f         <  - x          ] ⇒⟨ ·-preserves-< 0f (- x) (- x) (r3-14' x x<0) ⟩
+  [ 0f · (- x) < (- x) · (- x) ] ⇒⟨ subst (λ p → [ p < (- x) · (- x) ]) (RingTheory'.0-leftNullifies (- x)) ⟩
+  [ 0f         < (- x) · (- x) ] ⇒⟨ subst (λ p → [ 0f < p ]) (RingTheory'.-commutesWithRight-· (- x) x) ⟩
+  [ 0f         < - ((- x) · x) ] ⇒⟨ subst (λ p → [ 0f < - p ]) (RingTheory'.-commutesWithLeft-· x x) ⟩
+  [ 0f         < - - (x · x)   ] ⇒⟨ subst (λ p → [ 0f < p ]) (GroupLemmas'.invInvo (x · x)) ⟩
+  [ 0f         < x · x         ] ◼) x<0
+r3-16 x (inr 0<x) = (
+  [ 0f     < x     ] ⇒⟨ ·-preserves-< 0f x x 0<x ⟩
+  [ 0f · x < x · x ] ⇒⟨ subst (λ p → [ p < x · x ]) (RingTheory'.0-leftNullifies x) ⟩
+  [ 0f     < x · x ] ◼) 0<x
 
-r3-18 : [ R3-18 ]
+r3-18 : ∀ x → [ 0f ≤ x · x ]; _ : [ R3-18 ]; _ = r3-18
 -- suppose x² < 0. Then ¬(x ≠ 0) by 16; so x = 0 and therefore x² = 0, a contradiction. Hence ¬(x² < 0) and therefore x² ≥ 0.
-r3-18 x x²<0 = {!   !}
+r3-18 x x²<0 = let ¬x#0 = contraposition (x # 0f) (0f < x · x) (r3-16 x) (<-asym (x · x) 0f x²<0)
+                   x≡0  = r2-3 _ _ ¬x#0
+                   x²≡0 = (λ i → x≡0 i · x≡0 i) ∙ RingTheory'.0-leftNullifies 0f
+               in transport (λ i → [ ¬ (x²≡0 (~ i) < 0f) ] ) (<-irrefl 0f) x²<0

@@ -34,6 +34,7 @@ open import MoreLogic.Definitions renaming
 open import MoreLogic.Properties
 open import MorePropAlgebra.Definitions hiding (_≤''_)
 open import MorePropAlgebra.Consequences
+open import MorePropAlgebra.Structures
 open import MorePropAlgebra.Bundles
 
 module MorePropAlgebra.Properties.OrderedField {ℓ ℓ'} (assumptions : OrderedField {ℓ} {ℓ'}) where
@@ -41,11 +42,51 @@ module MorePropAlgebra.Properties.OrderedField {ℓ ℓ'} (assumptions : Ordered
 import MorePropAlgebra.Properties.AlmostOrderedField
 module AlmostOrderedField'Properties  = MorePropAlgebra.Properties.AlmostOrderedField   record { OrderedField assumptions }
 module AlmostOrderedField'            =                            AlmostOrderedField   record { OrderedField assumptions }
-(      AlmostOrderedField')           =                            AlmostOrderedField ∋ record { OrderedField assumptions }
--- module GroupLemmas'      = Group'Properties.GroupLemmas'
+-- (      AlmostOrderedField')           =                            AlmostOrderedField ∋ record { OrderedField assumptions }
 
-open OrderedField assumptions renaming (Carrier to F; _-_ to _-_)
+-- open OrderedField assumptions renaming (Carrier to F; _-_ to _-_)
 
 import MorePropAlgebra.Booij2020
-open MorePropAlgebra.Booij2020.Chapter4 AlmostOrderedField' public
-open +-<-ext+·-preserves-<⇒ +-<-ext ·-preserves-< public
+open MorePropAlgebra.Booij2020.Chapter4 (record { OrderedField assumptions })
+open +-<-ext+·-preserves-<⇒ (OrderedField.+-<-ext assumptions) (OrderedField.·-preserves-< assumptions)
+-- open AlmostOrderedField'
+open MorePropAlgebra.Properties.AlmostOrderedField (record { OrderedField assumptions })
+open OrderedField assumptions renaming (Carrier to F; _-_ to _-_) hiding (_#_; _≤_)
+open AlmostOrderedField' using (_#_; _≤_)
+
+abstract
+  #-tight : ∀ a b → [ ¬(a # b) ] → a ≡ b; _ : [ isTightˢ''' _#_ is-set ]; _ = #-tight
+  #-tight = isTightˢ'''⇔isAntisymˢ _<_ is-set <-asym .snd ≤-antisym
+
+-- Properties.OrderedField assumptions
+--   opens OrderedField assumptions
+--     opens IsOrderedField is-OrderedField public
+--       opens IsAlmostOrderedField is-AlmostOrderedField public
+--         contains definition of _#_
+--           becomes `_#_`
+--   opens MorePropAlgebra.Properties.AlmostOrderedField assumptions
+--     opens AlmostOrderedField assumptions
+--       opens IsAlmostOrderedField is-AlmostOrderedField public
+--         contains definition of _#_
+--           becomes `AlmostOrderedField'._#_`
+
+-- all these become `_#_`
+--   _#_
+--   OrderedField._#_ assumptions
+--   IsOrderedField._#_ (OrderedField.is-OrderedField assumptions)
+--   IsAlmostOrderedField._#_ (IsOrderedField.is-AlmostOrderedField (OrderedField.is-OrderedField assumptions))
+-- but
+--   OrderedField._#_ (record { OrderedField assumptions })
+-- becomes
+--   OrderedField._#_ record { Carrier = F ; 0f = 0f ; 1f = 1f ; _+_ = _+_ ; -_ = -_ ; _·_ = _·_ ; min = min ; max = max ; _<_ = _<_ ; is-OrderedField = is-OrderedField }
+-- when we define
+--   foo = OrderedField ∋ (record { OrderedField assumptions })
+-- then
+--   OrderedField._#_ foo
+-- becomes
+--   (foo OrderedField.# x)
+
+-- foo = OrderedField ∋ (record { OrderedField assumptions })
+--
+-- test : ∀ x y → [ (OrderedField._#_ foo) x y ]
+-- test = {! ·-inv''  !}

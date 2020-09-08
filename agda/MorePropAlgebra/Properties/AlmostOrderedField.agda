@@ -33,7 +33,11 @@ open import MorePropAlgebra.Definitions hiding (_≤''_)
 open import MorePropAlgebra.Consequences
 open import MorePropAlgebra.Bundles
 
-module MorePropAlgebra.Properties.AlmostOrderedField {ℓ} {ℓ'} (assumptions : AlmostOrderedField {ℓ} {ℓ'}) where
+module MorePropAlgebra.Properties.AlmostOrderedField {ℓ} {ℓ'} (assumptions : AlmostOrderedField {ℓ} {ℓ'})
+  (let F = AlmostOrderedField.Carrier assumptions
+       _≡ˢ_ = λ(x y : F) → MoreLogic.Definitions.≡ˢ-syntax x y {AlmostOrderedField.is-set assumptions}
+       infixl 4 _≡ˢ_
+  ) where
 
 import MorePropAlgebra.Properties.Group
 module Group'Properties  = MorePropAlgebra.Properties.Group   record { AlmostOrderedField assumptions ; is-Group = AlmostOrderedField.+-Group assumptions }
@@ -47,7 +51,7 @@ module Ring'            =                            Ring   record { AlmostOrder
 (      Ring')           =                            Ring ∋ record { AlmostOrderedField assumptions }
 module RingTheory'      = Ring'Properties.RingTheory'
 
-open AlmostOrderedField assumptions renaming (Carrier to F; _-_ to _-_)
+open AlmostOrderedField assumptions -- renaming (Carrier to F; _-_ to _-_)
 
 -- Bridges' definition of _≤__
 _≤''_ : hPropRel F F (ℓ-max ℓ ℓ')
@@ -55,8 +59,8 @@ x ≤'' y = ∀[ ε ] (y < ε) ⇒ (x < ε)
 infixl 4 _≤''_
 
 private
-  infixl 4 _≡ˢ_
-  _≡ˢ_ = λ(x y : F) → MoreLogic.Definitions.≡ˢ-syntax x y {is-set} -- [ is-set ] x ≡ˢ y
+  -- infixl 4 _≡ˢ_
+  -- _≡ˢ_ = λ(x y : F) → MoreLogic.Definitions.≡ˢ-syntax x y {is-set} -- [ is-set ] x ≡ˢ y
 
   ≡ˢ-sym : ∀ a b → [ (a ≡ˢ b) ⇔ (b ≡ˢ a) ]
   ≡ˢ-sym a b .fst a≡b = sym a≡b
