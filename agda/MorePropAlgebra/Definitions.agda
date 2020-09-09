@@ -234,6 +234,50 @@ module _ {ℓ : Level} {A : Type ℓ} where
   operation _·_ reflects  _<_ 〚when〛 P = ∀[ x ] ∀[ y ] ∀[ z ] ∀〚 _ ∶ [ P z ] 〛 (x · z) < (y · z) ⇒ x < y
   operation _·_ creates   _<_  when  P = ∀[ x ] ∀[ y ] ∀[ z ] P z ⇒ (x < y ⇔ (x · z) < (y · z))
 
+
+isAbsNonnegative             : ∀{ℓ} {F : Type ℓ}                                                      {Rℓ Rℓ'} {R : Type Rℓ}                     (0ᴿ : R)                         (_≤ᴿ_ : hPropRel R R Rℓ') (abs : F → R) → hProp _
+isAbsCreatesZero             : ∀{ℓ} {F : Type ℓ} (is-set  : isSet F) (0f : F)                         {Rℓ Rℓ'} {R : Type Rℓ} (is-setᴿ : isSet R) (0ᴿ : R)                         (_≤ᴿ_ : hPropRel R R Rℓ') (abs : F → R) → hProp _
+isAbsPreservesMultiplication : ∀{ℓ} {F : Type ℓ}                              (     _·_  : F → F → F) {Rℓ    } {R : Type Rℓ} (is-setᴿ : isSet R)          (     _·ᴿ_ : R → R → R)                           (abs : F → R) → hProp _
+isAbsTriangleInequality      : ∀{ℓ} {F : Type ℓ}                              (_+_       : F → F → F) {Rℓ Rℓ'} {R : Type Rℓ}                              (_+ᴿ_      : R → R → R) (_≤ᴿ_ : hPropRel R R Rℓ') (abs : F → R) → hProp _
+
+isAbsNonnegative                                       0ᴿ           _≤ᴿ_ abs = ∀[ x ]                                     0ᴿ ≤ᴿ (abs x)
+isAbsCreatesZero             is-set 0f         is-setᴿ 0ᴿ           _≤ᴿ_ abs = ∀[ x ]                   ([ is-set ] x ≡ˢ 0f  ⇔ [ is-setᴿ ] abs x ≡ˢ 0ᴿ)
+isAbsPreservesMultiplication               _·_ is-setᴿ         _·ᴿ_      abs = ∀[ x ] ∀[ y ] [ is-setᴿ ]       (abs (x · y)) ≡ˢ (abs x ·ᴿ abs y)
+isAbsTriangleInequality                _+_                _+ᴿ_      _≤ᴿ_ abs = ∀[ x ] ∀[ y ]                    abs (x + y)  ≤ᴿ (abs x +ᴿ abs y)
+
+record IsAbsˢ
+  { ℓ     : Level} {F : Type ℓ } (is-set  : isSet F) (0f : F) (_+_  _·_  : F → F → F)
+  {Rℓ Rℓ' : Level} {R : Type Rℓ} (is-setᴿ : isSet R) (0ᴿ : R) (_+ᴿ_ _·ᴿ_ : R → R → R) (_≤ᴿ_ : hPropRel R R Rℓ')
+  (abs : F → R)
+  : Type (ℓ-suc (ℓ-max ℓ (ℓ-max Rℓ Rℓ')))
+  where
+  constructor isabs
+  field
+    is-0≤abs        : ∀ x   → [                  0ᴿ ≤ᴿ (abs x)                ]
+    abs-creates-0   : ∀ x   → [ [ is-set ] x ≡ˢ 0f  ⇔ [ is-setᴿ ] abs x ≡ˢ 0ᴿ ]
+    abs-preserves-· : ∀ x y →         (abs (x · y)) ≡  (abs x ·ᴿ abs y)
+    triangle-ineq   : ∀ x y → [        abs (x + y)  ≤ᴿ (abs x +ᴿ abs y)       ]
+
+  _ : [ isAbsNonnegative 0ᴿ _≤ᴿ_ abs                      ]; _ = is-0≤abs
+  _ : [ isAbsCreatesZero is-set 0f is-setᴿ 0ᴿ _≤ᴿ_ abs    ]; _ = abs-creates-0
+  _ : [ isAbsPreservesMultiplication _·_ is-setᴿ _·ᴿ_ abs ]; _ = abs-preserves-·
+  _ : [ isAbsTriangleInequality _+_ _+ᴿ_ _≤ᴿ_ abs         ]; _ = triangle-ineq
+
+  abs-preserves-0 : ∀ x → x ≡ 0f → abs x ≡ 0ᴿ
+  abs-preserves-0 x = abs-creates-0 x .fst
+
+  abs-reflects-0 : ∀ x → abs x ≡ 0ᴿ → x ≡ 0f
+  abs-reflects-0 x = abs-creates-0 x .snd
+
+isAbs : { ℓ     : Level} {F : Type ℓ } (is-set  : isSet F) (0f : F) (_+_  _·_  : F → F → F)
+        {Rℓ Rℓ' : Level} {R : Type Rℓ} (is-setᴿ : isSet R) (0ᴿ : R) (_+ᴿ_ _·ᴿ_ : R → R → R) (_≤ᴿ_ : hPropRel R R Rℓ')
+        (abs : F → R)
+        → hProp (ℓ-suc (ℓ-max ℓ (ℓ-max Rℓ Rℓ')))
+isAbs is-set 0f _+_ _·_ is-setᴿ 0ᴿ _+ᴿ_ _·ᴿ_ _≤ᴿ_ abs .fst = IsAbsˢ is-set 0f _+_ _·_ is-setᴿ 0ᴿ _+ᴿ_ _·ᴿ_ _≤ᴿ_ abs
+isAbs is-set 0f _+_ _·_ is-setᴿ 0ᴿ _+ᴿ_ _·ᴿ_ _≤ᴿ_ abs .snd (isabs a₀ b₀ c₀ d₀) (isabs a₁ b₁ c₁ d₁) = φ where
+  abstract φ = λ i → isabs (snd (isAbsNonnegative 0ᴿ _≤ᴿ_ abs) a₀ a₁ i) (snd (isAbsCreatesZero is-set 0f is-setᴿ 0ᴿ _≤ᴿ_ abs) b₀ b₁ i)
+                     (snd (isAbsPreservesMultiplication _·_ is-setᴿ _·ᴿ_ abs) c₀ c₁ i) (snd (isAbsTriangleInequality _+_ _+ᴿ_ _≤ᴿ_ abs) d₀ d₁ i)
+
 -- other properties on sets
 module _ {ℓ : Level} {A : Type ℓ} (is-set : isSet A)
   (let _≡ˢ_ = λ(x y : A) → [ is-set ] x ≡ˢ y; infixl 4 _≡ˢ_) where

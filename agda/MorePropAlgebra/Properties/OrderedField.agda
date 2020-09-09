@@ -58,6 +58,17 @@ abstract
   #-tight : ∀ a b → [ ¬(a # b) ] → a ≡ b; _ : [ isTightˢ''' _#_ is-set ]; _ = #-tight
   #-tight = isTightˢ'''⇔isAntisymˢ _<_ is-set <-asym .snd ≤-antisym
 
+  +-#-ext : ∀ w x y z → [ (w + x) # (y + z) ] → [ (w # y) ⊔ (x # z) ]; _ : [ is-+-#-Extensional _+_ _#_ ]; _ = +-#-ext
+  -- Consider the case w + x < y + z, so that we can use (†) to obtain w < y ∨ x < z,
+  --   which gives w # y ∨ x # z in either case.
+  +-#-ext w x y z (inl w+x<y+z) = case +-<-ext _ _ _ _ w+x<y+z as (w < y) ⊔ (x < z) ⇒ ((w # y) ⊔ (x # z)) of λ
+    { (inl w<y) → inlᵖ (inl w<y)
+    ; (inr x<z) → inrᵖ (inl x<z) }
+  -- The case w + x > y + z is similar.
+  +-#-ext w x y z (inr y+z<w+x) = case +-<-ext _ _ _ _ y+z<w+x as (y < w) ⊔ (z < x) ⇒ ((w # y) ⊔ (x # z)) of λ
+    { (inl y<w) → inlᵖ (inr y<w)
+    ; (inr z<x) → inrᵖ (inr z<x) }
+
 -- Properties.OrderedField assumptions
 --   opens OrderedField assumptions
 --     opens IsOrderedField is-OrderedField public

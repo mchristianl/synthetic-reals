@@ -72,7 +72,7 @@ open AlmostOrderedField'Properties -- using (_⁻¹)
 --       because we are interested in the properties, mostly
 --         or rather to check our definitions for "completeness" against these properties
 --       therefore our proofs differ from Brigdes' proofs
---         and this approach does not show that from R1-* and R2-* follows R3-* as in the paper
+--         and this approach does not show that from R1-* and R2-* follows Prop-* as in the paper
 
 private
   ≤⇒≤'' : ∀ x y → [ x ≤ y ] → [ x ≤'' y ]
@@ -135,36 +135,44 @@ R2-3 = ∀[ x ] ∀[ y ]  ¬( x # y)            ⇒ [ is-set ]       x ≡ˢ y
 R2-4 = ∀[ x ] ∀[ y ]   ( x < y)            ⇒ (∀[ z ]    (x + z) < (y + z))
 R2-5 = ∀[ x ] ∀[ y ]   (0f < x) ⇒ (0f < y) ⇒                 0f < x · y
 
+-- Special properties of _<_
+-- R3-1 Axiom of Archimedes: `∀(x ∈ ℝ) → ∃[ n ∈ ℤ ] x < n`
+-- R3-2 The least-upper-bound principle:
+--   Let S be a nonempty subset of R that is bounded
+--   above relative to the relation ≥, such that for all real numbers α, β with α < β
+--   either β is an upper bound of S or else there exists s ∈ S with s > α; then S has a
+--   least upper bound.
+
 -- derivable properties
-R3-1  = ∀[ x ]                                                            ¬(x < x)
-R3-2  = ∀[ x ]                                                              x ≤ x
-R3-3  = ∀[ x ] ∀[ y ] ∀[ z ] (    x < y    ) ⇒ (y < z ) ⇒                   x < z
-R3-4  = ∀[ x ] ∀[ y ]                                               ¬((x < y) ⊓ (y ≤ x))
-R3-5  = ∀[ x ] ∀[ y ] ∀[ z ] (    x ≤ y    ) ⇒ (y < z ) ⇒                   x < z
-R3-6  = ∀[ x ] ∀[ y ] ∀[ z ] (    x < y    ) ⇒ (y ≤ z ) ⇒                   x < z
-R3-7  = ∀[ x ] ∀[ y ]                                               (¬(x < y) ⇔    (y ≤ x))
-R3-8  = ∀[ x ] ∀[ y ]                                               (¬(x ≤ y) ⇔ ¬ ¬(y < x))
-R3-9  = ∀[ x ] ∀[ y ] ∀[ z ] (    y ≤ z    ) ⇒ (x ≤ y ) ⇒                  (x ≤ z)
-R3-10 = ∀[ x ] ∀[ y ]        (    x ≤ y    ) ⇒ (y ≤ x ) ⇒                        [ is-set ] x ≡ˢ y
-R3-11 = ∀[ x ] ∀[ y ]                                               ¬((x < y) ⊓ ([ is-set ] x ≡ˢ y))
-R3-12 = ∀[ x ]               (   0f ≤ x    )            ⇒ ([ is-set ] x ≡ˢ 0f ⇔ (∀[ ε ] (0f < ε) ⇒ (x < ε)))
-R3-13 = ∀[ x ] ∀[ y ]        (   0f < x + y)            ⇒            (0f < x) ⊔ (0f < y)
-R3-14 = ∀[ x ]               (   0f < x    )            ⇒                 - x < 0f
-R3-15 = ∀[ x ] ∀[ y ] ∀[ z ] (    x < y    ) ⇒ (z < 0f) ⇒               y · z < x · z
-R3-16 = ∀[ x ]               (    x # 0f   )            ⇒                  0f < x · x
-R3-17 =                                                                    0f < 1f
-R3-18 = ∀[ x ]                                                             0f ≤ x · x
-R3-19 = ∀[ x ]               (   0f < x    ) ⇒ (x < 1f) ⇒               x · x < x
-R3-20 = ∀[ x ]               ( - 1f < x    ) ⇒ (x < 1f) ⇒       ¬((x < x · x) ⊓ (- x < x · x))
-R3-21 = ∀[ x ]               (   0f < x · x)            ⇒                   x # 0f
-R3-22 = ∀[ x ]               (   0f < x    )            ⇒ Σᵖ[ p ∶ x # 0f ] (0f ≤ (x ⁻¹) {{p}})
--- R3-23 `∀ m m' n n' → 0 < n → 0 < n' → (m / n > m' / n') ⇔ (m · n' > m' · n)`
--- R3-24 `∀(n ∈ ℕ⁺) → (n ⁻¹ > 0)`
--- R3-25 `x > 0 → y ≥ 0 → ∃[ n ∈ ℤ ] n · x > y`
--- R3-26 `(x > 0) ⇒ (x ⁻¹ > 0)`
--- R3-27 `(x · y > 0) ⇒ (x ≠ 0) ⊓ (y ≠ 0)`
--- R3-28 `∀(x > 0) → ∃[ n ∈ ℕ⁺ ] x < n < x + 2`
--- R3-29 `∀ a b → a < b → ∃[ q ∈ ℚ ] a < r < b`
+Prop-1  = ∀[ x ]                                                            ¬(x < x)
+Prop-2  = ∀[ x ]                                                              x ≤ x
+Prop-3  = ∀[ x ] ∀[ y ] ∀[ z ] (    x < y    ) ⇒ (y < z ) ⇒                   x < z
+Prop-4  = ∀[ x ] ∀[ y ]                                               ¬((x < y) ⊓ (y ≤ x))
+Prop-5  = ∀[ x ] ∀[ y ] ∀[ z ] (    x ≤ y    ) ⇒ (y < z ) ⇒                   x < z
+Prop-6  = ∀[ x ] ∀[ y ] ∀[ z ] (    x < y    ) ⇒ (y ≤ z ) ⇒                   x < z
+Prop-7  = ∀[ x ] ∀[ y ]                                               (¬(x < y) ⇔    (y ≤ x))
+Prop-8  = ∀[ x ] ∀[ y ]                                               (¬(x ≤ y) ⇔ ¬ ¬(y < x))
+Prop-9  = ∀[ x ] ∀[ y ] ∀[ z ] (    y ≤ z    ) ⇒ (x ≤ y ) ⇒                  (x ≤ z)
+Prop-10 = ∀[ x ] ∀[ y ]        (    x ≤ y    ) ⇒ (y ≤ x ) ⇒                        [ is-set ] x ≡ˢ y
+Prop-11 = ∀[ x ] ∀[ y ]                                               ¬((x < y) ⊓ ([ is-set ] x ≡ˢ y))
+Prop-12 = ∀[ x ]               (   0f ≤ x    )            ⇒ ([ is-set ] x ≡ˢ 0f ⇔ (∀[ ε ] (0f < ε) ⇒ (x < ε)))
+Prop-13 = ∀[ x ] ∀[ y ]        (   0f < x + y)            ⇒            (0f < x) ⊔ (0f < y)
+Prop-14 = ∀[ x ]               (   0f < x    )            ⇒                 - x < 0f
+Prop-15 = ∀[ x ] ∀[ y ] ∀[ z ] (    x < y    ) ⇒ (z < 0f) ⇒               y · z < x · z
+Prop-16 = ∀[ x ]               (    x # 0f   )            ⇒                  0f < x · x
+Prop-17 =                                                                    0f < 1f
+Prop-18 = ∀[ x ]                                                             0f ≤ x · x
+Prop-19 = ∀[ x ]               (   0f < x    ) ⇒ (x < 1f) ⇒               x · x < x
+Prop-20 = ∀[ x ]               ( - 1f < x    ) ⇒ (x < 1f) ⇒       ¬((x < x · x) ⊓ (- x < x · x))
+Prop-21 = ∀[ x ]               (   0f < x · x)            ⇒                   x # 0f
+Prop-22 = ∀[ x ]               (   0f < x    )            ⇒ Σᵖ[ p ∶ x # 0f ] (0f ≤ (x ⁻¹) {{p}})
+-- Prop-23 `∀ m m' n n' → 0 < n → 0 < n' → (m / n > m' / n') ⇔ (m · n' > m' · n)`
+-- Prop-24 `∀(n ∈ ℕ⁺) → (n ⁻¹ > 0)`
+-- Prop-25 `x > 0 → y ≥ 0 → ∃[ n ∈ ℤ ] n · x > y`
+-- Prop-26 `(x > 0) ⇒ (x ⁻¹ > 0)`
+-- Prop-27 `(x · y > 0) ⇒ (x ≠ 0) ⊓ (y ≠ 0)`
+-- Prop-28 `∀(x > 0) → ∃[ n ∈ ℕ⁺ ] x < n < x + 2`
+-- Prop-29 `∀ a b → a < b → ∃[ q ∈ ℚ ] a < r < b`
 
 r1-1 : ∀ x y                      →            x + y ≡ y + x        ; _ : [ R1-1 ]; _ = r1-1
 r1-2 : ∀ x y z                    →      (x + y) + z ≡ x + (y + z)  ; _ : [ R1-2 ]; _ = r1-2
@@ -198,64 +206,64 @@ r2-3 = #-tight
 r2-4 x y x<y z = +-preserves-< x y z x<y
 r2-5 x y 0<x 0<y = subst (λ p → [ p < x · y ]) (RingTheory'.0-leftNullifies y) (·-preserves-< 0f x y 0<y 0<x)
 
-r3-1   : ∀ x                             → [       ¬(x < x)         ]; _ : [ R3-1  ]; _ = r3-1
-r3-2   : ∀ x                             → [         x ≤ x          ]; _ : [ R3-2  ]; _ = r3-2
-r3-3   : ∀ x y z → [ x < y ] → [ y < z ] → [         x < z          ]; _ : [ R3-3  ]; _ = r3-3
-r3-4   : ∀ x y                           → [ ¬((x < y) ⊓ (y ≤ x))   ]; _ : [ R3-4  ]; _ = r3-4
-r3-5   : ∀ x y z → [ x ≤ y ] → [ y < z ] → [         x < z          ]; _ : [ R3-5  ]; _ = r3-5
-r3-6   : ∀ x y z → [ x < y ] → [ y ≤ z ] → [         x < z          ]; _ : [ R3-6  ]; _ = r3-6
-r3-7   : ∀ x y                           → [ (¬(x < y) ⇔    (y ≤ x))]; _ : [ R3-7  ]; _ = r3-7
-r3-8   : ∀ x y                           → [  ¬(x ≤ y) ⇔ ¬ ¬(y < x) ]; _ : [ R3-8  ]; _ = r3-8
-r3-9   : ∀ x y z → [ y ≤ z ] → [ x ≤ y ] → [         x ≤ z          ]; _ : [ R3-9  ]; _ = r3-9
-r3-10  : ∀ x y   → [ x ≤ y ] → [ y ≤ x ] →                   x ≡ y   ; _ : [ R3-10 ]; _ = r3-10
-r3-11  : ∀ x y                           → ¬ᵗ ([ x < y ] ×  (x ≡ y)) ; _ : [ R3-11 ]; _ = r3-11
+prop-1   : ∀ x                             → [       ¬(x < x)         ]; _ : [ Prop-1  ]; _ = prop-1
+prop-2   : ∀ x                             → [         x ≤ x          ]; _ : [ Prop-2  ]; _ = prop-2
+prop-3   : ∀ x y z → [ x < y ] → [ y < z ] → [         x < z          ]; _ : [ Prop-3  ]; _ = prop-3
+prop-4   : ∀ x y                           → [ ¬((x < y) ⊓ (y ≤ x))   ]; _ : [ Prop-4  ]; _ = prop-4
+prop-5   : ∀ x y z → [ x ≤ y ] → [ y < z ] → [         x < z          ]; _ : [ Prop-5  ]; _ = prop-5
+prop-6   : ∀ x y z → [ x < y ] → [ y ≤ z ] → [         x < z          ]; _ : [ Prop-6  ]; _ = prop-6
+prop-7   : ∀ x y                           → [ (¬(x < y) ⇔    (y ≤ x))]; _ : [ Prop-7  ]; _ = prop-7
+prop-8   : ∀ x y                           → [  ¬(x ≤ y) ⇔ ¬ ¬(y < x) ]; _ : [ Prop-8  ]; _ = prop-8
+prop-9   : ∀ x y z → [ y ≤ z ] → [ x ≤ y ] → [         x ≤ z          ]; _ : [ Prop-9  ]; _ = prop-9
+prop-10  : ∀ x y   → [ x ≤ y ] → [ y ≤ x ] →                   x ≡ y   ; _ : [ Prop-10 ]; _ = prop-10
+prop-11  : ∀ x y                           → ¬ᵗ ([ x < y ] ×  (x ≡ y)) ; _ : [ Prop-11 ]; _ = prop-11
 
-r3-12  : ∀ x     → [   0f ≤ x     ]              → [ [ is-set ] x ≡ˢ 0f ⇔ (∀[ ε ] (0f < ε) ⇒ (x < ε)) ]; _ : [ R3-12 ]; _ = r3-12
-r3-13  : ∀ x y   → [   0f < x + y ]              → [           (0f < x) ⊔ (0f < y)         ]; _ : [ R3-13 ]; _ = r3-13
-r3-14  : ∀ x     → [   0f < x     ]              → [                - x < 0f               ]; _ : [ R3-14 ]; _ = r3-14
-r3-14' : ∀ x     → [    x < 0f    ]              → [                 0f < - x              ]
-r3-15  : ∀ x y z → [    x < y     ] → [ z < 0f ] → [              y · z < x · z            ]; _ : [ R3-15 ]; _ = r3-15
-r3-16  : ∀ x     → [    x # 0f    ]              → [                 0f < x · x            ]; _ : [ R3-16 ]; _ = r3-16
-r3-17  :                                           [                 0f < 1f               ]; _ : [ R3-17 ]; _ = r3-17
-r3-18  : ∀ x                                     → [                 0f ≤ x · x            ]; _ : [ R3-18 ]; _ = r3-18
-r3-19  : ∀ x     → [   0f < x     ] → [ x < 1f ] → [              x · x < x                ]; _ : [ R3-19 ]; _ = r3-19
-r3-20  : ∀ x     → [ - 1f < x     ] → [ x < 1f ] → [      ¬((x < x · x) ⊓ (- x < x · x))   ]; _ : [ R3-20 ]; _ = r3-20
-r3-21  : ∀ x     → [   0f < x · x ]              → [                  x # 0f               ]; _ : [ R3-21 ]; _ = r3-21
-r3-22  : ∀ x     → [   0f < x     ]              → Σ[ p ∈ [ x # 0f ] ] [ 0f ≤ (x ⁻¹) {{p}} ]; _ : [ R3-22 ]; _ = r3-22
-r3-22' : ∀ x     → [   0f < x     ]              → Σ[ p ∈ [ x # 0f ] ] [ 0f < (x ⁻¹) {{p}} ]
+prop-12  : ∀ x     → [   0f ≤ x     ]              → [ [ is-set ] x ≡ˢ 0f ⇔ (∀[ ε ] (0f < ε) ⇒ (x < ε)) ]; _ : [ Prop-12 ]; _ = prop-12
+prop-13  : ∀ x y   → [   0f < x + y ]              → [           (0f < x) ⊔ (0f < y)         ]; _ : [ Prop-13 ]; _ = prop-13
+prop-14  : ∀ x     → [   0f < x     ]              → [                - x < 0f               ]; _ : [ Prop-14 ]; _ = prop-14
+prop-14' : ∀ x     → [    x < 0f    ]              → [                 0f < - x              ]
+prop-15  : ∀ x y z → [    x < y     ] → [ z < 0f ] → [              y · z < x · z            ]; _ : [ Prop-15 ]; _ = prop-15
+prop-16  : ∀ x     → [    x # 0f    ]              → [                 0f < x · x            ]; _ : [ Prop-16 ]; _ = prop-16
+prop-17  :                                           [                 0f < 1f               ]; _ : [ Prop-17 ]; _ = prop-17
+prop-18  : ∀ x                                     → [                 0f ≤ x · x            ]; _ : [ Prop-18 ]; _ = prop-18
+prop-19  : ∀ x     → [   0f < x     ] → [ x < 1f ] → [              x · x < x                ]; _ : [ Prop-19 ]; _ = prop-19
+prop-20  : ∀ x     → [ - 1f < x     ] → [ x < 1f ] → [      ¬((x < x · x) ⊓ (- x < x · x))   ]; _ : [ Prop-20 ]; _ = prop-20
+prop-21  : ∀ x     → [   0f < x · x ]              → [                  x # 0f               ]; _ : [ Prop-21 ]; _ = prop-21
+prop-22  : ∀ x     → [   0f < x     ]              → Σ[ p ∈ [ x # 0f ] ] [ 0f ≤ (x ⁻¹) {{p}} ]; _ : [ Prop-22 ]; _ = prop-22
+prop-22' : ∀ x     → [   0f < x     ]              → Σ[ p ∈ [ x # 0f ] ] [ 0f < (x ⁻¹) {{p}} ]
 
-r3-1 = <-irrefl
-r3-2 = ≤-refl
-r3-3 = <-trans
-r3-4 x y (x<y , y≤x) = y≤x x<y
-r3-5 = ≤-<-trans
-r3-6 = <-≤-trans
-r3-7 x y .fst = λ x → x -- holds definitionally for Booij's _≤_
-r3-7 x y .snd = λ x → x
-r3-8  x y .fst = λ x → x -- holds definitionally for Booij's _≤_
-r3-8  x y .snd = λ x → x -- holds definitionally for Booij's _≤_
-r3-9  x y z y≤z x≤y = ≤-trans x y z x≤y y≤z
-r3-10 = ≤-antisym
-r3-11 x y (x<y , x≡y) = <-irrefl _ (pathTo⇒ (λ i → x≡y i < y) x<y)
+prop-1 = <-irrefl
+prop-2 = ≤-refl
+prop-3 = <-trans
+prop-4 x y (x<y , y≤x) = y≤x x<y
+prop-5 = ≤-<-trans
+prop-6 = <-≤-trans
+prop-7 x y .fst = λ x → x -- holds definitionally for Booij's _≤_
+prop-7 x y .snd = λ x → x
+prop-8  x y .fst = λ x → x -- holds definitionally for Booij's _≤_
+prop-8  x y .snd = λ x → x -- holds definitionally for Booij's _≤_
+prop-9  x y z y≤z x≤y = ≤-trans x y z x≤y y≤z
+prop-10 = ≤-antisym
+prop-11 x y (x<y , x≡y) = <-irrefl _ (pathTo⇒ (λ i → x≡y i < y) x<y)
 
-fst (r3-12 x 0≤x) x≡0 y 0<y  = transport (λ i → [ x≡0 (~ i) < y ]) 0<y
+fst (prop-12 x 0≤x) x≡0 y 0<y  = transport (λ i → [ x≡0 (~ i) < y ]) 0<y
 -- suppose that x < ε for all ε > 0. If x > 0, then x < x, a contradiction; so 0 ≥ x. Thus x ≥ 0 and 0 ≥ x, and therefore x = 0.
 -- this is just antisymmetry for different ≤s : ∀ x y → [ x ≤ y ] → [ y ≤'' x ] → x ≡ y
-snd (r3-12 x 0≤x) [∀ε>0∶x<ε] = let x≤0 : [ x ≤ 0f ]
-                                   x≤0 0<x = <-irrefl x ([∀ε>0∶x<ε] x 0<x)
-                               in ≤-antisym x 0f x≤0 0≤x
+snd (prop-12 x 0≤x) [∀ε>0∶x<ε] = let x≤0 : [ x ≤ 0f ]
+                                     x≤0 0<x = <-irrefl x ([∀ε>0∶x<ε] x 0<x)
+                                 in ≤-antisym x 0f x≤0 0≤x
 
-r3-13 x y 0<x+y = +-<-ext 0f 0f x y (subst (λ p → [ p < x + y ]) (sym (+-identity 0f .snd)) 0<x+y)
+prop-13 x y 0<x+y = +-<-ext 0f 0f x y (subst (λ p → [ p < x + y ]) (sym (+-identity 0f .snd)) 0<x+y)
 
 -- -x = 0 + (-x) < x + (-x) = 0
-r3-14 x =
+prop-14 x =
   [ 0f         < x         ] ⇒⟨ +-preserves-< 0f x (- x) ⟩
   [ 0f + (- x) < x + (- x) ] ⇒⟨ subst (λ p → [ 0f - x < p ]) (+-rinv x) ⟩
   [ 0f + (- x) < 0f        ] ⇒⟨ subst (λ p → [ p < 0f ]) (+-identity (- x) .snd) ⟩
   [       - x  < 0f        ] ◼
 
 -- -x = 0 + (-x) < x + (-x) = 0
-r3-14' x =
+prop-14' x =
   [ x         < 0f         ] ⇒⟨ +-preserves-< x 0f (- x) ⟩
   [ x + (- x) < 0f + (- x) ] ⇒⟨ subst (λ p → [ x - x < p ]) (+-identity (- x) .snd) ⟩
   [ x + (- x) < (- x)      ] ⇒⟨ subst (λ p → [ p < - x ]) (+-rinv x) ⟩
@@ -264,36 +272,36 @@ r3-14' x =
 -- since -z > 0 we have
 -- -xz = x(-z) > y(-z) = -yz
 -- so -xz + yz + xz > -yz + yz + xz
-r3-15 x y z x<y z<0 = (
-  [    x         <    y         ] ⇒⟨ ·-preserves-< x y (- z) (r3-14' z z<0) ⟩
+prop-15 x y z x<y z<0 = (
+  [    x         <    y         ] ⇒⟨ ·-preserves-< x y (- z) (prop-14' z z<0) ⟩
   [    x · (- z) <    y · (- z) ] ⇒⟨ subst (λ p → [ p < y · (- z) ]) (RingTheory'.-commutesWithRight-· x z) ⟩
   [ - (x ·    z) <    y · (- z) ] ⇒⟨ subst (λ p → [ -(x · z) < p ]) (RingTheory'.-commutesWithRight-· y z) ⟩
   [ - (x ·    z) < - (y ·    z) ] ⇒⟨ -swaps-< (y · z) (x · z) .snd ⟩
   [    y ·    z  <    x ·    z  ] ◼) x<y
 
-r3-16 x (inl x<0) = (
-  [         x  < 0f            ] ⇒⟨ r3-14' x ⟩
-  [ 0f         <  - x          ] ⇒⟨ ·-preserves-< 0f (- x) (- x) (r3-14' x x<0) ⟩
+prop-16 x (inl x<0) = (
+  [         x  < 0f            ] ⇒⟨ prop-14' x ⟩
+  [ 0f         <  - x          ] ⇒⟨ ·-preserves-< 0f (- x) (- x) (prop-14' x x<0) ⟩
   [ 0f · (- x) < (- x) · (- x) ] ⇒⟨ subst (λ p → [ p < (- x) · (- x) ]) (RingTheory'.0-leftNullifies (- x)) ⟩
   [ 0f         < (- x) · (- x) ] ⇒⟨ subst (λ p → [ 0f < p ]) (RingTheory'.-commutesWithRight-· (- x) x) ⟩
   [ 0f         < - ((- x) · x) ] ⇒⟨ subst (λ p → [ 0f < - p ]) (RingTheory'.-commutesWithLeft-· x x) ⟩
   [ 0f         < - - (x · x)   ] ⇒⟨ subst (λ p → [ 0f < p ]) (GroupLemmas'.invInvo (x · x)) ⟩
   [ 0f         < x · x         ] ◼) x<0
-r3-16 x (inr 0<x) = (
+prop-16 x (inr 0<x) = (
   [ 0f     < x     ] ⇒⟨ ·-preserves-< 0f x x 0<x ⟩
   [ 0f · x < x · x ] ⇒⟨ subst (λ p → [ p < x · x ]) (RingTheory'.0-leftNullifies x) ⟩
   [ 0f     < x · x ] ◼) 0<x
 
-r3-17 = is-0<1
+prop-17 = is-0<1
 
 -- suppose x² < 0. Then ¬(x ≠ 0) by 16; so x = 0 and therefore x² = 0, a contradiction. Hence ¬(x² < 0) and therefore x² ≥ 0.
-r3-18 x x²<0 = let ¬x#0 = contraposition (x # 0f) (0f < x · x) (r3-16 x) (<-asym (x · x) 0f x²<0)
-                   x≡0  = r2-3 _ _ ¬x#0
-                   x²≡0 = (λ i → x≡0 i · x≡0 i) ∙ RingTheory'.0-leftNullifies 0f
-               in transport (λ i → [ ¬ (x²≡0 (~ i) < 0f) ] ) (<-irrefl 0f) x²<0
-r3-19 x  0<x x<1 = subst (λ p → [ x · x < p ]) (·-lid x) (·-preserves-< x 1f x 0<x x<1)
+prop-18 x x²<0 = let ¬x#0 = contraposition (x # 0f) (0f < x · x) (prop-16 x) (<-asym (x · x) 0f x²<0)
+                     x≡0  = r2-3 _ _ ¬x#0
+                     x²≡0 = (λ i → x≡0 i · x≡0 i) ∙ RingTheory'.0-leftNullifies 0f
+                 in transport (λ i → [ ¬ (x²≡0 (~ i) < 0f) ] ) (<-irrefl 0f) x²<0
+prop-19 x  0<x x<1 = subst (λ p → [ x · x < p ]) (·-lid x) (·-preserves-< x 1f x 0<x x<1)
 
-r3-20 x -1<x x<1 (x<x² , -x<x²) =
+prop-20 x -1<x x<1 (x<x² , -x<x²) =
   -- Suppose that - 1 < x < 1 and that (x² > x ∧ x² > -x).
   let -- If x > 0, then x = x (-1) < x² < x(1) = x which contradicts our second assumption. Hence ¬(x > 0) and therefore x ≤ 0.
       argument1 : [ 0f < x ⇒ x · x < x ]
@@ -320,7 +328,7 @@ r3-20 x -1<x x<1 (x<x² , -x<x²) =
   in <-asym _ _ 0<x x<0
 
 -- Either x > 0 or x² > x.
-r3-21 x  0<x² = case <-cotrans 0f (x · x) 0<x² x as (0f < x) ⊔ (x < x · x) ⇒ x # 0f of λ
+prop-21 x  0<x² = case <-cotrans 0f (x · x) 0<x² x as (0f < x) ⊔ (x < x · x) ⇒ x # 0f of λ
   { (inl 0<x ) → inr 0<x
   -- In the latter case, either x² > -x or -x > x.
   ; (inr x<x²) → case <-cotrans x (x · x) x<x² (- x) as (x < - x) ⊔ (- x < x · x) ⇒ x # 0f of λ
@@ -340,7 +348,7 @@ r3-21 x  0<x² = case <-cotrans 0f (x · x) 0<x² x as (0f < x) ⊔ (x < x · x)
       { (inl 0<x) → inr 0<x
       -- In the latter case, if x > -1, then we cotradict 20; so 0 > -1 ≥ x
       ; (inr x<1) → let x≤-1 : [ x ≤ - 1f ]
-                        x≤-1 -1<x = r3-20 x -1<x x<1 (x<x² , -x<x²)
+                        x≤-1 -1<x = prop-20 x -1<x x<1 (x<x² , -x<x²)
                         -1<0 : [ - 1f < 0f ]
                         -1<0 = subst (λ p → [ - 1f < p ]) (sym is-0≡-0) (-swaps-< 0f 1f .fst is-0<1)
                     -- and therefore 0 > x.
@@ -349,5 +357,5 @@ r3-21 x  0<x² = case <-cotrans 0f (x · x) 0<x² x as (0f < x) ⊔ (x < x · x)
     }
   }
 
-r3-22 x  0<x     = let instance _ = inr 0<x in it , <-asym _ _ (⁻¹-preserves-sign _ _ 0<x (·-rinv x it))
-r3-22' x 0<x     = let instance _ = inr 0<x in it , ⁻¹-preserves-sign _ _ 0<x (·-rinv x it)
+prop-22 x  0<x     = let instance _ = inr 0<x in it , <-asym _ _ (⁻¹-preserves-sign _ _ 0<x (·-rinv x it))
+prop-22' x 0<x     = let instance _ = inr 0<x in it , ⁻¹-preserves-sign _ _ 0<x (·-rinv x it)
