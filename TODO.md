@@ -38,6 +38,19 @@
 
   postulate coerce : {{_ : Coercible A B}} → A → B
   ```
+- check out `Agda.Builtin.FromNat` for a coercion mechanism
+  ```agda
+  record Number {a} (A : Set a) : Set (lsuc a) where
+    field
+      Constraint : Nat → Set a
+      fromNat : ∀ n → {{_ : Constraint n}} → A
+
+  open Number {{...}} public using (fromNat)
+
+  {-# BUILTIN FROMNAT fromNat #-}
+  {-# DISPLAY Number.fromNat _ n = fromNat n #-}
+  ```
+  - this is used in `Cubical.Data.Nat.Literals` and in `Cubical.HITs.Rationals.QuoQ.Base`
 - check out what is meant by "Instance modules" in non-cubical 1.4-rc1
   ```agda
   Category.Monad.Partiality.Instances
