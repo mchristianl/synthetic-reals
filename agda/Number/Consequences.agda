@@ -67,7 +67,7 @@ but we can use `Quoℚ≡Sigmaℚ : Quo.ℚ ≡ Sigma.ℚ` from `Cubical.HITs.Ra
 -}
 
 
-open import Cubical.Data.Nat as ℕ using (discreteℕ)
+open import Cubical.Data.Nat as ℕ using (discreteℕ; ℕ; suc; zero)
 open import Cubical.Data.NatPlusOne
 open import Cubical.Data.Sigma
 open import Cubical.HITs.Ints.QuoInt hiding (+-identityʳ; *-identityʳ; *-identityˡ; *-distribˡ;*-distribʳ) -- using (ℤ)
@@ -79,6 +79,8 @@ open import Cubical.HITs.Ints.QuoInt hiding (+-identityʳ; *-identityʳ; *-ident
 -- e.g. we have
 -- _∼_ : ℤ × ℕ₊₁ → ℤ × ℕ₊₁ → Type₀
 -- (a , b) ∼ (c , d) = a * ℕ₊₁→ℤ d ≡ c * ℕ₊₁→ℤ b
+
+open import Cubical.Data.Nat.Order using () renaming (_<_ to _<ⁿ_)
 
 _<ᶻ'_ : ℤ → ℤ → Type₀
 _<ᶻ'_ (ℤ.signed s n) b = {!   !}
@@ -115,6 +117,8 @@ x <ᶠ y = {! elimProp2 {A = ℤ × ℕ₊₁} {R = _∼_} {C = C} γ κ x y   !
 
 -- open import Cubical.HITs.Ints.QuoInt.Base renaming
 
+
+
 _*ᶻ_ = Cubical.HITs.Ints.QuoInt._*_
 -- signᶻ = Cubical.HITs.Ints.QuoInt.sign
 
@@ -128,13 +132,111 @@ open import Data.Nat.Base using () renaming
 --         ℤ→Int : ℤ → Int
 --         Int≡ℤ : Int ≡ ℤ
 
+open import Cubical.Data.Int using () renaming (pos to ℕ→Int)
+
+ℕ→ℤ : ℕ → ℤ
+ℕ→ℤ x = Int→ℤ (ℕ→Int x)
+
 
 minᶻ : ℤ → ℤ → ℤ
 minᶻ x y with sign x | sign y
-... | spos | spos = {! ℕ→ℤ (minⁿ (abs x) (abs y))   !}
+... | spos | spos = pos (minⁿ (abs x) (abs y))
 ... | spos | sneg = y
 ... | sneg | spos = x
-... | sneg | sneg = {!   !}
+... | sneg | sneg = neg (maxⁿ (abs x) (abs y)) -- instead of `- ℕ→ℤ (maxⁿ ...)`
+
+-- maxⁿ' : ℕ → ℕ → ℕ
+-- maxⁿ' (zero ) (n    ) = n
+-- maxⁿ' (suc m) (zero ) = suc m
+-- maxⁿ' (suc m) (suc n) = suc (maxⁿ' m n)
+--
+-- minⁿ' : ℕ → ℕ → ℕ
+-- minⁿ' (zero ) (n    ) = zero
+-- minⁿ' (suc m) (zero ) = zero
+-- minⁿ' (suc m) (suc n) = suc (minⁿ' m n)
+
+maxⁿ≡0-right : ∀ n  → maxⁿ n 0 ≡ n
+maxⁿ≡0-right zero    = refl
+maxⁿ≡0-right (suc n) = refl
+
+minⁿ≡0-right : ∀ n  → minⁿ n 0 ≡ 0
+minⁿ≡0-right zero    = refl
+minⁿ≡0-right (suc n) = refl
+
+
+lemma : ∀ n → pos 0 ≡ neg (minⁿ n 0)
+lemma n = posneg ∙ (λ j → neg (minⁿ≡0-right n (~ j)))
+-- lemma n = posneg ∙ (λ j → neg (minⁿ≡0-right n (~ j)))
+
+-- i = i0 ⊢ pos 0
+-- i = i1 ⊢ lemma 0 j
+-- j = i0 ⊢ pos 0
+-- j = i1 ⊢ posneg i
+--
+-- ———— Constraints ———————————————————————————————————————————
+-- posneg i = ?11 (j = i1) : ℤ
+-- pos 0 = ?11 (j = i0) : ℤ
+-- hcomp (doubleComp-faces (λ _ → pos 0) (λ j₁ → neg zero) j) (posneg j) = ?11 (i = i1) : ℤ
+-- pos 0 = ?11 (i = i0) : ℤ
+
+maxᶻ : ℤ → ℤ → ℤ
+maxᶻ (pos n₀) (pos n₁) = pos (maxⁿ n₀ n₁)
+maxᶻ (pos n₀) (neg n₁) = pos n₀
+maxᶻ (neg n₀) (pos n₁) = pos n₁
+maxᶻ (neg n₀) (neg n₁) = neg (minⁿ n₀ n₁)
+-- pathes
+maxᶻ (pos    n) (posneg i) = pos (maxⁿ≡0-right n i)
+maxᶻ (neg zero) (posneg i) = posneg i -- `lemma zero i` does not work here
+-- NOTE: better not use `lemma (suc n) i` because it creates an unnormalizable term:
+--   `hcomp (doubleComp-faces (λ _ → pos 0) (λ j₁ → neg 0) j) (posneg j)`
+maxᶻ (neg (suc n)) (posneg i) = posneg i -- lemma (suc n) i -- can also use `posneg i` here
+maxᶻ (posneg i) (pos    n) = pos n
+maxᶻ (posneg i) (neg    n) = posneg i
+maxᶻ (posneg i) (posneg j) = posneg (i ∧ j) -- posneg (i ∧ j)
+
+maxᶻ' : ℤ → ℤ → ℤ
+maxᶻ' x y with sign x | sign y
+... | spos | spos = pos (maxⁿ (abs x) (abs y))
+... | spos | sneg = x
+... | sneg | spos = y
+... | sneg | sneg = neg (minⁿ (abs x) (abs y))
+
+-- sign' : ℤ → Sign
+-- sign' (signed _ zero) = spos
+-- sign' (signed s (suc _)) = s
+-- sign' (posneg i) = spos
+
+lemma2 : ∀ x y → maxᶻ x y ≡ maxᶻ' x y
+lemma2 (pos  zero   ) (pos  zero   ) = refl
+lemma2 (pos  zero   ) (pos (suc n₁)) = refl
+lemma2 (pos (suc n₀)) (pos  zero   ) = refl
+lemma2 (pos (suc n₀)) (pos (suc n₁)) = refl
+lemma2 (pos  zero   ) (neg  zero   ) = refl
+lemma2 (pos  zero   ) (neg (suc n₁)) = refl
+lemma2 (pos (suc n₀)) (neg  zero   ) = refl
+lemma2 (pos (suc n₀)) (neg (suc n₁)) = refl
+lemma2 (neg  zero   ) (pos  zero   ) = refl
+lemma2 (neg  zero   ) (pos (suc n₁)) = refl
+lemma2 (neg (suc n₀)) (pos  zero   ) = refl
+lemma2 (neg (suc n₀)) (pos (suc n₁)) = refl
+lemma2 (neg  zero   ) (neg  zero   ) = sym posneg
+lemma2 (neg  zero   ) (neg (suc n₁)) = refl
+lemma2 (neg (suc n₀)) (neg  zero   ) = refl
+lemma2 (neg (suc n₀)) (neg (suc n₁)) = refl
+lemma2 (pos  zero   ) (posneg   j  ) = refl
+lemma2 (pos (suc n₀)) (posneg   j  ) = refl
+lemma2 (neg  zero   ) (posneg   j  ) = λ i → posneg (j ∧ (~ i))
+lemma2 (neg (suc n₀)) (posneg   j  ) = refl
+lemma2 (posneg   i  ) (pos  zero   ) = refl
+lemma2 (posneg   i  ) (pos (suc n₁)) = refl
+lemma2 (posneg   i  ) (neg  zero   ) = λ j → posneg (i ∧ (~ j))
+lemma2 (posneg   i  ) (neg (suc n₁)) = refl
+lemma2 (posneg   i  ) (posneg   j  ) = λ k → posneg (i ∧ j ∧ (~ k))
+
+-- maxᶻ (signed s₀ n₀) (signed s₁ n₁) = {!   !}
+-- maxᶻ (signed s₀ n₀) (posneg j) = {!   !}
+-- maxᶻ (posneg i) (signed s₁ n₁) = {!   !}
+-- maxᶻ (posneg i) (posneg j) = {!   !}
 
 minᶠ : ℚ → ℚ → ℚ
 minᶠ x y = onCommonDenom f g h x y where
