@@ -37,22 +37,22 @@ open import MorePropAlgebra.Consequences
 open import MorePropAlgebra.Structures
 open import MorePropAlgebra.Bundles
 
-module MorePropAlgebra.Properties.OrderedField {ℓ ℓ'} (assumptions : OrderedField {ℓ} {ℓ'}) where
+module MorePropAlgebra.Properties.PartiallyOrderedField {ℓ ℓ'} (assumptions : PartiallyOrderedField {ℓ} {ℓ'}) where
 
-import MorePropAlgebra.Properties.AlmostOrderedField
-module AlmostOrderedField'Properties  = MorePropAlgebra.Properties.AlmostOrderedField   record { OrderedField assumptions }
-module AlmostOrderedField'            =                            AlmostOrderedField   record { OrderedField assumptions }
--- (      AlmostOrderedField')           =                            AlmostOrderedField ∋ record { OrderedField assumptions }
+import MorePropAlgebra.Properties.AlmostPartiallyOrderedField
+module AlmostPartiallyOrderedField'Properties  = MorePropAlgebra.Properties.AlmostPartiallyOrderedField   record { PartiallyOrderedField assumptions }
+module AlmostPartiallyOrderedField'            =                            AlmostPartiallyOrderedField   record { PartiallyOrderedField assumptions }
+-- (      AlmostPartiallyOrderedField')           =                            AlmostPartiallyOrderedField ∋ record { PartiallyOrderedField assumptions }
 
--- open OrderedField assumptions renaming (Carrier to F; _-_ to _-_)
+-- open PartiallyOrderedField assumptions renaming (Carrier to F; _-_ to _-_)
 
 import MorePropAlgebra.Booij2020
-open MorePropAlgebra.Booij2020.Chapter4 (record { OrderedField assumptions })
-open +-<-ext+·-preserves-<⇒ (OrderedField.+-<-ext assumptions) (OrderedField.·-preserves-< assumptions)
--- open AlmostOrderedField'
-open MorePropAlgebra.Properties.AlmostOrderedField (record { OrderedField assumptions })
-open OrderedField assumptions renaming (Carrier to F; _-_ to _-_) hiding (_#_; _≤_)
-open AlmostOrderedField' using (_#_; _≤_)
+open MorePropAlgebra.Booij2020.Chapter4 (record { PartiallyOrderedField assumptions })
+open +-<-ext+·-preserves-<⇒ (PartiallyOrderedField.+-<-ext assumptions) (PartiallyOrderedField.·-preserves-< assumptions)
+-- open AlmostPartiallyOrderedField'
+open MorePropAlgebra.Properties.AlmostPartiallyOrderedField (record { PartiallyOrderedField assumptions })
+open PartiallyOrderedField assumptions renaming (Carrier to F; _-_ to _-_) hiding (_#_; _≤_)
+open AlmostPartiallyOrderedField' using (_#_; _≤_)
 
 abstract
   #-tight : ∀ a b → [ ¬(a # b) ] → a ≡ b; _ : [ isTightˢ''' _#_ is-set ]; _ = #-tight
@@ -69,35 +69,35 @@ abstract
     { (inl y<w) → inlᵖ (inr y<w)
     ; (inr z<x) → inrᵖ (inr z<x) }
 
--- Properties.OrderedField assumptions
---   opens OrderedField assumptions
---     opens IsOrderedField is-OrderedField public
---       opens IsAlmostOrderedField is-AlmostOrderedField public
+-- Properties.PartiallyOrderedField assumptions
+--   opens PartiallyOrderedField assumptions
+--     opens IsPartiallyOrderedField is-PartiallyOrderedField public
+--       opens IsAlmostPartiallyOrderedField is-AlmostPartiallyOrderedField public
 --         contains definition of _#_
 --           becomes `_#_`
---   opens MorePropAlgebra.Properties.AlmostOrderedField assumptions
---     opens AlmostOrderedField assumptions
---       opens IsAlmostOrderedField is-AlmostOrderedField public
+--   opens MorePropAlgebra.Properties.AlmostPartiallyOrderedField assumptions
+--     opens AlmostPartiallyOrderedField assumptions
+--       opens IsAlmostPartiallyOrderedField is-AlmostPartiallyOrderedField public
 --         contains definition of _#_
---           becomes `AlmostOrderedField'._#_`
+--           becomes `AlmostPartiallyOrderedField'._#_`
 
 -- all these become `_#_`
 --   _#_
---   OrderedField._#_ assumptions
---   IsOrderedField._#_ (OrderedField.is-OrderedField assumptions)
---   IsAlmostOrderedField._#_ (IsOrderedField.is-AlmostOrderedField (OrderedField.is-OrderedField assumptions))
+--   PartiallyOrderedField._#_ assumptions
+--   IsPartiallyOrderedField._#_ (PartiallyOrderedField.is-PartiallyOrderedField assumptions)
+--   IsAlmostPartiallyOrderedField._#_ (IsPartiallyOrderedField.is-AlmostPartiallyOrderedField (PartiallyOrderedField.is-PartiallyOrderedField assumptions))
 -- but
---   OrderedField._#_ (record { OrderedField assumptions })
+--   PartiallyOrderedField._#_ (record { PartiallyOrderedField assumptions })
 -- becomes
---   OrderedField._#_ record { Carrier = F ; 0f = 0f ; 1f = 1f ; _+_ = _+_ ; -_ = -_ ; _·_ = _·_ ; min = min ; max = max ; _<_ = _<_ ; is-OrderedField = is-OrderedField }
+--   PartiallyOrderedField._#_ record { Carrier = F ; 0f = 0f ; 1f = 1f ; _+_ = _+_ ; -_ = -_ ; _·_ = _·_ ; min = min ; max = max ; _<_ = _<_ ; is-PartiallyOrderedField = is-PartiallyOrderedField }
 -- when we define
---   foo = OrderedField ∋ (record { OrderedField assumptions })
+--   foo = PartiallyOrderedField ∋ (record { PartiallyOrderedField assumptions })
 -- then
---   OrderedField._#_ foo
+--   PartiallyOrderedField._#_ foo
 -- becomes
---   (foo OrderedField.# x)
+--   (foo PartiallyOrderedField.# x)
 
--- foo = OrderedField ∋ (record { OrderedField assumptions })
+-- foo = PartiallyOrderedField ∋ (record { PartiallyOrderedField assumptions })
 --
--- test : ∀ x y → [ (OrderedField._#_ foo) x y ]
+-- test : ∀ x y → [ (PartiallyOrderedField._#_ foo) x y ]
 -- test = {! ·-inv''  !}

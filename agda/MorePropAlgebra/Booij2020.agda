@@ -38,9 +38,9 @@ open import MorePropAlgebra.Bundles
 
 module MorePropAlgebra.Booij2020 where
 
-module Chapter4 {ℓ ℓ'} (assumptions : AlmostOrderedField {ℓ} {ℓ'}) where
-  open import MorePropAlgebra.Properties.AlmostOrderedField assumptions
-  open AlmostOrderedField assumptions renaming (Carrier to F; _-_ to _-_) -- atlernative to module telescope
+module Chapter4 {ℓ ℓ'} (assumptions : AlmostPartiallyOrderedField {ℓ} {ℓ'}) where
+  open import MorePropAlgebra.Properties.AlmostPartiallyOrderedField assumptions
+  open AlmostPartiallyOrderedField assumptions renaming (Carrier to F; _-_ to _-_) -- atlernative to module telescope
 
   Item-1  = ∀[ x ] ∀[ y ]                                 x ≤ y ⇔ ¬(y < x)                          -- (definition of _≤_)
   Item-2  = ∀[ x ] ∀[ y ]                                 x # y ⇔ [ <-asym x y ] (x < y) ⊎ᵖ (y < x) -- (definition of _#_)

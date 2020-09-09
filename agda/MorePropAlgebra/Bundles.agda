@@ -157,8 +157,8 @@ record Lattice : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
 
   open IsLattice is-Lattice public
 
-record AlmostOrderedField : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
-  constructor orderedfield
+record AlmostPartiallyOrderedField : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
+  constructor almostpartiallyorderedfield
   field
     Carrier : Type ℓ
     0f 1f   : Carrier
@@ -168,17 +168,17 @@ record AlmostOrderedField : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
     min max : Carrier → Carrier → Carrier
     _<_     : hPropRel Carrier Carrier ℓ'
   field
-    is-AlmostOrderedField : [ isAlmostOrderedField 0f 1f _+_ _·_ -_ _<_ min max {- _⁻¹ -} ] -- defines `_≤_` and `_#_`
+    is-AlmostPartiallyOrderedField : [ isAlmostPartiallyOrderedField 0f 1f _+_ _·_ -_ _<_ min max {- _⁻¹ -} ] -- defines `_≤_` and `_#_`
 
   infixl 7 _·_
   infix  6 -_
   infixl 5 _+_
   infixl 4 _<_
 
-  open IsAlmostOrderedField is-AlmostOrderedField public
+  open IsAlmostPartiallyOrderedField is-AlmostPartiallyOrderedField public
 
-record OrderedField : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
-  constructor orderedfield
+record PartiallyOrderedField : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
+  constructor partiallyorderedfield
   field
     Carrier : Type ℓ
     0f 1f   : Carrier
@@ -189,14 +189,14 @@ record OrderedField : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
     _<_     : hPropRel Carrier Carrier ℓ'
 
   field
-    is-OrderedField : [ isOrderedField 0f 1f _+_ _·_ -_ _<_ min max ] -- defines `_≤_` and `_#_`
+    is-PartiallyOrderedField : [ isPartiallyOrderedField 0f 1f _+_ _·_ -_ _<_ min max ] -- defines `_≤_` and `_#_`
 
   infixl 7 _·_
   infix  6 -_
   infixl 5 _+_
   infixl 4 _<_
 
-  open IsOrderedField is-OrderedField public
+  open IsPartiallyOrderedField is-PartiallyOrderedField public
 
   -- abstract
   --   -- NOTE: there might be some reason not to "do" (or "open") all the theory of a record within that record

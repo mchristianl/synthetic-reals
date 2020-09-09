@@ -38,34 +38,34 @@ open import MorePropAlgebra.Bundles
 open import MorePropAlgebra.Definitions as Defs hiding (_≤''_)
 open import MorePropAlgebra.Consequences
 
-module MorePropAlgebra.Bridges1999 {ℓ ℓ'} (assumptions : OrderedField {ℓ} {ℓ'}) where
+module MorePropAlgebra.Bridges1999 {ℓ ℓ'} (assumptions : PartiallyOrderedField {ℓ} {ℓ'}) where
 
-import MorePropAlgebra.Properties.AlmostOrderedField
--- module AlmostOrderedField'Properties  = MorePropAlgebra.Properties.AlmostOrderedField   record { OrderedField assumptions }
--- module AlmostOrderedField'            =                            AlmostOrderedField   record { OrderedField assumptions }
--- (      AlmostOrderedField')           =                            AlmostOrderedField ∋ record { OrderedField assumptions }
+import MorePropAlgebra.Properties.AlmostPartiallyOrderedField
+-- module AlmostPartiallyOrderedField'Properties  = MorePropAlgebra.Properties.AlmostPartiallyOrderedField   record { PartiallyOrderedField assumptions }
+-- module AlmostPartiallyOrderedField'            =                            AlmostPartiallyOrderedField   record { PartiallyOrderedField assumptions }
+-- (      AlmostPartiallyOrderedField')           =                            AlmostPartiallyOrderedField ∋ record { PartiallyOrderedField assumptions }
 
--- module This = OrderedField assumptions renaming (Carrier to F; _-_ to _-_)
+-- module This = PartiallyOrderedField assumptions renaming (Carrier to F; _-_ to _-_)
 
 -- import MorePropAlgebra.Booij2020
--- -- open MorePropAlgebra.Booij2020.Chapter4 AlmostOrderedField' public
--- open MorePropAlgebra.Booij2020.Chapter4 (record { OrderedField assumptions }) public
--- open +-<-ext+·-preserves-<⇒ (OrderedField.+-<-ext assumptions) (OrderedField.·-preserves-< assumptions) public
--- -- open AlmostOrderedField'Properties -- using (_⁻¹; _≤''_)
--- -- open MorePropAlgebra.Properties.AlmostOrderedField (record { OrderedField assumptions }) public
+-- -- open MorePropAlgebra.Booij2020.Chapter4 AlmostPartiallyOrderedField' public
+-- open MorePropAlgebra.Booij2020.Chapter4 (record { PartiallyOrderedField assumptions }) public
+-- open +-<-ext+·-preserves-<⇒ (PartiallyOrderedField.+-<-ext assumptions) (PartiallyOrderedField.·-preserves-< assumptions) public
+-- -- open AlmostPartiallyOrderedField'Properties -- using (_⁻¹; _≤''_)
+-- -- open MorePropAlgebra.Properties.AlmostPartiallyOrderedField (record { PartiallyOrderedField assumptions }) public
 
 -- remember opening this as the last one to omit prefixes
--- open import MorePropAlgebra.Properties.OrderedField assumptions
--- open OrderedField assumptions renaming (Carrier to F; _-_ to _-_)
+-- open import MorePropAlgebra.Properties.PartiallyOrderedField assumptions
+-- open PartiallyOrderedField assumptions renaming (Carrier to F; _-_ to _-_)
 
 import MorePropAlgebra.Booij2020
-open MorePropAlgebra.Booij2020.Chapter4 (record { OrderedField assumptions })
-open +-<-ext+·-preserves-<⇒ (OrderedField.+-<-ext assumptions) (OrderedField.·-preserves-< assumptions)
--- open MorePropAlgebra.Properties.AlmostOrderedField (record { OrderedField assumptions }) hiding (_⁻¹)
-open import MorePropAlgebra.Properties.OrderedField assumptions
-open OrderedField assumptions renaming (Carrier to F; _-_ to _-_) hiding (_#_; _≤_)
-open AlmostOrderedField' using (_#_; _≤_)
-open AlmostOrderedField'Properties -- using (_⁻¹)
+open MorePropAlgebra.Booij2020.Chapter4 (record { PartiallyOrderedField assumptions })
+open +-<-ext+·-preserves-<⇒ (PartiallyOrderedField.+-<-ext assumptions) (PartiallyOrderedField.·-preserves-< assumptions)
+-- open MorePropAlgebra.Properties.AlmostPartiallyOrderedField (record { PartiallyOrderedField assumptions }) hiding (_⁻¹)
+open import MorePropAlgebra.Properties.PartiallyOrderedField assumptions
+open PartiallyOrderedField assumptions renaming (Carrier to F; _-_ to _-_) hiding (_#_; _≤_)
+open AlmostPartiallyOrderedField' using (_#_; _≤_)
+open AlmostPartiallyOrderedField'Properties -- using (_⁻¹)
 
 -- NOTE: we are proving Bridges' properties with Booij's definition of _≤_
 --         which is some form of cheating

@@ -327,8 +327,8 @@ isLattice _≤_ min max .snd (islattice a₀ b₀ c₀) (islattice a₁ b₁ c�
 
 -- NOTE: well, the HOTT book definition organizes things slightly different. Why prefer one approach over the other?
 
-record IsAlmostOrderedField {F : Type ℓ} (0f 1f : F) (_+_ _·_ : F → F → F) (-_ : F → F) (_<_ : hPropRel F F ℓ') (min max : F → F → F) {- (_⁻¹ᶠ : (x : F) → {{x # 0f}} → F) -} : Type (ℓ-max ℓ ℓ') where
-  constructor isalmostorderedfield
+record IsAlmostPartiallyOrderedField {F : Type ℓ} (0f 1f : F) (_+_ _·_ : F → F → F) (-_ : F → F) (_<_ : hPropRel F F ℓ') (min max : F → F → F) {- (_⁻¹ᶠ : (x : F) → {{x # 0f}} → F) -} : Type (ℓ-max ℓ ℓ') where
+  constructor isalmostpartiallyorderedfield
 
   infixl 4 _#_
   infixl 4 _≤_
@@ -380,10 +380,10 @@ record IsAlmostOrderedField {F : Type ℓ} (0f 1f : F) (_+_ _·_ : F → F → F
   ≤-antisym : [ isAntisymˢ _≤_ is-set ]
   ≤-antisym = isAntisymˢ⇔isAntisym _≤_ is-set .snd ≤-antisymᵗ
 
-isAlmostOrderedField : {F : Type ℓ} (0f 1f : F) (_+_ _·_ : F → F → F) (-_ : F → F) (_<_ : hPropRel F F ℓ') (min max : F → F → F) {- (_⁻¹ᶠ : (x : F) → {{x # 0f}} → F) -} → hProp (ℓ-max ℓ ℓ')
-isAlmostOrderedField {ℓ = ℓ} {ℓ' = ℓ'} {F = F} 0f 1f _+_ _·_ -_ _<_ min max {- _⁻¹ -} .fst = IsAlmostOrderedField 0f 1f _+_ _·_ -_ _<_ min max {- _⁻¹ -}
-isAlmostOrderedField {ℓ = ℓ} {ℓ' = ℓ'} {F = F} 0f 1f _+_ _·_ -_ _<_ min max {- _⁻¹ -} .snd (isalmostorderedfield a₀ b₀ c₀ d₀ e₀) (isalmostorderedfield a₁ b₁ c₁ d₁ e₁) = φ where
-  abstract φ = λ i → let -- we are doing basically "the same" as in `IsAlmostOrderedField`
+isAlmostPartiallyOrderedField : {F : Type ℓ} (0f 1f : F) (_+_ _·_ : F → F → F) (-_ : F → F) (_<_ : hPropRel F F ℓ') (min max : F → F → F) {- (_⁻¹ᶠ : (x : F) → {{x # 0f}} → F) -} → hProp (ℓ-max ℓ ℓ')
+isAlmostPartiallyOrderedField {ℓ = ℓ} {ℓ' = ℓ'} {F = F} 0f 1f _+_ _·_ -_ _<_ min max {- _⁻¹ -} .fst = IsAlmostPartiallyOrderedField 0f 1f _+_ _·_ -_ _<_ min max {- _⁻¹ -}
+isAlmostPartiallyOrderedField {ℓ = ℓ} {ℓ' = ℓ'} {F = F} 0f 1f _+_ _·_ -_ _<_ min max {- _⁻¹ -} .snd (isalmostpartiallyorderedfield a₀ b₀ c₀ d₀ e₀) (isalmostpartiallyorderedfield a₁ b₁ c₁ d₁ e₁) = φ where
+  abstract φ = λ i → let -- we are doing basically "the same" as in `IsAlmostPartiallyOrderedField`
                          _≤_                  : hPropRel F F ℓ'
                          x ≤ y                = ¬ (y < x) -- ≤, as in Lemma 4.1.7
                          is-set               = isSetIsProp a₀ a₁ i
@@ -400,25 +400,25 @@ isAlmostOrderedField {ℓ = ℓ} {ℓ' = ℓ'} {F = F} 0f 1f _+_ _·_ -_ _<_ min
                          x # y                = [ <-asym x y ] (x < y) ⊎ᵖ (y < x) -- # is defined as in Lemma 4.1.7
                          ·-inv''              = snd (isNonzeroInverseˢ'' is-set 0f 1f _·_ _#_) d₀ d₁ i
                          ≤-isLattice          = snd (isLattice _≤_ min max) e₀ e₁ i
-                     in isalmostorderedfield is-set is-CommRing <-StrictPartialOrder ·-inv'' ≤-isLattice
+                     in isalmostpartiallyorderedfield is-set is-CommRing <-StrictPartialOrder ·-inv'' ≤-isLattice
 
-record IsOrderedField {F : Type ℓ} (0f 1f : F) (_+_ _·_ : F → F → F) (-_ : F → F) (_<_ : hPropRel F F ℓ') (min max : F → F → F) {- (_⁻¹ᶠ : (x : F) → {{x # 0f}} → F) -} : Type (ℓ-max ℓ ℓ') where
-  constructor isorderedfield
+record IsPartiallyOrderedField {F : Type ℓ} (0f 1f : F) (_+_ _·_ : F → F → F) (-_ : F → F) (_<_ : hPropRel F F ℓ') (min max : F → F → F) {- (_⁻¹ᶠ : (x : F) → {{x # 0f}} → F) -} : Type (ℓ-max ℓ ℓ') where
+  constructor ispartiallyorderedfield
   field
     -- 1. 2. 3. 4. 5.
-    is-AlmostOrderedField : [ isAlmostOrderedField 0f 1f _+_ _·_ -_ _<_ min max {- _⁻¹ᶠ -} ]
+    is-AlmostPartiallyOrderedField : [ isAlmostPartiallyOrderedField 0f 1f _+_ _·_ -_ _<_ min max {- _⁻¹ᶠ -} ]
     -- 6. (†)
     +-<-ext : ∀ w x y z → [ (w + x) < (y + z) ] → [ (w < y) ⊔ (x < z) ]
     -- 6. (∗)
     ·-preserves-< : ∀ x y z → [ 0f < z ] → [ x < y ] → [ (x · z) < (y · z) ]
 
-  _ : [ isAlmostOrderedField 0f 1f _+_ _·_ -_ _<_ min max ]; _ = is-AlmostOrderedField
-  _ : [ is-+-<-Extensional _+_ _<_                        ]; _ = +-<-ext
-  _ : [ operation _·_ preserves _<_ when (λ z → 0f < z)   ]; _ = ·-preserves-<
+  _ : [ isAlmostPartiallyOrderedField 0f 1f _+_ _·_ -_ _<_ min max ]; _ = is-AlmostPartiallyOrderedField
+  _ : [ is-+-<-Extensional _+_ _<_                                 ]; _ = +-<-ext
+  _ : [ operation _·_ preserves _<_ when (λ z → 0f < z)            ]; _ = ·-preserves-<
 
-  open IsAlmostOrderedField is-AlmostOrderedField public
+  open IsAlmostPartiallyOrderedField is-AlmostPartiallyOrderedField public
 
-isOrderedField : {F : Type ℓ} (0f 1f : F) (_+_ _·_ : F → F → F) (-_ : F → F) (_<_ : hPropRel F F ℓ') (min max : F → F → F) {- (_⁻¹ᶠ : (x : F) → {{x # 0f}} → F) -} → hProp (ℓ-max ℓ ℓ')
-isOrderedField 0f 1f _+_ _·_ -_ _<_ min max {- _⁻¹ -} .fst = IsOrderedField 0f 1f _+_ _·_ -_ _<_ min max {- _⁻¹ -}
-isOrderedField 0f 1f _+_ _·_ -_ _<_ min max {- _⁻¹ -} .snd (isorderedfield a₀ b₀ c₀) (isorderedfield a₁ b₁ c₁) = φ where
-  abstract φ = λ i → isorderedfield (snd (isAlmostOrderedField 0f 1f _+_ _·_ -_ _<_ min max {- _⁻¹ᶠ -}) a₀ a₁ i) (snd (is-+-<-Extensional _+_ _<_) b₀ b₁ i) (snd (operation _·_ preserves _<_ when (λ z → 0f < z)) c₀ c₁ i)
+isPartiallyOrderedField : {F : Type ℓ} (0f 1f : F) (_+_ _·_ : F → F → F) (-_ : F → F) (_<_ : hPropRel F F ℓ') (min max : F → F → F) {- (_⁻¹ᶠ : (x : F) → {{x # 0f}} → F) -} → hProp (ℓ-max ℓ ℓ')
+isPartiallyOrderedField 0f 1f _+_ _·_ -_ _<_ min max {- _⁻¹ -} .fst = IsPartiallyOrderedField 0f 1f _+_ _·_ -_ _<_ min max {- _⁻¹ -}
+isPartiallyOrderedField 0f 1f _+_ _·_ -_ _<_ min max {- _⁻¹ -} .snd (ispartiallyorderedfield a₀ b₀ c₀) (ispartiallyorderedfield a₁ b₁ c₁) = φ where
+  abstract φ = λ i → ispartiallyorderedfield (snd (isAlmostPartiallyOrderedField 0f 1f _+_ _·_ -_ _<_ min max {- _⁻¹ᶠ -}) a₀ a₁ i) (snd (is-+-<-Extensional _+_ _<_) b₀ b₁ i) (snd (operation _·_ preserves _<_ when (λ z → 0f < z)) c₀ c₁ i)

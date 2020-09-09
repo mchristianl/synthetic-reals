@@ -33,25 +33,25 @@ open import MorePropAlgebra.Definitions hiding (_≤''_)
 open import MorePropAlgebra.Consequences
 open import MorePropAlgebra.Bundles
 
-module MorePropAlgebra.Properties.AlmostOrderedField {ℓ} {ℓ'} (assumptions : AlmostOrderedField {ℓ} {ℓ'})
-  (let F = AlmostOrderedField.Carrier assumptions
-       _≡ˢ_ = λ(x y : F) → MoreLogic.Definitions.≡ˢ-syntax x y {AlmostOrderedField.is-set assumptions}
+module MorePropAlgebra.Properties.AlmostPartiallyOrderedField {ℓ} {ℓ'} (assumptions : AlmostPartiallyOrderedField {ℓ} {ℓ'})
+  (let F = AlmostPartiallyOrderedField.Carrier assumptions
+       _≡ˢ_ = λ(x y : F) → MoreLogic.Definitions.≡ˢ-syntax x y {AlmostPartiallyOrderedField.is-set assumptions}
        infixl 4 _≡ˢ_
   ) where
 
 import MorePropAlgebra.Properties.Group
-module Group'Properties  = MorePropAlgebra.Properties.Group   record { AlmostOrderedField assumptions ; is-Group = AlmostOrderedField.+-Group assumptions }
-module Group'            =                            Group   record { AlmostOrderedField assumptions ; is-Group = AlmostOrderedField.+-Group assumptions }
-(      Group')           =                            Group ∋ record { AlmostOrderedField assumptions ; is-Group = AlmostOrderedField.+-Group assumptions }
+module Group'Properties  = MorePropAlgebra.Properties.Group   record { AlmostPartiallyOrderedField assumptions ; is-Group = AlmostPartiallyOrderedField.+-Group assumptions }
+module Group'            =                            Group   record { AlmostPartiallyOrderedField assumptions ; is-Group = AlmostPartiallyOrderedField.+-Group assumptions }
+(      Group')           =                            Group ∋ record { AlmostPartiallyOrderedField assumptions ; is-Group = AlmostPartiallyOrderedField.+-Group assumptions }
 module GroupLemmas'      = Group'Properties.GroupLemmas'
 
 import MorePropAlgebra.Properties.Ring
-module Ring'Properties  = MorePropAlgebra.Properties.Ring   record { AlmostOrderedField assumptions }
-module Ring'            =                            Ring   record { AlmostOrderedField assumptions }
-(      Ring')           =                            Ring ∋ record { AlmostOrderedField assumptions }
+module Ring'Properties  = MorePropAlgebra.Properties.Ring   record { AlmostPartiallyOrderedField assumptions }
+module Ring'            =                            Ring   record { AlmostPartiallyOrderedField assumptions }
+(      Ring')           =                            Ring ∋ record { AlmostPartiallyOrderedField assumptions }
 module RingTheory'      = Ring'Properties.RingTheory'
 
-open AlmostOrderedField assumptions -- renaming (Carrier to F; _-_ to _-_)
+open AlmostPartiallyOrderedField assumptions -- renaming (Carrier to F; _-_ to _-_)
 
 -- Bridges' definition of _≤__
 _≤''_ : hPropRel F F (ℓ-max ℓ ℓ')
