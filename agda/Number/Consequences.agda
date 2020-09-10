@@ -5,6 +5,7 @@ module Number.Consequences where
 open import Agda.Primitive renaming (_⊔_ to ℓ-max; lsuc to ℓ-suc; lzero to ℓ-zero)
 open import Cubical.Foundations.Everything renaming (_⁻¹ to _⁻¹ᵖ; assoc to ∙-assoc)
 open import Cubical.Foundations.Logic
+open import Function.Base using (it; _∋_)
 
 open import Utils
 open import MoreLogic.Definitions
@@ -67,7 +68,6 @@ but we can use `Quoℚ≡Sigmaℚ : Quo.ℚ ≡ Sigma.ℚ` from `Cubical.HITs.Ra
 -}
 
 
-open import Cubical.Data.Nat as ℕ using (discreteℕ; ℕ; suc; zero)
 open import Cubical.Data.NatPlusOne
 open import Cubical.Data.Sigma
 open import Cubical.HITs.Ints.QuoInt hiding (+-identityʳ; *-identityʳ; *-identityˡ; *-distribˡ;*-distribʳ) -- using (ℤ)
@@ -80,11 +80,158 @@ open import Cubical.HITs.Ints.QuoInt hiding (+-identityʳ; *-identityʳ; *-ident
 -- _∼_ : ℤ × ℕ₊₁ → ℤ × ℕ₊₁ → Type₀
 -- (a , b) ∼ (c , d) = a * ℕ₊₁→ℤ d ≡ c * ℕ₊₁→ℤ b
 
-open import Cubical.Data.Nat.Order using () renaming (_<_ to _<ⁿ_)
+open import Cubical.Data.Nat as ℕ using (discreteℕ; ℕ; suc; zero) renaming (_+_ to _+ⁿ_)
+open import Cubical.Data.Nat.Order using () renaming (_<_ to _<ⁿ_; _≤_ to _≤ⁿ_; ≤-suc to ≤ⁿ-suc)
+open import Cubical.Data.Nat.Properties using (isSetℕ) renaming (snotz to snotzⁿ; +-suc to +-sucⁿ; inj-+m to inj-+mⁿ; +-zero to +-zeroⁿ)
 
-_<ᶻ'_ : ℤ → ℤ → Type₀
-_<ᶻ'_ (ℤ.signed s n) b = {!   !}
-_<ᶻ'_ (ℤ.posneg i)   b = {!   !}
+_<ⁿᵖ_ : (x y : ℕ) → hProp ℓ-zero
+(x <ⁿᵖ y) .fst = x <ⁿ y
+(x <ⁿᵖ y) .snd (k₁ , k₁+sx≡y) (k₂ , k₂+sx≡y) = φ where
+  abstract φ = Σ≡Prop (λ k → isSetℕ _ _) (inj-+mⁿ (k₁+sx≡y ∙ sym k₂+sx≡y))
+
+isProp⊤ : isProp [ ⊤ ]
+isProp⊤ tt tt = refl
+
+private
+  abstract
+    lemma10 : ∀ n → (n <ⁿ 0) ≡ [ ⊥ ]
+    lemma10 n = isoToPath (iso (λ{ (k , p) → snotzⁿ (sym (+-sucⁿ k n) ∙ p) }) ⊥-elim (λ b → isProp⊥ _ _) (λ a → isProp[] (n <ⁿᵖ 0) _ _))
+
+    -- NOTE: we cannot prove `isProp lemma10` because it seems not even provable that `isProp ([ ⊥ ] ≡ [ ⊥ ])`
+    -- but we can use propositional truncation
+    lemma10' : ∀ n → ∥ (n <ⁿ 0) ≡ [ ⊥ ] ∥
+    lemma10' n = ∣ isoToPath (iso (λ{ (k , p) → snotzⁿ (sym (+-sucⁿ k n) ∙ p) }) ⊥-elim (λ b → isProp⊥ _ _) (λ a → isProp[] (n <ⁿᵖ 0) _ _)) ∣
+
+    lemma10'' : ∀ n → (n <ⁿᵖ 0) ≡ ⊥
+    lemma10'' n = ⇔toPath (transport (lemma10 n)) (transport (sym (lemma10 n)))
+
+  abstract
+    lemma12 : ∀ n → (0 <ⁿ suc n) ≡ [ ⊤ ]
+    lemma12 n = isoToPath (iso (λ _ →  tt) (λ _ → n , +-sucⁿ n 0 ∙ (λ i → suc (+-zeroⁿ n i))) (λ b → isProp⊤ _ _) (λ a → isProp[] (0 <ⁿᵖ suc n) _ _))
+
+    lemma12'' : ∀ n → (0 <ⁿᵖ suc n) ≡ ⊤
+    lemma12'' n = ⇔toPath (transport (lemma12 n)) (transport (sym (lemma12 n)))
+
+  abstract
+    helper : ∀ n → isProp (n <ⁿ 0) ≡ isProp [ ⊥ ]
+    helper n = λ i → isProp (lemma10 n i)
+
+    -- -- the following states that all propositions are equal (which is obviously not the case)
+    -- isPropΣProp : ∀ {ℓ} → isProp (Σ[ X ∈ Type ℓ ] isProp X)
+    -- isPropΣProp (A , isPropA) (B , isPropB) = Σ≡Prop (λ X → isPropIsProp) {! Goal: A ≡ B   !}
+
+    -- isProp' : ∀{ℓ} {A : Type ℓ} → isProp A → A ≡ (A ≡ A)
+    -- isProp' isPropA = pathToIso (iso ? ? ? ?)
+
+    -- https://www.cs.bham.ac.uk/~mhe/HoTT-UF-in-Agda-Lecture-Notes/
+    -- no-unicorns :
+
+    -- isProp-≡ : ∀{ℓ} {A : Type ℓ} → isProp A → isProp (A ≡ A)
+
+    --
+    -- isProp-≡ : ∀{ℓ} {A : Type ℓ} → isProp A → isProp (A ≡ A)
+    -- -- ———— Boundary ——————————————————————————————————————————————
+    -- -- i = i0 ⊢ p j
+    -- -- i = i1 ⊢ q j
+    -- -- j = i0 ⊢ A
+    -- -- j = i1 ⊢ A
+    -- --
+    -- -- i j |    |
+    -- -- 0 0 | pj | A
+    -- -- 0 1 | pj | A
+    -- -- 1 0 | qj | A
+    -- -- 1 1 | qj | A
+    -- -- Σ≡Prop {A = Type ℓ} {B = λ X → isProp X} (λ X → isPropIsProp) {u = (A , isPropA)} {v = (A , isPropA)}
+    -- -- isProp→isSet (isPropIsProp {A = A})
+    -- isProp-≡ {ℓ} {A} isPropA p q = isProp→isSet {! Goal : isProp (Type ℓ)  !} A A p q
+
+    -- isProp-⊥≡⊥ : isProp ([ ⊥ ] ≡ [ ⊥ ])
+    -- isProp-⊥≡⊥ x y = {!   !}
+
+  -- abstract
+
+    -- -- isProp[] (n <ⁿᵖ 0)
+    -- isProp-lemma10 : ∀ n → isProp ((n <ⁿ 0) ≡ [ ⊥ ])
+    -- -- ———— Boundary ——————————————————————————————————————————————
+    -- -- i = i0 ⊢ p j
+    -- -- i = i1 ⊢ q j
+    -- -- j = i0 ⊢ n <ⁿ 0
+    -- -- j = i1 ⊢ [ ⊥ ]
+    -- -- (isProp[] (n <ⁿᵖ 0))
+    -- isProp-lemma10 n p q =
+    --   let γ : isProp ((n <ⁿ 0) ≡ (n <ⁿ 0))
+    --       γ x y = {! isProp[] (n <ⁿᵖ 0) ?   !}
+    --   -- transport (helper n) (isProp[] (n <ⁿᵖ 0))
+    --   in {!    !}
+
+
+_<ᶻ'_ : ℤ → ℤ → Type ℓ-zero
+pos      n₀  <ᶻ' pos      n₁  = [ n₀ <ⁿᵖ n₁ ]
+pos      n₀  <ᶻ' neg      n₁  = [ ⊥ ]
+neg  zero    <ᶻ' pos  zero    = [ ⊥ ]
+neg  zero    <ᶻ' pos (suc n₁) = [ ⊤ ]
+neg (suc n₀) <ᶻ' pos  zero    = [ ⊤ ]
+neg (suc n₀) <ᶻ' pos (suc n₁) = [ ⊤ ]
+neg      n₀  <ᶻ' neg      n₁  = [ n₁ <ⁿᵖ n₀ ]
+-- 1D pathes
+pos      n₀  <ᶻ' posneg   j   = lemma10 n₀    j
+neg  zero    <ᶻ' posneg   j   = lemma10 0  (~ j) -- [F1]
+neg (suc n₀) <ᶻ' posneg   j   = lemma12 n₀ (~ j) -- [G1]
+posneg   i   <ᶻ' pos  zero    = lemma10 0     i  -- [F2]
+posneg   i   <ᶻ' pos (suc n₁) = lemma12 n₁    i  -- [G2]
+posneg   i   <ᶻ' neg      n₁  = lemma10 n₁ (~ i)
+-- 2D path
+-- note, how `lemma12` does not appear in the final, 2D-case
+-- this is, because we explitictly split out [F1] from [G1] and [F2] from [G2]
+-- ———— Boundary ——————————————————————————————————————————————
+-- i = i0 ⊢ lemma10 0 j       [a]
+-- i = i1 ⊢ lemma10 0 (~ j)   [b]
+-- j = i0 ⊢ lemma10 0 i       [c]
+-- j = i1 ⊢ lemma10 0 (~ i)   [d]
+--
+-- i j | a  b c  d | a b c d |
+-- ----|-----------|---------|---
+-- 0 0 | j    i    | 0   0   | 0
+-- 0 1 | j      ~i | 1     1 | 1     ⇒ "i xor j" ≡ (i ∨ j) ∧ ~(i ∧ j)
+-- 1 0 |   ~j i    |   1 1   | 1
+-- 1 1 |   ~j   ~i |   0   0 | 0
+posneg i <ᶻ' posneg j = lemma10 0 ((i ∨ j) ∧ ~(i ∧ j))
+
+_<ᶻ''_ : ℤ → ℤ → hProp ℓ-zero
+pos      n₀  <ᶻ'' pos      n₁  = n₀ <ⁿᵖ n₁
+pos      n₀  <ᶻ'' neg      n₁  = ⊥
+neg  zero    <ᶻ'' pos  zero    = ⊥
+neg  zero    <ᶻ'' pos (suc n₁) = ⊤
+neg (suc n₀) <ᶻ'' pos  zero    = ⊤
+neg (suc n₀) <ᶻ'' pos (suc n₁) = ⊤
+neg      n₀  <ᶻ'' neg      n₁  = n₁ <ⁿᵖ n₀
+-- 1D pathes
+pos      n₀  <ᶻ'' posneg   j   = lemma10'' n₀ j
+neg  zero    <ᶻ'' posneg   j   = lemma10'' 0  (~ j) -- [F1]
+neg (suc n₀) <ᶻ'' posneg   j   = lemma12'' n₀ (~ j) -- [G1]
+posneg   i   <ᶻ'' pos  zero    = lemma10'' 0     i  -- [F2]
+posneg   i   <ᶻ'' pos (suc n₁) = lemma12'' n₁    i  -- [G2]
+posneg   i   <ᶻ'' neg      n₁  = lemma10'' n₁ (~ i)
+-- 2D path
+-- note, how `lemma12` does not appear in the final, 2D-case
+-- this is, because we explitictly split out [F1] from [G1] and [F2] from [G2]
+-- ———— Boundary ——————————————————————————————————————————————
+-- i = i0 ⊢ lemma10 0 j       [a]
+-- i = i1 ⊢ lemma10 0 (~ j)   [b]
+-- j = i0 ⊢ lemma10 0 i       [c]
+-- j = i1 ⊢ lemma10 0 (~ i)   [d]
+--
+-- i j | a  b c  d | a b c d |
+-- ----|-----------|---------|---
+-- 0 0 | j    i    | 0   0   | 0
+-- 0 1 | j      ~i | 1     1 | 1     ⇒ "i xor j" ≡ (i ∨ j) ∧ ~(i ∧ j)
+-- 1 0 |   ~j i    |   1 1   | 1
+-- 1 1 |   ~j   ~i |   0   0 | 0
+posneg i <ᶻ'' posneg j = lemma10'' 0 ((i ∨ j) ∧ ~(i ∧ j))
+
+_<ᶻᵖ_ : hPropRel ℤ ℤ ℓ-zero
+(x <ᶻᵖ y) .fst = x <ᶻ' y
+(x <ᶻᵖ y) .snd = {!   !}
 
 _<ᶠ''_ : (ℤ × ℕ₊₁) → (ℤ × ℕ₊₁) → Type₀
 (aᶻ , aⁿ⁺¹) <ᶠ'' (bᶻ , bⁿ⁺¹) = {! a * ℕ₊₁→ℤ d <ᶻ' c * ℕ₊₁→ℤ b  !}
@@ -93,7 +240,7 @@ _<ᶠ'_ : ℚ → ℚ → _
 x <ᶠ' y = elimProp2 {A = ℤ × ℕ₊₁} {R = _∼_} {C = C} γ κ x y
   where
   φ : ℚ → ℚ → hProp ℓ-zero
-  φ x y = {!   !}
+  φ x y = {! ? , ?  !}
   C : ℚ → ℚ → Type
   C x y = [ φ x y ]
   γ : (x y : ℚ) → isProp (C x y)
@@ -201,6 +348,26 @@ maxᶻ' x y with sign x | sign y
 ... | sneg | spos = y
 ... | sneg | sneg = neg (minⁿ (abs x) (abs y))
 
+_ = maxᶻ -1 -1 ≡ -1 ∋ refl
+_ = maxᶻ -1  0 ≡  0 ∋ refl
+_ = maxᶻ -1  1 ≡  1 ∋ refl
+_ = maxᶻ  0 -1 ≡  0 ∋ refl
+_ = maxᶻ  0  0 ≡  0 ∋ refl
+_ = maxᶻ  0  1 ≡  1 ∋ refl
+_ = maxᶻ  1 -1 ≡  1 ∋ refl
+_ = maxᶻ  1  0 ≡  1 ∋ refl
+_ = maxᶻ  1  1 ≡  1 ∋ refl
+
+_ = maxᶻ' -1 -1 ≡ -1 ∋ refl
+_ = maxᶻ' -1  0 ≡  0 ∋ refl
+_ = maxᶻ' -1  1 ≡  1 ∋ refl
+_ = maxᶻ'  0 -1 ≡  0 ∋ refl
+_ = maxᶻ'  0  0 ≡  0 ∋ refl
+_ = maxᶻ'  0  1 ≡  1 ∋ refl
+_ = maxᶻ'  1 -1 ≡  1 ∋ refl
+_ = maxᶻ'  1  0 ≡  1 ∋ refl
+_ = maxᶻ'  1  1 ≡  1 ∋ refl
+
 -- sign' : ℤ → Sign
 -- sign' (signed _ zero) = spos
 -- sign' (signed s (suc _)) = s
@@ -232,6 +399,9 @@ lemma2 (posneg   i  ) (pos (suc n₁)) = refl
 lemma2 (posneg   i  ) (neg  zero   ) = λ j → posneg (i ∧ (~ j))
 lemma2 (posneg   i  ) (neg (suc n₁)) = refl
 lemma2 (posneg   i  ) (posneg   j  ) = λ k → posneg (i ∧ j ∧ (~ k))
+
+lemma3 : maxᶻ ≡ maxᶻ'
+lemma3 = funExt₂ᶜ lemma2
 
 -- maxᶻ (signed s₀ n₀) (signed s₁ n₁) = {!   !}
 -- maxᶻ (signed s₀ n₀) (posneg j) = {!   !}
