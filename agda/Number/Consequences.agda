@@ -482,25 +482,27 @@ signʳ-≡ (posneg i) = refl
 ... | sneg , x' | spos , y' = {!   !}
 ... | sneg , x' | sneg , y' = {!   !}
 
+
+-- -- {! pathTo⇐ (<ᶻ''≡<ᶻ''' a c ∙ (λ i → a≡ i <ᶻ''' c≡ i)) γ   !}
+-- where γ : [ reprℤ⁻¹ (spos , a') <ᶻ''' reprℤ⁻¹ (spos , c') ]
+--       γ = pathTo⇐ (<ᶻ'''≡<ᶻ'''ʳ (spos , a') (spos , c')) {!   !}
+--       κ : [ reprℤ⁻¹ (spos , a') <ᶻ''' reprℤ⁻¹ (spos , c') ]
+--       κ = {! <ᶻ'''≡'<ᶻ'''ʳ a c   !}
+
 -- possible cases
 -- NOTE: the "trick" is to with-abstract over `reprℤ a` and `reprℤ c`
 --       which turns the type of `pathTo⇐ (<ᶻ''≡<ᶻ''' a c ∙ <ᶻ'''≡'<ᶻ'''ʳ a c)`
 --       from `[ (reprℤ a <ᶻ'''ʳ reprℤ c) ⇒ (a <ᶻ'' c) ]`
 --       into `a' <ⁿ c' → fst (a <ᶻ'' c)`
-<-transᶻ'' a b c a<b b<c with reprℤ a | reprℤ b | reprℤ c | inspect-reprℤ a | inspect-reprℤ b | inspect-reprℤ c | pathTo⇐ (<ᶻ''≡<ᶻ''' a c ∙ <ᶻ'''≡'<ᶻ'''ʳ a c)
-<-transᶻ'' a b c a<b b<c | spos , a' | spos , b' | spos , c' | [ a≡ ]ⁱ' | [ b≡ ]ⁱ' | [ c≡ ]ⁱ' | p =  {! p   !}
-  -- {! pathTo⇐ (<ᶻ''≡<ᶻ''' a c ∙ (λ i → a≡ i <ᶻ''' c≡ i)) γ   !}
-  where γ : [ reprℤ⁻¹ (spos , a') <ᶻ''' reprℤ⁻¹ (spos , c') ]
-        γ = pathTo⇐ (<ᶻ'''≡<ᶻ'''ʳ (spos , a') (spos , c')) {!   !}
-        κ : [ reprℤ⁻¹ (spos , a') <ᶻ''' reprℤ⁻¹ (spos , c') ]
-        κ = {! <ᶻ'''≡'<ᶻ'''ʳ a c   !}
-<-transᶻ'' a b c a<b b<c | spos , a' | spos , b' | sneg , c' | [ a≡ ]ⁱ' | [ b≡ ]ⁱ' | [ c≡ ]ⁱ' | p = {!   !}
-<-transᶻ'' a b c a<b b<c | spos , a' | sneg , b' | spos , c' | [ a≡ ]ⁱ' | [ b≡ ]ⁱ' | [ c≡ ]ⁱ' | p = {!   !}
-<-transᶻ'' a b c a<b b<c | spos , a' | sneg , b' | sneg , c' | [ a≡ ]ⁱ' | [ b≡ ]ⁱ' | [ c≡ ]ⁱ' | p = {!   !}
-<-transᶻ'' a b c a<b b<c | sneg , a' | spos , b' | spos , c' | [ a≡ ]ⁱ' | [ b≡ ]ⁱ' | [ c≡ ]ⁱ' | p = {!   !}
-<-transᶻ'' a b c a<b b<c | sneg , a' | spos , b' | sneg , c' | [ a≡ ]ⁱ' | [ b≡ ]ⁱ' | [ c≡ ]ⁱ' | p = {!   !}
-<-transᶻ'' a b c a<b b<c | sneg , a' | sneg , b' | spos , c' | [ a≡ ]ⁱ' | [ b≡ ]ⁱ' | [ c≡ ]ⁱ' | p = {!   !}
-<-transᶻ'' a b c a<b b<c | sneg , a' | sneg , b' | sneg , c' | [ a≡ ]ⁱ' | [ b≡ ]ⁱ' | [ c≡ ]ⁱ' | p = {!   !}
+<-transᶻ'' a b c a<b b<c with reprℤ a | reprℤ b | reprℤ c | pathTo⇒ (<ᶻ''≡<ᶻ''' a b ∙ <ᶻ'''≡'<ᶻ'''ʳ a b) a<b | pathTo⇒ (<ᶻ''≡<ᶻ''' b c ∙ <ᶻ'''≡'<ᶻ'''ʳ b c) b<c | pathTo⇐ (<ᶻ''≡<ᶻ''' a c ∙ <ᶻ'''≡'<ᶻ'''ʳ a c)
+<-transᶻ'' a b c a<b b<c | spos , a' | spos , b' | spos , c' | a<b' | b<c' | p = p (<ⁿᵖ-trans _ _ _ a<b' b<c')
+<-transᶻ'' a b c a<b b<c | spos , a' | spos , b' | sneg , c' | a<b' | b<c' | p = p b<c'
+<-transᶻ'' a b c a<b b<c | spos , a' | sneg , b' | spos , c' | a<b' | b<c' | p = p (⊥-elim a<b')
+<-transᶻ'' a b c a<b b<c | spos , a' | sneg , b' | sneg , c' | a<b' | b<c' | p = p a<b'
+<-transᶻ'' a b c a<b b<c | sneg , a' | spos , b' | spos , c' | a<b' | b<c' | p = p a<b'
+<-transᶻ'' a b c a<b b<c | sneg , a' | spos , b' | sneg , c' | a<b' | b<c' | p = p (⊥-elim b<c')
+<-transᶻ'' a b c a<b b<c | sneg , a' | sneg , b' | spos , c' | a<b' | b<c' | p = p b<c'
+<-transᶻ'' a b c a<b b<c | sneg , a' | sneg , b' | sneg , c' | a<b' | b<c' | p = p (<ⁿᵖ-trans _ _ _ b<c' a<b')
 -- ... | spos , snd₁ | fst₂ , snd₂ | fst₃ , snd₃ | [ eq ]ⁱ | [ eq₁ ]ⁱ | [ eq₂ ]ⁱ = {!   !}
 -- ... | sneg , snd₁ | fst₂ , snd₂ | fst₃ , snd₃ | [ eq ]ⁱ | [ eq₁ ]ⁱ | [ eq₂ ]ⁱ = {!   !}
 
