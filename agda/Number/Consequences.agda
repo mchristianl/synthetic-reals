@@ -71,7 +71,7 @@ but we can use `Quoℚ≡Sigmaℚ : Quo.ℚ ≡ Sigma.ℚ` from `Cubical.HITs.Ra
 open import Cubical.Data.NatPlusOne
 open import Cubical.Data.Sigma
 open import Cubical.HITs.Ints.QuoInt hiding (+-identityʳ; *-identityʳ; *-identityˡ; *-distribˡ;*-distribʳ) -- using (ℤ)
-
+  renaming (_*_ to _*ᶻ_)
 -- there is `elimProp` in `Cubical.HITs.SetQuotients` to define properties
 
 -- elimProp {A = ℤ × ℕ₊₁} {R = _∼_} {B = λ(x : ℚ) → ?} ?
@@ -80,9 +80,9 @@ open import Cubical.HITs.Ints.QuoInt hiding (+-identityʳ; *-identityʳ; *-ident
 -- _∼_ : ℤ × ℕ₊₁ → ℤ × ℕ₊₁ → Type₀
 -- (a , b) ∼ (c , d) = a * ℕ₊₁→ℤ d ≡ c * ℕ₊₁→ℤ b
 
-open import Cubical.Data.Nat as ℕ using (discreteℕ; ℕ; suc; zero) renaming (_+_ to _+ⁿ_)
+open import Cubical.Data.Nat as ℕ using (discreteℕ; ℕ; suc; zero) renaming (_+_ to _+ⁿ_; _*_ to _*ⁿ_)
 open import Cubical.Data.Nat.Order using () renaming (_<_ to _<ⁿ_; _≤_ to _≤ⁿ_; ≤-suc to ≤ⁿ-suc)
-open import Cubical.Data.Nat.Properties using (isSetℕ) renaming (snotz to snotzⁿ; +-suc to +-sucⁿ; inj-+m to inj-+mⁿ; +-zero to +-zeroⁿ)
+open import Cubical.Data.Nat.Properties using (isSetℕ) renaming (snotz to snotzⁿ; +-suc to +-sucⁿ; inj-+m to inj-+mⁿ; inj-m+ to inj-m+ⁿ; +-zero to +-zeroⁿ; +-comm to +-commⁿ)
 
 _<ⁿᵖ_ : (x y : ℕ) → hProp ℓ-zero
 (x <ⁿᵖ y) .fst = x <ⁿ y
@@ -198,20 +198,20 @@ posneg   i   <ᶻ' neg      n₁  = lemma10 n₁ (~ i)
 posneg i <ᶻ' posneg j = lemma10 0 ((i ∨ j) ∧ ~(i ∧ j))
 
 _<ᶻ''_ : ℤ → ℤ → hProp ℓ-zero
-pos      n₀  <ᶻ'' pos      n₁  = n₀ <ⁿᵖ n₁
-pos      n₀  <ᶻ'' neg      n₁  = ⊥
-neg  zero    <ᶻ'' pos  zero    = ⊥
-neg  zero    <ᶻ'' pos (suc n₁) = ⊤
-neg (suc n₀) <ᶻ'' pos  zero    = ⊤
-neg (suc n₀) <ᶻ'' pos (suc n₁) = ⊤
-neg      n₀  <ᶻ'' neg      n₁  = n₁ <ⁿᵖ n₀
+pos      n₀  <ᶻ'' pos      n₁  = n₀ <ⁿᵖ n₁  -- point 1: 1a    3a
+pos      n₀  <ᶻ'' neg      n₁  = ⊥          -- point 2: 1b       4a
+neg  zero    <ᶻ'' pos  zero    = ⊥          -- point 3:    2a 3b
+neg  zero    <ᶻ'' pos (suc n₁) = ⊤          --
+neg (suc n₀) <ᶻ'' pos  zero    = ⊤          --
+neg (suc n₀) <ᶻ'' pos (suc n₁) = ⊤          --
+neg      n₀  <ᶻ'' neg      n₁  = n₁ <ⁿᵖ n₀  -- point 4:    2b    4b
 -- 1D pathes
-pos      n₀  <ᶻ'' posneg   j   = lemma10'' n₀ j
-neg  zero    <ᶻ'' posneg   j   = lemma10'' 0  (~ j) -- [F1]
+pos      n₀  <ᶻ'' posneg   j   = lemma10'' n₀ j             -- face 1: point 1 to 2
+neg  zero    <ᶻ'' posneg   j   = lemma10'' 0  (~ j) -- [F1] -- face 2: point 3 to 4
 neg (suc n₀) <ᶻ'' posneg   j   = lemma12'' n₀ (~ j) -- [G1]
-posneg   i   <ᶻ'' pos  zero    = lemma10'' 0     i  -- [F2]
+posneg   i   <ᶻ'' pos  zero    = lemma10'' 0     i  -- [F2] -- face 3: point 1 to 3
 posneg   i   <ᶻ'' pos (suc n₁) = lemma12'' n₁    i  -- [G2]
-posneg   i   <ᶻ'' neg      n₁  = lemma10'' n₁ (~ i)
+posneg   i   <ᶻ'' neg      n₁  = lemma10'' n₁ (~ i)         -- face 4: point 2 to 4
 -- 2D path
 -- note, how `lemma12` does not appear in the final, 2D-case
 -- this is, because we explitictly split out [F1] from [G1] and [F2] from [G2]
@@ -227,7 +227,7 @@ posneg   i   <ᶻ'' neg      n₁  = lemma10'' n₁ (~ i)
 -- 0 1 | j      ~i | 1     1 | 1     ⇒ "i xor j" ≡ (i ∨ j) ∧ ~(i ∧ j)
 -- 1 0 |   ~j i    |   1 1   | 1
 -- 1 1 |   ~j   ~i |   0   0 | 0
-posneg i <ᶻ'' posneg j = lemma10'' 0 ((i ∨ j) ∧ ~(i ∧ j))
+posneg i <ᶻ'' posneg j = lemma10'' 0 ((i ∨ j) ∧ ~(i ∧ j)) -- square 1: face 1 to 2 to 3 to 4
 
 _<ᶻᵖ_ : hPropRel ℤ ℤ ℓ-zero
 (x <ᶻᵖ y) .fst = x <ᶻ' y
@@ -264,9 +264,356 @@ x <ᶠ y = {! elimProp2 {A = ℤ × ℕ₊₁} {R = _∼_} {C = C} γ κ x y   !
 
 -- open import Cubical.HITs.Ints.QuoInt.Base renaming
 
+<ⁿᵖ-irrefl       : (a       : ℕ) → [ ¬ (a <ⁿᵖ a) ]
+<ⁿᵖ-trans        : (a b x   : ℕ) → [ a <ⁿᵖ b ] → [ b <ⁿᵖ x ] → [ a <ⁿᵖ x ]
+<ⁿᵖ-cotrans      : (a b     : ℕ) → [ a <ⁿᵖ b ] → (x : ℕ) → [ (a <ⁿᵖ x) ⊔ (x <ⁿᵖ b) ]
+·ⁿ-preserves-<ⁿᵖ : (x y z   : ℕ) → [ 0 <ⁿᵖ z ] → [ x <ⁿᵖ y ] → [ (x *ⁿ z) <ⁿᵖ (y *ⁿ z) ]
+
+-- abstract
+-- <ⁿᵖ-irrefl zero (k , p) = ψ where abstract ψ = snotzⁿ (sym (+-sucⁿ k 0) ∙ p)
+
+-- NOTE: `<-irreflᶻ'' (posneg i) p` forced this ?9 to be constrained to
+--   ?9 (k = (fst x)) (p = (snd x)) = transp (λ i → [ lemma10'' 0 (((i1 ∨ i1) ∧ ~ i1 ∨ ~ i1) ∨ i) ]) i0 x : ⊥⊥
+-- which demands an implementation in terms of lemma10''
+-- <ⁿᵖ-irrefl zero q@(k , p) = transp (λ i → [ lemma10'' 0 (((i1 ∨ i1) ∧ ~ i1 ∨ ~ i1) ∨ i) ]) i0 q
+-- <ⁿᵖ-irrefl zero q@(k , p) = transp (λ i → [ lemma10'' 0 ((i1 ∧ ~ i1) ∨ i) ]) i0 q
+<ⁿᵖ-irrefl zero q@(k , p) = transp (λ i → [ lemma10'' 0 i ]) i0 q
+<ⁿᵖ-irrefl (suc a) (k , p) = φ where
+  abstract φ = snotzⁿ (inj-m+ⁿ {a} (+-sucⁿ a k ∙ (λ i → suc (+-commⁿ a k i)) ∙ sym (+-sucⁿ k a) ∙ inj-m+ⁿ {1} (sym (+-sucⁿ k (suc a)) ∙ p) ∙ sym (+-zeroⁿ a)))
+
+<ⁿᵖ-trans  zero    zero    zero   q₁@(k₁ , p₁) q₂@(k₂ , p₂) = q₁
+<ⁿᵖ-trans  zero    zero   (suc c) q₁@(k₁ , p₁) q₂@(k₂ , p₂) = q₂
+<ⁿᵖ-trans  zero   (suc b)  zero   q₁@(k₁ , p₁) q₂@(k₂ , p₂) = {!   !}
+<ⁿᵖ-trans  zero   (suc b) (suc c) q₁@(k₁ , p₁) q₂@(k₂ , p₂) = {!   !}
+<ⁿᵖ-trans (suc a)  zero    zero   q₁@(k₁ , p₁) q₂@(k₂ , p₂) = {!   !}
+<ⁿᵖ-trans (suc a)  zero   (suc c) q₁@(k₁ , p₁) q₂@(k₂ , p₂) = {!   !}
+<ⁿᵖ-trans (suc a) (suc b)  zero   q₁@(k₁ , p₁) q₂@(k₂ , p₂) = {!   !}
+<ⁿᵖ-trans (suc a) (suc b) (suc c) q₁@(k₁ , p₁) q₂@(k₂ , p₂) = {!   !}
+
+<ⁿᵖ-cotrans      = {!   !}
+·ⁿ-preserves-<ⁿᵖ = {!   !}
 
 
-_*ᶻ_ = Cubical.HITs.Ints.QuoInt._*_
+<-irreflᶻ''       : (a       : ℤ) → [ ¬ (a <ᶻ'' a) ]
+<-transᶻ''        : (a b x   : ℤ) → [ a <ᶻ'' b ] → [ b <ᶻ'' x ] → [ a <ᶻ'' x ]
+-- <-cotransᶻ''      : (a b     : ℤ) → [ a <ᶻ'' b ] → (x : ℤ) → [ (a <ᶻ'' x) ⊔ (x <ᶻ'' b) ]
+-- ·ᶻ-preserves-<ᶻ'' : (x y z   : ℤ) → [ 0 <ᶻ'' z ] → [ x <ᶻ'' y ] → [ (x *ᶻ z) <ᶻ'' (y *ᶻ z) ]
+
+-- lemma10'' : ∀ n → (n <ⁿᵖ 0) ≡ ⊥
+
+-- (i ∨ i) ∧ (~ i ∨ ~ i))
+-- i0
+-- lemma10'' 0 (~ i) = (⊥ ≡ (n <ⁿᵖ 0)) i
+
+-- lemma14 :
+
+<-irreflᶻ'' (pos zero)    = <ⁿᵖ-irrefl 0
+<-irreflᶻ'' (pos (suc n)) = <ⁿᵖ-irrefl (suc n)
+<-irreflᶻ'' (neg zero)    = <ⁿᵖ-irrefl 0
+<-irreflᶻ'' (neg (suc n)) = <ⁿᵖ-irrefl (suc n)
+-- <-irreflᶻ'' (posneg i) p  = transport (λ j → [ lemma10'' 0 (((i ∨ i) ∧ (~ i ∨ ~ i)) ∨ j) ]) p
+<-irreflᶻ'' (posneg i) p  = transport (λ j → [ lemma10'' 0 ((i ∧ ~ i) ∨ j) ]) p
+-- <-irreflᶻ'' (posneg i) p  =
+-- <-irreflᶻ'' (posneg i) p  = {! transport (λ j → [ lemma10'' 0 (((i ∨ i) ∧ (~ i ∨ ~ i)) ∨ j) ])     !} where
+--   κ : [ lemma10'' 0 i1 ] ≡ {! <ⁿᵖ-irrefl 0    !}
+--   κ = {!   !}
+-- <-irreflᶻ'' (posneg i) p = transport (λ j → [ lemma10'' 0 ((i ∧ ~ i) ∨ j) ]) p
+-- <-irreflᶻ'' (posneg i) p = transport (λ j → [ lemma10'' 0 (i₀ ∨ j) ]) p
+
+record Reveal_·_is_ {a b} {A : Type a} {B : A → Type b}
+                    (f : (x : A) → B x) (x : A) (y : B x) :
+                    Type (ℓ-max a b) where
+  eta-equality
+  constructor [_]ⁱ
+  field eq : f x ≡ y -- lhs stays fix, rhs gets splitted
+
+-- The problem is that when we write ̀with f x | pr`, `with` decides to call `y`
+-- the result `f x` and to replace *all* of the occurences of `f x` in the type
+-- of `pr` with `y`. That is to say that if we were to write:
+-- ...
+-- then `with` would abstract `m + n` as `p` on *both* sides of the equality
+-- proven by `refl` thus giving us the following goal with an extra, useless,
+-- assumption:
+-- ...
+-- Given that `inspect` has the type `∀ f n → Reveal f · n is (f n)`, when we
+-- write `with f n | inspect f n`, the only `f n` that can be abstracted in the
+-- type of `inspect f n` is the third argument to `Reveal_·_is_`.
+-- That is to say that the auxiliary definition generated looks like this:
+--
+-- plus-eq-reveal : ∀ m n → Plus-eq m n (m + n)
+-- plus-eq-reveal m n = aux m n (m + n) (my-inspect (m +_) n) where
+--
+--   aux : ∀ m n p → MyReveal (m +_) · n is p → Plus-eq m n p
+--   aux m n zero    [ m+n≡0   ] = m+n≡0⇒m≡0 m m+n≡0 , m+n≡0⇒n≡0 m m+n≡0
+--   aux m n (suc p) [ m+n≡1+p ] = m+n≡1+p
+--
+-- At the cost of having to unwrap the constructor `[_]` around the equality
+-- we care about, we can keep relying on `with` and avoid having to roll out
+-- handwritten auxiliary definitions.
+
+
+
+inspect : ∀{a b} {A : Type a} {B : A → Type b}
+          (f : (x : A) → B x) (x : A) → Reveal f · x is f x
+inspect f x = [ refl ]ⁱ
+
+reprℤ : ℤ → Sign × ℕ
+reprℤ z = sign z , abs z
+
+reprℤ⁻¹ : Sign × ℕ → ℤ
+reprℤ⁻¹ (s , n) = signed s n
+
+record Reveal'_·_is_ {ℓ ℓ'} {A : Type ℓ} {B : Type ℓ'}
+                   (f⁻¹ : B → A)
+                   (y : B) (x : A)
+                   : Type ℓ where
+  eta-equality
+  constructor [_]ⁱ'
+  field eq' : x ≡ f⁻¹ y
+
+inspect' : ∀{ℓ ℓ'} {A : Type ℓ} {B : Type ℓ'}
+          (f⁻¹ : B → A) (f : A → B) (x : A) → f⁻¹ (f x) ≡ x → Reveal' f⁻¹ · (f x) is x
+inspect' f⁻¹ f x p = [ sym p ]ⁱ'
+
+-- inspectℤ : (x : ℤ) → Reveal reprℤ · x is x
+-- inspectℤ x = ?
+
+reprℤ-id : ∀ z → reprℤ⁻¹ (reprℤ z) ≡ z
+reprℤ-id (pos  zero  ) = refl
+reprℤ-id (pos (suc n)) = refl
+reprℤ-id (neg  zero  ) = posneg
+reprℤ-id (neg (suc n)) = refl
+reprℤ-id (posneg   i ) = λ j → posneg (i ∧ j)
+
+inspect-reprℤ : (x : ℤ) → Reveal' reprℤ⁻¹ · (reprℤ x) is x
+inspect-reprℤ a = inspect' reprℤ⁻¹ reprℤ a (reprℤ-id a)
+
+_<ᶻ'''_ : ∀(x y : ℤ) → hProp ℓ-zero
+x <ᶻ''' y with reprℤ x | reprℤ y | inspect-reprℤ x | inspect-reprℤ y
+... | spos , x' | spos , y' | [ x≡ ]ⁱ' | [ y≡ ]ⁱ' = x' <ⁿᵖ y'
+... | spos , x' | sneg , y' | [ x≡ ]ⁱ' | [ y≡ ]ⁱ' = ⊥
+... | sneg , x' | spos , y' | [ x≡ ]ⁱ' | [ y≡ ]ⁱ' = ⊤
+... | sneg , x' | sneg , y' | [ x≡ ]ⁱ' | [ y≡ ]ⁱ' = y' <ⁿᵖ x'
+
+<ᶻ''≡<ᶻ''' : ∀ x y → x <ᶻ'' y ≡ x <ᶻ''' y
+<ᶻ''≡<ᶻ''' (pos  zero  ) (pos  zero  ) = refl
+<ᶻ''≡<ᶻ''' (pos  zero  ) (pos (suc y)) = refl
+<ᶻ''≡<ᶻ''' (pos (suc x)) (pos  zero  ) = refl
+<ᶻ''≡<ᶻ''' (pos (suc x)) (pos (suc y)) = refl
+<ᶻ''≡<ᶻ''' (pos  zero  ) (neg  zero  ) = sym (lemma10'' _)
+<ᶻ''≡<ᶻ''' (pos  zero  ) (neg (suc y)) = refl
+<ᶻ''≡<ᶻ''' (pos (suc x)) (neg  zero  ) = sym (lemma10'' _)
+<ᶻ''≡<ᶻ''' (pos (suc x)) (neg (suc y)) = refl
+<ᶻ''≡<ᶻ''' (neg  zero  ) (pos  zero  ) = sym (lemma10'' _)
+<ᶻ''≡<ᶻ''' (neg  zero  ) (pos (suc y)) = sym (lemma12'' _)
+<ᶻ''≡<ᶻ''' (neg (suc x)) (pos  zero  ) = refl
+<ᶻ''≡<ᶻ''' (neg (suc x)) (pos (suc y)) = refl
+<ᶻ''≡<ᶻ''' (neg  zero  ) (neg  zero  ) = refl
+<ᶻ''≡<ᶻ''' (neg  zero  ) (neg (suc y)) = lemma10'' _
+<ᶻ''≡<ᶻ''' (neg (suc x)) (neg  zero  ) = lemma12'' _
+<ᶻ''≡<ᶻ''' (neg (suc x)) (neg (suc y)) = refl
+
+<ᶻ''≡<ᶻ''' (pos  zero  ) (posneg i) = λ j → lemma10'' 0 (~ j ∧ i)
+<ᶻ''≡<ᶻ''' (pos (suc x)) (posneg i) = λ j → lemma10'' (suc x) (~ j ∧ i)
+<ᶻ''≡<ᶻ''' (neg  zero  ) (posneg i) = λ j → lemma10'' 0 (~ j ∧ ~ i)
+<ᶻ''≡<ᶻ''' (neg (suc x)) (posneg i) = λ j → lemma12'' x (j ∨ ~ i)
+
+<ᶻ''≡<ᶻ''' (posneg i) (pos  zero  ) = λ j → lemma10'' 0 (~ j ∧ i)
+<ᶻ''≡<ᶻ''' (posneg i) (pos (suc y)) = λ j → lemma12'' y (~ j ∧ i)
+<ᶻ''≡<ᶻ''' (posneg i) (neg  zero  ) = λ j → lemma10'' 0 (~ j ∧ ~ i)
+<ᶻ''≡<ᶻ''' (posneg i) (neg (suc y)) = λ j → lemma10'' (suc y) (j ∨ ~ i)
+
+-- Goal lemma10'' 0 ((i ∨ j) ∧ ~ i ∨ ~ j) ≡ (posneg i <ᶻ''' posneg j)
+-- Have (0 <ⁿᵖ 0) ≡ ⊥
+-- ———— Boundary ——————————————————————————————————————————————
+-- i = i0 ⊢ λ k → lemma10'' 0 (~ k ∧ j)
+-- i = i1 ⊢ λ k → lemma10'' 0 (~ k ∧ ~ j)
+-- j = i0 ⊢ λ k → lemma10'' 0 (~ k ∧ i)
+-- j = i1 ⊢ λ k → lemma10'' 0 (~ k ∧ ~ i)
+<ᶻ''≡<ᶻ''' (posneg i) (posneg   j ) = λ k → lemma10'' 0 (((i ∨ j) ∧ ~ i ∨ ~ j) ∧ ~ k)
+
+_<ᶻ'''ʳ_ : ∀(x y : Sign × ℕ) → hProp ℓ-zero
+-- NOTE: when using this definition, we get `<ᶻ'''≡<ᶻ'''ʳ` proven definitionally
+--       but we do not get term normalization as we need it
+-- x <ᶻ'''ʳ y = reprℤ⁻¹ x <ᶻ''' reprℤ⁻¹  y
+--       and when using this other definition, we get `<ᶻ'''≡'<ᶻ'''ʳ` proven definitionally
+(spos , x) <ᶻ'''ʳ (spos , y) = x <ⁿᵖ y -- (pos x) <ᶻ''' (pos y)
+(spos , x) <ᶻ'''ʳ (sneg , y) = ⊥       -- (pos x) <ᶻ''' (neg y)
+(sneg , x) <ᶻ'''ʳ (spos , y) = ⊤       -- (neg x) <ᶻ''' (pos y)
+(sneg , x) <ᶻ'''ʳ (sneg , y) = y <ⁿᵖ x -- (neg x) <ᶻ''' (neg y)
+
+signʳ-≡ : ∀ z → sign z ≡ reprℤ z .fst
+signʳ-≡ (signed s zero) = refl
+signʳ-≡ (signed s (suc n)) = refl
+signʳ-≡ (posneg i) = refl
+
+<ᶻ'''≡<ᶻ'''ʳ : ∀ x y → reprℤ⁻¹ x <ᶻ''' reprℤ⁻¹ y ≡ x <ᶻ'''ʳ y
+<ᶻ'''≡<ᶻ'''ʳ x@(sx , nx) y@(sy , ny) with sx | sy | signʳ-≡ (reprℤ⁻¹ x) | signʳ-≡ (reprℤ⁻¹ y)
+... | sx' | sy' | px | py = {!   !}
+-- <ᶻ'''≡<ᶻ'''ʳ (spos , x) (spos , y) = {! refl   !}
+-- <ᶻ'''≡<ᶻ'''ʳ (spos , x) (sneg , y) = {! refl   !}
+-- <ᶻ'''≡<ᶻ'''ʳ (sneg , x) (spos , y) = {! refl   !}
+-- <ᶻ'''≡<ᶻ'''ʳ (sneg , x) (sneg , y) = {! refl   !}
+
+<ᶻ'''≡'<ᶻ'''ʳ : ∀ x y → x <ᶻ''' y ≡ reprℤ x <ᶻ'''ʳ reprℤ y
+<ᶻ'''≡'<ᶻ'''ʳ x y with reprℤ x | reprℤ y | inspect-reprℤ x | inspect-reprℤ y
+... | spos , x' | spos , y' | [ x≡ ]ⁱ' | [ y≡ ]ⁱ' = refl
+... | spos , x' | sneg , y' | [ x≡ ]ⁱ' | [ y≡ ]ⁱ' = refl
+... | sneg , x' | spos , y' | [ x≡ ]ⁱ' | [ y≡ ]ⁱ' = refl
+... | sneg , x' | sneg , y' | [ x≡ ]ⁱ' | [ y≡ ]ⁱ' = refl
+
+<ᶻ'''≡''<ᶻ'''ʳ : ∀ x y → reprℤ⁻¹ x <ᶻ''' reprℤ⁻¹ y ≡ x <ᶻ'''ʳ y
+<ᶻ'''≡''<ᶻ'''ʳ x@(xs , xn) y@(ys , yn) with reprℤ (reprℤ⁻¹ x) | reprℤ (reprℤ⁻¹ y) | inspect-reprℤ (reprℤ⁻¹ x) | inspect-reprℤ (reprℤ⁻¹ y)
+... | spos , x' | spos , y' | [ x≡ ]ⁱ' | [ y≡ ]ⁱ' = {! refl    !}
+... | spos , x' | sneg , y' | [ x≡ ]ⁱ' | [ y≡ ]ⁱ' = {! refl    !}
+... | sneg , x' | spos , y' | [ x≡ ]ⁱ' | [ y≡ ]ⁱ' = {! refl    !}
+... | sneg , x' | sneg , y' | [ x≡ ]ⁱ' | [ y≡ ]ⁱ' = {! refl    !}
+
+
+-- [ reprℤ⁻¹ (spos , a') <ᶻ''' reprℤ⁻¹ (spos , c') ]
+-- [ reprℤ a <ᶻ'''ʳ reprℤ c ]
+-- [ a <ᶻ''' c ]
+-- [ a <ᶻ'' c ]
+
+<ᶻ'''≡'''<ᶻ'''ʳ : ∀ x y → reprℤ⁻¹ x <ᶻ''' reprℤ⁻¹ y ≡ x <ᶻ'''ʳ y
+<ᶻ'''≡'''<ᶻ'''ʳ x@(xs , xn) y@(ys , yn) with reprℤ (reprℤ⁻¹ x) | reprℤ (reprℤ⁻¹ y)
+... | spos , x' | spos , y' = {!   !}
+... | spos , x' | sneg , y' = {!   !}
+... | sneg , x' | spos , y' = {!   !}
+... | sneg , x' | sneg , y' = {!   !}
+
+-- possible cases
+-- NOTE: the "trick" is to with-abstract over `reprℤ a` and `reprℤ c`
+--       which turns the type of `pathTo⇐ (<ᶻ''≡<ᶻ''' a c ∙ <ᶻ'''≡'<ᶻ'''ʳ a c)`
+--       from `[ (reprℤ a <ᶻ'''ʳ reprℤ c) ⇒ (a <ᶻ'' c) ]`
+--       into `a' <ⁿ c' → fst (a <ᶻ'' c)`
+<-transᶻ'' a b c a<b b<c with reprℤ a | reprℤ b | reprℤ c | inspect-reprℤ a | inspect-reprℤ b | inspect-reprℤ c | pathTo⇐ (<ᶻ''≡<ᶻ''' a c ∙ <ᶻ'''≡'<ᶻ'''ʳ a c)
+<-transᶻ'' a b c a<b b<c | spos , a' | spos , b' | spos , c' | [ a≡ ]ⁱ' | [ b≡ ]ⁱ' | [ c≡ ]ⁱ' | p =  {! p   !}
+  -- {! pathTo⇐ (<ᶻ''≡<ᶻ''' a c ∙ (λ i → a≡ i <ᶻ''' c≡ i)) γ   !}
+  where γ : [ reprℤ⁻¹ (spos , a') <ᶻ''' reprℤ⁻¹ (spos , c') ]
+        γ = pathTo⇐ (<ᶻ'''≡<ᶻ'''ʳ (spos , a') (spos , c')) {!   !}
+        κ : [ reprℤ⁻¹ (spos , a') <ᶻ''' reprℤ⁻¹ (spos , c') ]
+        κ = {! <ᶻ'''≡'<ᶻ'''ʳ a c   !}
+<-transᶻ'' a b c a<b b<c | spos , a' | spos , b' | sneg , c' | [ a≡ ]ⁱ' | [ b≡ ]ⁱ' | [ c≡ ]ⁱ' | p = {!   !}
+<-transᶻ'' a b c a<b b<c | spos , a' | sneg , b' | spos , c' | [ a≡ ]ⁱ' | [ b≡ ]ⁱ' | [ c≡ ]ⁱ' | p = {!   !}
+<-transᶻ'' a b c a<b b<c | spos , a' | sneg , b' | sneg , c' | [ a≡ ]ⁱ' | [ b≡ ]ⁱ' | [ c≡ ]ⁱ' | p = {!   !}
+<-transᶻ'' a b c a<b b<c | sneg , a' | spos , b' | spos , c' | [ a≡ ]ⁱ' | [ b≡ ]ⁱ' | [ c≡ ]ⁱ' | p = {!   !}
+<-transᶻ'' a b c a<b b<c | sneg , a' | spos , b' | sneg , c' | [ a≡ ]ⁱ' | [ b≡ ]ⁱ' | [ c≡ ]ⁱ' | p = {!   !}
+<-transᶻ'' a b c a<b b<c | sneg , a' | sneg , b' | spos , c' | [ a≡ ]ⁱ' | [ b≡ ]ⁱ' | [ c≡ ]ⁱ' | p = {!   !}
+<-transᶻ'' a b c a<b b<c | sneg , a' | sneg , b' | sneg , c' | [ a≡ ]ⁱ' | [ b≡ ]ⁱ' | [ c≡ ]ⁱ' | p = {!   !}
+-- ... | spos , snd₁ | fst₂ , snd₂ | fst₃ , snd₃ | [ eq ]ⁱ | [ eq₁ ]ⁱ | [ eq₂ ]ⁱ = {!   !}
+-- ... | sneg , snd₁ | fst₂ , snd₂ | fst₃ , snd₃ | [ eq ]ⁱ | [ eq₁ ]ⁱ | [ eq₂ ]ⁱ = {!   !}
+
+-- <-transᶻ'' (pos zero) (pos zero) (pos zero) a<b b<c = {!   !}
+-- <-transᶻ'' (pos zero) (pos zero) (pos (suc n₂)) a<b b<c = {!   !}
+-- <-transᶻ'' (pos zero) (pos (suc n₁)) (pos zero) a<b b<c = {!   !}
+-- <-transᶻ'' (pos zero) (pos (suc n₁)) (pos (suc n₂)) a<b b<c = {!   !}
+--
+-- <-transᶻ'' (pos (suc n₀)) (pos zero) (pos zero) a<b b<c = {!   !}
+-- <-transᶻ'' (pos (suc n₀)) (pos zero) (pos (suc n₂)) a<b b<c = {!   !}
+-- <-transᶻ'' (pos (suc n₀)) (pos (suc n₁)) (pos zero) a<b b<c = {!   !}
+-- <-transᶻ'' (pos (suc n₀)) (pos (suc n₁)) (pos (suc n₂)) a<b b<c = {!   !}
+--
+-- <-transᶻ'' (neg n₀) (pos n₁) (pos n₂) a<b b<c = {!   !}
+-- <-transᶻ'' (neg n₀) (neg n₁) (pos n₂) a<b b<c = {!   !}
+-- <-transᶻ'' (neg n₀) (neg n₁) (neg n₂) a<b b<c = {!   !}
+--
+-- <-transᶻ'' (signed s₀ n₀) (signed s₁ n₁) (posneg i) a<b b<c = {!   !}
+--
+-- <-transᶻ'' (signed s₀ n₀) (posneg i) (signed s₁ n₁) a<b b<c = {!   !}
+--
+-- <-transᶻ'' (signed s₀ n₀) (posneg i) (posneg i₁) a<b b<c = {!   !}
+--
+-- <-transᶻ'' (posneg i) (signed s₁ n₁) (signed s₂ n₂) a<b b<c = {!   !}
+--
+-- <-transᶻ'' (posneg i) (signed s₁ n₁) (posneg i₁) a<b b<c = {!   !}
+--
+-- <-transᶻ'' (posneg i) (posneg i₁) (signed s₂ n₂) a<b b<c = {!   !}
+--
+-- <-transᶻ'' (posneg i) (posneg i₁) (posneg i₂) a<b b<c = {!   !}
+
+{-
+
+
+-- -- 8 points
+-- <-transᶻ'' (pos n₀) (pos n₁) (pos zero) a<b b<c = {! <ⁿᵖ-trans   !} -- point 1
+-- <-transᶻ'' (pos n₀) (pos n₁) (pos (suc n₂)) a<b b<c = {!   !}
+-- <-transᶻ'' (neg n₀) (pos n₁) (pos zero) a<b b<c = {!   !} -- point 2
+-- <-transᶻ'' (neg n₀) (pos n₁) (pos (suc n₂)) a<b b<c = {!   !}
+-- <-transᶻ'' (neg n₀) (neg n₁) (neg zero) a<b b<c = {!   !} -- point 3
+-- <-transᶻ'' (neg n₀) (neg n₁) (neg (suc n₂)) a<b b<c = {!   !}
+-- <-transᶻ'' (neg n₀) (neg n₁) (pos zero) a<b b<c = {!   !} -- point 4
+-- <-transᶻ'' (neg n₀) (neg n₁) (pos (suc n₂)) a<b b<c = {!   !}
+--
+-- -- 12 edges
+-- <-transᶻ'' (neg n₀) (pos n₁) (posneg k) a<b b<c = {!   !} -- 21 -- point 2
+-- <-transᶻ'' (pos n₀) (pos n₁) (posneg k) a<b b<c = {!   !} -- 22 -- point 1
+-- <-transᶻ'' (neg n₀) (neg n₁) (posneg k) a<b b<c = {!   !} -- 23 -- point 3 to 4
+-- -- <-transᶻ'' (pos n₀) (neg n₁) (posneg k) a<b b<c = {!   !}
+-- <-transᶻ'' (pos n₀) (posneg j) (pos n₂) a<b b<c = {!   !} -- 24
+-- <-transᶻ'' (pos n₀) (posneg j) (neg n₂) a<b b<c = {!   !} -- 25
+-- <-transᶻ'' (neg n₀) (posneg j) (pos n₂) a<b b<c = {!   !} -- 26
+-- <-transᶻ'' (neg n₀) (posneg j) (neg n₂) a<b b<c = {!   !} -- 27
+-- <-transᶻ'' (posneg i) (pos n₁) (pos n₂) a<b b<c = {!   !} -- 28
+-- <-transᶻ'' (posneg i) (neg n₁) (pos n₂) a<b b<c = {!   !} -- 29
+-- <-transᶻ'' (posneg i) (neg n₁) (neg n₂) a<b b<c = {!   !} -- 30
+-- -- <-transᶻ'' (posneg i) (pos n₁) (neg n₂) a<b b<c = {!   !}
+--
+-- --  6 faces
+-- <-transᶻ'' (pos n₀) (posneg j) (posneg k) a<b b<c = {!   !} -- 22 24 25
+-- <-transᶻ'' (neg n₀) (posneg j) (posneg k) a<b b<c = {!   !} -- 21 23 26
+-- <-transᶻ'' (posneg i) (pos n₁) (posneg k) a<b b<c = {!   !} -- 22 21 28
+-- <-transᶻ'' (posneg i) (neg n₁) (posneg k) a<b b<c = {!   !} -- 23 29 30
+-- <-transᶻ'' (posneg i) (posneg j) (pos n₂) a<b b<c = {!   !} -- 24 26 28 29
+-- <-transᶻ'' (posneg i) (posneg j) (neg n₂) a<b b<c = {!   !} -- 25 27 30
+
+-- (i ∨ k) ∧ ~ i ∨ ~ k
+-- (i ∨ k) ∧ (~ i ∨ ~ k)
+-- (i ∨ k) ∧ ~(i ∧ k)
+-- i k | i ∨ k | i ∧ k | ~(i ∧ k) | (i ∨ k) ∧ ~(i ∧ k)
+-- 0 0 |   0   |   0   |     1    |         0
+-- 0 1 |   1   |   0   |     1    |         1
+-- 1 0 |   1   |   0   |     1    |         1
+-- 1 1 |   1   |   1   |     0    |         0
+-- ———— Boundary ——————————————————————————————————————————————
+-- i = i0 ⊢ ?21 (n₀ = 0) (j = j) (k = k) (a<b = a<b) (b<c = b<c) -- : fst (lemma10'' 0 k)
+-- i = i1 ⊢ ?22 (n₀ = 0) (j = j) (k = k) (a<b = a<b) (b<c = b<c) -- : fst (lemma10'' 0 (~ k))
+-- j = i0 ⊢ ?23 (i = i) (n₁ = 0) (k = k) (a<b = a<b) (b<c = b<c) -- : fst (lemma10'' 0 ((i ∨ k) ∧ ~ i ∨ ~ k))
+-- j = i1 ⊢ ?24 (i = i) (n₁ = 0) (k = k) (a<b = a<b) (b<c = b<c) -- : fst (lemma10'' 0 ((i ∨ k) ∧ ~ i ∨ ~ k))
+-- k = i0 ⊢ ?25 (i = i) (j = j) (n₂ = 0) (a<b = a<b) (b<c = b<c) -- : fst (lemma10'' 0 i)
+-- k = i1 ⊢ ?26 (i = i) (j = j) (n₂ = 0) (a<b = a<b) (b<c = b<c) -- : fst (lemma10'' 0 (~ i))
+-- ———— Constraints ———————————————————————————————————————————
+-- ?21 (n₀ = 0) (j = j) (k = k) (a<b = a<b) (b<c = b<c) = ?27 (i = i0) : fst (lemma10'' 0 k)
+-- ?22 (n₀ = 0) (j = j) (k = k) (a<b = a<b) (b<c = b<c) = ?27 (i = i1) : fst (lemma10'' 0 (~ k))
+-- ?23 (i = i) (n₁ = 0) (k = k) (a<b = a<b) (b<c = b<c) = ?27 (j = i0) : fst (lemma10'' 0 ((i ∨ k) ∧ ~ i ∨ ~ k))
+-- ?24 (i = i) (n₁ = 0) (k = k) (a<b = a<b) (b<c = b<c) = ?27 (j = i1) : fst (lemma10'' 0 ((i ∨ k) ∧ ~ i ∨ ~ k))
+-- ?25 (i = i) (j = j) (n₂ = 0) (a<b = a<b) (b<c = b<c) = ?27 (k = i0) : fst (lemma10'' 0 i)
+-- ?26 (i = i) (j = j) (n₂ = 0) (a<b = a<b) (b<c = b<c) = ?27 (k = i1) : fst (lemma10'' 0 (~ i))
+
+-- Goal [ lemma10'' 0 ((i ∨ k) ∧ ~ i ∨ ~ k) ]
+-- ———— Boundary ——————————————————————————————————————————————
+-- i = i0 ⊢ ?20 (s₀ = spos) (n₀ = 0) (j = j) (k = k) (a<b = a<b) (b<c = b<c) -- : fst (lemma10'' 0 k)
+-- i = i1 ⊢ ?20 (s₀ = sneg) (n₀ = 0) (j = j) (k = k) (a<b = a<b) (b<c = b<c) -- : fst (lemma10'' 0 (~ k))
+-- j = i0 ⊢ ?22 (i = i) (s₁ = spos) (n₁ = 0) (k = k) (a<b = a<b) (b<c = b<c) -- : fst (lemma10'' 0 ((i ∨ k) ∧ ~ i ∨ ~ k))
+-- j = i1 ⊢ ?22 (i = i) (s₁ = sneg) (n₁ = 0) (k = k) (a<b = a<b) (b<c = b<c) -- : fst (lemma10'' 0 ((i ∨ k) ∧ ~ i ∨ ~ k))
+-- k = i0 ⊢ ?23 (i = i) (j = j) (s₂ = spos) (n₂ = 0) (a<b = a<b) (b<c = b<c) -- : fst (lemma10'' 0 i)
+-- k = i1 ⊢ ?23 (i = i) (j = j) (s₂ = sneg) (n₂ = 0) (a<b = a<b) (b<c = b<c) -- : fst (lemma10'' 0 (~ i))
+-- ———— Constraints ———————————————————————————————————————————
+-- ?20 (s₀ = spos) (n₀ = 0) (j = j) (k = k) (a<b = a<b) (b<c = b<c) = ?24 (i = i0) : fst (lemma10'' 0 k)
+-- ?20 (s₀ = sneg) (n₀ = 0) (j = j) (k = k) (a<b = a<b) (b<c = b<c) = ?24 (i = i1) : fst (lemma10'' 0 (~ k))
+-- ?22 (i = i) (s₁ = spos) (n₁ = 0) (k = k) (a<b = a<b) (b<c = b<c) = ?24 (j = i0) : fst (lemma10'' 0 ((i ∨ k) ∧ ~ i ∨ ~ k))
+-- ?22 (i = i) (s₁ = sneg) (n₁ = 0) (k = k) (a<b = a<b) (b<c = b<c) = ?24 (j = i1) : fst (lemma10'' 0 ((i ∨ k) ∧ ~ i ∨ ~ k))
+-- ?23 (i = i) (j = j) (s₂ = spos) (n₂ = 0) (a<b = a<b) (b<c = b<c) = ?24 (k = i0) : fst (lemma10'' 0 i)
+-- ?23 (i = i) (j = j) (s₂ = sneg) (n₂ = 0) (a<b = a<b) (b<c = b<c) = ?24 (k = i1) : fst (lemma10'' 0 (~ i))
+
+-- 1 cube
+<-transᶻ'' (posneg    i ) (posneg    j ) (posneg    k ) a<b b<c = {!    !} -- ?24
+
+<-cotransᶻ''      = {!   !}
+·ᶻ-preserves-<ᶻ'' = {!   !}
+
+
+-- _*ᶻ_ = Cubical.HITs.Ints.QuoInt._*_
 -- signᶻ = Cubical.HITs.Ints.QuoInt.sign
 
 open import Data.Nat.Base using () renaming
@@ -708,3 +1055,5 @@ module _ {ℓ ℓ'} (OF : PartiallyOrderedField {ℓ} {ℓ'}) where
     -- the limit, but as the limit value is independent of the chosen modulus, existence of such a
     -- modulus suffices.
   -}
+
+-}
