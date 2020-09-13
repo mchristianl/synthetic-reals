@@ -4,8 +4,8 @@ module Number.Consequences where
 
 open import Agda.Primitive renaming (_⊔_ to ℓ-max; lsuc to ℓ-suc; lzero to ℓ-zero)
 open import Cubical.Foundations.Everything renaming (_⁻¹ to _⁻¹ᵖ; assoc to ∙-assoc)
-open import Cubical.Foundations.Logic
-open import Function.Base using (it; _∋_)
+open import Cubical.Foundations.Logic renaming (inr to inrᵖ; inl to inlᵖ)
+open import Function.Base using (it; _∋_; _$_)
 
 open import Utils
 open import MoreLogic.Definitions
@@ -20,6 +20,7 @@ open import Number.Definitions
 -- import Cubical.Data.Nat.Coprime as Coprime
 open import Cubical.HITs.Rationals.QuoQ renaming
   ( [_] to [_]ᶠ
+  ; [_/_] to [_/_]ᶠ
   ; _+_ to _+ᶠ_
   ; -_  to -ᶠ_
   ; _*_ to _*ᶠ_
@@ -82,7 +83,7 @@ open import Cubical.HITs.Ints.QuoInt hiding (+-identityʳ; *-identityʳ; *-ident
 
 open import Cubical.Data.Nat as ℕ using (discreteℕ; ℕ; suc; zero) renaming (_+_ to _+ⁿ_; _*_ to _*ⁿ_)
 open import Cubical.Data.Nat.Order using () renaming (_<_ to _<ⁿ_; _≤_ to _≤ⁿ_; ≤-suc to ≤ⁿ-suc)
-open import Cubical.Data.Nat.Properties using (isSetℕ) renaming (snotz to snotzⁿ; +-suc to +-sucⁿ; inj-+m to inj-+mⁿ; inj-m+ to inj-m+ⁿ; +-zero to +-zeroⁿ; +-comm to +-commⁿ)
+open import Cubical.Data.Nat.Properties using (isSetℕ) renaming (snotz to snotzⁿ; +-suc to +-sucⁿ; inj-+m to inj-+mⁿ; inj-m+ to inj-m+ⁿ; +-zero to +-zeroⁿ; +-comm to +-commⁿ; +-assoc to +-assocⁿ)
 
 _<ⁿᵖ_ : (x y : ℕ) → hProp ℓ-zero
 (x <ⁿᵖ y) .fst = x <ⁿ y
@@ -264,6 +265,11 @@ x <ᶠ y = {! elimProp2 {A = ℤ × ℕ₊₁} {R = _∼_} {C = C} γ κ x y   !
 
 -- open import Cubical.HITs.Ints.QuoInt.Base renaming
 
+
+sucⁿ-creates-<ⁿᵖ : ∀ a b → [ a <ⁿᵖ b ⇔ suc a <ⁿᵖ suc b ]
+sucⁿ-creates-<ⁿᵖ a b .fst (k , p) = k , (+-sucⁿ k (suc a)) ∙ (λ i → suc (p i))
+sucⁿ-creates-<ⁿᵖ a b .snd (k , p) = k , inj-m+ⁿ {1} (sym (+-sucⁿ k (suc a)) ∙ p)
+
 <ⁿᵖ-irrefl       : (a       : ℕ) → [ ¬ (a <ⁿᵖ a) ]
 <ⁿᵖ-trans        : (a b x   : ℕ) → [ a <ⁿᵖ b ] → [ b <ⁿᵖ x ] → [ a <ⁿᵖ x ]
 <ⁿᵖ-cotrans      : (a b     : ℕ) → [ a <ⁿᵖ b ] → (x : ℕ) → [ (a <ⁿᵖ x) ⊔ (x <ⁿᵖ b) ]
@@ -281,22 +287,42 @@ x <ᶠ y = {! elimProp2 {A = ℤ × ℕ₊₁} {R = _∼_} {C = C} γ κ x y   !
 <ⁿᵖ-irrefl (suc a) (k , p) = φ where
   abstract φ = snotzⁿ (inj-m+ⁿ {a} (+-sucⁿ a k ∙ (λ i → suc (+-commⁿ a k i)) ∙ sym (+-sucⁿ k a) ∙ inj-m+ⁿ {1} (sym (+-sucⁿ k (suc a)) ∙ p) ∙ sym (+-zeroⁿ a)))
 
-<ⁿᵖ-trans  zero    zero    zero   q₁@(k₁ , p₁) q₂@(k₂ , p₂) = q₁
-<ⁿᵖ-trans  zero    zero   (suc c) q₁@(k₁ , p₁) q₂@(k₂ , p₂) = q₂
-<ⁿᵖ-trans  zero   (suc b)  zero   q₁@(k₁ , p₁) q₂@(k₂ , p₂) = {!   !}
-<ⁿᵖ-trans  zero   (suc b) (suc c) q₁@(k₁ , p₁) q₂@(k₂ , p₂) = {!   !}
-<ⁿᵖ-trans (suc a)  zero    zero   q₁@(k₁ , p₁) q₂@(k₂ , p₂) = {!   !}
-<ⁿᵖ-trans (suc a)  zero   (suc c) q₁@(k₁ , p₁) q₂@(k₂ , p₂) = {!   !}
-<ⁿᵖ-trans (suc a) (suc b)  zero   q₁@(k₁ , p₁) q₂@(k₂ , p₂) = {!   !}
-<ⁿᵖ-trans (suc a) (suc b) (suc c) q₁@(k₁ , p₁) q₂@(k₂ , p₂) = {!   !}
 
-<ⁿᵖ-cotrans      = {!   !}
+<ⁿᵖ-trans a b c = Cubical.Data.Nat.Order.<-trans
+
+-- <ⁿᵖ-trans  zero    zero    zero   q₁@(k₁ , p₁) q₂@(k₂ , p₂) = q₁
+-- <ⁿᵖ-trans  zero    zero   (suc c) q₁@(k₁ , p₁) q₂@(k₂ , p₂) = q₂
+-- <ⁿᵖ-trans  zero   (suc b)  zero   q₁@(k₁ , p₁) q₂@(k₂ , p₂) = ⊥-elim {A = λ _ → [ zero <ⁿᵖ zero ]} $ snotzⁿ (sym (+-sucⁿ k₂ (suc b)) ∙ p₂)
+-- <ⁿᵖ-trans  zero   (suc b) (suc c) q₁@(k₁ , p₁) q₂@(k₂ , p₂) = k₂ +ⁿ (k₁ +ⁿ 1) , sym (+-assocⁿ k₂ _ 1) ∙ (λ i → k₂ +ⁿ +-sucⁿ (k₁ +ⁿ 1) 0 i) ∙ (λ i → k₂ +ⁿ suc (+-zeroⁿ (k₁ +ⁿ 1) i)) ∙ (λ i → k₂ +ⁿ suc (p₁ i)) ∙ p₂
+-- <ⁿᵖ-trans (suc a)  zero    zero   q₁@(k₁ , p₁) q₂@(k₂ , p₂) = ⊥-elim {A = λ _ → [ suc a <ⁿᵖ zero ]} $ <ⁿᵖ-irrefl zero q₂
+-- <ⁿᵖ-trans (suc a)  zero   (suc c) q₁@(k₁ , p₁) q₂@(k₂ , p₂) = ⊥-elim {A = λ _ → [ suc a <ⁿᵖ suc c ]} $ snotzⁿ (sym (+-sucⁿ k₁ (suc a)) ∙ p₁)
+-- <ⁿᵖ-trans (suc a) (suc b)  zero   q₁@(k₁ , p₁) q₂@(k₂ , p₂) = ⊥-elim {A = λ _ → [ suc a <ⁿᵖ zero ]} $ snotzⁿ (sym (+-sucⁿ k₂ (suc b)) ∙ p₂)
+-- <ⁿᵖ-trans (suc a) (suc b) (suc c) q₁@(k₁ , p₁) q₂@(k₂ , p₂) = k₂ +ⁿ  (k₁ +ⁿ 1) , (
+--   (k₂ +ⁿ  (k₁ +ⁿ 1)) +ⁿ suc (suc a)  ≡⟨ {!   !} ⟩
+--    k₂ +ⁿ ((k₁ +ⁿ 1)  +ⁿ suc (suc a)) ≡⟨ {!   !} ⟩
+--    k₂ +ⁿ suc ((k₁ +ⁿ  1) +ⁿ  suc a ) ≡⟨ {!   !} ⟩
+--    k₂ +ⁿ suc ( k₁ +ⁿ (1  +ⁿ  suc a)) ≡⟨ {!   !} ⟩
+--    k₂ +ⁿ suc ( k₁ +ⁿ suc    (suc a)) ≡⟨ (λ i → k₂ +ⁿ suc (p₁ i)) ⟩
+--    k₂ +ⁿ suc (suc b)                 ≡⟨ p₂ ⟩
+--    suc c                             ∎)
+
+<ⁿᵖ-cotrans  zero    zero        q      c  = ⊥-elim {A = λ _ → [ (zero <ⁿᵖ c) ⊔ (c <ⁿᵖ zero) ]}  (<ⁿᵖ-irrefl _ q)
+<ⁿᵖ-cotrans  zero   (suc b)      q  zero   = inrᵖ q
+<ⁿᵖ-cotrans  zero   (suc b)      q (suc c) = inlᵖ (c , +-commⁿ c 1)
+<ⁿᵖ-cotrans (suc a)  zero   (k , p)     c  = ⊥-elim {A = λ _ → [ (suc a <ⁿᵖ c) ⊔ (c <ⁿᵖ zero) ]} (snotzⁿ (sym (+-sucⁿ k (suc a)) ∙ p))
+<ⁿᵖ-cotrans (suc a) (suc b)      q  zero   = inrᵖ (b , +-commⁿ b 1)
+<ⁿᵖ-cotrans (suc a) (suc b)      q (suc c) = transport (λ i → [ r i ⊔ s i ]) (<ⁿᵖ-cotrans a b (sucⁿ-creates-<ⁿᵖ a b .snd q) c)
+  where abstract r : (a <ⁿᵖ c) ≡ (suc a <ⁿᵖ suc c)
+                 s : (c <ⁿᵖ b) ≡ (suc c <ⁿᵖ suc b)
+                 r = ⇔toPath (sucⁿ-creates-<ⁿᵖ a c .fst) (sucⁿ-creates-<ⁿᵖ a c .snd)
+                 s = ⇔toPath (sucⁿ-creates-<ⁿᵖ c b .fst) (sucⁿ-creates-<ⁿᵖ c b .snd)
+
 ·ⁿ-preserves-<ⁿᵖ = {!   !}
 
 
 <-irreflᶻ''       : (a       : ℤ) → [ ¬ (a <ᶻ'' a) ]
 <-transᶻ''        : (a b x   : ℤ) → [ a <ᶻ'' b ] → [ b <ᶻ'' x ] → [ a <ᶻ'' x ]
--- <-cotransᶻ''      : (a b     : ℤ) → [ a <ᶻ'' b ] → (x : ℤ) → [ (a <ᶻ'' x) ⊔ (x <ᶻ'' b) ]
+<-cotransᶻ''      : (a b     : ℤ) → [ a <ᶻ'' b ] → (x : ℤ) → [ (a <ᶻ'' x) ⊔ (x <ᶻ'' b) ]
 -- ·ᶻ-preserves-<ᶻ'' : (x y z   : ℤ) → [ 0 <ᶻ'' z ] → [ x <ᶻ'' y ] → [ (x *ᶻ z) <ᶻ'' (y *ᶻ z) ]
 
 -- lemma10'' : ∀ n → (n <ⁿᵖ 0) ≡ ⊥
@@ -319,13 +345,6 @@ x <ᶠ y = {! elimProp2 {A = ℤ × ℕ₊₁} {R = _∼_} {C = C} γ κ x y   !
 --   κ = {!   !}
 -- <-irreflᶻ'' (posneg i) p = transport (λ j → [ lemma10'' 0 ((i ∧ ~ i) ∨ j) ]) p
 -- <-irreflᶻ'' (posneg i) p = transport (λ j → [ lemma10'' 0 (i₀ ∨ j) ]) p
-
-record Reveal_·_is_ {a b} {A : Type a} {B : A → Type b}
-                    (f : (x : A) → B x) (x : A) (y : B x) :
-                    Type (ℓ-max a b) where
-  eta-equality
-  constructor [_]ⁱ
-  field eq : f x ≡ y -- lhs stays fix, rhs gets splitted
 
 -- The problem is that when we write ̀with f x | pr`, `with` decides to call `y`
 -- the result `f x` and to replace *all* of the occurences of `f x` in the type
@@ -352,16 +371,16 @@ record Reveal_·_is_ {a b} {A : Type a} {B : A → Type b}
 -- handwritten auxiliary definitions.
 
 
+record Reveal_·_is_ {a b} {A : Type a} {B : A → Type b}
+                    (f : (x : A) → B x) (x : A) (y : B x) :
+                    Type (ℓ-max a b) where
+  eta-equality
+  constructor [_]ⁱ
+  field eq : f x ≡ y -- lhs stays fix, rhs gets splitted
 
 inspect : ∀{a b} {A : Type a} {B : A → Type b}
           (f : (x : A) → B x) (x : A) → Reveal f · x is f x
 inspect f x = [ refl ]ⁱ
-
-reprℤ : ℤ → Sign × ℕ
-reprℤ z = sign z , abs z
-
-reprℤ⁻¹ : Sign × ℕ → ℤ
-reprℤ⁻¹ (s , n) = signed s n
 
 record Reveal'_·_is_ {ℓ ℓ'} {A : Type ℓ} {B : Type ℓ'}
                    (f⁻¹ : B → A)
@@ -375,8 +394,11 @@ inspect' : ∀{ℓ ℓ'} {A : Type ℓ} {B : Type ℓ'}
           (f⁻¹ : B → A) (f : A → B) (x : A) → f⁻¹ (f x) ≡ x → Reveal' f⁻¹ · (f x) is x
 inspect' f⁻¹ f x p = [ sym p ]ⁱ'
 
--- inspectℤ : (x : ℤ) → Reveal reprℤ · x is x
--- inspectℤ x = ?
+reprℤ : ℤ → Sign × ℕ
+reprℤ z = sign z , abs z
+
+reprℤ⁻¹ : Sign × ℕ → ℤ
+reprℤ⁻¹ (s , n) = signed s n
 
 reprℤ-id : ∀ z → reprℤ⁻¹ (reprℤ z) ≡ z
 reprℤ-id (pos  zero  ) = refl
@@ -456,11 +478,11 @@ signʳ-≡ (posneg i) = refl
 -- <ᶻ'''≡<ᶻ'''ʳ (sneg , x) (sneg , y) = {! refl   !}
 
 <ᶻ'''≡'<ᶻ'''ʳ : ∀ x y → x <ᶻ''' y ≡ reprℤ x <ᶻ'''ʳ reprℤ y
-<ᶻ'''≡'<ᶻ'''ʳ x y with reprℤ x | reprℤ y | inspect-reprℤ x | inspect-reprℤ y
-... | spos , x' | spos , y' | [ x≡ ]ⁱ' | [ y≡ ]ⁱ' = refl
-... | spos , x' | sneg , y' | [ x≡ ]ⁱ' | [ y≡ ]ⁱ' = refl
-... | sneg , x' | spos , y' | [ x≡ ]ⁱ' | [ y≡ ]ⁱ' = refl
-... | sneg , x' | sneg , y' | [ x≡ ]ⁱ' | [ y≡ ]ⁱ' = refl
+<ᶻ'''≡'<ᶻ'''ʳ x y with reprℤ x | reprℤ y {- | inspect-reprℤ x | inspect-reprℤ y -}
+... | spos , x' | spos , y' {- | [ x≡ ]ⁱ' | [ y≡ ]ⁱ' -} = refl
+... | spos , x' | sneg , y' {- | [ x≡ ]ⁱ' | [ y≡ ]ⁱ' -} = refl
+... | sneg , x' | spos , y' {- | [ x≡ ]ⁱ' | [ y≡ ]ⁱ' -} = refl
+... | sneg , x' | sneg , y' {- | [ x≡ ]ⁱ' | [ y≡ ]ⁱ' -} = refl
 
 <ᶻ'''≡''<ᶻ'''ʳ : ∀ x y → reprℤ⁻¹ x <ᶻ''' reprℤ⁻¹ y ≡ x <ᶻ'''ʳ y
 <ᶻ'''≡''<ᶻ'''ʳ x@(xs , xn) y@(ys , yn) with reprℤ (reprℤ⁻¹ x) | reprℤ (reprℤ⁻¹ y) | inspect-reprℤ (reprℤ⁻¹ x) | inspect-reprℤ (reprℤ⁻¹ y)
@@ -483,6 +505,9 @@ signʳ-≡ (posneg i) = refl
 ... | sneg , x' | sneg , y' = {!   !}
 
 
+-- NOTE: making use of trichotomy might be in-line with the definition of QuoInt
+--       because this is what we are likely to use at the end
+
 -- -- {! pathTo⇐ (<ᶻ''≡<ᶻ''' a c ∙ (λ i → a≡ i <ᶻ''' c≡ i)) γ   !}
 -- where γ : [ reprℤ⁻¹ (spos , a') <ᶻ''' reprℤ⁻¹ (spos , c') ]
 --       γ = pathTo⇐ (<ᶻ'''≡<ᶻ'''ʳ (spos , a') (spos , c')) {!   !}
@@ -494,15 +519,180 @@ signʳ-≡ (posneg i) = refl
 --       which turns the type of `pathTo⇐ (<ᶻ''≡<ᶻ''' a c ∙ <ᶻ'''≡'<ᶻ'''ʳ a c)`
 --       from `[ (reprℤ a <ᶻ'''ʳ reprℤ c) ⇒ (a <ᶻ'' c) ]`
 --       into `a' <ⁿ c' → fst (a <ᶻ'' c)`
-<-transᶻ'' a b c a<b b<c with reprℤ a | reprℤ b | reprℤ c | pathTo⇒ (<ᶻ''≡<ᶻ''' a b ∙ <ᶻ'''≡'<ᶻ'''ʳ a b) a<b | pathTo⇒ (<ᶻ''≡<ᶻ''' b c ∙ <ᶻ'''≡'<ᶻ'''ʳ b c) b<c | pathTo⇐ (<ᶻ''≡<ᶻ''' a c ∙ <ᶻ'''≡'<ᶻ'''ʳ a c)
-<-transᶻ'' a b c a<b b<c | spos , a' | spos , b' | spos , c' | a<b' | b<c' | p = p (<ⁿᵖ-trans _ _ _ a<b' b<c')
-<-transᶻ'' a b c a<b b<c | spos , a' | spos , b' | sneg , c' | a<b' | b<c' | p = p b<c'
-<-transᶻ'' a b c a<b b<c | spos , a' | sneg , b' | spos , c' | a<b' | b<c' | p = p (⊥-elim a<b')
-<-transᶻ'' a b c a<b b<c | spos , a' | sneg , b' | sneg , c' | a<b' | b<c' | p = p a<b'
-<-transᶻ'' a b c a<b b<c | sneg , a' | spos , b' | spos , c' | a<b' | b<c' | p = p a<b'
-<-transᶻ'' a b c a<b b<c | sneg , a' | spos , b' | sneg , c' | a<b' | b<c' | p = p (⊥-elim b<c')
-<-transᶻ'' a b c a<b b<c | sneg , a' | sneg , b' | spos , c' | a<b' | b<c' | p = p b<c'
-<-transᶻ'' a b c a<b b<c | sneg , a' | sneg , b' | sneg , c' | a<b' | b<c' | p = p (<ⁿᵖ-trans _ _ _ b<c' a<b')
+<-transᶻ'' a b c a<b b<c
+  with reprℤ a | reprℤ b | reprℤ c
+     | pathTo⇒ (<ᶻ''≡<ᶻ''' a b ∙ <ᶻ'''≡'<ᶻ'''ʳ a b) a<b
+     | pathTo⇒ (<ᶻ''≡<ᶻ''' b c ∙ <ᶻ'''≡'<ᶻ'''ʳ b c) b<c
+     | pathTo⇐ (<ᶻ''≡<ᶻ''' a c ∙ <ᶻ'''≡'<ᶻ'''ʳ a c)
+... | spos , a' | spos , b' | spos , c' | a<b' | b<c' | p = p (<ⁿᵖ-trans _ _ _ a<b' b<c')
+... | spos , a' | spos , b' | sneg , c' | a<b' | b<c' | p = p b<c'
+... | spos , a' | sneg , b' | spos , c' | a<b' | b<c' | p = p (⊥-elim a<b')
+... | spos , a' | sneg , b' | sneg , c' | a<b' | b<c' | p = p a<b'
+... | sneg , a' | spos , b' | spos , c' | a<b' | b<c' | p = p a<b'
+... | sneg , a' | spos , b' | sneg , c' | a<b' | b<c' | p = p (⊥-elim b<c')
+... | sneg , a' | sneg , b' | spos , c' | a<b' | b<c' | p = p b<c'
+... | sneg , a' | sneg , b' | sneg , c' | a<b' | b<c' | p = p (<ⁿᵖ-trans _ _ _ b<c' a<b')
+
+
+<-cotransᶻ'' a b a<b c
+  with reprℤ a | reprℤ b | reprℤ c
+     | pathTo⇒ (<ᶻ''≡<ᶻ''' a b ∙ <ᶻ'''≡'<ᶻ'''ʳ a b) a<b
+     | pathTo⇐ (λ i → (<ᶻ''≡<ᶻ''' a c ∙ <ᶻ'''≡'<ᶻ'''ʳ a c) i ⊔ (<ᶻ''≡<ᶻ''' c b ∙ <ᶻ'''≡'<ᶻ'''ʳ c b) i)
+... | spos , a' | spos , b' | spos , c' | a<b' | p = p (<ⁿᵖ-cotrans _ _ a<b' c')
+... | spos , a' | spos , b' | sneg , c' | a<b' | p = p (inrᵖ tt)
+... | sneg , a' | spos , b' | spos , c' | a<b' | p = p (inlᵖ tt)
+... | sneg , a' | spos , b' | sneg , c' | a<b' | p = p (inrᵖ tt)
+... | sneg , a' | sneg , b' | spos , c' | a<b' | p = p (inlᵖ tt)
+... | sneg , a' | sneg , b' | sneg , c' | a<b' | p = p (pathTo⇒ (⊔-comm (b' <ⁿᵖ c') (c' <ⁿᵖ a')) (<ⁿᵖ-cotrans _ _ a<b' c'))
+
+
+-- [_/_] : ℤ → ℕ₊₁ → ℚ
+-- [ a / b ] = [ a , b ]
+
+lemma15 : ∀(a@(an , ad) b@(bn , bd) : ℤ × ℕ₊₁) → a ∼ b → ((sign an , abs an) , ad) ≡ ((sign bn , abs bn) , bd)
+lemma15 a@(an , ad) b@(bn , bd) a~b = {!   !}
+
+
+reprℚ : ℚ → (Sign × ℕ) × ℕ₊₁
+reprℚ [ n , d ]ᶠ = (sign n , abs n) , d
+reprℚ (eq/ a@(an , ad) b@(bn , bd) r i) = lemma15 a b r i
+reprℚ (squash/ a b p q i j) = {!   !}
+
+reprℚ⁻¹ : (Sign × ℕ) × ℕ₊₁ → ℚ
+reprℚ⁻¹ ((s , n) , d) = [ signed s n , d ]ᶠ
+
+lemma15' : ∀(a@(an , ad) b@(bn , bd) : ℤ × ℕ₊₁) → a ∼ b → (an , ad) ≡ (bn , bd)
+lemma15' a@(an , ad) b@(bn , bd) a~b = {!   !}
+
+import Cubical.HITs.SetQuotients.Properties as SetQuotients
+
+reprℚ' : ℚ → ℤ × ℕ₊₁
+reprℚ' [ n , d ]ᶠ = n , d
+reprℚ' (eq/ a@(an , ad) b@(bn , bd) r i) = lemma15' a b r i
+-- ———— Boundary ——————————————————————————————————————————————
+-- i = i0 ⊢ reprℚ' (p j)
+-- i = i1 ⊢ reprℚ' (q j)
+-- j = i0 ⊢ reprℚ' a
+-- j = i1 ⊢ reprℚ' b
+-- i : p j ≡ q j
+-- j : a   ≡ b
+--
+-- j
+-- ∧
+-- | p1 = b      q1 = b
+-- |
+-- | p0 = a      q0 = a
+-- +--------------------> i
+--
+-- i : p ≡ q
+-- reprℚ' (squash/ a b p q i j) = reprℚ' (isSetℚ a b p q i j) -- termination checker complains
+-- reprℚ' (squash/ a b p q i j) = {!   !} (isSetℚ a b p q i j)
+reprℚ' (squash/ a b p q i j) = {! SetQuotients.rec2    !}
+-- reprℚ' (squash/ a b p q i j) = {! SetQuotients.elimProp {A = ℤ × ℕ₊₁} {R = _∼_} {B = λ _ → ℤ × ℕ₊₁}   !}
+
+-- NOTE: `onCommonDenom` uses `SetQuotient.rec2 isSetℚ`
+
+reprℚ'' : ℚ → ℤ × ℕ₊₁
+reprℚ'' q = SetQuotients.elim {A = ℤ × ℕ₊₁} {R = _∼_} {B = λ _ → ℤ × ℕ₊₁} γ (λ x → x) κ q where
+  γ : (x : (ℤ × ℕ₊₁) // _∼_) → isSet (ℤ × ℕ₊₁)
+  γ x = {!   !} -- this should work out
+  κ : (a b : ℤ × ℕ₊₁) (r : a ∼ b) → a ≡ b
+  κ a b a∼b = {!   !} -- this is an issue
+
+reprℚ''' : ℚ → ℤ × ℕ₊₁
+reprℚ''' q = SetQuotients.rec {A = ℤ × ℕ₊₁} {R = _∼_} {B = ℤ × ℕ₊₁} γ (λ x → x) κ q where
+  γ : isSet (ℤ × ℕ₊₁)
+  γ = {!   !} -- this should work out
+  κ : (a b : ℤ × ℕ₊₁) (r : a ∼ b) → a ≡ b
+  κ (an , ad) (bn , bd) a∼b = {!   !} -- this is an issue
+
+-- is seems that `∀ a b → a ∼ b → a ≡ b` is a necessity to perform this representation operation
+-- there is no nominator or denominator being "the" nominator or denominator in QuoQ
+--   therefore, we won't get a `reprℚ : ℚ → ℤ × ℕ₊₁` for QuoQ (only for SigmaQ where this is just `fst`)
+-- but for two (or more) rationals, we can create a common denominator for them
+-- we might be able to get `ℚ ≃ Sign × ℚ⁺` with an identification of +0 and -0 similar to QuoInt
+-- with onCommonDenom3 we could treat three rational numbers as integers for an implementation of <-transᶠ
+-- I guess that we need to show then, something like
+--   κ : ∀ a₁ b₁ c₁ a₂ b₂ c₂
+--     → a₁ ∼ a₂ → b₁ ∼ b₂ → c₁ ∼ c₂
+--     → (a₁<b₁ : a₁ < b₁) → (b₁<c₁ : b₁ < c₁)
+--     → (a₂<b₂ : a₂ < b₂) → (b₂<c₂ : b₂ < c₂)
+--     → <-trans a₁ b₁ c₁ a₁<b₁ b₁<c₁ ≡ <-trans a₂ b₂ c₂ a₂<b₂ b₂<c₂
+-- i.e. that transitivity respects the equivalence
+-- this might be shown with "multiplication preserves transitivity" on ℕ
+--   κ : ∀ a b c
+--     → (n : ℕ₊₁)
+--     → (a<b : a < b) → (b<c : b < c)
+--     → (an<bn : a · n < b · n) → (bn<cn : b · n < c · n)
+--     → <-trans a b c a<b b<c ≡ <-trans (a · n) (b · n) (c · n) an<bn bn<cn
+
+-- in `Cubical.HITs.Rationals.SigmaQ.Base` (which uses `ℤ` for `QuoInt.ℤ`) we have
+--
+--   ℚ : Type₀
+--   ℚ = Σ[ (a , b) ∈ ℤ × ℕ₊₁ ] areCoprime (abs a , ℕ₊₁→ℕ b)
+--
+-- in `Cubical.HITs.Ints.QuoInt.Base` we have
+--
+--   data ℤ : Type₀ where
+--     signed : (s : Sign) (n : ℕ) → ℤ
+--     posneg : signed spos 0 ≡ signed sneg 0
+--
+-- in `Cubical.Data.NatPlusOne.Base` we have
+--
+--   record ℕ₊₁ : Type₀ where
+--     constructor 1+_
+--     field
+--       n : ℕ
+--
+-- and in `Data.Rational.Base` (which uses `ℤ` for `Builtin.Int`) we have
+--
+--   record ℚ : Set where
+--     constructor mkℚ
+--     field
+--       numerator     : ℤ
+--       denominator-1 : ℕ
+--       .isCoprime    : Coprime ∣ numerator ∣ (suc denominator-1)
+--
+-- in `Agda.Builtin.Int` we have
+--
+--   data Int : Set where
+--     pos    : (n : Nat) → Int
+--     negsuc : (n : Nat) → Int
+--
+-- in `Agda.Builtin.Nat` we have
+--
+--   data Nat : Set where
+--     zero : Nat
+--     suc  : (n : Nat) → Nat
+--
+-- so the difference between the cubical "SigmaQ"-rationals and the non-cubical "Rational"-rationals is that
+--   SigmaQ uses QuoInt and NatPlusOne where Rational uses Builtin.Int and Builtin.Nat
+
+reprℚ⁻¹' : ℤ × ℕ₊₁ → ℚ
+reprℚ⁻¹' (n , d) = [ n , d ]ᶠ
+
+-- reprℚ-id : ∀ z → reprℚ⁻¹ (reprℚ z) ≡ z
+-- reprℚ-id (pos  zero  ) = refl
+-- reprℚ-id (pos (suc n)) = refl
+-- reprℚ-id (neg  zero  ) = posneg
+-- reprℚ-id (neg (suc n)) = refl
+-- reprℚ-id (posneg   i ) = λ j → posneg (i ∧ j)
+--
+-- inspect-reprℚ : (x : ℚ) → Reveal' reprℚ⁻¹ · (reprℚ x) is x
+-- inspect-reprℚ a = inspect' reprℚ⁻¹ reprℚ a (reprℚ-id a)
+
+-- _<ᶠ_ : hPropRel ℚ ℚ ℓ-zero
+-- x <ᶠ y = {! elimProp2 {A = ℤ × ℕ₊₁} {R = _∼_} {C = C} γ κ x y   !}
+--   where
+--   φ : ℚ → ℚ → hProp ℓ-zero
+--   φ x y = {!   !}
+--   C : ℚ → ℚ → Type
+--   C x y = [ φ x y ]
+--   γ : (x y : ℚ) → isProp (C x y)
+--   γ x y = {!   !}
+--   κ : (a b : ℤ × ℕ₊₁) → C [ a ]ᶠ [ b ]ᶠ
+--   κ a b = {!   !}
+
 -- ... | spos , snd₁ | fst₂ , snd₂ | fst₃ , snd₃ | [ eq ]ⁱ | [ eq₁ ]ⁱ | [ eq₂ ]ⁱ = {!   !}
 -- ... | sneg , snd₁ | fst₂ , snd₂ | fst₃ , snd₃ | [ eq ]ⁱ | [ eq₁ ]ⁱ | [ eq₂ ]ⁱ = {!   !}
 
@@ -611,7 +801,6 @@ signʳ-≡ (posneg i) = refl
 -- 1 cube
 <-transᶻ'' (posneg    i ) (posneg    j ) (posneg    k ) a<b b<c = {!    !} -- ?24
 
-<-cotransᶻ''      = {!   !}
 ·ᶻ-preserves-<ᶻ'' = {!   !}
 
 
