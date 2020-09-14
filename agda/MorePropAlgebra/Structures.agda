@@ -66,15 +66,13 @@ isSemigroup _·_ .snd (issemigroup a₀ b₀) (issemigroup a₁ b₁) = φ where
 record IsMonoid {A : Type ℓ} (ε : A) (_·_ : A → A → A) : Type ℓ where
   constructor ismonoid
   field
-    is-set       : [ isSetᵖ A ]
     is-Semigroup : [ isSemigroup _·_ ]
     is-identity  : ∀ x → (x · ε ≡ x) × (ε · x ≡ x)
 
-  _ : [ isSetᵖ A                 ]; _ = is-set
+  open IsSemigroup is-Semigroup public
+
   _ : [ isSemigroup _·_          ]; _ = is-Semigroup
   _ : [ isIdentityˢ _·_ is-set ε ]; _ = is-identity
-
-  open IsSemigroup is-Semigroup hiding (is-set) public
 
   is-lid : (x : A) → ε · x ≡ x
   is-lid x = is-identity x .snd
@@ -84,21 +82,21 @@ record IsMonoid {A : Type ℓ} (ε : A) (_·_ : A → A → A) : Type ℓ where
 
 isMonoid : {A : Type ℓ} (ε : A) (_·_ : A → A → A) → hProp ℓ
 isMonoid ε _·_ .fst = IsMonoid ε _·_
-isMonoid ε _·_ .snd (ismonoid a₀ b₀ c₀) (ismonoid a₁ b₁ c₁) = φ where
-  abstract φ = λ i → let is-set = isSetIsProp a₀ a₁ i in ismonoid is-set (snd (isSemigroup _·_) b₀ b₁ i) (snd (isIdentityˢ _·_ is-set ε) c₀ c₁ i)
+isMonoid ε _·_ .snd (ismonoid a₀ b₀) (ismonoid a₁ b₁) = φ where
+  abstract φ = λ i → let is-Semigroup = snd (isSemigroup _·_) a₀ a₁ i
+                         is-set       = IsSemigroup.is-set is-Semigroup
+                     in ismonoid is-Semigroup (snd (isIdentityˢ _·_ is-set ε) b₀ b₁ i)
 
 record IsGroup {G : Type ℓ} (0g : G) (_+_ : G → G → G) (-_ : G → G) : Type ℓ where
   constructor isgroup
   field
-    is-set     : [ isSetᵖ G ]
     is-Monoid  : [ isMonoid 0g _+_ ]
     is-inverse : ∀ x → (x + (- x) ≡ 0g) × ((- x) + x ≡ 0g)
 
-  _ : [ isSetᵖ G                    ]; _ = is-set
+  open IsMonoid is-Monoid public
+
   _ : [ isMonoid 0g _+_             ]; _ = is-Monoid
   _ : [ isInverseˢ is-set 0g _+_ -_ ]; _ = is-inverse
-
-  open IsMonoid is-Monoid hiding (is-set) public
 
   infixl 6 _-_
 
@@ -113,36 +111,96 @@ record IsGroup {G : Type ℓ} (0g : G) (_+_ : G → G → G) (-_ : G → G) : Ty
 
 isGroup : {G : Type ℓ} (0g : G) (_+_ : G → G → G) (-_ : G → G) → hProp ℓ
 isGroup 0g _+_ -_ .fst = IsGroup 0g _+_ -_
-isGroup 0g _+_ -_ .snd (isgroup a₀ b₀ c₀) (isgroup a₁ b₁ c₁) = φ where
-  abstract φ = λ i → let is-set = isSetIsProp a₀ a₁ i in isgroup is-set (snd (isMonoid 0g _+_) b₀ b₁ i) (snd (isInverseˢ is-set 0g _+_ -_) c₀ c₁ i)
+isGroup 0g _+_ -_ .snd (isgroup a₀ b₀) (isgroup a₁ b₁) = φ where
+  abstract φ = λ i → let is-Monoid = snd (isMonoid 0g _+_) a₀ a₁ i
+                         is-set    = IsMonoid.is-set is-Monoid
+                     in isgroup is-Monoid (snd (isInverseˢ is-set 0g _+_ -_) b₀ b₁ i)
 
 record IsAbGroup {G : Type ℓ} (0g : G) (_+_ : G → G → G) (-_ : G → G) : Type ℓ where
   constructor isabgroup
   field
-    is-set   : [ isSetᵖ G ]
     is-Group : [ isGroup 0g _+_ -_ ]
     is-comm  : ∀ x y → x + y ≡ y + x
 
-  _ : [ isSetᵖ G                  ]; _ = is-set
-  _ : [ isGroup 0g _+_ -_         ]; _ = is-Group
-  _ : [ isCommutativeˢ _+_ is-set ]; _ = is-comm
+  open IsGroup is-Group public
 
-  open IsGroup is-Group hiding (is-set) public
+  _ : [ isGroup 0g _+_ (-_)       ]; _ = is-Group
+  _ : [ isCommutativeˢ _+_ is-set ]; _ = is-comm
 
 isAbGroup : {G : Type ℓ} (0g : G) (_+_ : G → G → G) (-_ : G → G) → hProp ℓ
 isAbGroup 0g _+_ -_ .fst = IsAbGroup 0g _+_ -_
-isAbGroup 0g _+_ -_ .snd (isabgroup a₀ b₀ c₀) (isabgroup a₁ b₁ c₁) = φ where
-  abstract φ = λ i → let is-set = isSetIsProp a₀ a₁ i in isabgroup is-set (snd (isGroup 0g _+_ -_) b₀ b₁ i) (snd (isCommutativeˢ _+_ is-set) c₀ c₁ i)
+isAbGroup 0g _+_ -_ .snd (isabgroup a₀ b₀) (isabgroup a₁ b₁) = φ where
+  abstract φ = λ i → let is-Group = snd (isGroup 0g _+_ -_) a₀ a₁ i
+                         is-set   = IsGroup.is-set is-Group
+                     in isabgroup is-Group (snd (isCommutativeˢ _+_ is-set) b₀ b₁ i)
+
+record IsSemiring {R : Type ℓ} (0r 1r : R) (_+_ _·_ : R → R → R) : Type ℓ where
+  constructor issemiring
+  field
+    +-Monoid  : [ isMonoid 0r _+_ ]
+    ·-Monoid  : [ isMonoid 1r _·_ ]
+    +-comm    : ∀ x y → x + y ≡ y + x
+    is-dist   : ∀ x y z → (x · (y +  z) ≡ (x · y) + (x · z)) × ((x +  y) · z  ≡ (x · z) + (y · z))
+
+  open IsMonoid +-Monoid public
+    renaming
+      ( is-assoc     to +-assoc
+      ; is-identity  to +-identity
+      ; is-lid       to +-lid
+      ; is-rid       to +-rid
+      ; is-Semigroup to +-Semigroup )
+
+  open IsMonoid ·-Monoid hiding (is-set) public
+    renaming
+      ( is-assoc     to ·-assoc
+      ; is-identity  to ·-identity
+      ; is-lid       to ·-lid
+      ; is-rid       to ·-rid
+      ; is-Semigroup to ·-Semigroup )
+
+  _ : [ isMonoid  0r _+_               ]; _ = +-Monoid
+  _ : [ isMonoid  1r _·_               ]; _ = ·-Monoid
+  _ : [ isCommutativeˢ _+_ is-set      ]; _ = +-comm
+  _ : [ isDistributiveˢ is-set _+_ _·_ ]; _ = is-dist
+
+isSemiring : {R : Type ℓ} (0r 1r : R) (_+_ _·_ : R → R → R) → hProp ℓ
+isSemiring 0r 1r _+_ _·_ .fst = IsSemiring 0r 1r _+_ _·_
+isSemiring 0r 1r _+_ _·_ .snd (issemiring a₀ b₀ c₀ d₀) (issemiring a₁ b₁ c₁ d₁) = φ where
+  abstract φ = λ i → let +-Monoid = snd (isMonoid 0r _+_) a₀ a₁ i
+                         ·-Monoid = snd (isMonoid 1r _·_) b₀ b₁ i
+                         is-set   = IsMonoid.is-set +-Monoid
+                         +-comm   = snd (isCommutativeˢ _+_ is-set) c₀ c₁ i
+                         is-dist  = snd (isDistributiveˢ is-set _+_ _·_) d₀ d₁ i
+                     in issemiring +-Monoid ·-Monoid +-comm is-dist
+
+record IsCommSemiring {R : Type ℓ} (0r 1r : R) (_+_ _·_ : R → R → R) : Type ℓ where
+  constructor iscommsemiring
+  field
+    is-Semiring : [ isSemiring 0r 1r _+_ _·_ ]
+    ·-comm    : ∀ x y → x · y ≡ y · x
+
+  open IsSemiring is-Semiring public
+
+  _ : [ isSemiring 0r 1r _+_ _·_       ]; _ = is-Semiring
+  _ : [ isCommutativeˢ _+_ is-set      ]; _ = +-comm
+
+isCommSemiring : {R : Type ℓ} (0r 1r : R) (_+_ _·_ : R → R → R) → hProp ℓ
+isCommSemiring 0r 1r _+_ _·_ .fst = IsCommSemiring 0r 1r _+_ _·_
+isCommSemiring 0r 1r _+_ _·_ .snd (iscommsemiring a₀ b₀) (iscommsemiring a₁ b₁) = φ where
+  abstract φ = λ i → let is-Semiring = snd (isSemiring 0r 1r _+_ _·_) a₀ a₁ i
+                         is-set   = IsSemiring.is-set is-Semiring
+                         ·-comm   = snd (isCommutativeˢ _·_ is-set) b₀ b₁ i
+                     in iscommsemiring is-Semiring ·-comm
 
 record IsRing {R : Type ℓ} (0r 1r : R) (_+_ _·_ : R → R → R) (-_ : R → R) : Type ℓ where
   constructor isring
   field
-    is-set    : [ isSetᵖ R ]
     +-AbGroup : [ isAbGroup 0r _+_ -_ ]
     ·-Monoid  : [ isMonoid  1r _·_ ]
     is-dist   : ∀ x y z → (x · (y +  z) ≡ (x · y) + (x · z)) × ((x +  y) · z  ≡ (x · z) + (y · z))
 
-  _ : [ isSetᵖ R                       ]; _ = is-set
+  open IsAbGroup +-AbGroup using (is-set) public
+
   _ : [ isAbGroup 0r _+_ -_            ]; _ = +-AbGroup
   _ : [ isMonoid  1r _·_               ]; _ = ·-Monoid
   _ : [ isDistributiveˢ is-set _+_ _·_ ]; _ = is-dist
@@ -185,26 +243,31 @@ record IsRing {R : Type ℓ} (0r 1r : R) (_+_ _·_ : R → R → R) (-_ : R → 
 
 isRing : {R : Type ℓ} (0r 1r : R) (_+_ _·_ : R → R → R) (-_ : R → R) → hProp ℓ
 isRing 0r 1r _+_ _·_ -_ .fst = IsRing 0r 1r _+_ _·_ -_
-isRing 0r 1r _+_ _·_ -_ .snd (isring a₀ b₀ c₀ d₀) (isring a₁ b₁ c₁ d₁) = φ where
-  abstract φ = λ i → let is-set = isSetIsProp a₀ a₁ i in isring is-set (snd (isAbGroup 0r _+_ -_) b₀ b₁ i) (snd (isMonoid 1r _·_) c₀ c₁ i) (snd (isDistributiveˢ is-set _+_ _·_) d₀ d₁ i)
+isRing 0r 1r _+_ _·_ -_ .snd (isring a₀ b₀ c₀) (isring a₁ b₁ c₁) = φ where
+  abstract φ = λ i → let +-AbGroup = snd (isAbGroup 0r _+_ -_) a₀ a₁ i
+                         ·-Monoid  = snd (isMonoid 1r _·_) b₀ b₁ i
+                         is-set    = IsAbGroup.is-set +-AbGroup
+                         is-dist   = snd (isDistributiveˢ is-set _+_ _·_) c₀ c₁ i
+                     in isring +-AbGroup ·-Monoid is-dist
 
 record IsCommRing {R : Type ℓ} (0r 1r : R) (_+_ _·_ : R → R → R) (-_ : R → R) : Type ℓ where
   constructor iscommring
   field
-    is-set  : [ isSetᵖ R ]
     is-Ring : [ isRing 0r 1r _+_ _·_ -_ ]
     ·-comm  : ∀ x y → x · y ≡ y · x
 
-  _ : [ isSetᵖ R                  ]; _ = is-set
-  _ : [ isRing 0r 1r _+_ _·_ -_   ]; _ = is-Ring
-  _ : [ isCommutativeˢ _·_ is-set ]; _ = ·-comm
+  open IsRing is-Ring public
 
-  open IsRing is-Ring hiding (is-set) public
+  _ : [ isRing 0r 1r _+_ _·_ (-_) ]; _ = is-Ring
+  _ : [ isCommutativeˢ _·_ is-set ]; _ = ·-comm
 
 isCommRing : {R : Type ℓ} (0r 1r : R) (_+_ _·_ : R → R → R) (-_ : R → R) → hProp ℓ
 isCommRing 0r 1r _+_ _·_ -_ .fst = IsCommRing 0r 1r _+_ _·_ -_
-isCommRing 0r 1r _+_ _·_ -_ .snd (iscommring a₀ b₀ c₀) (iscommring a₁ b₁ c₁) = φ where
-  abstract φ = λ i → let is-set = isSetIsProp a₀ a₁ i in iscommring is-set (snd (isRing 0r 1r _+_ _·_ -_) b₀ b₁ i) (snd (isCommutativeˢ _·_ is-set) c₀ c₁ i)
+isCommRing 0r 1r _+_ _·_ -_ .snd (iscommring a₀ b₀) (iscommring a₁ b₁) = φ where
+  abstract φ = λ i → let is-Ring = snd (isRing 0r 1r _+_ _·_ -_) a₀ a₁ i
+                         is-set  = IsRing.is-set is-Ring
+                         ·-comm  = snd (isCommutativeˢ _·_ is-set) b₀ b₁ i
+                     in iscommring is-Ring ·-comm
 
 -- Definition 4.1.2.
 -- A classical field is a set F with points 0, 1 : F, operations +, · : F → F → F, which is a commutative ring with unit, such that
@@ -245,8 +308,9 @@ record IsConstructiveField {F : Type ℓ} (0f 1f : F) (_+_ _·_ : F → F → F)
   constructor isconstructivefield
 
   field
-    is-set      : [ isSetᵖ F ]
     is-CommRing : [ isCommRing 0f 1f _+_ _·_ -_ ]
+  open IsCommRing is-CommRing using (is-set)
+  field
     ·-inv''     : ∀ x → [ (∃[ y ] [ is-set ] x · y ≡ˢ 1f) ⇔ x # 0f ]
     -- these should follow:
     --   ·-inv       : [ isNonzeroInverseˢ is-set 0f 1f _·_ _#_ _⁻¹ ]
@@ -262,7 +326,6 @@ record IsConstructiveField {F : Type ℓ} (0f 1f : F) (_+_ _·_ : F → F → F)
   -- ·-rinv : (x : F) {{ p : [ x # 0f ] }} → (x · (x ⁻¹)) ≡ 1f
   -- ·-rinv x {{p}} = fst (·-inv x)
 
-  _ : [ isSetᵖ F                                 ]; _ = is-set
   _ : [ isCommRing 0f 1f _+_ _·_ -_              ]; _ = is-CommRing
   _ : [ isNonzeroInverseˢ'' is-set 0f 1f _·_ _#_ ]; _ = ·-inv''
   _ : [ is-+-#-Extensional _+_ _#_               ]; _ = +-#-ext
@@ -277,9 +340,10 @@ record IsConstructiveField {F : Type ℓ} (0f 1f : F) (_+_ _·_ : F → F → F)
 
 isConstructiveField : {F : Type ℓ} (0f 1f : F) (_+_ _·_ : F → F → F) (-_ : F → F) (_#_ : hPropRel F F ℓ') {- (_⁻¹ : (x : F) → {{[ x # 0f ]}} → F) -} → hProp (ℓ-max ℓ ℓ')
 isConstructiveField 0f 1f _+_ _·_ -_ _#_ {- _⁻¹ -} .fst = IsConstructiveField 0f 1f _+_ _·_ -_ _#_ {- _⁻¹ -}
-isConstructiveField 0f 1f _+_ _·_ -_ _#_ {- _⁻¹ -} .snd (isconstructivefield a₀ b₀ c₀ d₀ e₀) (isconstructivefield a₁ b₁ c₁ d₁ e₁) = φ where
-  abstract φ = λ i → let is-set = isSetIsProp a₀ a₁ i in isconstructivefield is-set (snd (isCommRing 0f 1f _+_ _·_ -_) b₀ b₁ i) (snd (isNonzeroInverseˢ'' is-set 0f 1f _·_ _#_) c₀ c₁ i)
-                                  (snd (is-+-#-Extensional _+_ _#_) d₀ d₁ i) (snd (isTightˢ''' _#_ is-set) e₀ e₁ i)
+isConstructiveField 0f 1f _+_ _·_ -_ _#_ {- _⁻¹ -} .snd (isconstructivefield a₀ b₀ c₀ d₀) (isconstructivefield a₁ b₁ c₁ d₁) = φ where
+  abstract φ = λ i → let is-CommRing = snd (isCommRing 0f 1f _+_ _·_ -_) a₀ a₁ i
+                         is-set      = IsCommRing.is-set is-CommRing
+                         in isconstructivefield is-CommRing (snd (isNonzeroInverseˢ'' is-set 0f 1f _·_ _#_) b₀ b₁ i) (snd (is-+-#-Extensional _+_ _#_) c₀ c₁ i) (snd (isTightˢ''' _#_ is-set) d₀ d₁ i)
 
 -- Definition 4.1.8.
 -- Let (A, ≤) be a partial order, and let min, max : A → A → A be binary operators on A. We say that (A, ≤, min, max) is a lattice if min computes greatest lower bounds in the sense that for every x, y, z : A, we have
@@ -338,13 +402,12 @@ record IsAlmostPartiallyOrderedField {F : Type ℓ} (0f 1f : F) (_+_ _·_ : F �
   x ≤ y = ¬ (y < x)
 
   field
-    is-set : isSet F
     -- 1.
     is-CommRing : [ isCommRing 0f 1f _+_ _·_ -_ ]
     -- 2.
     <-StrictPartialOrder : [ isStrictPartialOrder _<_ ]
 
-  open IsCommRing is-CommRing hiding (is-set) public
+  open IsCommRing is-CommRing public
   open IsStrictPartialOrder <-StrictPartialOrder public
     renaming
       ( is-irrefl  to <-irrefl
@@ -382,13 +445,13 @@ record IsAlmostPartiallyOrderedField {F : Type ℓ} (0f 1f : F) (_+_ _·_ : F �
 
 isAlmostPartiallyOrderedField : {F : Type ℓ} (0f 1f : F) (_+_ _·_ : F → F → F) (-_ : F → F) (_<_ : hPropRel F F ℓ') (min max : F → F → F) {- (_⁻¹ᶠ : (x : F) → {{x # 0f}} → F) -} → hProp (ℓ-max ℓ ℓ')
 isAlmostPartiallyOrderedField {ℓ = ℓ} {ℓ' = ℓ'} {F = F} 0f 1f _+_ _·_ -_ _<_ min max {- _⁻¹ -} .fst = IsAlmostPartiallyOrderedField 0f 1f _+_ _·_ -_ _<_ min max {- _⁻¹ -}
-isAlmostPartiallyOrderedField {ℓ = ℓ} {ℓ' = ℓ'} {F = F} 0f 1f _+_ _·_ -_ _<_ min max {- _⁻¹ -} .snd (isalmostpartiallyorderedfield a₀ b₀ c₀ d₀ e₀) (isalmostpartiallyorderedfield a₁ b₁ c₁ d₁ e₁) = φ where
+isAlmostPartiallyOrderedField {ℓ = ℓ} {ℓ' = ℓ'} {F = F} 0f 1f _+_ _·_ -_ _<_ min max {- _⁻¹ -} .snd (isalmostpartiallyorderedfield a₀ b₀ c₀ d₀) (isalmostpartiallyorderedfield a₁ b₁ c₁ d₁) = φ where
   abstract φ = λ i → let -- we are doing basically "the same" as in `IsAlmostPartiallyOrderedField`
                          _≤_                  : hPropRel F F ℓ'
                          x ≤ y                = ¬ (y < x) -- ≤, as in Lemma 4.1.7
-                         is-set               = isSetIsProp a₀ a₁ i
-                         is-CommRing          = snd (isCommRing 0f 1f _+_ _·_ -_) b₀ b₁ i
-                         <-StrictPartialOrder = snd (isStrictPartialOrder _<_) c₀ c₁ i
+                         is-CommRing          = snd (isCommRing 0f 1f _+_ _·_ -_) a₀ a₁ i
+                         is-set               = IsCommRing.is-set is-CommRing
+                         <-StrictPartialOrder = snd (isStrictPartialOrder _<_) b₀ b₁ i
                          open IsStrictPartialOrder <-StrictPartialOrder
                            renaming
                              ( is-irrefl  to <-irrefl
@@ -398,9 +461,9 @@ isAlmostPartiallyOrderedField {ℓ = ℓ} {ℓ' = ℓ'} {F = F} 0f 1f _+_ _·_ -
                          <-asym               = irrefl+trans⇒asym _<_ <-irrefl <-trans
                          _#_                  : hPropRel F F ℓ'
                          x # y                = [ <-asym x y ] (x < y) ⊎ᵖ (y < x) -- # is defined as in Lemma 4.1.7
-                         ·-inv''              = snd (isNonzeroInverseˢ'' is-set 0f 1f _·_ _#_) d₀ d₁ i
-                         ≤-isLattice          = snd (isLattice _≤_ min max) e₀ e₁ i
-                     in isalmostpartiallyorderedfield is-set is-CommRing <-StrictPartialOrder ·-inv'' ≤-isLattice
+                         ·-inv''              = snd (isNonzeroInverseˢ'' is-set 0f 1f _·_ _#_) c₀ c₁ i
+                         ≤-isLattice          = snd (isLattice _≤_ min max) d₀ d₁ i
+                     in isalmostpartiallyorderedfield is-CommRing <-StrictPartialOrder ·-inv'' ≤-isLattice
 
 record IsPartiallyOrderedField {F : Type ℓ} (0f 1f : F) (_+_ _·_ : F → F → F) (-_ : F → F) (_<_ : hPropRel F F ℓ') (min max : F → F → F) {- (_⁻¹ᶠ : (x : F) → {{x # 0f}} → F) -} : Type (ℓ-max ℓ ℓ') where
   constructor ispartiallyorderedfield

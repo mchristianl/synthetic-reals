@@ -17,21 +17,23 @@ open import MorePropAlgebra.Structures
 {-
 | name | struct              | apart | abs | order | cauchy | sqrt₀⁺  | exp | final name                                                             |
 |------|---------------------|-------|-----|-------|--------|---------|-----|------------------------------------------------------------------------|
-| ℕ    | Semiring            |  (✓)  | (✓) | lin.  |        | (on x²) |     | LinearlyOrderedSemiring                                                |
-| ℤ    | Ring                |  (✓)  | (✓) | lin.  |        | (on x²) |     | LinearlyOrderedRing                                                    |
+| ℕ    | CommSemiring        |  (✓)  | (✓) | lin.  |        | (on x²) |     | LinearlyOrderedCommSemiring                                            |
+| ℤ    | CommRing            |  (✓)  | (✓) | lin.  |        | (on x²) |     | LinearlyOrderedCommRing                                                |
 | ℚ    | Field               |  (✓)  | (✓) | lin.  |        | (on x²) | (✓) | LinearlyOrderedField                                                   |
 | ℝ    | Field               |  (✓)  | (✓) | part. |   ✓    |    ✓    | (✓) | CompletePartiallyOrderedFieldWithSqrt                                  |
 | ℂ    | euclidean 2-Product |  (✓)  | (✓) |       |  (✓)   |         |  ?  | EuclideanTwoProductOfCompletePartiallyOrderedFieldWithSqrt             |
 | R    | Ring                |   ✓   |  ✓  |       |        |         |  ?  | ApartnessRingWithAbsIntoCompletePartiallyOrderedFieldWithSqrt          |
 | G    | Group               |   ✓   |  ✓  |       |        |         |  ?  | ApartnessGroupWithAbsIntoCompletePartiallyOrderedFieldWithSqrt         |
 | K    | Field               |   ✓   |  ✓  |       |   ✓    |         |  ?  | CompleteApartnessFieldWithAbsIntoCompletePartiallyOrderedFieldWithSqrt |
+
+-- NOTE: what about conjugation `conj`?
 -}
 
 -- we usually mean "CommRing" when writing just "Ring" ⇒ TODO: rename this where applicable
 
--- IsLinearlyOrderedSemiring
+-- IsLinearlyOrderedCommSemiring
 --   isSet
---   IsSemiring 0f 1f _+_ _·_
+--   IsCommSemiring 0f 1f _+_ _·_
 --   IsStrictLinearOrder _<_
 --     ⇒ IsApartnessRel _#_
 --     ⇒ IsLinearOrder _≤_
@@ -39,7 +41,7 @@ open import MorePropAlgebra.Structures
 --   +-<-ext       : ∀ w x y z → [ (w + x) < (y + z) ] → [ (w < y) ⊔ (x < z) ]
 --   ·-preserves-< : ∀ x y z   → [ 0f < z ] → [ x < y ] → [ (x · z) < (y · z) ]
 
--- IsLinearlyOrderedRing
+-- IsLinearlyOrderedCommRing
 --   isSet
 --   IsCommRing 0f 1f _+_ _·_ -_
 --   IsStrictLinearOrder _<_
