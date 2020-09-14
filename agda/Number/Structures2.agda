@@ -27,6 +27,46 @@ open import MorePropAlgebra.Structures
 | K    | Field               |   ✓   |  ✓  |       |   ✓    |         |  ?  | CompleteApartnessFieldWithAbsIntoCompletePartiallyOrderedFieldWithSqrt |
 -}
 
+-- we usually mean "CommRing" when writing just "Ring" ⇒ TODO: rename this where applicable
+
+-- IsLinearlyOrderedSemiring
+--   isSet
+--   IsSemiring 0f 1f _+_ _·_
+--   IsStrictLinearOrder _<_
+--     ⇒ IsApartnessRel _#_
+--     ⇒ IsLinearOrder _≤_
+--   IsLattice _≤_ min max
+--   +-<-ext       : ∀ w x y z → [ (w + x) < (y + z) ] → [ (w < y) ⊔ (x < z) ]
+--   ·-preserves-< : ∀ x y z   → [ 0f < z ] → [ x < y ] → [ (x · z) < (y · z) ]
+
+-- IsLinearlyOrderedRing
+--   isSet
+--   IsCommRing 0f 1f _+_ _·_ -_
+--   IsStrictLinearOrder _<_
+--     ⇒ IsApartnessRel _#_
+--     ⇒ IsLinearOrder _≤_
+--   IsLattice _≤_ min max
+--   +-<-ext       : ∀ w x y z → [ (w + x) < (y + z) ] → [ (w < y) ⊔ (x < z) ]
+--   ·-preserves-< : ∀ x y z   → [ 0f < z ] → [ x < y ] → [ (x · z) < (y · z) ]
+
+-- IsLinearlyOrderedField
+--   isSet
+--   IsCommRing 0f 1f _+_ _·_ -_
+--   IsStrictLinearOrder _<_
+--     ⇒ IsApartnessRel _#_
+--     ⇒ IsLinearOrder _≤_
+--   IsLattice _≤_ min max
+--   ·-inv''       : ∀ x       → [ (∃[ y ] [ is-set ] x · y ≡ˢ 1f) ⇔ x # 0f ]
+--   +-<-ext       : ∀ w x y z → [ (w + x) < (y + z) ] → [ (w < y) ⊔ (x < z) ]
+--   ·-preserves-< : ∀ x y z   → [ 0f < z ] → [ x < y ] → [ (x · z) < (y · z) ]
+
+record IsLinearlyOrderedField {ℓ ℓ'} {F : Type ℓ} (0f 1f : F) (_+_ _·_ : F → F → F) (-_ : F → F) (_<_ : hPropRel F F ℓ') (min max : F → F → F) {- (_⁻¹ᶠ : (x : F) → {{x # 0f}} → F) -} : Type (ℓ-max ℓ ℓ') where
+  constructor islinearlyorderedfield
+  field
+    is-PartiallyOrderedField : [ isPartiallyOrderedField 0f 1f _+_ _·_ -_ _<_ min max ]
+
+  open IsPartiallyOrderedField is-PartiallyOrderedField public
+
 record IsCompletePartiallyOrderedFieldWithSqrt {ℓ ℓ'} {F : Type ℓ} (0f 1f : F) (_+_ _·_ : F → F → F) (-_ : F → F) (_<_ : hPropRel F F ℓ') (min max : F → F → F) (sqrt : (x : F) → {{ ! [ ¬(x < 0f) ] }} → F) : Type (ℓ-max ℓ ℓ') where
   constructor ispartiallyorderedfield
   field

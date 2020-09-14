@@ -57,6 +57,9 @@ module _ {ℓ ℓ' : Level} {A : Type ℓ} (R : hPropRel A A ℓ')
   irrefl+trans⇒asym'   : [ isIrrefl  R ] → [ isTrans  R ] → [ isAsym' R ]
 
   <-cotrans⇒≤-trans    : [ isCotrans _<_ ] → [ isTrans (λ x y → ¬(y < x)) ]
+  connex⇒refl          : [ isConnex  _≤_ ] → [ isRefl _≤_ ]
+
+  isIrrefl⇔isIrrefl'   : [ isIrrefl _<_ ⇔ isIrrefl' _<_ ]
 
   isAsym⇔isAsym'       :                              [ isAsym     R  ⇔ isAsym'                                    R           ]
   isTight⇔isTight'     :                              [ isTight    R  ⇔ isTight'                                   R           ]
@@ -73,6 +76,14 @@ module _ {ℓ ℓ' : Level} {A : Type ℓ} (R : hPropRel A A ℓ')
                                                      (λ c<b → ¬c<b c<b)
                                                      (λ b<a → ¬b<a b<a)
                                                      (<-cotrans _ _ c<a b)
+
+  connex⇒refl is-connex a = case is-connex a a as a ≤ a ⊔ a ≤ a ⇒ a ≤ a of λ{ (inl p) → p ; (inr p) → p }
+
+  isIrrefl⇔isIrrefl' .fst <-irrefl  a b a<b⊔b<a a≡b =
+    substₚ (λ b → a < b ⊔ b < a ⇒ ⊥) a≡b
+    (λ p → case p as R a a ⊔ R a a ⇒ ⊥ of λ{ (inl p) → <-irrefl _ p ; (inr p) → <-irrefl _ p })
+    a<b⊔b<a
+  isIrrefl⇔isIrrefl' .snd <-irrefl' x x<x = <-irrefl' x x (inlᵖ x<x) ∣ refl ∣
 
   isAsym⇔isAsym' .fst <-asym a b (a<b , b<a) = <-asym a b a<b b<a
   isAsym⇔isAsym' .snd <-asym a b = fst (¬-⊓-distrib (a < b) (b < a) (<-asym a b))
@@ -167,6 +178,17 @@ module _ {ℓ : Level} {A : Type ℓ} (R : hPropRel A A ℓ)
     irrefl+tight⇒dne-over-≡ˢ  : [ isIrrefl  _#_ ] → [ isTightˢ''' _#_ is-set ] → [ dne-over-≡ˢ ]
     irrefl+tight⇒[¬ᵗ#]≡[≡ˢ]   : [ isIrrefl  _#_ ] → [ isTightˢ''' _#_ is-set ] → ∀ a b → (¬ᵗ [ a # b ]) ≡ (a ≡ b)
     irrefl+tight⇒dne-over-≡ˢᵗ : [ isIrrefl  _#_ ] → [ isTightˢ''' _#_ is-set ] → ∀(a b : A) → (¬ᵗ ¬ᵗ (a ≡ b)) ≡ (a ≡ b)
+
+    -- x ≤ y  ≡ ¬(y < x)
+    -- x <' y ≡ ¬(y ≤ x) ≡ ¬¬(x < y)
+    -- ¬¬(x < y) ⇔ (x < y) ??
+    -- x ≤ y ⇔ ∀[ ε ] (y < ε) ⇒ (x < ε)
+
+    -- https://en.wikipedia.org/wiki/Total_order
+    -- We can work the other way and start by choosing < as a transitive trichotomous binary relation; then a total order ≤ can be defined in two equivalent ways:
+    -- https://en.wikipedia.org/wiki/Weak_ordering#Strict_weak_orderings
+
+    -- IsStrictLinearOrder _<_ ⇒ IsLinearOrder _≤_
 
     irrefl+tight⇒[¬ᵗ#]⇔[≡ˢ] #-irrefl #-tight a b .fst ¬ᵗ[a#b] = #-tight a b ¬ᵗ[a#b]
     irrefl+tight⇒[¬ᵗ#]⇔[≡ˢ] #-irrefl #-tight a b .snd a≡b a#b = #-irrefl b (subst (λ x → [ x # b ]) a≡b a#b)

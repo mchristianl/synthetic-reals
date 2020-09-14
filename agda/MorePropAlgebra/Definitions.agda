@@ -7,6 +7,7 @@ open import Agda.Primitive renaming (_⊔_ to ℓ-max; lsuc to ℓ-suc; lzero to
 open import Cubical.Foundations.Everything renaming (_⁻¹ to _⁻¹ᵖ; assoc to ∙-assoc)
 open import Cubical.Relation.Nullary.Base renaming (¬_ to ¬ᵗ_)-- ¬ᵗ_
 open import Cubical.Data.Sum.Base renaming (_⊎_ to infixr 4 _⊎_)
+open import Cubical.HITs.PropositionalTruncation.Base using (∣_∣)
 open import Cubical.Foundations.Logic renaming
   ( inl to inlᵖ
   ; inr to inrᵖ
@@ -34,9 +35,20 @@ module _ {ℓ ℓ' : Level} {A : Type ℓ} (R : hPropRel A A ℓ') where
 
   isRefl      =                      ∀[ a ]    R a a
   isIrrefl    =                      ∀[ a ] ¬ (R a a)
+  isIrrefl'   =                      ∀[ a ] ∀[ b ] (  R a b   ⊔   R b a  )  ⇒ ¬(          a ≡ₚ b)
+  isIrrefl''  =                      ∀[ a ] ∀[ b ] ([ R a b ] ⊎ [ R b a ]) ᵗ⇒ ¬(          a ≡ₚ b)
+  isIrreflˢ'' = λ(isset : isSet A) → ∀[ a ] ∀[ b ] ([ R a b ] ⊎ [ R b a ]) ᵗ⇒ ¬([ isset ] a ≡ˢ b)
 
   isTrans     =                      ∀[ a ] ∀[ b ] ∀[ x ] R a b ⇒         R b x ⇒ R a x
   isCotrans   =                      ∀[ a ] ∀[ b ]        R a b ⇒ (∀[ x ] R a x ⊔ R x b)
+
+  isConnex    =                      ∀[ a ] ∀[ b ]                        R a b ⊔ R b a
+
+  -- isTrichotomous = λ(<-irrefl ∶ [ isIrrefl' _<_ ]) → λ(<-asym : isAsym _<_) ∀[ a ] ∀[ b ] [ <-irrefl ]
+  -- [ P ] → ¬ᵗ [ Q ]
+  -- a ≡ b ⊎ (a < b ⊎ b < a)
+  -- (a < b ⊎ b < a) ⇒ (¬ a ≡ b) -- also irrefl
+  -- isTight
 
   -- two variants of asymmetry
   --
@@ -55,6 +67,12 @@ module _ {ℓ ℓ' : Level} {A : Type ℓ} (R : hPropRel A A ℓ') where
   isAsym      =                      ∀[ a ] ∀[ b ]    R a b ⇒ ¬ R b a
   isAsym'     =                      ∀[ a ] ∀[ b ] ¬ (R a b ⊓   R b a)
   isAsym''    =                      ∀[ a ] ∀[ b ] ¬  R a b ⇒   R b a  -- not equivalent! (weaker)
+
+  isTrichotomous  :                     (<-irrefl : [ isIrrefl''        ]) → (<-asym : [ isAsym ]) → hProp _
+  isTrichotomousˢ : (isset : isSet A) → (<-irrefl : [ isIrreflˢ'' isset ]) → (<-asym : [ isAsym ]) → hProp _
+
+  isTrichotomous        isirrefl isasym = ∀[ a ] ∀[ b ] ([ isirrefl a b ] ([ isasym a b ] R a b ⊎ᵖ R b a ) ⊎ᵖ (          a ≡ₚ b))
+  isTrichotomousˢ isset isirrefl isasym = ∀[ a ] ∀[ b ] ([ isirrefl a b ] ([ isasym a b ] R a b ⊎ᵖ R b a ) ⊎ᵖ ([ isset ] a ≡ˢ b))
 
   isAntisym   =                      ∀[ a ] ∀[ b ]    R a b ⇒             R b a   ⇒            a ≡ₚ b
   isAntisymˢ  = λ(isset : isSet A) → ∀[ a ] ∀[ b ]    R a b ⇒             R b a   ⇒ ([ isset ] a ≡ˢ b)
@@ -132,7 +150,9 @@ module _ {ℓ ℓ'} {X : Type ℓ} {_<_ : hPropRel X X ℓ'} where
   x ≤'' y = ∀[ ε ] (y < ε) ⇒ (x < ε) -- (∀ ε → [ y < ε ] → [ x < ε ]) , isPropΠ2 (λ ε y<ε → isProp[] (x < ε))
 
 -- combined hProps of relations
-module _ {ℓ ℓ' : Level} {A : Type ℓ} (R : hPropRel A A ℓ') where
+module _ {ℓ ℓ' : Level} {A : Type ℓ} (R : hPropRel A A ℓ')
+  (let _<_ = R; _≤_ = R) -- "strict" is denoted by _<_, and "non-strict" by _≤_
+  where
 
   record IsApartnessRel : Type (ℓ-max ℓ ℓ') where
     constructor isapartnessrel
@@ -153,18 +173,18 @@ module _ {ℓ ℓ' : Level} {A : Type ℓ} (R : hPropRel A A ℓ') where
   record IsStrictPartialOrder : Type (ℓ-max ℓ ℓ') where
     constructor isstrictpartialorder
     field
-      is-irrefl  : ∀ a → [ ¬ R a a ]
-      is-trans   : ∀ a b x → [ R a b ] → [ R b x ] → [ R a x ]
-      is-cotrans : ∀ a b → [ R a b ] → ∀ x → [ R a x ⊔ R x b ]
+      is-irrefl  : ∀ a → [ ¬ a < a ]
+      is-trans   : ∀ a b x → [ a < b ] → [ b < x ] → [ a < x ]
+      is-cotrans : ∀ a b → [ a < b ] → ∀ x → [ a < x ⊔ x < b ]
 
-    _ : [ isIrrefl   R ]; _ = is-irrefl
-    _ : [ isTrans    R ]; _ = is-trans
-    _ : [ isCotrans  R ]; _ = is-cotrans
+    _ : [ isIrrefl   _<_ ]; _ = is-irrefl
+    _ : [ isTrans    _<_ ]; _ = is-trans
+    _ : [ isCotrans  _<_ ]; _ = is-cotrans
 
   isStrictPartialOrder  : hProp (ℓ-max ℓ ℓ')
   isStrictPartialOrder  .fst = IsStrictPartialOrder
   isStrictPartialOrder  .snd (isstrictpartialorder a₀ b₀ c₀) (isstrictpartialorder a₁ b₁ c₁) = φ where
-    abstract φ = λ i → isstrictpartialorder (snd (isIrrefl  R) a₀ a₁ i) (snd (isTrans  R) b₀ b₁ i) (snd (isCotrans  R) c₀ c₁ i)
+    abstract φ = λ i → isstrictpartialorder (snd (isIrrefl _<_) a₀ a₁ i) (snd (isTrans _<_) b₀ b₁ i) (snd (isCotrans _<_) c₀ c₁ i)
 
   record IsPreorder : Type (ℓ-max ℓ ℓ') where
     constructor ispreorder
@@ -183,18 +203,68 @@ module _ {ℓ ℓ' : Level} {A : Type ℓ} (R : hPropRel A A ℓ') where
   record IsPartialOrder : Type (ℓ-max ℓ ℓ') where
     constructor ispartialorder
     field
-      is-refl    : ∀ a → [ R a a ]
-      is-antisym : ∀ a b → [ R a b ] → [ R b a  ] → [ a ≡ₚ b ]
-      is-trans   : ∀ a b x → [ R a b ] → [ R b x ] → [ R a x ]
+      is-refl    : ∀ a → [ a ≤ a ]
+      is-antisym : ∀ a b → [ a ≤ b ] → [ b ≤ a ] → [ a ≡ₚ b ]
+      is-trans   : ∀ a b x → [ a ≤ b ] → [ b ≤ x ] → [ a ≤ x ]
 
-    _ : [ isRefl     R ]; _ = is-refl
-    _ : [ isAntisym  R ]; _ = is-antisym
-    _ : [ isTrans    R ]; _ = is-trans
+    _ : [ isRefl     _≤_ ]; _ = is-refl
+    _ : [ isAntisym  _≤_ ]; _ = is-antisym
+    _ : [ isTrans    _≤_ ]; _ = is-trans
 
   isPartialOrder  : hProp (ℓ-max ℓ ℓ')
   isPartialOrder  .fst = IsPartialOrder
   isPartialOrder  .snd (ispartialorder a₀ b₀ c₀) (ispartialorder a₁ b₁ c₁) = φ where
-    abstract φ = λ i → ispartialorder (snd (isRefl  R) a₀ a₁ i) (snd (isAntisym  R) b₀ b₁ i) (snd (isTrans  R) c₀ c₁ i)
+    abstract φ = λ i → ispartialorder (snd (isRefl _≤_) a₀ a₁ i) (snd (isAntisym _≤_) b₀ b₁ i) (snd (isTrans _≤_) c₀ c₁ i)
+
+  record IsLinearOrder : Type (ℓ-max ℓ ℓ') where
+    constructor islinearorder
+    field
+      is-connex  : ∀ a b → [ a ≤ b ⊔ b ≤ a ]
+      is-antisym : ∀ a b → [ a ≤ b ] → [ b ≤ a ] → [ a ≡ₚ b ]
+      is-trans   : ∀ a b x → [ a ≤ b ] → [ b ≤ x ] → [ a ≤ x ]
+
+    _ : [ isConnex   _≤_ ]; _ = is-connex
+    _ : [ isAntisym  _≤_ ]; _ = is-antisym
+    _ : [ isTrans    _≤_ ]; _ = is-trans
+
+  isLinearOrder : hProp (ℓ-max ℓ ℓ')
+  isLinearOrder .fst = IsLinearOrder
+  isLinearOrder .snd (islinearorder a₀ b₀ c₀) (islinearorder a₁ b₁ c₁) = φ where
+    abstract φ = λ i → islinearorder (snd (isConnex _≤_) a₀ a₁ i) (snd (isAntisym _≤_) b₀ b₁ i) (snd (isTrans _≤_) c₀ c₁ i)
+
+  record IsStrictLinearOrder : Type (ℓ-max ℓ ℓ') where
+    constructor isstrictlinearorder
+    field
+      is-irrefl  : ∀ a → [ ¬ a < a ]
+      is-trans   : ∀ a b x → [ a < b ] → [ b < x ] → [ a < x ]
+      is-tricho  : ∀ a b → ([ a < b ] ⊎ [ b < a ]) ⊎ [ a ≡ₚ b ]
+
+    private
+      is-asym : ∀ a b → [ a < b ] → [ ¬ b < a ]
+      is-asym a b a<b b<a = is-irrefl _ (is-trans _ _ _ a<b b<a)
+
+      is-irrefl'' : ∀ a b → [ a < b ] ⊎ [ b < a ] → [ ¬(a ≡ₚ b) ]
+      is-irrefl'' a b (inl a<b) a≡b = is-irrefl _ (substₚ (λ p → p < b) a≡b a<b)
+      is-irrefl'' a b (inr b<a) a≡b = is-irrefl _ (substₚ (λ p → b < p) a≡b b<a)
+
+      _ : [ isIrrefl       _<_                     ]; _ = is-irrefl
+      _ : [ isTrans        _<_                     ]; _ = is-trans
+      _ : [ isTrichotomous _<_ is-irrefl'' is-asym ]; _ = is-tricho
+
+  isStrictLinearOrder : hProp (ℓ-max ℓ ℓ')
+  isStrictLinearOrder .fst = IsStrictLinearOrder
+  isStrictLinearOrder .snd (isstrictlinearorder a₀ b₀ c₀) (isstrictlinearorder a₁ b₁ c₁) = φ where
+    abstract φ = λ i → let is-irrefl = snd (isIrrefl       _<_                    ) a₀ a₁ i
+                           is-trans  = snd (isTrans        _<_                    ) b₀ b₁ i
+                           is-asym : ∀ a b → [ a < b ] → [ ¬ b < a ]
+                           is-asym a b a<b b<a = is-irrefl _ (is-trans _ _ _ a<b b<a)
+                           is-irrefl'' : ∀ a b → [ a < b ] ⊎ [ b < a ] → [ ¬(a ≡ₚ b) ]
+                           is-irrefl'' a b = λ
+                             { (inl a<b) a≡b → is-irrefl _ (substₚ (λ p → p < b) a≡b a<b)
+                             ; (inr b<a) a≡b → is-irrefl _ (substₚ (λ p → b < p) a≡b b<a)
+                             }
+                           is-tricho = snd (isTrichotomous _<_ is-irrefl'' is-asym) c₀ c₁ i
+                       in isstrictlinearorder is-irrefl is-trans is-tricho
 
 -- properties tied to some operation `op` on sets
 module _ {ℓ : Level} {A : Type ℓ} (op : A → A → A) (is-set : isSet A)

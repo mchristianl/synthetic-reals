@@ -42,6 +42,39 @@ open import Number.Structures2
 | K    | Field               |   ✓   |  ✓  |       |   ✓    |         |  ?  | CompleteApartnessFieldWithAbsIntoCompletePartiallyOrderedFieldWithSqrt |
 -}
 
+
+record LinearlyOrderedField {ℓ ℓ' : Level} : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
+  field
+    is-set   : isSet Carrier
+    Carrier : Type ℓ
+    0f      : Carrier
+    1f      : Carrier
+    _<_     : hPropRel Carrier Carrier ℓ'
+    min     : Carrier → Carrier → Carrier
+    max     : Carrier → Carrier → Carrier
+    _+_     : Carrier → Carrier → Carrier
+    _·_     : Carrier → Carrier → Carrier
+    -_      : Carrier → Carrier
+
+record LinearlyOrderedField : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
+  constructor partiallyorderedfield
+  field
+    Carrier : Type ℓ
+    0f 1f   : Carrier
+    _+_     : Carrier → Carrier → Carrier
+    -_      : Carrier → Carrier
+    _·_     : Carrier → Carrier → Carrier
+    min max : Carrier → Carrier → Carrier
+    _<_     : hPropRel Carrier Carrier ℓ'
+    is-LinearlyOrderedField : [ isLinearlyOrderedField 0f 1f _+_ _·_ -_ _<_ min max ] -- defines `_≤_` and `_#_`
+
+  infixl 7 _·_
+  infix  6 -_
+  infixl 5 _+_
+  infixl 4 _<_
+
+  open IsLinearlyOrderedField is-LinearlyOrderedField public
+
 -- NOTE: this smells like "CPO" https://en.wikipedia.org/wiki/Complete_partial_order
 record CompletePartiallyOrderedFieldWithSqrt {ℓ ℓ' : Level} : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
   field
