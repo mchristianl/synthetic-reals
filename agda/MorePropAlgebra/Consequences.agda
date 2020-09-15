@@ -59,7 +59,8 @@ module _ {ℓ ℓ' : Level} {A : Type ℓ} (R : hPropRel A A ℓ')
   <-cotrans⇒≤-trans    : [ isCotrans _<_ ] → [ isTrans (λ x y → ¬(y < x)) ]
   connex⇒refl          : [ isConnex  _≤_ ] → [ isRefl _≤_ ]
 
-  isIrrefl⇔isIrrefl'   : [ isIrrefl _<_ ⇔ isIrrefl' _<_ ]
+  isIrrefl⇔isIrrefl'   :                              [ isIrrefl  _<_ ⇔ isIrrefl'  _<_ ]
+  isIrrefl'⇔isIrrefl'' : (<-asym : [ isAsym  _<_ ]) → [ isIrrefl' _<_ ⇔ isIrrefl'' _<_ ]
 
   isAsym⇔isAsym'       :                              [ isAsym     R  ⇔ isAsym'                                    R           ]
   isTight⇔isTight'     :                              [ isTight    R  ⇔ isTight'                                   R           ]
@@ -67,6 +68,9 @@ module _ {ℓ ℓ' : Level} {A : Type ℓ} (R : hPropRel A A ℓ')
   isTight'⇔isTight'''  :                              [ isTight'  _<_ ⇔ isTight''' (λ x y →                (x < y) ⊔  (y < x)) ]
   isTight''⇔isTight''' : (<-asym : [ isAsym  _<_ ]) → [ isTight'' _<_ ⇔ isTight''' (λ x y → [ <-asym x y ] (x < y) ⊎ᵖ (y < x)) ]
   isTight⇔isAntisym    :                              [ isTight   _<_ ⇔ isAntisym  (λ x y →                   ¬ (y < x))       ]
+
+  strictlinearorder⇒strictpartialorder : [ isStrictLinearOrder _<_                   ⇒ isStrictPartialOrder _<_ ]
+  linearorder⇒partialorder             : [ isLinearOrder       _≤_                   ⇒ isPartialOrder       _≤_ ]
 
   irrefl+trans⇒asym isIrrefl isTrans a b a<b b<a = isIrrefl _ (isTrans _ _ _ a<b b<a)
 
@@ -84,6 +88,12 @@ module _ {ℓ ℓ' : Level} {A : Type ℓ} (R : hPropRel A A ℓ')
     (λ p → case p as R a a ⊔ R a a ⇒ ⊥ of λ{ (inl p) → <-irrefl _ p ; (inr p) → <-irrefl _ p })
     a<b⊔b<a
   isIrrefl⇔isIrrefl' .snd <-irrefl' x x<x = <-irrefl' x x (inlᵖ x<x) ∣ refl ∣
+
+  isIrrefl'⇔isIrrefl'' <-asym .fst <-irrefl' a b (inl a<b) = <-irrefl'  a b (inlᵖ a<b)
+  isIrrefl'⇔isIrrefl'' <-asym .fst <-irrefl' a b (inr b<a) = <-irrefl'  a b (inrᵖ b<a)
+  isIrrefl'⇔isIrrefl'' <-asym .snd <-irrefl'' a b a<b⊎b<a = case a<b⊎b<a as a < b ⊔ b < a ⇒ ¬ a ≡ₚ b of λ
+                                               { (inl a<b) → <-irrefl'' a b (inl a<b)
+                                               ; (inr b<a) → <-irrefl'' a b (inr b<a) }
 
   isAsym⇔isAsym' .fst <-asym a b (a<b , b<a) = <-asym a b a<b b<a
   isAsym⇔isAsym' .snd <-asym a b = fst (¬-⊓-distrib (a < b) (b < a) (<-asym a b))
@@ -103,17 +113,45 @@ module _ {ℓ ℓ' : Level} {A : Type ℓ} (R : hPropRel A A ℓ')
   isTight⇔isAntisym .fst <-tight   a b a≤b b≤a = <-tight   a b b≤a a≤b
   isTight⇔isAntisym .snd ≤-antisym a b b≤a a≤b = ≤-antisym a b a≤b b≤a
 
+  strictlinearorder⇒strictpartialorder is-StrictLinearOrder = isstrictpartialorder is-irrefl is-trans is-cotrans where
+    is-irrefl = IsStrictLinearOrder.is-irrefl is-StrictLinearOrder
+    is-trans  = IsStrictLinearOrder.is-trans  is-StrictLinearOrder
+    is-tricho = IsStrictLinearOrder.is-tricho is-StrictLinearOrder
+    is-asym   = irrefl+trans⇒asym is-irrefl is-trans
+    is-cotrans : [ isCotrans _<_ ]
+    is-cotrans a b a<b x with is-tricho a x | is-tricho x b
+    ... | inl (inl a<x) | q = inlᵖ a<x
+    ... | inl (inr x<a) | inl (inl x<b) = inrᵖ x<b
+    ... | inl (inr x<a) | inl (inr b<x) = ⊥-elim $ is-irrefl x (is-trans x b x (is-trans x a b x<a a<b) b<x)
+    ... | inl (inr x<a) | inr      x≡b  = ⊥-elim $ is-asym a b a<b (substₚ (λ p → p < a) x≡b x<a)
+    ... | inr      a≡x  | inl (inl x<b) = inrᵖ x<b
+    ... | inr      a≡x  | inl (inr b<x) = ⊥-elim $ is-asym b x b<x (substₚ (λ p → p < b) a≡x a<b)
+    ... | inr      a≡x  | inr      x≡b  = ⊥-elim $ is-irrefl b (substₚ (λ p → p < b) x≡b $ substₚ (λ p → p < b) a≡x a<b)
+
+  linearorder⇒partialorder is-LinearOrder =
+    let (islinearorder is-connex is-antisym is-trans) = is-LinearOrder
+    in ispartialorder (connex⇒refl is-connex) is-antisym is-trans
+
   -- consequences on sets
   module _ (is-set : isSet A) where
     -- abstract
+    isIrreflˢ''⇔isIrrefl''  : (is-asym : [ isAsym R ])    → [ isIrreflˢ'' R is-set ⇔ isIrrefl'' R ]
     isAntisymˢ⇔isAntisym    :                               [ isAntisymˢ  R is-set ⇔ isAntisym  R ]
     isAntisymˢ'⇔isAntisym'  :                               [ isAntisymˢ' R is-set ⇔ isAntisym' R ]
     isTightˢ⇔isTight        :                               [ isTightˢ    R is-set ⇔ isTight    R ]
     isTightˢ'⇔isTight'      :                               [ isTightˢ'   R is-set ⇔ isTight'   R ]
     isTightˢ''⇔isTight''    :                               [ isTightˢ''  R is-set ⇔ isTight''  R ]
     isTightˢ'''⇔isTight'''  :                               [ isTightˢ''' R is-set ⇔ isTight''' R ]
-    isTightˢ'''⇔isAntisymˢ  : (<-asym : [ isAsym  _<_ ])  → [ isTightˢ''' (λ x y → [ <-asym x y ] (x < y) ⊎ᵖ (y < x)) is-set
-                                                            ⇔ isAntisymˢ  (λ x y →                   ¬ (y < x)      ) is-set ]
+    isTightˢ'''⇔isAntisymˢ  : (is-asym : [ isAsym R ])    → [ isTightˢ''' (λ x y → [ is-asym x y ] (x < y) ⊎ᵖ (y < x)) is-set
+                                                            ⇔ isAntisymˢ  (λ x y →                    ¬ (y < x)      ) is-set ]
+
+    isTrichotomousˢ⇔isTrichotomous : (is-irrefl : [ isIrrefl'' R ]) → (is-irreflˢ : [ isIrreflˢ'' R is-set ]) → (is-asym : [ isAsym R ]) → [ isTrichotomousˢ R is-set is-irreflˢ is-asym ⇔ isTrichotomous R is-irrefl is-asym ]
+
+    -- tricho⇒cotrans                       : (is-irrefl : [ isIrrefl'' R ]) → (is-asym : [ isAsym R ])
+    --                                      → [ isTrichotomous      _<_ is-irrefl is-asym ⇒ isCotrans            _<_ ]
+
+    isIrreflˢ''⇔isIrrefl'' <-asym .fst <-irreflˢ'' a b a<b a≡b = <-irreflˢ'' a b a<b (∣∣-elim (λ c → is-set a b) (λ x → x) a≡b)
+    isIrreflˢ''⇔isIrrefl'' <-asym .snd <-irrefl''  a b a<b a≡b = <-irrefl''  a b a<b ∣ a≡b ∣
 
     isAntisymˢ⇔isAntisym .fst ≤-antisymˢ a b a≤b b≤a = ∣ ≤-antisymˢ a b a≤b b≤a ∣
     isAntisymˢ⇔isAntisym .snd ≤-antisym  a b a≤b b≤a = ∣∣-elim (λ c → is-set a b) (λ x → x) (≤-antisym  a b a≤b b≤a)
@@ -135,6 +173,13 @@ module _ {ℓ ℓ' : Level} {A : Type ℓ} (R : hPropRel A A ℓ')
 
     isTightˢ'''⇔isAntisymˢ <-asym .fst #-tight a b a≤b b≤a = #-tight a b (deMorgan₂-back' (b≤a , a≤b))
     isTightˢ'''⇔isAntisymˢ <-asym .snd ≤-antisym a b ¬ᵗa#b = let (b≤a , a≤b) = deMorgan₂' ¬ᵗa#b in ≤-antisym a b a≤b b≤a
+
+    isTrichotomousˢ⇔isTrichotomous <-irreflˢ <-irrefl <-asym .fst <-trichoˢ a b with <-trichoˢ a b
+    ... | inl a<b⊎b<a = inl a<b⊎b<a
+    ... | inr a≡b     = inr ∣ a≡b ∣
+    isTrichotomousˢ⇔isTrichotomous <-irreflˢ <-irrefl <-asym .snd <-tricho  a b with <-tricho a b
+    ... | inl a<b⊎b<a = inl a<b⊎b<a
+    ... | inr a≡b     = inr (∣∣-elim (λ c → is-set a b) (λ x → x) a≡b)
 
 -- for these pathes, `A` and `hProp.fst` need to be in the same universe to omit ugly lifting into `ℓ-max ℓ ℓ'`
 --   although this would be possible to have (with lifting)
@@ -219,81 +264,88 @@ module _ {ℓ : Level} {A : Type ℓ}  (is-set : isSet A) where
   nzinvˢ''+comm⇒invnzˢ 0f 1f _·_ _#_ (is-nzinv , ·-comm) x y x·y≡1 .fst = fst (is-nzinv x) ∣ y ,              x·y≡1 ∣
   nzinvˢ''+comm⇒invnzˢ 0f 1f _·_ _#_ (is-nzinv , ·-comm) x y x·y≡1 .snd = fst (is-nzinv y) ∣ x , ·-comm y x ∙ x·y≡1 ∣
 
+module _ {ℓ ℓ'} {X : Type ℓ} {_<_ : hPropRel X X ℓ'} (<-SPO : [ isStrictPartialOrder  _<_ ])
+  (let _#'_ : hPropRel X X ℓ'
+       x #' y = (x < y) ⊔ (y < x)
+       _≤'_ : hPropRel X X ℓ'
+       x ≤' y = ¬ (y < x)
+       (isstrictpartialorder <-irrefl <-trans <-cotrans) = <-SPO
+  ) where
+  abstract
+    -- Lemma 4.1.7.
+    -- Given a strict partial order < on a set X:
+    -- 1. we have an apartness relation defined by
+    --    x # y := (x < y) ∨ (y < x), and
 
-abstract
-  -- Lemma 4.1.7.
-  -- Given a strict partial order < on a set X:
-  -- 1. we have an apartness relation defined by
-  --    x # y := (x < y) ∨ (y < x), and
+    #'-isApartnessRel : [ isApartnessRel _#'_ ]
+    #'-isApartnessRel .IsApartnessRel.is-irrefl a a#a =
+      case a#a as a < a ⊔ a < a ⇒ ⊥ of λ where
+        (inl a<a) → <-irrefl _ a<a
+        (inr a<a) → <-irrefl _ a<a
+    #'-isApartnessRel .IsApartnessRel.is-sym     a b p = pathTo⇒ (⊔-comm (a < b) (b < a)) p
+    #'-isApartnessRel .IsApartnessRel.is-cotrans a b p =
+      case p as a < b ⊔ b < a ⇒ ∀[ x ] (a #' x) ⊔ (x #' b) of λ where
+        (inl a<b) x → case (<-cotrans _ _ a<b x) as a < x ⊔ x < b ⇒ (a #' x) ⊔ (x #' b) of λ where
+          (inl a<x) → inlᵖ (inlᵖ a<x)
+          (inr x<b) → inrᵖ (inlᵖ x<b)
+        (inr b<a) x → case (<-cotrans _ _ b<a x) as b < x ⊔ x < a ⇒ (a #' x) ⊔ (x #' b) of λ where
+          (inl b<x) → inrᵖ (inrᵖ b<x)
+          (inr x<a) → inlᵖ (inrᵖ x<a)
 
-  #'-isApartnessRel : ∀{X : Type ℓ} {_<_ : hPropRel X X ℓ'} → (isSPO : [ isStrictPartialOrder  _<_ ]) → [ isApartnessRel  (_#'_ {_<_ = _<_}) ]
-  #'-isApartnessRel {ℓ} {ℓ'} {X = X} {_<_ = _<_} <-SPO =
-    let (isstrictpartialorder <-irrefl <-trans <-cotrans) = <-SPO
-    in λ where
-      .IsApartnessRel.is-irrefl  a   p   → ⊔-elim (a < a) (a < a) (λ p → ⊥)
-                                          (λ a<a → <-irrefl _ a<a)
-                                          (λ a<a → <-irrefl _ a<a)
-                                          p
-      .IsApartnessRel.is-sym     a b p   → pathTo⇒ (⊔-comm (a < b) (b < a)) p
-      -- NOTE: it would be much nicer to have case splitting on _⊔_
-      .IsApartnessRel.is-cotrans a b p x → let _#''_ = _#'_ {_<_ = _<_} in
-                                          ⊔-elim (a < b) (b < a) (λ p → (a #'' x) ⊔ (x #'' b))
-                                          ( λ a<b → ⊔-elim (a < x) (x < b) (λ q → (a #'' x) ⊔ (x #'' b))
-                                                    (λ a<x → inlᵖ (inlᵖ a<x))
-                                                    (λ x<b → inrᵖ (inlᵖ x<b))
-                                                    (<-cotrans _ _ a<b x)
-                                          )
-                                          ( λ b<a → ⊔-elim (b < x) (x < a) (λ q → (a #'' x) ⊔ (x #'' b))
-                                                    (λ b<x → inrᵖ (inrᵖ b<x))
-                                                    (λ x<a → inlᵖ (inrᵖ x<a))
-                                                    (<-cotrans _ _ b<a x)
-                                          )
-                                          p
-    -- .IsApartnessRel.isCotrans a b (inl a<b) x → case (<-cotrans _ _ a<b x) of λ where -- case x of f = f x
-    --   (inl a<x) → inl (inl a<x)
-    --   (inr x<b) → inr (inl x<b)
-    -- .IsApartnessRel.isCotrans a b (inr b<a) x → case (<-cotrans _ _ b<a x) of λ where
-    --   (inl b<x) → inr (inr b<x)
-    --   (inr x<a) → inl (inr x<a)
+    -- 2. we have a preorder defined by
+    --    x ≤ y := ¬ᵗ(y < x).
 
+    ≤'-isPreorder : [ isPreorder _≤'_ ]
+    ≤'-isPreorder .IsPreorder.is-refl = <-irrefl
+    ≤'-isPreorder .IsPreorder.is-trans a b c ¬ᵗb<a ¬ᵗc<b c<a =
+         ⊔-elim (c < b) (b < a) (λ _ → ⊥)
+         (λ c<b → ¬ᵗc<b c<b)
+         (λ b<a → ¬ᵗb<a b<a)
+         (<-cotrans _ _ c<a b)
 
-  -- variant without copatterns: "just" move the `λ where` "into" the record
-  #'-isApartnessRel' : ∀{X : Type ℓ} (_<_ : hPropRel X X ℓ') → [ isStrictPartialOrder  _<_ ] → [ isApartnessRel  (_#'_ {_<_ = _<_}) ]
-  #'-isApartnessRel' {X = X} _<_ <-SPO =
-    let (isstrictpartialorder <-irrefl <-trans <-cotrans) = <-SPO
-        _#''_ = _#'_ {_<_ = _<_}
-    in record
-      { is-irrefl  = λ a a#a → case a#a as a < a ⊔ a < a ⇒ ⊥ of λ where
-                            (inl a<a) → <-irrefl _ a<a
-                            (inr a<a) → <-irrefl _ a<a
-      ; is-sym     = λ a b p → pathTo⇒ (⊔-comm (a < b) (b < a)) p
-      ; is-cotrans = λ a b p → case p as a < b ⊔ b < a ⇒ ∀[ x ] (a #'' x) ⊔ (x #'' b) of λ where
-          (inl a<b) x → case (<-cotrans _ _ a<b x) as a < x ⊔ x < b ⇒ (a #'' x) ⊔ (x #'' b) of λ where
-            (inl a<x) → inlᵖ (inlᵖ a<x)
-            (inr x<b) → inrᵖ (inlᵖ x<b)
-          (inr b<a) x → case (<-cotrans _ _ b<a x) as b < x ⊔ x < a ⇒ (a #'' x) ⊔ (x #'' b) of λ where
-            (inl b<x) → inrᵖ (inrᵖ b<x)
-            (inr x<a) → inlᵖ (inrᵖ x<a)
-       -- NOTE: this makes a disjointness-proof necessary, so using _⊎_ in the first place would be better
-       --       or would it be better to use _⊔_ and provide a disjointness proof?
-       --       well, cotransitivity does not care about the disjointness of cases
-       --         it only arises from our specific properties of _<_ in a context of b < a that b < x is disjoint with x < b
-       --         so, the ⊔-elim is still preferred here
-       -- (inr b<a) x → case ⊔⇒⊎ (b < x) (x < a) {! <-trans b x a!} (<-cotrans _ _ b<a x) of λ where
-       --   (inl b<x) → inrᵖ (inrᵖ b<x)
-       --   (inr x<a) → inlᵖ (inrᵖ x<a)
-      }
+module _ {ℓ ℓ'} {X : Type ℓ} {_<_ : hPropRel X X ℓ'} (<-SPO : [ isStrictPartialOrder  _<_ ]) (<-asym : [ isAsym _<_ ])
+  (let _#''_ : hPropRel X X ℓ'
+       x #'' y = [ <-asym x y ] (x < y) ⊎ᵖ (y < x)
+       _≤'_ : hPropRel X X ℓ'
+       x ≤' y = ¬ (y < x)
+       (isstrictpartialorder <-irrefl <-trans <-cotrans) = <-SPO
+  ) where
+  abstract
+    #''-isApartnessRel : [ isApartnessRel _#''_ ]
+    #''-isApartnessRel .IsApartnessRel.is-irrefl a (inl a<a) = <-irrefl _ a<a
+    #''-isApartnessRel .IsApartnessRel.is-irrefl a (inr a<a) = <-irrefl _ a<a
+    #''-isApartnessRel .IsApartnessRel.is-sym     a b p = ⊎-swap p
+    #''-isApartnessRel .IsApartnessRel.is-cotrans a b (inl a<b) x =
+      case (<-cotrans _ _ a<b x) as a < x ⊔ x < b ⇒ (a #'' x) ⊔ (x #'' b) of λ where
+        (inl a<x) → inlᵖ (inl a<x)
+        (inr x<b) → inrᵖ (inl x<b)
+    #''-isApartnessRel .IsApartnessRel.is-cotrans a b (inr b<a) x =
+      case (<-cotrans _ _ b<a x) as b < x ⊔ x < a ⇒ (a #'' x) ⊔ (x #'' b) of λ where
+        (inl b<x) → inrᵖ (inr b<x)
+        (inr x<a) → inlᵖ (inr x<a)
 
-  -- 2. we have a preorder defined by
-  --    x ≤ y := ¬ᵗ(y < x).
+module _ {ℓ ℓ'} {X : Type ℓ} {_<_ : hPropRel X X ℓ'} (<-SLO : [ isStrictLinearOrder  _<_ ])
+  (let _≤'_ : hPropRel X X ℓ'
+       x ≤' y = ¬ (y < x)
+       (isstrictlinearorder <-irrefl <-trans <-tricho) = <-SLO
 
-  ≤-isPreorder' : ∀{X : Type ℓ} (_<_ : hPropRel X X ℓ') → [ isStrictPartialOrder  _<_ ] → [ isPreorder  (_≤'_ {_<_ = _<_}) ]
-  ≤-isPreorder' {X = X} _<_ <-SPO =
-    let (isstrictpartialorder <-irrefl <-trans <-cotrans) = <-SPO
-    in λ where
-     .IsPreorder.is-refl → <-irrefl
-     .IsPreorder.is-trans a b c ¬ᵗb<a ¬ᵗc<b c<a →
-       ⊔-elim (c < b) (b < a) (λ _ → ⊥)
-       (λ c<b → ¬ᵗc<b c<b)
-       (λ b<a → ¬ᵗb<a b<a)
-       (<-cotrans _ _ c<a b)
+  ) where
+  abstract
+    <-cotrans : [ isCotrans _<_ ]
+    <-cotrans = IsStrictPartialOrder.is-cotrans (strictlinearorder⇒strictpartialorder _<_ <-SLO)
+
+    ≤'-isLinearOrder : [ isLinearOrder _≤'_ ]
+    IsLinearOrder.is-connex  ≤'-isLinearOrder a b with <-tricho a b
+    ... | inl (inl a<b) = inlᵖ λ b<a → <-irrefl a $ <-trans a b a a<b b<a
+    ... | inl (inr b<a) = inrᵖ λ a<b → <-irrefl a $ <-trans a b a a<b b<a
+    ... | inr      a≡b  = inlᵖ λ b<a → <-irrefl b (substₚ (λ p → b < p) a≡b b<a)
+    IsLinearOrder.is-antisym ≤'-isLinearOrder a b a≤b b≤a with <-tricho a b
+    ... | inl (inl a<b) = ⊥-elim (b≤a a<b)
+    ... | inl (inr b<a) = ⊥-elim (a≤b b<a)
+    ... | inr      a≡b  = a≡b
+    IsLinearOrder.is-trans   ≤'-isLinearOrder a b c a≤b b≤c c<a =
+      let γ : [ ¬ (b < a ⊔ c < b) ]
+          γ = deMorgan₂-back (b < a) (c < b) (a≤b , b≤c)
+          κ : [ b < a ⊔ c < b ]
+          κ = pathTo⇐ (⊔-comm (b < a) (c < b)) $ <-cotrans c a c<a b
+      in γ κ

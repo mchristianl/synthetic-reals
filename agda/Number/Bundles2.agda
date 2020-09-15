@@ -43,18 +43,32 @@ open import Number.Structures2
 -}
 
 
-record LinearlyOrderedField {ℓ ℓ' : Level} : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
-  field
-    is-set   : isSet Carrier
-    Carrier : Type ℓ
-    0f      : Carrier
-    1f      : Carrier
-    _<_     : hPropRel Carrier Carrier ℓ'
-    min     : Carrier → Carrier → Carrier
-    max     : Carrier → Carrier → Carrier
-    _+_     : Carrier → Carrier → Carrier
-    _·_     : Carrier → Carrier → Carrier
-    -_      : Carrier → Carrier
+-- record LinearlyOrderedField {ℓ ℓ' : Level} : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
+--   field
+--     is-set   : isSet Carrier
+--     Carrier : Type ℓ
+--     0f      : Carrier
+--     1f      : Carrier
+--     _<_     : hPropRel Carrier Carrier ℓ'
+--     min     : Carrier → Carrier → Carrier
+--     max     : Carrier → Carrier → Carrier
+--     _+_     : Carrier → Carrier → Carrier
+--     _·_     : Carrier → Carrier → Carrier
+--     -_      : Carrier → Carrier
+
+-- record LinearlyOrderedCommSemiring {ℓ ℓ'} : Type (ℓ-max ℓ ℓ') where
+--   field
+--     Carrier : Type ℓ
+--     0f      : Carrier
+--     1f      : Carrier
+--     _<_     : hPropRel Carrier Carrier ℓ'
+--     min     : Carrier → Carrier → Carrier
+--     max     : Carrier → Carrier → Carrier
+--     _+_     : Carrier → Carrier → Carrier
+--     _·_     : Carrier → Carrier → Carrier
+--     is-LinearlyOrderedCommSemiring : [ isLinearlyOrderedCommSemiring 0f 1f _+_ _·_ _<_ min max ]
+--
+--   open IsLinearlyOrderedCommSemiring is-LinearlyOrderedCommSemiring public
 
 record LinearlyOrderedField : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
   constructor partiallyorderedfield
