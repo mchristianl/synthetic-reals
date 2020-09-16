@@ -47,9 +47,12 @@ _<_ : (x y : ℕ) → hProp ℓ-zero
 (x < y) .snd (k₁ , k₁+sx≡y) (k₂ , k₂+sx≡y) = φ where
   abstract φ = Σ≡Prop (λ k → isSetℕ _ _) (inj-+m (k₁+sx≡y ∙ sym k₂+sx≡y))
 
--- sucⁿ-creates-<ⁿᵖ : ∀ a b → [ a <ⁿᵖ b ⇔ suc a <ⁿᵖ suc b ]
--- sucⁿ-creates-<ⁿᵖ a b .fst (k , p) = k , (+-sucⁿ k (suc a)) ∙ (λ i → suc (p i))
--- sucⁿ-creates-<ⁿᵖ a b .snd (k , p) = k , inj-m+ⁿ {1} (sym (+-sucⁿ k (suc a)) ∙ p)
+0<suc : ∀ a → 0 <ᵗ suc a
+0<suc a = a , +-comm a 1
+
+isProp⊤ : isProp [ ⊤ ]
+isProp⊤ tt tt = refl
+
 abstract
   lemma10   : ∀ n → (n <ᵗ 0) ≡ [ ⊥ ]
   lemma10   n = isoToPath (iso (λ{ (k , p) → snotz (sym (+-suc k n) ∙ p) }) ⊥-elim (λ b → isProp⊥ _ _) (λ a → isProp[] (n < 0) _ _))
@@ -57,10 +60,33 @@ abstract
   lemma10'' : ∀ n → (n < 0) ≡ ⊥
   lemma10'' n = ⇔toPath (transport (lemma10 n)) (transport (sym (lemma10 n)))
 
-<-irrefl       : (a       : ℕ) → [ ¬ (a < a) ]
-<-irrefl zero q = transp (λ i → [ lemma10'' 0 i ]) i0 q
-<-irrefl (suc a) (k , p) = φ where
-  abstract φ = snotz (inj-m+ {a} (+-suc a k ∙ (λ i → suc (+-comm a k i)) ∙ sym (+-suc k a) ∙ inj-m+ {1} (sym (+-suc k (suc a)) ∙ p) ∙ sym (+-zero a)))
+  lemma12 : ∀ n → [ 0 < suc n ] ≡ [ ⊤ ]
+  lemma12 n = isoToPath (iso (λ _ →  tt) (λ _ → n , +-suc n 0 ∙ (λ i → suc (+-zero n i))) (λ b → isProp⊤ _ _) (λ a → isProp[] (0 < suc n) _ _))
+
+  lemma12'' : ∀ n → (0 < suc n) ≡ ⊤
+  lemma12'' n = ⇔toPath (transport (lemma12 n)) (transport (sym (lemma12 n)))
+
+abstract
+  <-irrefl       : (a       : ℕ) → [ ¬ (a < a) ]
+  <-irrefl zero q = transp (λ i → [ lemma10'' 0 i ]) i0 q
+  <-irrefl (suc a) (k , p) =
+    snotz (inj-m+ {a} (+-suc a k ∙ (λ i → suc (+-comm a k i)) ∙ sym (+-suc k a) ∙ inj-m+ {1} (sym (+-suc k (suc a)) ∙ p) ∙ sym (+-zero a)))
+
+  suc-creates-< : ∀ a b → [ a < b ⇔ suc a < suc b ]
+  suc-creates-< a b .fst (k , p) = k , (+-suc k (suc a)) ∙ (λ i → suc (p i))
+  suc-creates-< a b .snd (k , p) = k , inj-m+ {1} (sym (+-suc k (suc a)) ∙ p)
+
+  <-cotrans      : (a b     : ℕ) → [ a < b ] → (x : ℕ) → [ (a < x) ⊔ (x < b) ]
+  <-cotrans  zero    zero        q      c  = ⊥-elim {A = λ _ → [ (zero < c) ⊔ (c < zero) ]}  (<-irrefl _ q)
+  <-cotrans  zero   (suc b)      q  zero   = inrᵖ q
+  <-cotrans  zero   (suc b)      q (suc c) = inlᵖ (c , +-comm c 1)
+  <-cotrans (suc a)  zero   (k , p)     c  = ⊥-elim {A = λ _ → [ (suc a < c) ⊔ (c < zero) ]} (snotz (sym (+-suc k (suc a)) ∙ p))
+  <-cotrans (suc a) (suc b)      q  zero   = inrᵖ (b , +-comm b 1)
+  <-cotrans (suc a) (suc b)      q (suc c) = transport (λ i → [ r i ⊔ s i ]) (<-cotrans a b (suc-creates-< a b .snd q) c)
+    where r : (a < c) ≡ (suc a < suc c)
+          s : (c < b) ≡ (suc c < suc b)
+          r = ⇔toPath (suc-creates-< a c .fst) (suc-creates-< a c .snd)
+          s = ⇔toPath (suc-creates-< c b .fst) (suc-creates-< c b .snd)
 
 -- suc-preserves-min : ∀ x y → suc (min x y) ≡ min (suc x) (suc y)
 -- suc-preserves-min zero y = refl
@@ -130,6 +156,7 @@ abstract
   ... | max-eq p q   = z≤x $ pathTo⇒ (λ i → z < p i) maxxy<z
 
 abstract
+  -- NOTE: maybe some clever use of cotrans makes this a bit shorter
   +-<-ext : (w x y z : ℕ) → [ (w + x) < (y + z) ] → [ (w < y) ⊔ (x < z) ]
   +-<-ext w x y z (k , k+suc[w+x]≡y+z) with w ≟ y | x ≟ z
   ... | lt w<y | q = ∣ inl w<y ∣

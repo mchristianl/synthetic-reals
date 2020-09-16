@@ -123,8 +123,7 @@ record IsLinearlyOrderedCommRing {ℓ ℓ'} {F : Type ℓ} (0f 1f : F) (_+_ _·_
   constructor islinearlyorderedcommring
   field
     is-LinearlyOrderedCommSemiring : [ isLinearlyOrderedCommSemiring 0f 1f _+_ _·_ _<_ min max ]
-    -inverse : ∀ x → (x + (- x) ≡ 0f) × ((- x) + x ≡ 0f)
-    is-dist  : ∀ x y z → (x · (y +  z) ≡ (x · y) + (x · z)) × ((x +  y) · z  ≡ (x · z) + (y · z))
+    +-inverse : ∀ x → (x + (- x) ≡ 0f) × ((- x) + x ≡ 0f)
 
   open IsLinearlyOrderedCommSemiring is-LinearlyOrderedCommSemiring public
 
