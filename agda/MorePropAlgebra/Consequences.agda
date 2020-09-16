@@ -330,10 +330,11 @@ module _ {ℓ ℓ'} {X : Type ℓ} {_<_ : hPropRel X X ℓ'} (<-SLO : [ isStrict
        (isstrictlinearorder <-irrefl <-trans <-tricho) = <-SLO
 
   ) where
-  abstract
+  private
     <-cotrans : [ isCotrans _<_ ]
     <-cotrans = IsStrictPartialOrder.is-cotrans (strictlinearorder⇒strictpartialorder _<_ <-SLO)
-
+    
+  abstract
     ≤'-isLinearOrder : [ isLinearOrder _≤'_ ]
     IsLinearOrder.is-connex  ≤'-isLinearOrder a b with <-tricho a b
     ... | inl (inl a<b) = inlᵖ λ b<a → <-irrefl a $ <-trans a b a a<b b<a

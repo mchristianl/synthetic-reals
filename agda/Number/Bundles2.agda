@@ -28,12 +28,11 @@ open import MorePropAlgebra.Definitions hiding (_≤''_)
 open import MorePropAlgebra.Consequences
 open import Number.Structures2
 
-
 {-
 | name | struct              | apart | abs | order | cauchy | sqrt₀⁺  | exp | final name                                                             |
 |------|---------------------|-------|-----|-------|--------|---------|-----|------------------------------------------------------------------------|
-| ℕ    | Semiring            |  (✓)  | (✓) | lin.  |        | (on x²) |     | LinearlyOrderedSemiring                                                |
-| ℤ    | Ring                |  (✓)  | (✓) | lin.  |        | (on x²) |     | LinearlyOrderedRing                                                    |
+| ℕ    | CommSemiring        |  (✓)  | (✓) | lin.  |        | (on x²) |     | LinearlyOrderedCommSemiring                                            |
+| ℤ    | CommRing            |  (✓)  | (✓) | lin.  |        | (on x²) |     | LinearlyOrderedCommRing                                                |
 | ℚ    | Field               |  (✓)  | (✓) | lin.  |        | (on x²) | (✓) | LinearlyOrderedField                                                   |
 | ℝ    | Field               |  (✓)  | (✓) | part. |   ✓    |    ✓    | (✓) | CompletePartiallyOrderedFieldWithSqrt                                  |
 | ℂ    | euclidean 2-Product |  (✓)  | (✓) |       |  (✓)   |         |  ?  | EuclideanTwoProductOfCompletePartiallyOrderedFieldWithSqrt             |
@@ -42,36 +41,44 @@ open import Number.Structures2
 | K    | Field               |   ✓   |  ✓  |       |   ✓    |         |  ?  | CompleteApartnessFieldWithAbsIntoCompletePartiallyOrderedFieldWithSqrt |
 -}
 
+record LinearlyOrderedCommSemiring {ℓ ℓ'} : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
+  constructor linearlyorderedcommsemiring
+  field
+    Carrier : Type ℓ
+    0f 1f   : Carrier
+    _+_     : Carrier → Carrier → Carrier
+    _·_     : Carrier → Carrier → Carrier
+    min max : Carrier → Carrier → Carrier
+    _<_     : hPropRel Carrier Carrier ℓ'
+    is-LinearlyOrderedCommSemiring : [ isLinearlyOrderedCommSemiring 0f 1f _+_ _·_ _<_ min max ] -- defines `_≤_` and `_#_`
 
--- record LinearlyOrderedField {ℓ ℓ' : Level} : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
---   field
---     is-set   : isSet Carrier
---     Carrier : Type ℓ
---     0f      : Carrier
---     1f      : Carrier
---     _<_     : hPropRel Carrier Carrier ℓ'
---     min     : Carrier → Carrier → Carrier
---     max     : Carrier → Carrier → Carrier
---     _+_     : Carrier → Carrier → Carrier
---     _·_     : Carrier → Carrier → Carrier
---     -_      : Carrier → Carrier
+  infixl 7 _·_
+  infixl 5 _+_
+  infixl 4 _<_
 
--- record LinearlyOrderedCommSemiring {ℓ ℓ'} : Type (ℓ-max ℓ ℓ') where
---   field
---     Carrier : Type ℓ
---     0f      : Carrier
---     1f      : Carrier
---     _<_     : hPropRel Carrier Carrier ℓ'
---     min     : Carrier → Carrier → Carrier
---     max     : Carrier → Carrier → Carrier
---     _+_     : Carrier → Carrier → Carrier
---     _·_     : Carrier → Carrier → Carrier
---     is-LinearlyOrderedCommSemiring : [ isLinearlyOrderedCommSemiring 0f 1f _+_ _·_ _<_ min max ]
---
---   open IsLinearlyOrderedCommSemiring is-LinearlyOrderedCommSemiring public
+  open IsLinearlyOrderedCommSemiring is-LinearlyOrderedCommSemiring public
 
-record LinearlyOrderedField : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
-  constructor partiallyorderedfield
+record LinearlyOrderedCommRing {ℓ ℓ'} : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
+  constructor linearlyorderedcommring
+  field
+    Carrier : Type ℓ
+    0f 1f   : Carrier
+    _+_     : Carrier → Carrier → Carrier
+    -_      : Carrier → Carrier
+    _·_     : Carrier → Carrier → Carrier
+    min max : Carrier → Carrier → Carrier
+    _<_     : hPropRel Carrier Carrier ℓ'
+    is-LinearlyOrderedCommRing : [ isLinearlyOrderedCommRing 0f 1f _+_ _·_ -_ _<_ min max ] -- defines `_≤_` and `_#_`
+
+  infixl 7 _·_
+  infix  6 -_
+  infixl 5 _+_
+  infixl 4 _<_
+
+  open IsLinearlyOrderedCommRing is-LinearlyOrderedCommRing public
+
+record LinearlyOrderedField {ℓ ℓ'} : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
+  constructor linearlyorderedfield
   field
     Carrier : Type ℓ
     0f 1f   : Carrier
@@ -92,8 +99,8 @@ record LinearlyOrderedField : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
 -- NOTE: this smells like "CPO" https://en.wikipedia.org/wiki/Complete_partial_order
 record CompletePartiallyOrderedFieldWithSqrt {ℓ ℓ' : Level} : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
   field
-    is-set   : isSet Carrier
     Carrier : Type ℓ
+    is-set   : isSet Carrier
     0f      : Carrier
     1f      : Carrier
     _<_     : hPropRel Carrier Carrier ℓ'
@@ -213,8 +220,8 @@ record CompletePartiallyOrderedFieldWithSqrt {ℓ ℓ' : Level} : Type (ℓ-suc 
 
 open import MorePropAlgebra.Bridges1999
 
-mkBridges : ∀{ℓ ℓ'} → CompletePartiallyOrderedFieldWithSqrt {ℓ} {ℓ'} → BooijResults {ℓ} {ℓ'}
-mkBridges CPOFS = record { CompletePartiallyOrderedFieldWithSqrt CPOFS }
+-- mkBridges : ∀{ℓ ℓ'} → CompletePartiallyOrderedFieldWithSqrt {ℓ} {ℓ'} → BooijResults {ℓ} {ℓ'}
+-- mkBridges CPOFS = record { CompletePartiallyOrderedFieldWithSqrt CPOFS }
 
 
 -----------8<--------------------------------------------8<------------------------------------------8<------------------
@@ -295,6 +302,6 @@ module _ -- mathematical structures with `abs` into the real numbers
       _⁻¹     : (x : Carrier) → {{p : [ x # 0f ]}} → Carrier
       abs     : Carrier → ℝ
       is-set  : isSet Carrier
-      is-abs  : [ isAbs is-set 0f _+_ _·_ _#_ abs is-setʳ 0ʳ _+ʳ_ _·ʳ_ _≤ʳ_ ]
+      is-abs  : [ isAbs is-set 0f _+_ _·_ is-setʳ 0ʳ _+ʳ_ _·ʳ_ _≤ʳ_ abs ]
 
     -- TODO: complete this

@@ -1,4 +1,4 @@
-{-# OPTIONS --cubical --no-import-sorts #-}
+{-# OPTIONS --cubical --no-import-sorts --allow-unsolved-metas #-}
 
 module Number.Structures2 where
 
@@ -113,24 +113,39 @@ record IsLinearlyOrderedCommSemiring {ℓ ℓ'} {F : Type ℓ} (0f 1f : F) (_+_ 
   ≤-antisym : [ isAntisymˢ _≤_ is-set ]
   ≤-antisym = isAntisymˢ⇔isAntisym _≤_ is-set .snd ≤-antisymᵗ
 
+isLinearlyOrderedCommSemiring : ∀{ℓ ℓ'} {F : Type ℓ} (0f 1f : F) (_+_ _·_ : F → F → F) (_<_ : hPropRel F F ℓ') (min max : F → F → F) → hProp (ℓ-max ℓ ℓ')
+isLinearlyOrderedCommSemiring 0f 1f _+_ _·_ _<_ min max .fst = IsLinearlyOrderedCommSemiring 0f 1f _+_ _·_ _<_ min max
+isLinearlyOrderedCommSemiring 0f 1f _+_ _·_ _<_ min max .snd = φ where
+  abstract φ = {!   !}
+
 -- this is ℤ
 record IsLinearlyOrderedCommRing {ℓ ℓ'} {F : Type ℓ} (0f 1f : F) (_+_ _·_ : F → F → F) (-_ : F → F) (_<_ : hPropRel F F ℓ') (min max : F → F → F) : Type (ℓ-max ℓ ℓ') where
   constructor islinearlyorderedcommring
   field
-    is-LinearlyOrderedCommSemiring : IsLinearlyOrderedCommSemiring 0f 1f _+_ _·_ _<_ min max
+    is-LinearlyOrderedCommSemiring : [ isLinearlyOrderedCommSemiring 0f 1f _+_ _·_ _<_ min max ]
     -inverse : ∀ x → (x + (- x) ≡ 0f) × ((- x) + x ≡ 0f)
     is-dist  : ∀ x y z → (x · (y +  z) ≡ (x · y) + (x · z)) × ((x +  y) · z  ≡ (x · z) + (y · z))
 
   open IsLinearlyOrderedCommSemiring is-LinearlyOrderedCommSemiring public
 
+isLinearlyOrderedCommRing : ∀{ℓ ℓ'} {F : Type ℓ} (0f 1f : F) (_+_ _·_ : F → F → F) (-_ : F → F) (_<_ : hPropRel F F ℓ') (min max : F → F → F) → hProp (ℓ-max ℓ ℓ')
+isLinearlyOrderedCommRing 0f 1f _+_ _·_ -_ _<_ min max .fst = IsLinearlyOrderedCommRing 0f 1f _+_ _·_ -_ _<_ min max
+isLinearlyOrderedCommRing 0f 1f _+_ _·_ -_ _<_ min max .snd = φ where
+  abstract φ = {!   !}
+
 -- this is ℚ
 record IsLinearlyOrderedField {ℓ ℓ'} {F : Type ℓ} (0f 1f : F) (_+_ _·_ : F → F → F) (-_ : F → F) (_<_ : hPropRel F F ℓ') (min max : F → F → F) : Type (ℓ-max ℓ ℓ') where
   constructor islinearlyorderedfield
   field
-    is-LinearlyOrderedCommRing : IsLinearlyOrderedCommRing 0f 1f _+_ _·_ (-_) _<_ min max
+    is-LinearlyOrderedCommRing : [ isLinearlyOrderedCommRing 0f 1f _+_ _·_ (-_) _<_ min max ]
   open IsLinearlyOrderedCommRing is-LinearlyOrderedCommRing public
   field
     ·-inv'' : ∀ x → [ (∃[ y ] ([ is-set ] (x · y) ≡ˢ 1f)) ⇔ (x # 0f) ]
+
+isLinearlyOrderedField : ∀{ℓ ℓ'} {F : Type ℓ} (0f 1f : F) (_+_ _·_ : F → F → F) (-_ : F → F) (_<_ : hPropRel F F ℓ') (min max : F → F → F) → hProp (ℓ-max ℓ ℓ')
+isLinearlyOrderedField 0f 1f _+_ _·_ -_ _<_ min max .fst = IsLinearlyOrderedField 0f 1f _+_ _·_ -_ _<_ min max
+isLinearlyOrderedField 0f 1f _+_ _·_ -_ _<_ min max .snd = φ where
+  abstract φ = {!   !}
 
 -- this is ℝ
 record IsCompletePartiallyOrderedFieldWithSqrt {ℓ ℓ'} {F : Type ℓ} (0f 1f : F) (_+_ _·_ : F → F → F) (-_ : F → F) (_<_ : hPropRel F F ℓ') (min max : F → F → F) (sqrt : (x : F) → {{ ! [ ¬(x < 0f) ] }} → F) : Type (ℓ-max ℓ ℓ') where
