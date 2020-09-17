@@ -95,6 +95,9 @@ abstract
           r = ⇔toPath (suc-creates-< a c .fst) (suc-creates-< a c .snd)
           s = ⇔toPath (suc-creates-< c b .fst) (suc-creates-< c b .snd)
 
+-- +-reflects-< : ∀ a b x → [ a + x < b + x ] → [ a < b ]
+-- +-reflects-< a b x
+
 -- suc-preserves-min : ∀ x y → suc (min x y) ≡ min (suc x) (suc y)
 -- suc-preserves-min zero y = refl
 -- suc-preserves-min (suc x) zero = refl

@@ -48,6 +48,7 @@ open import Data.Nat.Base using () renaming
   ; _⊓_ to minⁿ
   ; _+_ to _+ⁿ_
   ; _*_ to _*ⁿ_
+  ; pred to predⁿ
   )
 
 open import Cubical.Data.Int renaming
@@ -72,6 +73,10 @@ open import Cubical.Data.Nat.Order using () renaming
   ; gt to gtⁿ
   ; eq to eqⁿ
   ; ¬-<-zero to ¬-<ⁿ-zero
+  )
+open import Cubical.Data.Nat.Properties using () renaming
+  ( snotz to snotzⁿ
+  ; injSuc to injSucⁿ
   )
 
 import Cubical.HITs.Ints.QuoInt as QuoInt
@@ -111,6 +116,11 @@ signed sneg (suc x) = neg (suc x)
 - pos zero = pos zero
 - pos (suc n) = negsuc n
 - negsuc n = pos (suc n)
+
+-involutive : ∀ a → - - a ≡ a
+-involutive (pos zero) = refl
+-involutive (pos (suc n)) = refl
+-involutive (negsuc n) = refl
 
 infix 8 -_
 
@@ -199,6 +209,9 @@ private
 -1*≡- (pos zero) = refl
 -1*≡- (pos (suc n)) = refl
 -1*≡- (negsuc n) = λ i → pos $ suc $ +ⁿ-comm n 0 i
+
+negsuc≡-pos : ∀ a → negsuc a ≡ - pos (suc a)
+negsuc≡-pos a = refl
 
 *-comm : ∀ a b → a * b ≡ b * a
 *-comm (pos      a ) (pos      b ) = λ i → pos $ *ⁿ-comm a b i
@@ -343,6 +356,9 @@ max (negsuc x) (negsuc y) = negsuc (minⁿ x y)
 <-trans (negsuc a) (negsuc b) (pos    c) a<b b<c = tt
 <-trans (negsuc a) (negsuc b) (negsuc c) a<b b<c = <ⁿ-trans b<c a<b
 
+<-asym : (a b : ℤ) → [ a < b ] → [ ¬(b < a) ]
+<-asym = irrefl+trans⇒asym _<_ <-irrefl <-trans
+
 <-cotrans : (a b : ℤ) → [ a < b ] → (x : ℤ) → [ (a < x) ⊔ (x < b) ]
 <-cotrans (pos    a) (pos    b) a<b (pos    x) = <ⁿ-cotrans _ _ a<b x
 <-cotrans (pos    a) (pos    b) a<b (negsuc x) = inrᵖ tt
@@ -368,8 +384,90 @@ negsuc a ≟ negsuc b with a ≟ⁿ b
 ... | eqⁿ p = eq λ i → negsuc (p i)
 ... | gtⁿ p = lt p
 
+data MinTrichtotomy (x y : ℤ) : Type where
+  min-lt : min x y ≡ x → [ x < y ]   → MinTrichtotomy x y
+  min-gt : min x y ≡ y → [ y < x ]   → MinTrichtotomy x y
+  min-eq : min x y ≡ x → min x y ≡ y → MinTrichtotomy x y
+
+data MaxTrichtotomy (x y : ℤ) : Type where
+  max-lt : max x y ≡ y → [ x < y ]   → MaxTrichtotomy x y
+  max-gt : max x y ≡ x → [ y < x ]   → MaxTrichtotomy x y
+  max-eq : max x y ≡ x → max x y ≡ y → MaxTrichtotomy x y
+
+negsuc-reflects-≡ : ∀ x y → negsuc x ≡ negsuc y → x ≡ y
+negsuc-reflects-≡ x y p i = predⁿ (abs (p i))
+
+pos-reflects-≡ : ∀ x y → pos x ≡ pos y → x ≡ y
+pos-reflects-≡ x y p i = abs (p i)
+
+¬suc<ⁿ0 : ∀ x → [ ¬ (suc x <ⁿ 0) ]
+¬suc<ⁿ0 x (k , p) = snotzⁿ $ sym (+ⁿ-suc k (suc x)) ∙ p
+
+minⁿ-comm : ∀ x y → minⁿ x y ≡ minⁿ y x
+minⁿ-comm zero zero = refl
+minⁿ-comm zero (suc y) = refl
+minⁿ-comm (suc x) zero = refl
+minⁿ-comm (suc x) (suc y) i = suc $ minⁿ-comm x y i
+
+minⁿ-tightˡ : ∀ x y → [ x <ⁿ y ] → minⁿ x y ≡ x
+minⁿ-tightˡ zero zero x<y = refl
+minⁿ-tightˡ zero (suc y) x<y = refl
+minⁿ-tightˡ (suc x) zero x<y = ⊥-elim {A = λ _ → zero ≡ suc x} (¬suc<ⁿ0 x x<y)
+minⁿ-tightˡ (suc x) (suc y) x<y i = suc $ minⁿ-tightˡ x y (sucⁿ-creates-<ⁿ x y .snd x<y) i
+
+minⁿ-tightʳ : ∀ x y → [ y <ⁿ x ] → minⁿ x y ≡ y
+minⁿ-tightʳ x y y<x = minⁿ-comm x y ∙ minⁿ-tightˡ y x y<x
+
+minⁿ-identity : ∀ x → minⁿ x x ≡ x
+minⁿ-identity zero = refl
+minⁿ-identity (suc x) i = suc $ minⁿ-identity x i
+
+maxⁿ-comm : ∀ x y → maxⁿ x y ≡ maxⁿ y x
+maxⁿ-comm zero zero = refl
+maxⁿ-comm zero (suc y) = refl
+maxⁿ-comm (suc x) zero = refl
+maxⁿ-comm (suc x) (suc y) i = suc $ maxⁿ-comm x y i
+
+maxⁿ-tightˡ : ∀ x y → [ y <ⁿ x ] → maxⁿ x y ≡ x
+maxⁿ-tightˡ zero zero y<x = refl
+maxⁿ-tightˡ zero (suc y) y<x = ⊥-elim {A = λ _ → suc y ≡ zero} (¬suc<ⁿ0 y y<x)
+maxⁿ-tightˡ (suc x) zero y<x = refl
+maxⁿ-tightˡ (suc x) (suc y) y<x i = suc $ maxⁿ-tightˡ x y (sucⁿ-creates-<ⁿ y x .snd y<x) i
+
+maxⁿ-tightʳ : ∀ x y → [ x <ⁿ y ] → maxⁿ x y ≡ y
+maxⁿ-tightʳ x y x<y = maxⁿ-comm x y ∙ maxⁿ-tightˡ y x x<y
+
+maxⁿ-identity : ∀ x → maxⁿ x x ≡ x
+maxⁿ-identity zero = refl
+maxⁿ-identity (suc x) i = suc $ maxⁿ-identity x i
+
+min-trichotomy : ∀ x y → MinTrichtotomy x y
+min-trichotomy (pos    x) (pos    y) with (pos x) ≟ (pos y)
+... | lt p = min-lt (λ i → pos $ minⁿ-tightˡ x y p i) p
+... | eq p = let minxy≡x = (λ i → minⁿ x (pos-reflects-≡ x y p (~ i))) ∙ minⁿ-identity x
+             in min-eq (λ j → pos $ minxy≡x j) ((λ i → pos $ minxy≡x i) ∙ p)
+... | gt p = min-gt (λ i → pos $ minⁿ-tightʳ x y p i) p
+min-trichotomy (pos    x) (negsuc y) = min-gt refl tt
+min-trichotomy (negsuc x) (pos    y) = min-lt refl tt
+min-trichotomy (negsuc x) (negsuc y) with (negsuc x) ≟ (negsuc y)
+... | lt p = min-lt (λ i → negsuc $ maxⁿ-tightˡ x y p i) p
+... | eq p = let maxxy≡x = (λ i → maxⁿ x (negsuc-reflects-≡ x y p (~ i))) ∙ maxⁿ-identity x
+             in min-eq (λ j → negsuc $ maxxy≡x j) ((λ i → negsuc $ maxxy≡x i) ∙ p)
+... | gt p = min-gt (λ i → negsuc $ maxⁿ-tightʳ x y p i) p
+
+-- NOTE: same proof as in `Number.Instances.Nat`
 is-min : (x y z : ℤ) → [ ¬ᵖ (min x y < z) ⇔ ¬ᵖ (x < z) ⊓ ¬ᵖ (y < z) ]
-is-min = {!   !}
+is-min x y z .fst z≤minxy with min-trichotomy x y
+... | min-lt p x<y = (λ x<z → z≤minxy $ pathTo⇐ (λ i → p i < z) x<z)
+                   , (λ y<z → z≤minxy $ pathTo⇐ (λ i → p i < z) $ <-trans x y z x<y y<z)
+... | min-gt p y<x = (λ x<z → z≤minxy $ pathTo⇐ (λ i → p i < z) $ <-trans y x z y<x x<z)
+                   , (λ y<z → z≤minxy $ pathTo⇐ (λ i → p i < z) y<z)
+... | min-eq p q   = (λ x<z → z≤minxy $ pathTo⇐ (λ i → p i < z) x<z)
+                   , (λ y<z → z≤minxy $ pathTo⇐ (λ i → q i < z) y<z)
+is-min x y z .snd (z≤x , z≤y) minxy<z with min-trichotomy x y
+... | min-lt p _   = z≤x $ pathTo⇒ (λ i → p i < z) minxy<z
+... | min-gt p _   = z≤y $ pathTo⇒ (λ i → p i < z) minxy<z
+... | min-eq p q   = z≤x $ pathTo⇒ (λ i → p i < z) minxy<z
 
 is-max : (x y z : ℤ) → [ ¬ᵖ (z < max x y) ⇔ ¬ᵖ (z < x) ⊓ ¬ᵖ (z < y) ]
 is-max = {!  !}
@@ -400,29 +498,148 @@ sucInt[negsuc+pos]≡0 (suc n) = let r = sucInt[negsuc+pos]≡0 n in sym ind ∙
 +-inverse x .fst = +-inverseʳ x
 +-inverse x .snd = +-inverseˡ x
 
--- sucInt--<
--- predInt--<
+sucInt-reflects-< : ∀ x y → [ sucInt x < sucInt y ] → [ x < y ]
+sucInt-reflects-< (pos x) (pos y) p = sucⁿ-creates-<ⁿ x y .snd p -- ok
+sucInt-reflects-< (pos n) (negsuc zero) p = ¬-<ⁿ-zero p -- ok
+sucInt-reflects-< (negsuc n) (pos n₁) p = tt
+sucInt-reflects-< (negsuc zero) (negsuc zero) p = p
+sucInt-reflects-< (negsuc (suc n)) (negsuc zero) p = {!   !} -- ok
+sucInt-reflects-< (negsuc (suc n)) (negsuc (suc n₁)) p = {!   !} -- ok
+
+predInt-reflects-< : ∀ x y → [ predInt x < predInt y ] → [ x < y ]
+predInt-reflects-< (pos zero) (pos zero) p = p
+predInt-reflects-< (pos zero) (pos (suc n₁)) p = {!   !} -- ok
+predInt-reflects-< (pos (suc n)) (pos (suc n₁)) p = {!   !} -- ok
+predInt-reflects-< (pos zero) (negsuc n₁) p = {!   !} -- ok
+predInt-reflects-< (negsuc n) (pos n₁) p = tt
+predInt-reflects-< (negsuc n) (negsuc n₁) p = {!   !} -- ok
+
+sucInt-preserves-< : ∀ x y → [ x < y ] → [ sucInt x < sucInt y ]
+sucInt-preserves-< (pos n) (pos n₁) x<y = {!   !} -- ok
+sucInt-preserves-< (negsuc zero) (pos n₁) x<y = {!   !} -- ok
+sucInt-preserves-< (negsuc (suc n)) (pos n₁) x<y = tt
+sucInt-preserves-< (negsuc zero) (negsuc zero) x<y = x<y
+sucInt-preserves-< (negsuc zero) (negsuc (suc n₁)) x<y = {!   !} -- ok
+sucInt-preserves-< (negsuc (suc n)) (negsuc zero) x<y = tt
+sucInt-preserves-< (negsuc (suc n)) (negsuc (suc n₁)) x<y = {!   !} -- ok
+
+predInt-preserves-< : ∀ x y → [ x < y ] → [ predInt x < predInt y ]
+predInt-preserves-< (pos zero) (pos zero) x<y = x<y
+predInt-preserves-< (pos zero) (pos (suc n₁)) x<y = tt
+predInt-preserves-< (pos (suc n)) (pos zero) x<y = {!   !} -- ok
+predInt-preserves-< (pos (suc n)) (pos (suc n₁)) x<y = {!   !} -- ok
+predInt-preserves-< (negsuc n) (pos zero) x<y = {!   !} -- ok
+predInt-preserves-< (negsuc n) (pos (suc n₁)) x<y = tt
+predInt-preserves-< (negsuc n) (negsuc n₁) x<y = {!   !} -- ok
+
+pos+pos≡+ⁿ : ∀ a x → (pos a +pos x) ≡ pos (a +ⁿ x)
+pos+pos≡+ⁿ a zero = λ i → pos $ +ⁿ-comm 0 a i
+pos+pos≡+ⁿ a (suc x) = let r = pos+pos≡+ⁿ a x in
+  sucInt (pos a +pos x) ≡⟨ (λ i → sucInt $ r i) ⟩
+  sucInt (pos (a +ⁿ x)) ≡⟨ refl ⟩
+  pos (suc (a +ⁿ x))    ≡⟨ (λ i → pos $ +ⁿ-suc a x (~ i)) ⟩
+  pos (a +ⁿ suc x)      ∎
+
+negsuc+negsuc≡+ⁿ : ∀ a x → (negsuc a +negsuc x) ≡ negsuc (suc (a +ⁿ x))
+negsuc+negsuc≡+ⁿ a zero = λ i → negsuc $ suc $ +ⁿ-comm 0 a i
+negsuc+negsuc≡+ⁿ a (suc x) = let r = negsuc+negsuc≡+ⁿ a x in
+  predInt (negsuc a +negsuc x)    ≡⟨ (λ i → predInt (r i)) ⟩
+  predInt (negsuc (suc (a +ⁿ x))) ≡⟨ refl ⟩
+  negsuc (suc (suc (a +ⁿ x)))     ≡⟨ (λ i → negsuc $ suc $ +ⁿ-suc a x (~ i)) ⟩
+  negsuc (suc (a +ⁿ suc x))       ∎
+
++negsuc-identityˡ : ∀ x → 0 +negsuc x ≡ negsuc x
++negsuc-identityˡ zero = refl
++negsuc-identityˡ (suc x) = λ i → predInt $ +negsuc-identityˡ x i
+
+pos+negsuc≡⊎ : ∀ a b → (Σ[ y ∈ ℕ ] pos a +negsuc b ≡ pos y) ⊎ (Σ[ y ∈ ℕ ] pos a +negsuc b ≡ negsuc y)
+pos+negsuc≡⊎ zero zero = inr (0 , refl)
+pos+negsuc≡⊎ (suc a) zero = inl (a , refl)
+pos+negsuc≡⊎ zero (suc b) = inr (suc b , λ i → predInt $ +negsuc-identityˡ b i)
+pos+negsuc≡⊎ (suc a) (suc b) with pos+negsuc≡⊎ a b
+... | inl (y , p) = inl (y , predInt+negsuc b (pos (suc a)) ∙ p)
+... | inr (y , p) = inr (y , predInt+negsuc b (pos (suc a)) ∙ p)
+
+-- lemma1 : ∀ a b x → [ (pos a +negsuc x) < (pos b +negsuc x) ] → [ a <ⁿ b ]
+-- lemma1 a b x = {!   !}
+
++-preserves-< : ∀ a b x → [ a < b ] → [ (a + x) < (b + x) ]
++-preserves-< a b (pos zero) a<b = a<b
++-preserves-< a b (pos (suc n)) a<b = let r = +-preserves-< a b (pos n) a<b
+                                      in sucInt-preserves-< (a +pos n) (b +pos n) r
++-preserves-< a b (negsuc zero) a<b = predInt-preserves-< a b a<b
++-preserves-< a b (negsuc (suc n)) a<b = let r = +-preserves-< a b (negsuc n) a<b
+                                         in predInt-preserves-< (a +negsuc n) (b +negsuc n) r
+-- +-preserves-< (pos n) (pos n₁) (pos n₂) a<b = {!   !}
+-- +-preserves-< (pos n) (pos n₁) (negsuc n₂) a<b = {!   !}
+-- +-preserves-< (negsuc n) (pos n₁) (pos n₂) a<b = {!   !}
+-- +-preserves-< (negsuc n) (pos n₁) (negsuc n₂) a<b = {!   !}
+-- +-preserves-< (negsuc n) (negsuc n₁) (pos n₂) a<b = {!   !}
+-- +-preserves-< (negsuc n) (negsuc n₁) (negsuc n₂) a<b = {!   !}
+
+-- +-reflects-< : ∀ a b x → [ (a + x) < (b + x) ] → [ a < b ]
+-- +-reflects-< a b (pos zero) a+x<b+x = a+x<b+x
+-- +-reflects-< a b (pos (suc n)) a+x<b+x = {! sucInt-reflects-< (a +pos n) (b +pos n) a+x<b+x   !}
+-- +-reflects-< a b (negsuc zero) a+x<b+x = {!   !}
+-- +-reflects-< a b (negsuc (suc n)) a+x<b+x = {!   !}
 
 +-reflects-< : ∀ a b x → [ (a + x) < (b + x) ] → [ a < b ]
-+-reflects-< (pos a) (pos b) (pos zero) a+x<b+x = a+x<b+x
-+-reflects-< (pos a) (pos b) (pos (suc x)) a+x<b+x = {!   !}
-+-reflects-< (pos a) (pos b) (negsuc zero) a+x<b+x = {!   !}
-+-reflects-< (pos a) (pos b) (negsuc (suc x)) a+x<b+x = let r = +-reflects-< (pos a) (pos b) (negsuc x) in {!    !}
-+-reflects-< (pos a) (negsuc b) (pos (suc x)) a+x<b+x = {!   !}
-+-reflects-< (pos    a) (negsuc b) (negsuc x) a+x<b+x = {!   !}
-+-reflects-< (negsuc a) (pos    b) (pos    x) a+x<b+x = tt
-+-reflects-< (negsuc a) (pos    b) (negsuc x) a+x<b+x = tt
-+-reflects-< (negsuc a) (negsuc b) (pos    x) a+x<b+x = {!   !}
-+-reflects-< (negsuc a) (negsuc b) (negsuc x) a+x<b+x = {!   !}
++-reflects-< a b x = snd (
+  (a + x) < (b + x) ⇒ᵖ⟨ +-preserves-< (a + x) (b + x) (- x) ⟩
+  ((a + x) + (- x)) < ((b + x) + (- x)) ⇒ᵖ⟨ (pathTo⇐ λ i → +-assoc a x (- x) i < +-assoc b x (- x) i) ⟩
+  (a + (x + (- x))) < (b + (x + (- x))) ⇒ᵖ⟨ (pathTo⇒ λ i → (a + +-inverseʳ x i) < (b + +-inverseʳ x i)) ⟩
+  (a + 0) < (b + 0)                     ⇒ᵖ⟨ (λ x → x) ⟩
+  a < b             ◼ᵖ)
+
+-- +-reflects-< : ∀ a b x → [ (a + x) < (b + x) ] → [ a < b ]
+-- +-reflects-< (pos a) (pos b) (pos x) a+x<b+x = let r : [ pos (a +ⁿ x) < pos (b +ⁿ x) ]
+--                                                    r = transport (λ i → [ pos+pos≡+ⁿ a x i < pos+pos≡+ⁿ b x i ]) a+x<b+x
+--                                                in {! +ⁿ-reflects-<ⁿ   !}
+-- -- +-reflects-< (pos a) (pos b) (pos zero) a+x<b+x = a+x<b+x
+-- -- [ (pos a +pos x) < (pos b +pos x) ]
+-- -- +-reflects-< (pos a) (pos b) (pos (suc x)) a+x<b+x = {! sucInt-reflects-< (pos a +pos x) (pos b +pos x) a+x<b+x   !}
+-- +-reflects-< (pos a) (pos b) (negsuc x) a+x<b+x = {!   !}
+-- -- +-reflects-< (pos a) (pos b) (negsuc x) a+x<b+x with (pos a +negsuc x) ≟ 0 | (pos b +negsuc x) ≟ 0
+-- -- ... | lt x₁ | lt x₂ = {!   !}
+-- -- ... | lt x₁ | eq x₂ = {!   !}
+-- -- ... | lt x₁ | gt x₂ = {!   !}
+-- -- ... | eq x₁ | lt x₂ = {!   !}
+-- -- ... | eq x₁ | eq x₂ = {!   !}
+-- -- ... | eq x₁ | gt x₂ = {!   !}
+-- -- ... | gt x₁ | lt x₂ = {!   !}
+-- -- ... | gt x₁ | eq x₂ = {!   !}
+-- -- ... | gt x₁ | gt x₂ = {!   !}
+-- -- +-reflects-< (pos a) (pos b) (negsuc zero) a+x<b+x = predInt-reflects-< (pos a) (pos b) a+x<b+x
+-- -- +-reflects-< (pos a) (pos b) (negsuc (suc x)) a+x<b+x = let r = +-reflects-< (pos a) (pos b) (negsuc x) in {!    !}
+-- +-reflects-< (pos a) (negsuc b) (pos (suc x)) a+x<b+x = {!   !}
+-- +-reflects-< (pos    a) (negsuc b) (negsuc x) a+x<b+x = {!   !}
+-- +-reflects-< (negsuc a) (pos    b) (pos    x) a+x<b+x = tt
+-- +-reflects-< (negsuc a) (pos    b) (negsuc x) a+x<b+x = tt
+-- +-reflects-< (negsuc a) (negsuc b) (pos    x) a+x<b+x = {!   !} -- 2*2 cases
+-- +-reflects-< (negsuc a) (negsuc b) (negsuc x) a+x<b+x = let r : [ negsuc (suc (a +ⁿ x)) < negsuc (suc (b +ⁿ x))  ]
+--                                                             r = transport (λ i → [ negsuc+negsuc≡+ⁿ a x i < negsuc+negsuc≡+ⁿ b x i ]) a+x<b+x
+--                                                         in {! +ⁿ-reflects-<ⁿ   !}
+
++-reflects-<ˡ : ∀ a b x → [ (x + a) < (x + b) ] → [ a < b ]
++-reflects-<ˡ a b x p = +-reflects-< a b x (transport (λ i → [ +-comm x a i < +-comm x b i ]) p)
 
 +-<-ext : (w x y z : ℤ) → [ (w + x) < (y + z) ] → [ (w < y) ⊔ (x < z) ]
 +-<-ext w x y z r with w ≟ y | x ≟ z
 ... | lt w<y | q = inlᵖ w<y
-... | eq w≡y | q = inrᵖ {! +-injˡ y x z   !}
-... | gt y<w | q = {!   !}
+... | eq w≡y | q = inrᵖ (+-reflects-<ˡ x z y (transport (λ i → [ (w≡y i + x) < (y + z) ]) r))
+... | gt y<w | q = inrᵖ $ case (<-cotrans (w + x) (y + z) r (y + x)) as ((w + x) < (y + x)) ⊔ ((y + x) < (y + z)) ⇒ x < z of λ
+  { (inl p) → ⊥-elim {A = λ _ → [ x < z ]} (<-asym y w y<w (+-reflects-< w y x p))
+  ; (inr p) → +-reflects-<ˡ x z y p
+  }
+
+-- negsuc*pos≡negsuc : ∀ a b → negsuc a * pos b ≡ negsuc ()
 
 ·-preserves-< : (x y z : ℤ) → [ 0 < z ] → [ x < y ] → [ (x * z) < (y * z) ]
-·-preserves-< = {!    !}
+·-preserves-< (pos n₁) (pos n₂) (pos n) p q = {!   !} -- ok
+·-preserves-< (negsuc n₁) (pos n₂) (pos zero) p q = {!   !} -- ok
+·-preserves-< (negsuc n₁) (pos n₂) (pos (suc n)) p q = tt
+·-preserves-< (negsuc n₁) (negsuc n₂) (pos zero) p q = p
+·-preserves-< (negsuc n₁) (negsuc n₂) (pos (suc n)) p q = {!   !} -- ok
 
 +-Semigroup : [ isSemigroup _+_ ]
 +-Semigroup .IsSemigroup.is-set   = isSetℤ
