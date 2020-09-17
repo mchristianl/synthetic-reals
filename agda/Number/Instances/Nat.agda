@@ -50,6 +50,13 @@ _<_ : (x y : ℕ) → hProp ℓ-zero
 0<suc : ∀ a → 0 <ᵗ suc a
 0<suc a = a , +-comm a 1
 
+*-nullifiesˡ : ∀ x → 0 * x ≡ 0
+*-nullifiesˡ x = refl
+
+*-nullifiesʳ : ∀ x → x * 0 ≡ 0
+*-nullifiesʳ zero = refl
+*-nullifiesʳ (suc x) = *-nullifiesʳ x
+
 isProp⊤ : isProp [ ⊤ ]
 isProp⊤ tt tt = refl
 
