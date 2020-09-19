@@ -34,13 +34,6 @@ open import MorePropAlgebra.Structures
 
 -- we usually mean "CommRing" when writing just "Ring" ⇒ TODO: rename this where applicable
 
--- IsLinearlyOrderedCommSemiring
---   isSet
---   IsCommSemiring 0f 1f _+_ _·_
---   IsLattice _≤_ min max
---   +-<-ext       : ∀ w x y z → [ (w + x) < (y + z) ] → [ (w < y) ⊔ (x < z) ]
---   ·-preserves-< : ∀ x y z   → [ 0f < z ] → [ x < y ] → [ (x · z) < (y · z) ]
-
 -- this is ℕ
 record IsLinearlyOrderedCommSemiring {ℓ ℓ'} {F : Type ℓ} (0f 1f : F) (_+_ _·_ : F → F → F) (_<_ : hPropRel F F ℓ') (min max : F → F → F) : Type (ℓ-max ℓ ℓ') where
   constructor islinearlyorderedcommsemiring

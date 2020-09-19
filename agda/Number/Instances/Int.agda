@@ -64,6 +64,8 @@ open import Cubical.Data.Nat using (suc; zero; ℕ) renaming
   ; *-suc to *ⁿ-suc
   ; *-assoc to *ⁿ-assoc
   ; +-suc to +ⁿ-suc
+  ; *-distribˡ to *ⁿ-distribˡ
+  ; *-distribʳ to *ⁿ-distribʳ
   )
 open import Cubical.Data.Nat.Order using () renaming
   ( <-trans to <ⁿ-trans
@@ -138,6 +140,29 @@ negsuc   a  * negsuc   b  = pos (suc a *ⁿ suc b)
 _*'_ : ℤ → ℤ → ℤ
 x *' y  = signed (sign x *S sign y) (abs x *ⁿ abs y)
 
+*'-nullifiesʳ : ∀ x → x *' 0 ≡ 0
+*'-nullifiesʳ (pos    n) i = signed spos (*ⁿ-nullifiesʳ n i)
+*'-nullifiesʳ (negsuc n) i = signed sneg (*ⁿ-nullifiesʳ n i)
+
+*'-nullifiesˡ : ∀ x → 0 *' x ≡ 0
+*'-nullifiesˡ (pos    n) i = pos (*ⁿ-nullifiesˡ n i)
+*'-nullifiesˡ (negsuc n)   = refl
+
+mksigned : Sign → ℕ → ℤ
+mksigned s zero = pos 0
+mksigned s (suc n) = signed s (suc n)
+
+_*''_ : ℤ → ℤ → ℤ
+x *'' y = mksigned (sign x *S sign y) (abs x *ⁿ abs y)
+
+*''-nullifiesʳ : ∀ x → x *'' 0 ≡ 0
+*''-nullifiesʳ (pos    n) i = mksigned spos (*ⁿ-nullifiesʳ n i)
+*''-nullifiesʳ (negsuc n) i = mksigned sneg (*ⁿ-nullifiesʳ n i)
+
+-- pos zero *'' y = pos 0
+-- x *'' pos zero = pos 0
+-- x *'' y = signed (sign x *S sign y) (abs x *ⁿ abs y)
+
 -- test15 : ∀ a b → suc a *ⁿ suc b ≡ suc (b +ⁿ a *ⁿ suc b) -- ≡ a * b + a + b + 1
 -- test15 a b = refl
 
@@ -173,26 +198,6 @@ private
 *-identityˡ : ∀ x → 1 * x ≡ x
 *-identityˡ (pos n) = λ i → pos $ +ⁿ-comm n 0 i
 *-identityˡ (negsuc n) = refl
-
--- *'-assoc : ∀ a b c → (a *' b) *' c ≡ a *' (b *' c)
--- *'-assoc (pos    a) (pos    b) (pos    c) = λ i → pos $ *ⁿ-assoc a b c (~ i)
--- *'-assoc (pos    a) (pos    b) (negsuc c) = {!   !}
--- *'-assoc (pos    a) (negsuc b) (pos    c) = {!   !}
--- *'-assoc (pos    a) (negsuc b) (negsuc c) = {!   !}
--- *'-assoc (negsuc a) (pos    b) (pos    c) = {!   !}
--- *'-assoc (negsuc a) (pos    b) (negsuc c) = {!   !}
--- *'-assoc (negsuc a) (negsuc b) (pos    c) = {!   !}
--- *'-assoc (negsuc a) (negsuc b) (negsuc c) = {!   !}
---
--- *-assoc : ∀ a b c → (a * b) * c ≡ a * (b * c)
--- *-assoc (pos    a) (pos    b) (pos    c) = λ i → pos $ *ⁿ-assoc a b c (~ i)
--- *-assoc (pos    a) (pos    b) (negsuc c) = {!   !}
--- *-assoc (pos    a) (negsuc b) (pos    c) = {!   !}
--- *-assoc (pos    a) (negsuc b) (negsuc c) = {!   !}
--- *-assoc (negsuc a) (pos    b) (pos    c) = {!   !}
--- *-assoc (negsuc a) (pos    b) (negsuc c) = {!   !}
--- *-assoc (negsuc a) (negsuc b) (pos    c) = {!   !}
--- *-assoc (negsuc a) (negsuc b) (negsuc c) = {!   !}
 
 -distrˡ : ∀ a b → -(a * b) ≡ (- a) * b
 -distrˡ (pos   zero ) (pos  zero  ) = refl
@@ -293,15 +298,93 @@ negsuc≡-pos a = refl
 
 -- lemma2 : *-assocᵖ
 
-*-assoc'' : ∀ a b c → a * (b * c) ≡ (a * b) * c
-*-assoc'' = transport {!   !} QuoInt.*-assoc where
-  γ : ((m n o : QuoInt.ℤ) → m QuoInt.* (n QuoInt.* o) ≡ m QuoInt.* n QuoInt.* o)
-    ≡ ((a b c :        ℤ) → a * (b * c) ≡ (a * b) * c)
-  γ = {! funExt⁻ {B = λ x i → QuoInt.Int≡ℤ i}   !}
---   let a' = transport Int≡Builtin a
---       b' = transport Int≡Builtin b
---       c' = transport Int≡Builtin c
---   in {! transport (sym Int≡Builtin) $ transport Int≡Builtin c    !} -- BuiltinProps.*-assoc a' b' c'
+-- *-assoc'' : ∀ a b c → a * (b * c) ≡ (a * b) * c
+-- *-assoc'' = transport {!   !} QuoInt.*-assoc where
+--   γ : ((m n o : QuoInt.ℤ) → m QuoInt.* (n QuoInt.* o) ≡ m QuoInt.* n QuoInt.* o)
+--     ≡ ((a b c :        ℤ) → a * (b * c) ≡ (a * b) * c)
+--   γ = {! funExt⁻ {B = λ x i → QuoInt.Int≡ℤ i}   !}
+-- --   let a' = transport Int≡Builtin a
+-- --       b' = transport Int≡Builtin b
+-- --       c' = transport Int≡Builtin c
+-- --   in {! transport (sym Int≡Builtin) $ transport Int≡Builtin c    !} -- BuiltinProps.*-assoc a' b' c'
+
+
+-- _*_ : ℤ → ℤ → ℤ
+-- i * j = sign i S* sign j ◃ ∣ i ∣ ℕ* ∣ j ∣
+
+private
+  lemma2 : ∀ a b c →  c +ⁿ (b +ⁿ a *ⁿ suc b) *ⁿ suc c
+                   ≡ (c +ⁿ b *ⁿ suc c) +ⁿ a *ⁿ suc (c +ⁿ b *ⁿ suc c)
+  lemma2 a b c =
+    c +ⁿ (b +ⁿ a *ⁿ suc b) *ⁿ suc c                 ≡⟨ (λ i → c +ⁿ *ⁿ-distribʳ b (a *ⁿ suc b) (suc c) (~ i)) ⟩
+    c +ⁿ (b *ⁿ suc c +ⁿ (a *ⁿ suc b) *ⁿ suc c)      ≡⟨ +ⁿ-assoc c _ _ ⟩
+    (c +ⁿ b *ⁿ suc c) +ⁿ (a *ⁿ suc b) *ⁿ suc c      ≡⟨ (λ i → (c +ⁿ b *ⁿ suc c) +ⁿ *ⁿ-assoc a (suc b) (suc c) (~ i)) ⟩
+    (c +ⁿ b *ⁿ suc c) +ⁿ a *ⁿ (suc b *ⁿ suc c)      ≡⟨ refl ⟩
+    (c +ⁿ b *ⁿ suc c) +ⁿ a *ⁿ suc (c +ⁿ b *ⁿ suc c) ∎
+    -- solve 3 (λ a b c → c :+ (b :+ a :* (con 1 :+ b)) :* (con 1 :+ c)
+    --                 := c :+ b :* (con 1 :+ c) :+
+    --                    a :* (con 1 :+ (c :+ b :* (con 1 :+ c))))
+    --         refl
+
+import Algebra.Definitions
+
+pattern +0 = pos 0
+pattern +[1+_] a = pos (suc a)
+pattern -[1+_] a = negsuc a
+
+-- +ⁿ_ = _+ⁿ_
+
+*-assoc' : ∀ x y z → (x *' y) *' z ≡ x *' (y *' z)
+*-assoc' +0 y z = (λ i → *'-nullifiesˡ y i *' z) ∙ *'-nullifiesˡ z ∙ sym (*'-nullifiesˡ (y *' z))
+*-assoc' x +0 z = (λ i → *'-nullifiesʳ x i *' z) ∙ *'-nullifiesˡ z ∙ sym (*'-nullifiesʳ x)  ∙ (λ i → x *' *'-nullifiesˡ z (~ i))
+*-assoc' x y +0 = *'-nullifiesʳ (x *' y) ∙ sym (*'-nullifiesʳ x) ∙ (λ i → x *' *'-nullifiesʳ y (~ i))
+*-assoc' -[1+ a ] -[1+ b ] +[1+ c ] = λ i → +[1+ (lemma2 a b c i) ]
+*-assoc' -[1+ a ] +[1+ b ] -[1+ c ] = λ i → +[1+ (lemma2 a b c i) ]
+*-assoc' +[1+ a ] +[1+ b ] +[1+ c ] = λ i → +[1+ (lemma2 a b c i) ]
+*-assoc' +[1+ a ] -[1+ b ] -[1+ c ] = λ i → +[1+ (lemma2 a b c i) ]
+*-assoc' -[1+ a ] -[1+ b ] -[1+ c ] = λ i → -[1+ (lemma2 a b c i) ]
+*-assoc' -[1+ a ] +[1+ b ] +[1+ c ] = λ i → -[1+ (lemma2 a b c i) ]
+*-assoc' +[1+ a ] -[1+ b ] +[1+ c ] = λ i → -[1+ (lemma2 a b c i) ]
+*-assoc' +[1+ a ] +[1+ b ] -[1+ c ] = λ i → -[1+ (lemma2 a b c i) ]
+
+*-assoc'≡ : ∀ x y z
+          → ((x *  y) *  z ≡ x *  (y *  z))
+          ≡ ((x *' y) *' z ≡ x *' (y *' z))
+*-assoc'≡ x y z i = *≡*' (*≡*' x y i) z i ≡ *≡*' x (*≡*' y z i) i
+
+*-assoc''' : ∀ x y z → (x * y) * z ≡ x * (y * z)
+*-assoc''' x y z = transport (sym (*-assoc'≡ x y z)) (*-assoc' x y z)
+
+*-assoc'' : ∀ x y z → (x *'' y) *'' z ≡ x *'' (y *'' z)
+*-assoc'' +0 _ _ = refl
+*-assoc'' x +0 z = {! *''-nullifiesʳ x      !}
+*-assoc'' x y +0 = {!      !}
+*-assoc'' -[1+ a ] -[1+ b ] +[1+ c ] = λ i → +[1+ (lemma2 a b c i) ]
+*-assoc'' -[1+ a ] +[1+ b ] -[1+ c ] = λ i → +[1+ (lemma2 a b c i) ]
+*-assoc'' +[1+ a ] +[1+ b ] +[1+ c ] = λ i → +[1+ (lemma2 a b c i) ]
+*-assoc'' +[1+ a ] -[1+ b ] -[1+ c ] = λ i → +[1+ (lemma2 a b c i) ]
+*-assoc'' -[1+ a ] -[1+ b ] -[1+ c ] = λ i → -[1+ (lemma2 a b c i) ]
+*-assoc'' -[1+ a ] +[1+ b ] +[1+ c ] = λ i → -[1+ (lemma2 a b c i) ]
+*-assoc'' +[1+ a ] -[1+ b ] +[1+ c ] = λ i → -[1+ (lemma2 a b c i) ]
+*-assoc'' +[1+ a ] +[1+ b ] -[1+ c ] = λ i → -[1+ (lemma2 a b c i) ]
+
+
+-- *-assoc : Associative _*_
+-- *-assoc +0 _ _ = refl
+-- *-assoc x +0 z rewrite ℕₚ.*-zeroʳ ∣ x ∣ = refl
+-- *-assoc x y +0 rewrite
+--     ℕₚ.*-zeroʳ ∣ y ∣
+--   | ℕₚ.*-zeroʳ ∣ x ∣
+--   | ℕₚ.*-zeroʳ ∣ sign x 𝕊* sign y ◃ ∣ x ∣ ℕ.* ∣ y ∣ ∣
+--   = refl
+-- *-assoc -[1+ a ] -[1+ b ] +[1+ c ] = cong (+_ ∘ suc) (lemma a b c)
+-- *-assoc -[1+ a ] +[1+ b ] -[1+ c ] = cong (+_ ∘ suc) (lemma a b c)
+-- *-assoc +[1+ a ] +[1+ b ] +[1+ c ] = cong (+_ ∘ suc) (lemma a b c)
+-- *-assoc +[1+ a ] -[1+ b ] -[1+ c ] = cong (+_ ∘ suc) (lemma a b c)
+-- *-assoc -[1+ a ] -[1+ b ] -[1+ c ] = cong -[1+_] (lemma a b c)
+-- *-assoc -[1+ a ] +[1+ b ] +[1+ c ] = cong -[1+_] (lemma a b c)
+-- *-assoc +[1+ a ] -[1+ b ] +[1+ c ] = cong -[1+_] (lemma a b c)
+-- *-assoc +[1+ a ] +[1+ b ] -[1+ c ] = cong -[1+_] (lemma a b c)
 
 *-nullifiesʳ : ∀ x → x * 0 ≡ 0
 *-nullifiesʳ x = *-comm x 0 ∙ *-nullifiesˡ x
@@ -570,18 +653,6 @@ pos+negsuc≡⊎ (suc a) (suc b) with pos+negsuc≡⊎ a b
 +-preserves-< a b (negsuc zero) a<b = predInt-preserves-< a b a<b
 +-preserves-< a b (negsuc (suc n)) a<b = let r = +-preserves-< a b (negsuc n) a<b
                                          in predInt-preserves-< (a +negsuc n) (b +negsuc n) r
--- +-preserves-< (pos n) (pos n₁) (pos n₂) a<b = {!   !}
--- +-preserves-< (pos n) (pos n₁) (negsuc n₂) a<b = {!   !}
--- +-preserves-< (negsuc n) (pos n₁) (pos n₂) a<b = {!   !}
--- +-preserves-< (negsuc n) (pos n₁) (negsuc n₂) a<b = {!   !}
--- +-preserves-< (negsuc n) (negsuc n₁) (pos n₂) a<b = {!   !}
--- +-preserves-< (negsuc n) (negsuc n₁) (negsuc n₂) a<b = {!   !}
-
--- +-reflects-< : ∀ a b x → [ (a + x) < (b + x) ] → [ a < b ]
--- +-reflects-< a b (pos zero) a+x<b+x = a+x<b+x
--- +-reflects-< a b (pos (suc n)) a+x<b+x = {! sucInt-reflects-< (a +pos n) (b +pos n) a+x<b+x   !}
--- +-reflects-< a b (negsuc zero) a+x<b+x = {!   !}
--- +-reflects-< a b (negsuc (suc n)) a+x<b+x = {!   !}
 
 +-reflects-< : ∀ a b x → [ (a + x) < (b + x) ] → [ a < b ]
 +-reflects-< a b x = snd (
@@ -590,35 +661,6 @@ pos+negsuc≡⊎ (suc a) (suc b) with pos+negsuc≡⊎ a b
   (a + (x + (- x))) < (b + (x + (- x))) ⇒ᵖ⟨ (pathTo⇒ λ i → (a + +-inverseʳ x i) < (b + +-inverseʳ x i)) ⟩
   (a + 0) < (b + 0)                     ⇒ᵖ⟨ (λ x → x) ⟩
   a < b             ◼ᵖ)
-
--- +-reflects-< : ∀ a b x → [ (a + x) < (b + x) ] → [ a < b ]
--- +-reflects-< (pos a) (pos b) (pos x) a+x<b+x = let r : [ pos (a +ⁿ x) < pos (b +ⁿ x) ]
---                                                    r = transport (λ i → [ pos+pos≡+ⁿ a x i < pos+pos≡+ⁿ b x i ]) a+x<b+x
---                                                in {! +ⁿ-reflects-<ⁿ   !}
--- -- +-reflects-< (pos a) (pos b) (pos zero) a+x<b+x = a+x<b+x
--- -- [ (pos a +pos x) < (pos b +pos x) ]
--- -- +-reflects-< (pos a) (pos b) (pos (suc x)) a+x<b+x = {! sucInt-reflects-< (pos a +pos x) (pos b +pos x) a+x<b+x   !}
--- +-reflects-< (pos a) (pos b) (negsuc x) a+x<b+x = {!   !}
--- -- +-reflects-< (pos a) (pos b) (negsuc x) a+x<b+x with (pos a +negsuc x) ≟ 0 | (pos b +negsuc x) ≟ 0
--- -- ... | lt x₁ | lt x₂ = {!   !}
--- -- ... | lt x₁ | eq x₂ = {!   !}
--- -- ... | lt x₁ | gt x₂ = {!   !}
--- -- ... | eq x₁ | lt x₂ = {!   !}
--- -- ... | eq x₁ | eq x₂ = {!   !}
--- -- ... | eq x₁ | gt x₂ = {!   !}
--- -- ... | gt x₁ | lt x₂ = {!   !}
--- -- ... | gt x₁ | eq x₂ = {!   !}
--- -- ... | gt x₁ | gt x₂ = {!   !}
--- -- +-reflects-< (pos a) (pos b) (negsuc zero) a+x<b+x = predInt-reflects-< (pos a) (pos b) a+x<b+x
--- -- +-reflects-< (pos a) (pos b) (negsuc (suc x)) a+x<b+x = let r = +-reflects-< (pos a) (pos b) (negsuc x) in {!    !}
--- +-reflects-< (pos a) (negsuc b) (pos (suc x)) a+x<b+x = {!   !}
--- +-reflects-< (pos    a) (negsuc b) (negsuc x) a+x<b+x = {!   !}
--- +-reflects-< (negsuc a) (pos    b) (pos    x) a+x<b+x = tt
--- +-reflects-< (negsuc a) (pos    b) (negsuc x) a+x<b+x = tt
--- +-reflects-< (negsuc a) (negsuc b) (pos    x) a+x<b+x = {!   !} -- 2*2 cases
--- +-reflects-< (negsuc a) (negsuc b) (negsuc x) a+x<b+x = let r : [ negsuc (suc (a +ⁿ x)) < negsuc (suc (b +ⁿ x))  ]
---                                                             r = transport (λ i → [ negsuc+negsuc≡+ⁿ a x i < negsuc+negsuc≡+ⁿ b x i ]) a+x<b+x
---                                                         in {! +ⁿ-reflects-<ⁿ   !}
 
 +-reflects-<ˡ : ∀ a b x → [ (x + a) < (x + b) ] → [ a < b ]
 +-reflects-<ˡ a b x p = +-reflects-< a b x (transport (λ i → [ +-comm x a i < +-comm x b i ]) p)
