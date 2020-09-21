@@ -11,6 +11,8 @@ cd agda
 agda --html --html-highlight=auto --html-dir=../html HTML.lagda.md
 # agda --html --html-dir=../html SyntheticReals.agda
 # agda --html --html-dir=../html MoreLogic.agda
+agda --html --html-dir=../html Number/Instances/Int.agda
+agda --html --html-dir=../html Number/Instances/QuoInt.agda
 
 cd ..
 

@@ -1,4 +1,4 @@
-{-# OPTIONS --cubical --no-import-sorts #-}
+{-# OPTIONS --cubical --no-import-sorts --allow-unsolved-metas #-}
 
 module Number.Instances.QuoInt where
 
