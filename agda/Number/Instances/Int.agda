@@ -42,6 +42,18 @@ open import Number.Instances.Nat using (lemma10''; lemma12'') renaming
   ; 0<suc to 0<ⁿsuc
   ; *-nullifiesʳ to *ⁿ-nullifiesʳ
   ; *-nullifiesˡ to *ⁿ-nullifiesˡ
+  ; ·-preserves-< to ·ⁿ-preserves-<ⁿ
+  ; +-createsʳ-< to +ⁿ-createsʳ-<ⁿ
+  ; +-createsˡ-< to +ⁿ-createsˡ-<ⁿ
+  ; ¬suc<0       to ¬suc<ⁿ0
+  ; min-comm     to minⁿ-comm
+  ; min-tightˡ   to minⁿ-tightˡ
+  ; min-tightʳ   to minⁿ-tightʳ
+  ; min-identity to minⁿ-identity
+  ; max-comm     to maxⁿ-comm
+  ; max-tightˡ   to maxⁿ-tightˡ
+  ; max-tightʳ   to maxⁿ-tightʳ
+  ; max-identity to maxⁿ-identity
   )
 open import Data.Nat.Base using () renaming
   ( _⊔_ to maxⁿ
@@ -55,6 +67,8 @@ open import Cubical.Data.Int renaming
   ( Int to ℤ
   ; isSetInt to isSetℤ
   -- ; neg to infix 8 -_
+  ; _-_ to infix 7 _-_
+  ; _+_ to infix 5 _+_
   )
 -- open import Cubical.HITs.Ints.QuoInt.Properties
 open import Cubical.Data.Nat using (suc; zero; ℕ) renaming
@@ -66,6 +80,9 @@ open import Cubical.Data.Nat using (suc; zero; ℕ) renaming
   ; +-suc to +ⁿ-suc
   ; *-distribˡ to *ⁿ-distribˡ
   ; *-distribʳ to *ⁿ-distribʳ
+  ; *-identityʳ to *ⁿ-identityʳ
+  ; snotz to snotzⁿ
+  ; injSuc to injSucⁿ
   )
 open import Cubical.Data.Nat.Order using () renaming
   ( <-trans to <ⁿ-trans
@@ -75,10 +92,6 @@ open import Cubical.Data.Nat.Order using () renaming
   ; gt to gtⁿ
   ; eq to eqⁿ
   ; ¬-<-zero to ¬-<ⁿ-zero
-  )
-open import Cubical.Data.Nat.Properties using () renaming
-  ( snotz to snotzⁿ
-  ; injSuc to injSucⁿ
   )
 
 import Cubical.HITs.Ints.QuoInt as QuoInt
@@ -125,14 +138,12 @@ signed sneg (suc x) = neg (suc x)
 -involutive (negsuc n) = refl
 
 infix 8 -_
+infix 7 _*_
 
 _*_ : ℤ → ℤ → ℤ
 pos      a  * pos      b  = pos (a *ⁿ b)
 pos  zero   * negsuc   b  = pos 0
 pos (suc a) * negsuc   b  = negsuc (a *ⁿ b +ⁿ (a +ⁿ b))
--- pos (suc a) * negsuc   b  = negsuc (a *ⁿ b +ⁿ (a +ⁿ b))
--- pos (suc a) * negsuc zero = negsuc a
--- pos (suc a) * negsuc (suc b) = {! suc a * suc suc b  !}
 negsuc   a  * pos  zero   = pos 0
 negsuc   a  * pos (suc b) = negsuc (a *ⁿ b +ⁿ (a +ⁿ b))
 negsuc   a  * negsuc   b  = pos (suc a *ⁿ suc b)
@@ -236,82 +247,114 @@ negsuc≡-pos a = refl
 -distrʳ : ∀ a b → -(a * b) ≡ a * (- b)
 -distrʳ a b = (λ i → - *-comm a b i) ∙ -distrˡ b a ∙ *-comm (- b) a
 
-*-assoc : ∀ a b c → (a * b) * c ≡ a * (b * c)
-*-assoc (pos zero) b c =
-  (pos 0 * b) * c  ≡⟨ (λ i → *-nullifiesˡ b i * c) ⟩
-   pos 0      * c  ≡⟨ *-nullifiesˡ c ⟩
-   pos 0           ≡⟨ sym $ *-nullifiesˡ (b * c) ⟩
-   pos 0 * (b * c) ∎
-*-assoc (pos (suc n)) b c = let r = *-assoc (pos n) b c in *-assoc-ind n b c r where
-  *-assoc-ind : ∀ n b c
-              → ((pos n * b) * c) ≡ (pos n * (b * c))
-              → ((pos (suc n) * b) * c) ≡ (pos (suc n) * (b * c))
-  *-assoc-ind n (pos      b ) (pos      c ) p = {!    !}
-    -- pos ((b +ⁿ n *ⁿ b) *ⁿ c)
-    -- pos (b *ⁿ c +ⁿ (n *ⁿ b) *ⁿ c)
-    -- pos (b *ⁿ c +ⁿ n *ⁿ (b *ⁿ c))
-  *-assoc-ind n (pos  zero  ) (negsuc   c ) p = p
-  *-assoc-ind n (pos (suc b)) (negsuc   c ) p = {!   !}
-    -- (b+n(b+1))c+(b+n(b+1)+c)
-    -- (b+nb+n)c+b+nb+n+c
-    -- bc+nbc+nc+b+nb+n+c
-    -- bc+nbc+nc+n+nb+b+c
-    -- nb+nbc+nc+n+bc+b+c
-    -- nbc+nb+nc+n+bc+b+c
-    -- n(bc+b+c)+n+bc+b+c
-    -- negsuc ((b +ⁿ n *ⁿ suc b) *ⁿ c +ⁿ (b +ⁿ n *ⁿ suc b +ⁿ c))
-    -- negsuc (n *ⁿ (b *ⁿ c +ⁿ (b +ⁿ c)) +ⁿ (n +ⁿ (b *ⁿ c +ⁿ (b +ⁿ c))))
-  *-assoc-ind n (negsuc   b ) (pos  zero  ) p = λ i → pos $ *ⁿ-nullifiesʳ n (~ i)
-  *-assoc-ind n (negsuc   b ) (pos (suc c)) p = {!   !}
-    -- negsuc ((n *ⁿ b +ⁿ (n +ⁿ b)) *ⁿ c +ⁿ (n *ⁿ b +ⁿ (n +ⁿ b) +ⁿ c))
-    -- negsuc (n *ⁿ (b *ⁿ c +ⁿ (b +ⁿ c)) +ⁿ (n +ⁿ (b *ⁿ c +ⁿ (b +ⁿ c))))
-  *-assoc-ind n (negsuc   b ) (negsuc   c ) p = {!   !}
-    -- pos (suc (c +ⁿ (n *ⁿ b +ⁿ (n +ⁿ b)) *ⁿ suc c))
-    -- pos (suc (c +ⁿ b *ⁿ suc c +ⁿ n *ⁿ suc (c +ⁿ b *ⁿ suc c)))
-*-assoc (negsuc zero) b c =
-  (negsuc 0 * b) * c  ≡⟨ (λ i → -1*≡- b i * c) ⟩
-  (         - b) * c  ≡⟨ sym $ -distrˡ b c ⟩
-            - (b * c) ≡⟨ sym $ -1*≡- (b * c) ⟩
-   negsuc 0 * (b * c) ∎
-*-assoc (negsuc (suc n)) b c = let r = *-assoc (negsuc n) b c in *-assoc-ind n b c r where
-  *-assoc-ind : ∀ n b c
-              → ((negsuc n * b) * c) ≡ (negsuc n * (b * c))
-              → ((negsuc (suc n) * b) * c) ≡ (negsuc (suc n) * (b * c))
-  *-assoc-ind n (pos  zero  ) (pos      c ) p = refl
-  *-assoc-ind n (pos (suc b)) (pos      c ) p = {!   !}
-    -- negsuc (b +ⁿ n *ⁿ b +ⁿ suc (n +ⁿ b)) * pos c
-    -- negsuc (suc n) * pos (c +ⁿ b *ⁿ c)
-  *-assoc-ind n (pos  zero  ) (negsuc   c ) p = p
-  *-assoc-ind n (pos (suc b)) (negsuc   c ) p = {!   !}
-    -- pos (suc (c +ⁿ (b +ⁿ n *ⁿ b +ⁿ suc (n +ⁿ b)) *ⁿ suc c))
-    -- pos (suc (b *ⁿ c +ⁿ (b +ⁿ c) +ⁿ suc (b *ⁿ c +ⁿ (b +ⁿ c) +ⁿ n *ⁿ suc (b *ⁿ c +ⁿ (b +ⁿ c)))))
-  *-assoc-ind n (negsuc   b ) (pos  zero  ) p = λ i → pos $ *ⁿ-nullifiesʳ (b +ⁿ suc (b +ⁿ n *ⁿ suc b)) i
-  *-assoc-ind n (negsuc   b ) (pos (suc c)) p = {!   !}
-    -- pos (suc (c +ⁿ (b +ⁿ suc (b +ⁿ n *ⁿ suc b)) *ⁿ suc c)) ≡
-    -- pos (suc (b *ⁿ c +ⁿ (b +ⁿ c) +ⁿ suc (b *ⁿ c +ⁿ (b +ⁿ c) +ⁿ n *ⁿ suc (b *ⁿ c +ⁿ (b +ⁿ c)))))
-  *-assoc-ind n (negsuc   b ) (negsuc   c ) p = {!   !}
-    -- negsuc ((b +ⁿ suc (b +ⁿ n *ⁿ suc b)) *ⁿ c +ⁿ (b +ⁿ suc (b +ⁿ n *ⁿ suc b) +ⁿ c))
-    -- negsuc (c +ⁿ b *ⁿ suc c +ⁿ n *ⁿ (c +ⁿ b *ⁿ suc c) +ⁿ suc (n +ⁿ (c +ⁿ b *ⁿ suc c)))
-
-*-assocᵖ : ∀{ℓ} {A : Type ℓ} (isset : isSet A) (_*_ : A → A → A) → hProp ℓ
-*-assocᵖ isset _*_ =  ∀[ a ] ∀[ b ] ∀[ c ] ([ isset ] a * (b * c) ≡ˢ (a * b) * c)
+-- *-assoc : ∀ a b c → (a * b) * c ≡ a * (b * c)
+-- *-assoc (pos zero) b c =
+--   (pos 0 * b) * c  ≡⟨ (λ i → *-nullifiesˡ b i * c) ⟩
+--    pos 0      * c  ≡⟨ *-nullifiesˡ c ⟩
+--    pos 0           ≡⟨ sym $ *-nullifiesˡ (b * c) ⟩
+--    pos 0 * (b * c) ∎
+-- *-assoc (pos (suc n)) b c = let r = *-assoc (pos n) b c in *-assoc-ind n b c r where
+--   *-assoc-ind : ∀ n b c
+--               → ((pos n * b) * c) ≡ (pos n * (b * c))
+--               → ((pos (suc n) * b) * c) ≡ (pos (suc n) * (b * c))
+--   *-assoc-ind n (pos      b ) (pos      c ) p = {!    !}
+--     -- pos ((b +ⁿ n *ⁿ b) *ⁿ c)
+--     -- pos (b *ⁿ c +ⁿ (n *ⁿ b) *ⁿ c)
+--     -- pos (b *ⁿ c +ⁿ n *ⁿ (b *ⁿ c))
+--   *-assoc-ind n (pos  zero  ) (negsuc   c ) p = p
+--   *-assoc-ind n (pos (suc b)) (negsuc   c ) p = {!   !}
+--     -- (b+n(b+1))c+(b+n(b+1)+c)
+--     -- (b+nb+n)c+b+nb+n+c
+--     -- bc+nbc+nc+b+nb+n+c
+--     -- bc+nbc+nc+n+nb+b+c
+--     -- nb+nbc+nc+n+bc+b+c
+--     -- nbc+nb+nc+n+bc+b+c
+--     -- n(bc+b+c)+n+bc+b+c
+--     -- negsuc ((b +ⁿ n *ⁿ suc b) *ⁿ c +ⁿ (b +ⁿ n *ⁿ suc b +ⁿ c))
+--     -- negsuc (n *ⁿ (b *ⁿ c +ⁿ (b +ⁿ c)) +ⁿ (n +ⁿ (b *ⁿ c +ⁿ (b +ⁿ c))))
+--   *-assoc-ind n (negsuc   b ) (pos  zero  ) p = λ i → pos $ *ⁿ-nullifiesʳ n (~ i)
+--   *-assoc-ind n (negsuc   b ) (pos (suc c)) p = {!   !}
+--     -- negsuc ((n *ⁿ b +ⁿ (n +ⁿ b)) *ⁿ c +ⁿ (n *ⁿ b +ⁿ (n +ⁿ b) +ⁿ c))
+--     -- negsuc (n *ⁿ (b *ⁿ c +ⁿ (b +ⁿ c)) +ⁿ (n +ⁿ (b *ⁿ c +ⁿ (b +ⁿ c))))
+--   *-assoc-ind n (negsuc   b ) (negsuc   c ) p = {!   !}
+--     -- pos (suc (c +ⁿ (n *ⁿ b +ⁿ (n +ⁿ b)) *ⁿ suc c))
+--     -- pos (suc (c +ⁿ b *ⁿ suc c +ⁿ n *ⁿ suc (c +ⁿ b *ⁿ suc c)))
+-- *-assoc (negsuc zero) b c =
+--   (negsuc 0 * b) * c  ≡⟨ (λ i → -1*≡- b i * c) ⟩
+--   (         - b) * c  ≡⟨ sym $ -distrˡ b c ⟩
+--             - (b * c) ≡⟨ sym $ -1*≡- (b * c) ⟩
+--    negsuc 0 * (b * c) ∎
+-- *-assoc (negsuc (suc n)) b c = let r = *-assoc (negsuc n) b c in *-assoc-ind n b c r where
+--   *-assoc-ind : ∀ n b c
+--               → ((negsuc n * b) * c) ≡ (negsuc n * (b * c))
+--               → ((negsuc (suc n) * b) * c) ≡ (negsuc (suc n) * (b * c))
+--   *-assoc-ind n (pos  zero  ) (pos      c ) p = refl
+--   *-assoc-ind n (pos (suc b)) (pos      c ) p = {!   !}
+--     -- negsuc (b +ⁿ n *ⁿ b +ⁿ suc (n +ⁿ b)) * pos c
+--     -- negsuc (suc n) * pos (c +ⁿ b *ⁿ c)
+--   *-assoc-ind n (pos  zero  ) (negsuc   c ) p = p
+--   *-assoc-ind n (pos (suc b)) (negsuc   c ) p = {!   !}
+--     -- pos (suc (c +ⁿ (b +ⁿ n *ⁿ b +ⁿ suc (n +ⁿ b)) *ⁿ suc c))
+--     -- pos (suc (b *ⁿ c +ⁿ (b +ⁿ c) +ⁿ suc (b *ⁿ c +ⁿ (b +ⁿ c) +ⁿ n *ⁿ suc (b *ⁿ c +ⁿ (b +ⁿ c)))))
+--   *-assoc-ind n (negsuc   b ) (pos  zero  ) p = λ i → pos $ *ⁿ-nullifiesʳ (b +ⁿ suc (b +ⁿ n *ⁿ suc b)) i
+--   *-assoc-ind n (negsuc   b ) (pos (suc c)) p = {!   !}
+--     -- pos (suc (c +ⁿ (b +ⁿ suc (b +ⁿ n *ⁿ suc b)) *ⁿ suc c)) ≡
+--     -- pos (suc (b *ⁿ c +ⁿ (b +ⁿ c) +ⁿ suc (b *ⁿ c +ⁿ (b +ⁿ c) +ⁿ n *ⁿ suc (b *ⁿ c +ⁿ (b +ⁿ c)))))
+--   *-assoc-ind n (negsuc   b ) (negsuc   c ) p = {!   !}
+--     -- negsuc ((b +ⁿ suc (b +ⁿ n *ⁿ suc b)) *ⁿ c +ⁿ (b +ⁿ suc (b +ⁿ n *ⁿ suc b) +ⁿ c))
+--     -- negsuc (c +ⁿ b *ⁿ suc c +ⁿ n *ⁿ (c +ⁿ b *ⁿ suc c) +ⁿ suc (n +ⁿ (c +ⁿ b *ⁿ suc c)))
+--
+-- *-assocᵖ : ∀{ℓ} {A : Type ℓ} (isset : isSet A) (_*_ : A → A → A) → hProp ℓ
+-- *-assocᵖ isset _*_ =  ∀[ a ] ∀[ b ] ∀[ c ] ([ isset ] a * (b * c) ≡ˢ (a * b) * c)
 
 -- lemma2 : *-assocᵖ
 
--- *-assoc'' : ∀ a b c → a * (b * c) ≡ (a * b) * c
--- *-assoc'' = transport {!   !} QuoInt.*-assoc where
---   γ : ((m n o : QuoInt.ℤ) → m QuoInt.* (n QuoInt.* o) ≡ m QuoInt.* n QuoInt.* o)
---     ≡ ((a b c :        ℤ) → a * (b * c) ≡ (a * b) * c)
---   γ = {! funExt⁻ {B = λ x i → QuoInt.Int≡ℤ i}   !}
--- --   let a' = transport Int≡Builtin a
--- --       b' = transport Int≡Builtin b
--- --       c' = transport Int≡Builtin c
--- --   in {! transport (sym Int≡Builtin) $ transport Int≡Builtin c    !} -- BuiltinProps.*-assoc a' b' c'
+-- x · y
+-- -- (transport ℤ≡Z x * y)
+-- (transport ℤ≡Z x) · (transport ℤ≡Z y)
+-- (transport Z≡ℤ x) * (transport ℤ≡Z y)
+-- (transport Z≡ℤ xy)
+
+-- record LinearlyOrderedCommRingStructure {ℓ ℓ'} (Carrier : Type ℓ) : Type (ℓ-max ℓ (ℓ-suc ℓ')) where
+--   constructor linearlyorderedcommring
+--   field
+--     0f 1f   : Carrier
+--     _+_     : Carrier → Carrier → Carrier
+--     -_      : Carrier → Carrier
+--     _·_     : Carrier → Carrier → Carrier
+--     min max : Carrier → Carrier → Carrier
+--     _<_     : hPropRel Carrier Carrier ℓ'
+
+open import Cubical.Foundations.Univalence
+
+-- *-assoc''''' : ∀ a b c → a * (b * c) ≡ (a * b) * c
+-- *-assoc''''' = transport γ QuoInt.*-assoc where
+--   _·_ = QuoInt._*_
+--   Z   = QuoInt.ℤ
+--   Z≡ℤ = sym QuoInt.Int≡ℤ
+--   lem1 : ∀ a b x y
+--        → (a≡x : PathP (λ i → Z≡ℤ i) a x)
+--        → (b≡y : PathP (λ i → Z≡ℤ i) b y)
+--        → PathP (λ i → Z≡ℤ i) (a≡x i0 · b≡y i0) (a≡x i1 * b≡y i1)
+--   lem1 a b x y a≡x b≡y i = {!   !}
+--   -- (a · b)
+--   --    c
+--   lem : ∀ a b x y → PathP (λ i → Z≡ℤ i) a x → PathP (λ i → Z≡ℤ i) b y → transport Z≡ℤ (a · b) ≡ x * y
+--   lem a b x y a≡x b≡y = {!   !}
+--   ·≅* : {!  !}
+--   ·≅* = {!   !}
+--   ·-* : ∀ x y → transport Z≡ℤ (x · y) ≡ (transport Z≡ℤ x) * (transport Z≡ℤ y)
+--   ·-* x y = {!   !}
+--   ·≡* : PathP (λ i → (Z≡ℤ i → Z≡ℤ i → Z≡ℤ i)) _·_ _*_
+--   ·≡* i x y = {!     !}
+--   γ : ((m n o : Z) → m · (n · o) ≡ (m · n) · o)
+--     ≡ ((a b c : ℤ) → a * (b * c) ≡ (a * b) * c)
+--   γ i = let _⋆_ = ·≡* i in (x y z : Z≡ℤ i) → x ⋆ (y ⋆ z) ≡ (x ⋆ y) ⋆ z
 
 
--- _*_ : ℤ → ℤ → ℤ
--- i * j = sign i S* sign j ◃ ∣ i ∣ ℕ* ∣ j ∣
-
+-- this proof of associativity is ported from `Data.Integer.Properties` which works on
+--   _*_ : ℤ → ℤ → ℤ
+--   i * j = sign i S* sign j ◃ ∣ i ∣ ℕ* ∣ j ∣
 private
   lemma2 : ∀ a b c →  c +ⁿ (b +ⁿ a *ⁿ suc b) *ⁿ suc c
                    ≡ (c +ⁿ b *ⁿ suc c) +ⁿ a *ⁿ suc (c +ⁿ b *ⁿ suc c)
@@ -321,93 +364,33 @@ private
     (c +ⁿ b *ⁿ suc c) +ⁿ (a *ⁿ suc b) *ⁿ suc c      ≡⟨ (λ i → (c +ⁿ b *ⁿ suc c) +ⁿ *ⁿ-assoc a (suc b) (suc c) (~ i)) ⟩
     (c +ⁿ b *ⁿ suc c) +ⁿ a *ⁿ (suc b *ⁿ suc c)      ≡⟨ refl ⟩
     (c +ⁿ b *ⁿ suc c) +ⁿ a *ⁿ suc (c +ⁿ b *ⁿ suc c) ∎
-    -- solve 3 (λ a b c → c :+ (b :+ a :* (con 1 :+ b)) :* (con 1 :+ c)
-    --                 := c :+ b :* (con 1 :+ c) :+
-    --                    a :* (con 1 :+ (c :+ b :* (con 1 :+ c))))
-    --         refl
 
-import Algebra.Definitions
+*'-assoc : ∀ x y z → (x *' y) *' z ≡ x *' (y *' z)
+*'-assoc (pos 0) y z = (λ i → *'-nullifiesˡ y i *' z) ∙ *'-nullifiesˡ z ∙ sym (*'-nullifiesˡ (y *' z))
+*'-assoc x (pos 0) z = (λ i → *'-nullifiesʳ x i *' z) ∙ *'-nullifiesˡ z ∙ sym (*'-nullifiesʳ x)  ∙ (λ i → x *' *'-nullifiesˡ z (~ i))
+*'-assoc x y (pos 0) = *'-nullifiesʳ (x *' y) ∙ sym (*'-nullifiesʳ x) ∙ (λ i → x *' *'-nullifiesʳ y (~ i))
+*'-assoc (negsuc   a ) (negsuc   b ) (pos (suc c)) = λ i → (pos (suc (lemma2 a b c i)))
+*'-assoc (negsuc   a ) (pos (suc b)) (negsuc   c ) = λ i → (pos (suc (lemma2 a b c i)))
+*'-assoc (pos (suc a)) (pos (suc b)) (pos (suc c)) = λ i → (pos (suc (lemma2 a b c i)))
+*'-assoc (pos (suc a)) (negsuc   b ) (negsuc   c ) = λ i → (pos (suc (lemma2 a b c i)))
+*'-assoc (negsuc   a ) (negsuc   b ) (negsuc   c ) = λ i → (negsuc   (lemma2 a b c i) )
+*'-assoc (negsuc   a ) (pos (suc b)) (pos (suc c)) = λ i → (negsuc   (lemma2 a b c i) )
+*'-assoc (pos (suc a)) (negsuc   b ) (pos (suc c)) = λ i → (negsuc   (lemma2 a b c i) )
+*'-assoc (pos (suc a)) (pos (suc b)) (negsuc   c ) = λ i → (negsuc   (lemma2 a b c i) )
 
-pattern +0 = pos 0
-pattern +[1+_] a = pos (suc a)
-pattern -[1+_] a = negsuc a
-
--- +ⁿ_ = _+ⁿ_
-
-*-assoc' : ∀ x y z → (x *' y) *' z ≡ x *' (y *' z)
-*-assoc' +0 y z = (λ i → *'-nullifiesˡ y i *' z) ∙ *'-nullifiesˡ z ∙ sym (*'-nullifiesˡ (y *' z))
-*-assoc' x +0 z = (λ i → *'-nullifiesʳ x i *' z) ∙ *'-nullifiesˡ z ∙ sym (*'-nullifiesʳ x)  ∙ (λ i → x *' *'-nullifiesˡ z (~ i))
-*-assoc' x y +0 = *'-nullifiesʳ (x *' y) ∙ sym (*'-nullifiesʳ x) ∙ (λ i → x *' *'-nullifiesʳ y (~ i))
-*-assoc' -[1+ a ] -[1+ b ] +[1+ c ] = λ i → +[1+ (lemma2 a b c i) ]
-*-assoc' -[1+ a ] +[1+ b ] -[1+ c ] = λ i → +[1+ (lemma2 a b c i) ]
-*-assoc' +[1+ a ] +[1+ b ] +[1+ c ] = λ i → +[1+ (lemma2 a b c i) ]
-*-assoc' +[1+ a ] -[1+ b ] -[1+ c ] = λ i → +[1+ (lemma2 a b c i) ]
-*-assoc' -[1+ a ] -[1+ b ] -[1+ c ] = λ i → -[1+ (lemma2 a b c i) ]
-*-assoc' -[1+ a ] +[1+ b ] +[1+ c ] = λ i → -[1+ (lemma2 a b c i) ]
-*-assoc' +[1+ a ] -[1+ b ] +[1+ c ] = λ i → -[1+ (lemma2 a b c i) ]
-*-assoc' +[1+ a ] +[1+ b ] -[1+ c ] = λ i → -[1+ (lemma2 a b c i) ]
-
-*-assoc'≡ : ∀ x y z
+*'-assoc≡ : ∀ x y z
           → ((x *  y) *  z ≡ x *  (y *  z))
           ≡ ((x *' y) *' z ≡ x *' (y *' z))
-*-assoc'≡ x y z i = *≡*' (*≡*' x y i) z i ≡ *≡*' x (*≡*' y z i) i
+*'-assoc≡ x y z i = *≡*' (*≡*' x y i) z i ≡ *≡*' x (*≡*' y z i) i
 
-*-assoc''' : ∀ x y z → (x * y) * z ≡ x * (y * z)
-*-assoc''' x y z = transport (sym (*-assoc'≡ x y z)) (*-assoc' x y z)
-
-*-assoc'' : ∀ x y z → (x *'' y) *'' z ≡ x *'' (y *'' z)
-*-assoc'' +0 _ _ = refl
-*-assoc'' x +0 z = {! *''-nullifiesʳ x      !}
-*-assoc'' x y +0 = {!      !}
-*-assoc'' -[1+ a ] -[1+ b ] +[1+ c ] = λ i → +[1+ (lemma2 a b c i) ]
-*-assoc'' -[1+ a ] +[1+ b ] -[1+ c ] = λ i → +[1+ (lemma2 a b c i) ]
-*-assoc'' +[1+ a ] +[1+ b ] +[1+ c ] = λ i → +[1+ (lemma2 a b c i) ]
-*-assoc'' +[1+ a ] -[1+ b ] -[1+ c ] = λ i → +[1+ (lemma2 a b c i) ]
-*-assoc'' -[1+ a ] -[1+ b ] -[1+ c ] = λ i → -[1+ (lemma2 a b c i) ]
-*-assoc'' -[1+ a ] +[1+ b ] +[1+ c ] = λ i → -[1+ (lemma2 a b c i) ]
-*-assoc'' +[1+ a ] -[1+ b ] +[1+ c ] = λ i → -[1+ (lemma2 a b c i) ]
-*-assoc'' +[1+ a ] +[1+ b ] -[1+ c ] = λ i → -[1+ (lemma2 a b c i) ]
-
-
--- *-assoc : Associative _*_
--- *-assoc +0 _ _ = refl
--- *-assoc x +0 z rewrite ℕₚ.*-zeroʳ ∣ x ∣ = refl
--- *-assoc x y +0 rewrite
---     ℕₚ.*-zeroʳ ∣ y ∣
---   | ℕₚ.*-zeroʳ ∣ x ∣
---   | ℕₚ.*-zeroʳ ∣ sign x 𝕊* sign y ◃ ∣ x ∣ ℕ.* ∣ y ∣ ∣
---   = refl
--- *-assoc -[1+ a ] -[1+ b ] +[1+ c ] = cong (+_ ∘ suc) (lemma a b c)
--- *-assoc -[1+ a ] +[1+ b ] -[1+ c ] = cong (+_ ∘ suc) (lemma a b c)
--- *-assoc +[1+ a ] +[1+ b ] +[1+ c ] = cong (+_ ∘ suc) (lemma a b c)
--- *-assoc +[1+ a ] -[1+ b ] -[1+ c ] = cong (+_ ∘ suc) (lemma a b c)
--- *-assoc -[1+ a ] -[1+ b ] -[1+ c ] = cong -[1+_] (lemma a b c)
--- *-assoc -[1+ a ] +[1+ b ] +[1+ c ] = cong -[1+_] (lemma a b c)
--- *-assoc +[1+ a ] -[1+ b ] +[1+ c ] = cong -[1+_] (lemma a b c)
--- *-assoc +[1+ a ] +[1+ b ] -[1+ c ] = cong -[1+_] (lemma a b c)
+*-assoc : ∀ x y z → (x * y) * z ≡ x * (y * z)
+*-assoc x y z = transport (sym (*'-assoc≡ x y z)) (*'-assoc x y z)
 
 *-nullifiesʳ : ∀ x → x * 0 ≡ 0
 *-nullifiesʳ x = *-comm x 0 ∙ *-nullifiesˡ x
 
 *-identityʳ : ∀ x → x * 1 ≡ x
 *-identityʳ x = *-comm x 1 ∙ *-identityˡ x
-
-*-distribˡ : ∀ o m n → (o * m) + (o * n) ≡ o * (m + n)
-*-distribˡ (pos zero) m n = {!   !}
-*-distribˡ (pos (suc o)) m n = let r = *-distribˡ (pos o) m n in {!   !} where
-  lhs = (pos (suc o) * m) + (pos (suc o) * n)  ≡⟨ {!   !} ⟩
-        (m + (pos o * m)) + (n + (pos o * n))  ≡⟨ {!   !} ⟩
-         m + ((pos o * m) + (n + (pos o * n))) ≡⟨ {!   !} ⟩
-         m + ((n + (pos o * n)) + (pos o * m)) ≡⟨ {!   !} ⟩
-         m + (n + ((pos o * n) + (pos o * m))) ≡⟨ {!   !} ⟩
-        (m + n) + (pos o * (m + n))            ∎
-        -- (pos (suc o) * (m + n))                  ∎
-        -- then use +-preserves-<
-*-distribˡ (negsuc zero) m n = {!   !}
-*-distribˡ (negsuc (suc o)) m n = let r = *-distribˡ (negsuc o) m n in {!   !}
-
-*-distribʳ : ∀ m n o → (m * o) + (n * o) ≡ (m + n) * o
-*-distribʳ m n o = transport (sym λ i → *-comm m o i + *-comm n o i ≡ *-comm (m + n) o i) $ *-distribˡ o m n
 
 -- hProp-valued _<_
 _<_ : ∀(x y : ℤ) → hProp ℓ-zero
@@ -483,47 +466,6 @@ negsuc-reflects-≡ x y p i = predⁿ (abs (p i))
 pos-reflects-≡ : ∀ x y → pos x ≡ pos y → x ≡ y
 pos-reflects-≡ x y p i = abs (p i)
 
-¬suc<ⁿ0 : ∀ x → [ ¬ (suc x <ⁿ 0) ]
-¬suc<ⁿ0 x (k , p) = snotzⁿ $ sym (+ⁿ-suc k (suc x)) ∙ p
-
-minⁿ-comm : ∀ x y → minⁿ x y ≡ minⁿ y x
-minⁿ-comm zero zero = refl
-minⁿ-comm zero (suc y) = refl
-minⁿ-comm (suc x) zero = refl
-minⁿ-comm (suc x) (suc y) i = suc $ minⁿ-comm x y i
-
-minⁿ-tightˡ : ∀ x y → [ x <ⁿ y ] → minⁿ x y ≡ x
-minⁿ-tightˡ zero zero x<y = refl
-minⁿ-tightˡ zero (suc y) x<y = refl
-minⁿ-tightˡ (suc x) zero x<y = ⊥-elim {A = λ _ → zero ≡ suc x} (¬suc<ⁿ0 x x<y)
-minⁿ-tightˡ (suc x) (suc y) x<y i = suc $ minⁿ-tightˡ x y (sucⁿ-creates-<ⁿ x y .snd x<y) i
-
-minⁿ-tightʳ : ∀ x y → [ y <ⁿ x ] → minⁿ x y ≡ y
-minⁿ-tightʳ x y y<x = minⁿ-comm x y ∙ minⁿ-tightˡ y x y<x
-
-minⁿ-identity : ∀ x → minⁿ x x ≡ x
-minⁿ-identity zero = refl
-minⁿ-identity (suc x) i = suc $ minⁿ-identity x i
-
-maxⁿ-comm : ∀ x y → maxⁿ x y ≡ maxⁿ y x
-maxⁿ-comm zero zero = refl
-maxⁿ-comm zero (suc y) = refl
-maxⁿ-comm (suc x) zero = refl
-maxⁿ-comm (suc x) (suc y) i = suc $ maxⁿ-comm x y i
-
-maxⁿ-tightˡ : ∀ x y → [ y <ⁿ x ] → maxⁿ x y ≡ x
-maxⁿ-tightˡ zero zero y<x = refl
-maxⁿ-tightˡ zero (suc y) y<x = ⊥-elim {A = λ _ → suc y ≡ zero} (¬suc<ⁿ0 y y<x)
-maxⁿ-tightˡ (suc x) zero y<x = refl
-maxⁿ-tightˡ (suc x) (suc y) y<x i = suc $ maxⁿ-tightˡ x y (sucⁿ-creates-<ⁿ y x .snd y<x) i
-
-maxⁿ-tightʳ : ∀ x y → [ x <ⁿ y ] → maxⁿ x y ≡ y
-maxⁿ-tightʳ x y x<y = maxⁿ-comm x y ∙ maxⁿ-tightˡ y x x<y
-
-maxⁿ-identity : ∀ x → maxⁿ x x ≡ x
-maxⁿ-identity zero = refl
-maxⁿ-identity (suc x) i = suc $ maxⁿ-identity x i
-
 min-trichotomy : ∀ x y → MinTrichtotomy x y
 min-trichotomy (pos    x) (pos    y) with (pos x) ≟ (pos y)
 ... | lt p = min-lt (λ i → pos $ minⁿ-tightˡ x y p i) p
@@ -537,6 +479,20 @@ min-trichotomy (negsuc x) (negsuc y) with (negsuc x) ≟ (negsuc y)
 ... | eq p = let maxxy≡x = (λ i → maxⁿ x (negsuc-reflects-≡ x y p (~ i))) ∙ maxⁿ-identity x
              in min-eq (λ j → negsuc $ maxxy≡x j) ((λ i → negsuc $ maxxy≡x i) ∙ p)
 ... | gt p = min-gt (λ i → negsuc $ maxⁿ-tightʳ x y p i) p
+
+max-trichotomy : ∀ x y → MaxTrichtotomy x y
+max-trichotomy (pos    x) (pos    y) with (pos x) ≟ (pos y)
+... | lt p = max-lt ((λ i → pos $ maxⁿ-tightʳ x y p i)) p
+... | eq p = let maxxy≡x = (λ i → maxⁿ x (pos-reflects-≡ x y p (~ i))) ∙ maxⁿ-identity x
+             in max-eq (λ j → pos $ maxxy≡x j) ((λ i → pos $ maxxy≡x i) ∙ p)
+... | gt p = max-gt (λ i → pos $ maxⁿ-tightˡ x y p i) p
+max-trichotomy (pos    x) (negsuc y) = max-gt refl tt
+max-trichotomy (negsuc x) (pos    y) = max-lt refl tt
+max-trichotomy (negsuc x) (negsuc y) with (negsuc x) ≟ (negsuc y)
+... | lt p = max-lt (λ i → negsuc $ minⁿ-tightʳ x y p i) p
+... | eq p = let minxy≡x = (λ i → minⁿ x (negsuc-reflects-≡ x y p (~ i))) ∙ minⁿ-identity x
+             in max-eq (λ j → negsuc $ minxy≡x j) ((λ i → negsuc $ minxy≡x i) ∙ p)
+... | gt p = max-gt (λ i → negsuc $ minⁿ-tightˡ x y p i) p
 
 -- NOTE: same proof as in `Number.Instances.Nat`
 is-min : (x y z : ℤ) → [ ¬ᵖ (min x y < z) ⇔ ¬ᵖ (x < z) ⊓ ¬ᵖ (y < z) ]
@@ -552,8 +508,19 @@ is-min x y z .snd (z≤x , z≤y) minxy<z with min-trichotomy x y
 ... | min-gt p _   = z≤y $ pathTo⇒ (λ i → p i < z) minxy<z
 ... | min-eq p q   = z≤x $ pathTo⇒ (λ i → p i < z) minxy<z
 
+-- NOTE: same proof as in `Number.Instances.Nat`
 is-max : (x y z : ℤ) → [ ¬ᵖ (z < max x y) ⇔ ¬ᵖ (z < x) ⊓ ¬ᵖ (z < y) ]
-is-max = {!  !}
+is-max x y z .fst maxxy≤z with max-trichotomy x y
+... | max-gt p y<x = (λ z<x → maxxy≤z $ pathTo⇐ (λ i → z < p i) z<x )
+                   , (λ z<y → maxxy≤z $ pathTo⇐ (λ i → z < p i) $ <-trans z y x z<y y<x )
+... | max-lt p x<y = (λ z<x → maxxy≤z $ pathTo⇐ (λ i → z < p i) $ <-trans z x y z<x x<y )
+                   , (λ z<y → maxxy≤z $ pathTo⇐ (λ i → z < p i) z<y )
+... | max-eq p q   = (λ z<x → maxxy≤z $ pathTo⇐ (λ i → z < p i) z<x )
+                   , (λ z<y → maxxy≤z $ pathTo⇐ (λ i → z < q i) z<y )
+is-max x y z .snd (z≤x , z≤y) maxxy<z with max-trichotomy x y
+... | max-gt p _   = z≤x $ pathTo⇒ (λ i → z < p i) maxxy<z
+... | max-lt p _   = z≤y $ pathTo⇒ (λ i → z < p i) maxxy<z
+... | max-eq p q   = z≤x $ pathTo⇒ (λ i → z < p i) maxxy<z
 
 possuc+negsuc≡0 : ∀ n → (pos (suc n) +negsuc n) ≡ pos 0
 possuc+negsuc≡0 zero = refl
@@ -582,38 +549,38 @@ sucInt[negsuc+pos]≡0 (suc n) = let r = sucInt[negsuc+pos]≡0 n in sym ind ∙
 +-inverse x .snd = +-inverseˡ x
 
 sucInt-reflects-< : ∀ x y → [ sucInt x < sucInt y ] → [ x < y ]
-sucInt-reflects-< (pos x) (pos y) p = sucⁿ-creates-<ⁿ x y .snd p -- ok
-sucInt-reflects-< (pos n) (negsuc zero) p = ¬-<ⁿ-zero p -- ok
-sucInt-reflects-< (negsuc n) (pos n₁) p = tt
-sucInt-reflects-< (negsuc zero) (negsuc zero) p = p
-sucInt-reflects-< (negsuc (suc n)) (negsuc zero) p = {!   !} -- ok
-sucInt-reflects-< (negsuc (suc n)) (negsuc (suc n₁)) p = {!   !} -- ok
+sucInt-reflects-< (pos         x ) (pos         y ) p = sucⁿ-creates-<ⁿ x y .snd p
+sucInt-reflects-< (pos         x ) (negsuc  zero  ) p = ¬-<ⁿ-zero p
+sucInt-reflects-< (negsuc      x ) (pos         y ) p = tt
+sucInt-reflects-< (negsuc  zero  ) (negsuc  zero  ) p = p
+sucInt-reflects-< (negsuc (suc x)) (negsuc  zero  ) p = 0<ⁿsuc x
+sucInt-reflects-< (negsuc (suc x)) (negsuc (suc y)) p = sucⁿ-creates-<ⁿ y x .fst p
 
 predInt-reflects-< : ∀ x y → [ predInt x < predInt y ] → [ x < y ]
-predInt-reflects-< (pos zero) (pos zero) p = p
-predInt-reflects-< (pos zero) (pos (suc n₁)) p = {!   !} -- ok
-predInt-reflects-< (pos (suc n)) (pos (suc n₁)) p = {!   !} -- ok
-predInt-reflects-< (pos zero) (negsuc n₁) p = {!   !} -- ok
-predInt-reflects-< (negsuc n) (pos n₁) p = tt
-predInt-reflects-< (negsuc n) (negsuc n₁) p = {!   !} -- ok
+predInt-reflects-< (pos  zero  ) (pos  zero  ) p = p
+predInt-reflects-< (pos  zero  ) (pos (suc y)) p = 0<ⁿsuc y
+predInt-reflects-< (pos (suc x)) (pos (suc y)) p = sucⁿ-creates-<ⁿ x y .fst p
+predInt-reflects-< (pos  zero  ) (negsuc   y ) p = ¬-<ⁿ-zero p
+predInt-reflects-< (negsuc   x ) (pos      y ) p = tt
+predInt-reflects-< (negsuc   x ) (negsuc   y ) p = sucⁿ-creates-<ⁿ y x .snd p
 
 sucInt-preserves-< : ∀ x y → [ x < y ] → [ sucInt x < sucInt y ]
-sucInt-preserves-< (pos n) (pos n₁) x<y = {!   !} -- ok
-sucInt-preserves-< (negsuc zero) (pos n₁) x<y = {!   !} -- ok
-sucInt-preserves-< (negsuc (suc n)) (pos n₁) x<y = tt
-sucInt-preserves-< (negsuc zero) (negsuc zero) x<y = x<y
-sucInt-preserves-< (negsuc zero) (negsuc (suc n₁)) x<y = {!   !} -- ok
-sucInt-preserves-< (negsuc (suc n)) (negsuc zero) x<y = tt
-sucInt-preserves-< (negsuc (suc n)) (negsuc (suc n₁)) x<y = {!   !} -- ok
+sucInt-preserves-< (pos         x ) (pos         y ) p = sucⁿ-creates-<ⁿ x y .fst p
+sucInt-preserves-< (negsuc  zero  ) (pos         y ) p = 0<ⁿsuc y
+sucInt-preserves-< (negsuc (suc x)) (pos         y ) p = tt
+sucInt-preserves-< (negsuc  zero  ) (negsuc  zero  ) p = p
+sucInt-preserves-< (negsuc  zero  ) (negsuc (suc y)) p = ¬-<ⁿ-zero p
+sucInt-preserves-< (negsuc (suc x)) (negsuc  zero  ) p = tt
+sucInt-preserves-< (negsuc (suc x)) (negsuc (suc y)) p = sucⁿ-creates-<ⁿ y x .snd p
 
 predInt-preserves-< : ∀ x y → [ x < y ] → [ predInt x < predInt y ]
-predInt-preserves-< (pos zero) (pos zero) x<y = x<y
-predInt-preserves-< (pos zero) (pos (suc n₁)) x<y = tt
-predInt-preserves-< (pos (suc n)) (pos zero) x<y = {!   !} -- ok
-predInt-preserves-< (pos (suc n)) (pos (suc n₁)) x<y = {!   !} -- ok
-predInt-preserves-< (negsuc n) (pos zero) x<y = {!   !} -- ok
-predInt-preserves-< (negsuc n) (pos (suc n₁)) x<y = tt
-predInt-preserves-< (negsuc n) (negsuc n₁) x<y = {!   !} -- ok
+predInt-preserves-< (pos  zero  ) (pos  zero  ) p = p
+predInt-preserves-< (pos  zero  ) (pos (suc y)) p = tt
+predInt-preserves-< (pos (suc x)) (pos  zero  ) p = ¬-<ⁿ-zero p
+predInt-preserves-< (pos (suc x)) (pos (suc y)) p = sucⁿ-creates-<ⁿ x y .snd p
+predInt-preserves-< (negsuc   x ) (pos  zero  ) p = 0<ⁿsuc x
+predInt-preserves-< (negsuc   x ) (pos (suc y)) p = tt
+predInt-preserves-< (negsuc   x ) (negsuc   y ) p = sucⁿ-creates-<ⁿ y x .fst p
 
 pos+pos≡+ⁿ : ∀ a x → (pos a +pos x) ≡ pos (a +ⁿ x)
 pos+pos≡+ⁿ a zero = λ i → pos $ +ⁿ-comm 0 a i
@@ -635,6 +602,14 @@ negsuc+negsuc≡+ⁿ a (suc x) = let r = negsuc+negsuc≡+ⁿ a x in
 +negsuc-identityˡ zero = refl
 +negsuc-identityˡ (suc x) = λ i → predInt $ +negsuc-identityˡ x i
 
+
+-- pos+negsuc≡negsuc+pos : ∀ a b → pos a +negsuc b ≡ negsuc b +pos a
+-- pos+negsuc≡negsuc+pos a b = {! pos a - (pos (suc b))  !}
+-- pos+negsuc≡negsuc+pos zero zero = {!   !}
+-- pos+negsuc≡negsuc+pos zero (suc b) = {!   !}
+-- pos+negsuc≡negsuc+pos (suc a) zero = {!   !}
+-- pos+negsuc≡negsuc+pos (suc a) (suc b) = {!predInt+negsuc b (pos a)  !}
+
 pos+negsuc≡⊎ : ∀ a b → (Σ[ y ∈ ℕ ] pos a +negsuc b ≡ pos y) ⊎ (Σ[ y ∈ ℕ ] pos a +negsuc b ≡ negsuc y)
 pos+negsuc≡⊎ zero zero = inr (0 , refl)
 pos+negsuc≡⊎ (suc a) zero = inl (a , refl)
@@ -643,8 +618,35 @@ pos+negsuc≡⊎ (suc a) (suc b) with pos+negsuc≡⊎ a b
 ... | inl (y , p) = inl (y , predInt+negsuc b (pos (suc a)) ∙ p)
 ... | inr (y , p) = inr (y , predInt+negsuc b (pos (suc a)) ∙ p)
 
--- lemma1 : ∀ a b x → [ (pos a +negsuc x) < (pos b +negsuc x) ] → [ a <ⁿ b ]
--- lemma1 a b x = {!   !}
+negsuc+pos≡⊎ : ∀ a b → (Σ[ y ∈ ℕ ] negsuc a +pos b ≡ pos y) ⊎ (Σ[ y ∈ ℕ ] negsuc a +pos b ≡ negsuc y)
+negsuc+pos≡⊎ zero zero = inr (0 , refl)
+negsuc+pos≡⊎ (suc a) zero = inr (suc a , refl)
+negsuc+pos≡⊎ zero (suc b) = inl (b , sucInt+pos b (negsuc 0) ∙ +-identityˡ (pos b))
+negsuc+pos≡⊎ (suc a) (suc b) with negsuc+pos≡⊎ a b
+... | inl (y , p) = inl (y , sucInt+pos b (negsuc (suc a)) ∙ p)
+... | inr (y , p) = inr (y , sucInt+pos b (negsuc (suc a)) ∙ p)
+
+pos+negsuc≡negsuc+pos : ∀ a b → pos a +negsuc b ≡ negsuc b +pos a
+pos+negsuc≡negsuc+pos a zero = (λ i → predInt $ pos+pos≡+ⁿ 0 a (~ i)) ∙ predInt+pos a 0
+pos+negsuc≡negsuc+pos a (suc b) = (λ i → predInt $ pos+negsuc≡negsuc+pos a b i) ∙ predInt+ (negsuc b) (pos a)
+
+predInt- : ∀ a → predInt (- a) ≡ - (sucInt a)
+predInt- (pos zero) = refl
+predInt- (pos (suc n)) = refl
+predInt- (negsuc zero) = refl
+predInt- (negsuc (suc n)) = refl
+
+pos+negsuc-swap : ∀ a b → pos (suc a) +negsuc b ≡ -(pos (suc b) + negsuc a)
+pos+negsuc-swap zero zero = refl
+pos+negsuc-swap (suc a) zero = λ i → - (predInt+negsuc a 1 ∙ +negsuc-identityˡ a) (~ i)
+pos+negsuc-swap a (suc b) =
+  predInt (pos (suc a) +negsuc b)     ≡⟨ (λ i → predInt $ pos+negsuc-swap a b i) ⟩
+  predInt (- (pos (suc b) +negsuc a)) ≡⟨ predInt- (pos (suc b) +negsuc a) ⟩
+  - sucInt (pos (suc b) +negsuc a)    ≡⟨ (λ i → - sucInt+negsuc a (pos (suc b)) i) ⟩
+  - (pos (suc (suc b)) +negsuc a)     ∎
+
+negsuc+pos-swap : ∀ a b → negsuc a +pos (suc b) ≡ -(negsuc b + pos (suc a))
+negsuc+pos-swap a b = sym (pos+negsuc≡negsuc+pos (suc b) a) ∙ pos+negsuc-swap b a ∙ (λ i → - pos+negsuc≡negsuc+pos (suc a) b i)
 
 +-preserves-< : ∀ a b x → [ a < b ] → [ (a + x) < (b + x) ]
 +-preserves-< a b (pos zero) a<b = a<b
@@ -674,14 +676,194 @@ pos+negsuc≡⊎ (suc a) (suc b) with pos+negsuc≡⊎ a b
   ; (inr p) → +-reflects-<ˡ x z y p
   }
 
--- negsuc*pos≡negsuc : ∀ a b → negsuc a * pos b ≡ negsuc ()
-
 ·-preserves-< : (x y z : ℤ) → [ 0 < z ] → [ x < y ] → [ (x * z) < (y * z) ]
-·-preserves-< (pos n₁) (pos n₂) (pos n) p q = {!   !} -- ok
-·-preserves-< (negsuc n₁) (pos n₂) (pos zero) p q = {!   !} -- ok
-·-preserves-< (negsuc n₁) (pos n₂) (pos (suc n)) p q = tt
-·-preserves-< (negsuc n₁) (negsuc n₂) (pos zero) p q = p
-·-preserves-< (negsuc n₁) (negsuc n₂) (pos (suc n)) p q = {!   !} -- ok
+·-preserves-< (pos    x) (pos    y) (pos      z ) p q = ·ⁿ-preserves-<ⁿ x y z p q -- ok
+·-preserves-< (negsuc x) (pos    y) (pos  zero  ) p q = subst (λ p → [ 0 <ⁿ p ]) (sym $ *ⁿ-nullifiesʳ y) p -- ok
+·-preserves-< (negsuc x) (pos    y) (pos (suc z)) p q = tt
+·-preserves-< (negsuc x) (negsuc y) (pos  zero  ) p q = p
+·-preserves-< (negsuc x) (negsuc y) (pos (suc z)) p q = (
+     y                   <ⁿ  x                   ⇒ᵖ⟨ ·ⁿ-preserves-<ⁿ y x (suc z) (0<ⁿsuc z) ⟩
+    (y *ⁿ suc z        ) <ⁿ (x *ⁿ suc z        ) ⇒ᵖ⟨ +ⁿ-createsʳ-<ⁿ (y *ⁿ suc z) (x *ⁿ suc z) z .fst ⟩
+    (y *ⁿ suc z +ⁿ z   ) <ⁿ (x *ⁿ suc z +ⁿ z   ) ⇒ᵖ⟨ pathTo⇐ (λ i → lemma20 y i <ⁿ lemma20 x i) ⟩
+    (y *ⁿ z +ⁿ (y +ⁿ z)) <ⁿ (x *ⁿ z +ⁿ (x +ⁿ z)) ◼ᵖ) .snd q
+  where
+  lemma20 : ∀ y → y *ⁿ z +ⁿ (y +ⁿ z) ≡ y *ⁿ suc z +ⁿ z
+  lemma20 y =     y *ⁿ z +ⁿ (y +ⁿ z) ≡⟨ +ⁿ-assoc (y *ⁿ z) y z ⟩
+                 (y *ⁿ z +ⁿ y) +ⁿ z  ≡⟨ (λ i → +ⁿ-comm (y *ⁿ z) y i +ⁿ z) ⟩
+                 (y +ⁿ y *ⁿ z) +ⁿ z  ≡⟨ (λ i → *ⁿ-suc y z (~ i) +ⁿ z) ⟩
+                  y *ⁿ suc z +ⁿ z    ∎
+
+lemma20 : ∀ a → sucInt (negsuc a +pos a) ≡ 0
+lemma20 a = +-inverse (pos (suc a)) .snd
+
+-- already have this
+lemma21 : ∀ a → pos (suc a) +negsuc a ≡ 0
+lemma21 a = +-inverse (pos (suc a)) .fst
+
+lemma22 : ∀ a b c → a +negsuc (b +ⁿ suc c) ≡ (a +negsuc b) +negsuc c
+lemma22 a b c = (λ i → a + (negsuc+negsuc≡+ⁿ b c ∙ (λ j → negsuc (+ⁿ-suc b c (~ j)))) (~ i)) ∙ +-assoc a (negsuc b) (negsuc c)
+
+lemma23 : ∀ a → sucInt (negsuc 0 +pos a) ≡ pos a
+lemma23 a = sucInt+pos a (negsuc 0) ∙ pos+pos≡+ⁿ 0 a
+
+lemma24 : ∀ a → negsuc a +pos a ≡ negsuc 0
+lemma24 zero = refl
+lemma24 (suc a) = sucInt+pos a (negsuc (suc a)) ∙ lemma24 a
+
+lemma25 : ∀ a b c → (a +pos b) +pos c ≡ a +pos (b +ⁿ c)
+lemma25 a b c = sym (+-assoc a (pos b) (pos c)) ∙ (λ i → a + pos+pos≡+ⁿ b c i)
+
+lemma26 = λ(a b : ℕ) →
+  a *ⁿ suc b +ⁿ (a +ⁿ suc b)    ≡⟨ (λ i → *ⁿ-suc a b i +ⁿ (a +ⁿ suc b)) ⟩
+  (a +ⁿ a *ⁿ b) +ⁿ (a +ⁿ suc b) ≡⟨ sym $ +ⁿ-assoc a (a *ⁿ b) (a +ⁿ suc b) ⟩
+  a +ⁿ (a *ⁿ b +ⁿ (a +ⁿ suc b)) ≡⟨ (λ i → a +ⁿ +ⁿ-assoc (a *ⁿ b) a (suc b) i) ⟩
+  a +ⁿ ((a *ⁿ b +ⁿ a) +ⁿ suc b) ≡⟨ (λ i → a +ⁿ +ⁿ-suc (a *ⁿ b +ⁿ a) b i) ⟩
+  a +ⁿ suc ((a *ⁿ b +ⁿ a) +ⁿ b) ≡⟨ (λ i → a +ⁿ suc (+ⁿ-assoc (a *ⁿ b) a b (~ i))) ⟩
+  a +ⁿ suc (a *ⁿ b +ⁿ (a +ⁿ b)) ∎
+
+*-sucInt : ∀ m n → (m * sucInt n) ≡ (m + (m * n))
+*-sucInt (pos      a ) (pos      b ) = (λ i → pos (*ⁿ-suc a b i)) ∙ sym (pos+pos≡+ⁿ a (a *ⁿ b))
+*-sucInt (pos  zero  ) (negsuc   b ) = *-nullifiesˡ _
+*-sucInt (pos (suc a)) (negsuc zero) =
+  pos (a *ⁿ zero)                                  ≡⟨ (λ i → pos $ *ⁿ-nullifiesʳ a i) ⟩
+  pos 0                                            ≡⟨ sym $ +-inverse (pos (suc a)) .fst ⟩
+  (pos (suc a) +negsuc                a          ) ≡⟨ refl ⟩
+  (pos (suc a) +negsuc (     zero +ⁿ  a         )) ≡⟨ (λ i → pos (suc a) +negsuc (sym (*ⁿ-nullifiesʳ a) i +ⁿ +ⁿ-comm 0 a i)) ⟩
+  (pos (suc a) +negsuc (a *ⁿ zero +ⁿ (a +ⁿ zero))) ∎
+*-sucInt (pos (suc a)) (negsuc (suc b)) =
+  negsuc (a *ⁿ b +ⁿ (a +ⁿ b))                          ≡⟨ sym $ +negsuc-identityˡ (a *ⁿ b +ⁿ (a +ⁿ b)) ⟩
+  0 +negsuc (a *ⁿ b +ⁿ (a +ⁿ b))                       ≡⟨ (λ i → lemma21 a (~ i) +negsuc (a *ⁿ b +ⁿ (a +ⁿ b))) ⟩
+  (pos (suc a) +negsuc a) +negsuc (a *ⁿ b +ⁿ (a +ⁿ b)) ≡⟨ sym $ lemma22 (pos (suc a)) a (a *ⁿ b +ⁿ (a +ⁿ b)) ⟩
+  pos (suc a) +negsuc (a +ⁿ suc (a *ⁿ b +ⁿ (a +ⁿ b)))  ≡⟨ (λ i → pos (suc a) +negsuc (lemma26 a b (~ i))) ⟩
+  pos (suc a) +negsuc (a *ⁿ suc b +ⁿ (a +ⁿ suc b))     ∎
+*-sucInt (negsuc   a ) (pos  zero  ) = λ i → negsuc $ *ⁿ-nullifiesʳ a i +ⁿ +ⁿ-comm a 0 i -- ok
+*-sucInt (negsuc   a ) (pos (suc b)) = -- {!   !} -- ok
+  negsuc (a *ⁿ suc b +ⁿ (a +ⁿ suc b))    ≡⟨ (λ i → negsuc $ lemma26 a b i) ⟩
+  negsuc (a +ⁿ suc (a *ⁿ b +ⁿ (a +ⁿ b))) ≡⟨ (λ i → negsuc $ +ⁿ-suc a (a *ⁿ b +ⁿ (a +ⁿ b)) i) ∙ sym (negsuc+negsuc≡+ⁿ a (a *ⁿ b +ⁿ (a +ⁿ b))) ⟩
+  negsuc a +negsuc (a *ⁿ b +ⁿ (a +ⁿ b))  ∎
+*-sucInt (negsuc a) (negsuc zero) = sym (+-inverse (pos (suc a)) .snd) ∙ (λ i → sucInt (negsuc a +pos (*ⁿ-identityʳ a (~ i))))
+*-sucInt (negsuc a) (negsuc (suc b)) =
+  pos (suc (b +ⁿ a *ⁿ suc b))                                ≡⟨ refl ⟩
+  sucInt (pos (b +ⁿ a *ⁿ suc b))                             ≡⟨ (λ i → sucInt $ lemma23 (b +ⁿ a *ⁿ suc b) (~ i)) ⟩
+  sucInt (sucInt (negsuc 0 +pos (b +ⁿ a *ⁿ suc b)))          ≡⟨ (λ i → sucInt (sucInt (lemma24 a (~ i) +pos (b +ⁿ a *ⁿ suc b)))) ⟩
+  sucInt (sucInt ((negsuc a +pos a) +pos (b +ⁿ a *ⁿ suc b))) ≡⟨ (λ i → sucInt $ sucInt $ lemma25 (negsuc a) a (b +ⁿ a *ⁿ suc b) i) ⟩
+  sucInt (sucInt (negsuc a +pos (a +ⁿ (b +ⁿ a *ⁿ suc b))))   ≡⟨ (λ i → sucInt (sucInt (negsuc a +pos lemma19 i))) ⟩
+  sucInt (sucInt (negsuc a +pos (b +ⁿ a *ⁿ suc (suc b))))    ∎ where
+    lemma19 = a +ⁿ (b +ⁿ a *ⁿ suc b) ≡⟨ +ⁿ-assoc a b (a *ⁿ suc b) ⟩
+              (a +ⁿ b) +ⁿ a *ⁿ suc b ≡⟨ (λ i → +ⁿ-comm a b i +ⁿ a *ⁿ suc b) ⟩
+              (b +ⁿ a) +ⁿ a *ⁿ suc b ≡⟨ sym $ +ⁿ-assoc b a (a *ⁿ suc b) ⟩
+              b +ⁿ (a +ⁿ a *ⁿ suc b) ≡⟨ (λ i → b +ⁿ *ⁿ-suc a (suc b) (~ i)) ⟩
+              b +ⁿ a *ⁿ suc (suc b)  ∎
+
+*-sucIntˡ : ∀ m n → (sucInt m * n) ≡ (n + (m * n))
+*-sucIntˡ m n = *-comm (sucInt m) n ∙ *-sucInt n m ∙ λ i → n + *-comm n m i
+
+*-predInt : ∀ m n → (m * predInt n) ≡ ((- m) + (m * n))
+*-predInt m (pos zero) = *-comm m (negsuc 0) ∙ -1*≡- m ∙ λ i → (- m) + *-nullifiesʳ m (~ i) -- ok
+*-predInt m (pos (suc n)) =
+  m * pos n                 ≡⟨ +-comm (m * pos n) 0 ⟩
+  0 + m * pos n             ≡⟨ (λ i → +-inverseˡ m (~ i) + (m * pos n)) ⟩
+  ((- m) + m) + (m * pos n) ≡⟨ sym $ +-assoc (- m) m (m * pos n) ⟩
+  (- m) + (m + (m * pos n)) ≡⟨ (λ i → (- m) + *-sucInt m (pos n) (~ i)) ⟩
+  (- m) + (m * pos (suc n)) ∎
+*-predInt (pos zero) (negsuc zero) = refl
+*-predInt (pos (suc n)) (negsuc zero) = (λ i → negsuc $ *ⁿ-identityʳ n i +ⁿ +ⁿ-comm n 1 i) ∙ (λ i → negsuc $ +ⁿ-comm n (suc n) i) ∙ sym (negsuc+negsuc≡+ⁿ n n) ∙ (λ i → negsuc n +negsuc (*ⁿ-nullifiesʳ n (~ i) +ⁿ +ⁿ-comm 0 n i)) --ok
+*-predInt (pos zero) (negsuc (suc m)) = refl
+*-predInt (pos (suc n)) (negsuc (suc m)) =
+  negsuc (n *ⁿ suc (suc m) +ⁿ (n +ⁿ suc (suc m)))  ≡⟨ (λ i → negsuc $ *ⁿ-suc n (suc m) i +ⁿ +ⁿ-suc n (suc m) i) ⟩
+  negsuc ((n +ⁿ n *ⁿ suc m) +ⁿ suc (n +ⁿ suc m))   ≡⟨ (λ i → negsuc $ +ⁿ-assoc n (n *ⁿ suc m) (suc n +ⁿ suc m) (~ i)) ⟩
+  negsuc (n +ⁿ (n *ⁿ suc m +ⁿ suc (n +ⁿ suc m)))   ≡⟨ (λ i → negsuc $ n +ⁿ +ⁿ-suc (n *ⁿ suc m) (n +ⁿ suc m) i) ⟩
+  negsuc (n +ⁿ suc (n *ⁿ suc m +ⁿ (n +ⁿ suc m)))   ≡⟨ (λ i → negsuc $ +ⁿ-suc n (n *ⁿ suc m +ⁿ (n +ⁿ suc m)) i) ⟩
+  negsuc (suc (n +ⁿ (n *ⁿ suc m +ⁿ (n +ⁿ suc m)))) ≡⟨ sym $ negsuc+negsuc≡+ⁿ n (n *ⁿ suc m +ⁿ (n +ⁿ suc m)) ⟩
+  (negsuc n +negsuc (n *ⁿ suc m +ⁿ (n +ⁿ suc m)))  ∎
+*-predInt (negsuc n) (negsuc zero) = cong sucInt ((λ i → pos $ suc $ *ⁿ-suc n 1 i) ∙ sym (pos+pos≡+ⁿ (suc n) (n *ⁿ 1))) -- ok
+*-predInt (negsuc n) (negsuc (suc m)) =
+  pos (suc (suc (suc (m +ⁿ n *ⁿ suc (suc (suc m))))))        ≡⟨ refl ⟩
+  sucInt (sucInt (pos (suc (m +ⁿ n *ⁿ suc (suc (suc m))))))  ≡⟨ (λ i → sucInt $ sucInt $ pos $ lemma18 i) ⟩
+  sucInt (sucInt (pos (suc n +ⁿ (m +ⁿ n *ⁿ suc (suc m)))))   ≡⟨ (λ i → sucInt $ sucInt $ pos+pos≡+ⁿ (suc n) (m +ⁿ n *ⁿ suc (suc m)) (~ i)) ⟩
+  sucInt (sucInt (pos (suc n) +pos (m +ⁿ n *ⁿ suc (suc m)))) ∎ where
+  lemma18 = suc (m +ⁿ n *ⁿ suc (suc (suc m)))  ≡⟨ (λ i → suc $ m +ⁿ *ⁿ-suc n (suc (suc m)) i) ⟩
+            suc (m +ⁿ (n +ⁿ n *ⁿ suc (suc m))) ≡⟨ (λ i → suc $ +ⁿ-assoc m n (n *ⁿ (suc (suc m))) i) ⟩
+            suc ((m +ⁿ n) +ⁿ n *ⁿ suc (suc m)) ≡⟨ (λ i → suc $ +ⁿ-comm m n i +ⁿ n *ⁿ suc (suc m)) ⟩
+            suc ((n +ⁿ m) +ⁿ n *ⁿ suc (suc m)) ≡⟨ (λ i → suc $ +ⁿ-assoc n m (n *ⁿ (suc (suc m))) (~ i)) ⟩
+            suc (n +ⁿ (m +ⁿ n *ⁿ suc (suc m))) ≡⟨ refl ⟩
+            suc n +ⁿ (m +ⁿ n *ⁿ suc (suc m))   ∎
+
+*-predIntˡ : ∀ m n → (predInt m * n) ≡ ((- n) + (m * n))
+*-predIntˡ m n = *-comm (predInt m) n ∙ *-predInt n m ∙ λ i → (- n) + (*-comm n m i)
+
+-distrib : ∀ m n → -(m + n) ≡ (- m) + (- n)
+-distrib (pos zero) (pos zero) = refl
+-distrib (pos (suc n)) (pos zero) = refl
+-distrib (pos zero) (pos (suc m)) =
+  - sucInt (pos zero +pos m) ≡⟨ (λ i → - sucInt (pos+pos≡+ⁿ 0 m i)) ⟩
+  negsuc m                   ≡⟨ sym $ +negsuc-identityˡ m ⟩
+  (pos zero +negsuc m)       ∎
+-distrib (pos (suc n)) (pos (suc m)) = (λ i → - sucInt (pos+pos≡+ⁿ (suc n) m i)) ∙ sym (negsuc+negsuc≡+ⁿ n m)
+-distrib (pos zero) (negsuc m) = (λ i → - +negsuc-identityˡ m i) ∙ sym (pos+pos≡+ⁿ 0 (suc m))
+-distrib (pos (suc n)) (negsuc m) = sym (pos+negsuc-swap m n) ∙ pos+negsuc≡negsuc+pos (suc m) n
+-distrib (negsuc n) (pos zero) = refl
+-distrib (negsuc n) (pos (suc m)) = (λ i → - pos+negsuc≡negsuc+pos (suc m) n (~ i)) ∙ sym (pos+negsuc-swap n m)
+-distrib (negsuc n) (negsuc m) = (λ i → - negsuc+negsuc≡+ⁿ n m i) ∙ (λ i → sucInt $ pos+pos≡+ⁿ (suc n) m (~ i))
+
+*-distribˡ : ∀ o m n → (o * m) + (o * n) ≡ o * (m + n)
+*-distribˡ (pos zero) m n = (λ i → *-nullifiesˡ m i + *-nullifiesˡ n i) ∙ (sym $ *-nullifiesˡ (m + n))
+*-distribˡ (pos (suc o)) m n = let
+  ind = *-distribˡ (pos o) m n
+  lhs = (pos (suc o) * m) + (pos (suc o) * n)  ≡⟨ (λ i → *-sucIntˡ (pos o) m i + *-sucIntˡ (pos o) n i) ⟩
+        (m + (pos o * m)) + (n + (pos o * n))  ≡⟨ sym $ +-assoc m (pos o * m) (n + (pos o * n)) ⟩
+         m + ((pos o * m) + (n + (pos o * n))) ≡⟨ (λ i → m + +-comm (pos o * m) (n + (pos o * n)) i) ⟩
+         m + ((n + (pos o * n)) + (pos o * m)) ≡⟨ (λ i → m + +-assoc n (pos o * n) (pos o * m) (~ i)) ⟩
+         m + (n + ((pos o * n) + (pos o * m))) ≡⟨ (λ i → +-assoc m n (+-comm (pos o * n) (pos o * m) i) i) ⟩
+        (m + n) + ((pos o * m) + (pos o * n))  ≡⟨ (λ i → (m + n) + ind i) ⟩
+        (m + n) + (pos o * (m + n))            ∎
+  rhs = (pos (suc o) * (m + n))       ≡⟨ refl ⟩
+        (sucInt (pos o) * (m + n))    ≡⟨ *-sucIntˡ (pos o) (m + n) ⟩
+        ((m + n) + (pos o * (m + n))) ∎
+  in lhs ∙ sym rhs
+*-distribˡ (negsuc zero) (pos zero) (pos zero) = refl
+*-distribˡ (negsuc zero) (pos zero) (pos (suc n)) = +negsuc-identityˡ n ∙ λ i → negsuc 0 * sucInt (pos+pos≡+ⁿ 0 n (~ i))
+*-distribˡ (negsuc zero) (pos (suc m)) (pos zero) = refl
+*-distribˡ (negsuc zero) (pos (suc m)) (pos (suc n)) = negsuc+negsuc≡+ⁿ m n ∙ λ i → negsuc 0 * sucInt (pos+pos≡+ⁿ (suc m) n (~ i))
+*-distribˡ (negsuc zero) (pos zero) (negsuc n) = (λ i → sucInt $ pos+pos≡+ⁿ 0 (n +ⁿ 0) i) ∙ (λ i → negsuc 0 * +negsuc-identityˡ n (~ i))
+*-distribˡ (negsuc zero) (pos (suc m)) (negsuc n) =
+  sucInt (negsuc m +pos (n +ⁿ zero))           ≡⟨ (λ i → sucInt $ negsuc m +pos +ⁿ-comm n 0 i) ⟩
+  sucInt (negsuc m +pos n)                     ≡⟨ refl ⟩
+  negsuc m +pos (suc n)                        ≡⟨ negsuc+pos-swap m n ⟩
+  - (negsuc n +pos (suc m))                    ≡⟨ (λ i → - pos+negsuc≡negsuc+pos (suc m) n (~ i)) ⟩
+  - (pos (suc m) +negsuc n)                    ≡⟨ sym $ -1*≡- (pos (suc m) +negsuc n) ⟩
+  negsuc zero * (pos (suc m) +negsuc n)        ∎
+*-distribˡ (negsuc zero) (negsuc m) (pos zero) = refl
+*-distribˡ (negsuc zero) (negsuc m) (pos (suc n)) =
+  pos (suc (m +ⁿ zero)) +negsuc n        ≡⟨ (λ i → pos (suc (+ⁿ-comm m 0 i)) +negsuc n) ⟩
+  pos (suc m) +negsuc n                  ≡⟨ pos+negsuc≡negsuc+pos (suc m) n ⟩
+  sucInt (negsuc n +pos m)               ≡⟨ negsuc+pos-swap n m ⟩
+  - negsuc m +pos (suc n)                ≡⟨ refl ⟩
+  - sucInt (negsuc m +pos n)             ≡⟨ sym $ -1*≡- (sucInt (negsuc m +pos n)) ⟩
+  negsuc zero * sucInt (negsuc m +pos n) ∎
+*-distribˡ (negsuc zero) (negsuc m) (negsuc n) =
+  sucInt (pos (suc (m +ⁿ zero)) +pos (n +ⁿ zero)) ≡⟨ (λ i → sucInt (pos (suc (+ⁿ-comm m 0 i)) +pos (+ⁿ-comm n 0 i))) ⟩
+  sucInt (pos (suc m) +pos (n))                   ≡⟨ (λ i → sucInt $ pos+pos≡+ⁿ (suc m) n i) ⟩
+  sucInt (pos (suc m +ⁿ n))                       ≡⟨ refl ⟩
+  pos (suc (suc (m +ⁿ n)))                        ≡⟨ (λ i → pos $ suc $ suc $ +ⁿ-comm 0 (m +ⁿ n) i) ⟩
+  negsuc zero * (negsuc (suc (m +ⁿ n)))           ≡⟨ (λ i → negsuc zero * negsuc+negsuc≡+ⁿ m n (~ i)) ⟩
+  negsuc zero * (negsuc m +negsuc n)              ∎
+*-distribˡ (negsuc (suc o)) m n = let
+  r = *-distribˡ (negsuc o) m n
+  lhs = (negsuc (suc o) * m) + (negsuc (suc o) * n)          ≡⟨ (λ i → *-predIntˡ (negsuc o) m i + *-predIntˡ (negsuc o) n i) ⟩
+        ((- m) + (negsuc o * m)) + ((- n) + (negsuc o * n))  ≡⟨ sym $ +-assoc (- m)  (negsuc o * m) ((- n) + (negsuc o * n)) ⟩
+         (- m) + ((negsuc o * m) + ((- n) + (negsuc o * n))) ≡⟨ (λ i → (- m) + +-comm (negsuc o * m) ((- n) + (negsuc o * n)) i) ⟩
+         (- m) + (((- n) + (negsuc o * n)) + (negsuc o * m)) ≡⟨ (λ i → (- m) + +-assoc (- n) (negsuc o * n) (negsuc o * m) (~ i)) ⟩
+         (- m) + ((- n) + ((negsuc o * n) + (negsuc o * m))) ≡⟨ (λ i → +-assoc (- m) (- n) (+-comm (negsuc o * n) (negsuc o * m) i) i) ⟩
+        ((- m) + (- n)) + ((negsuc o * m) + (negsuc o * n))  ≡⟨ (λ i → ((- m) + (- n)) + r i) ⟩
+        ((- m) + (- n)) + (negsuc o * (m + n))            ∎
+  rhs = negsuc (suc o) * (m + n)               ≡⟨ *-predIntˡ (negsuc o) (m + n) ⟩
+        (- (m + n)) + negsuc (o) * (m + n)     ≡⟨ (λ i → -distrib m n i + negsuc (o) * (m + n)) ⟩
+        ((- m) + (- n)) + (negsuc (o) * (m + n)) ∎
+  in lhs ∙ sym rhs
+
+*-distribʳ : ∀ m n o → (m * o) + (n * o) ≡ (m + n) * o
+*-distribʳ m n o = transport (sym λ i → *-comm m o i + *-comm n o i ≡ *-comm (m + n) o i) $ *-distribˡ o m n
 
 +-Semigroup : [ isSemigroup _+_ ]
 +-Semigroup .IsSemigroup.is-set   = isSetℤ

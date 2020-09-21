@@ -83,6 +83,16 @@ abstract
   suc-creates-< a b .fst (k , p) = k , (+-suc k (suc a)) ∙ (λ i → suc (p i))
   suc-creates-< a b .snd (k , p) = k , inj-m+ {1} (sym (+-suc k (suc a)) ∙ p)
 
+  +-createsˡ-< : ∀ a b x → [ a < b ⇔ (x + a) < (x + b) ]
+  +-createsˡ-< a b  zero   .fst a<b = a<b
+  +-createsˡ-< a b (suc x) .fst a<b = suc-creates-< (x + a) (x + b) .fst $ +-createsˡ-< a b x .fst a<b
+  +-createsˡ-< a b zero .snd a<b = a<b
+  +-createsˡ-< a b (suc x) .snd p = +-createsˡ-< a b x .snd (suc-creates-< (x + a) (x + b) .snd p)
+
+  +-createsʳ-< : ∀ a b x → [ a < b ⇔ (a + x) < (b + x) ]
+  +-createsʳ-< a b x .fst p = transport (λ i → [ +-comm x a i < +-comm x b i ]) $ +-createsˡ-< a b x .fst p
+  +-createsʳ-< a b x .snd p = +-createsˡ-< a b x .snd (transport (λ i → [ +-comm a x i < +-comm b x i ]) p)
+
   <-cotrans      : (a b     : ℕ) → [ a < b ] → (x : ℕ) → [ (a < x) ⊔ (x < b) ]
   <-cotrans  zero    zero        q      c  = ⊥-elim {A = λ _ → [ (zero < c) ⊔ (c < zero) ]}  (<-irrefl _ q)
   <-cotrans  zero   (suc b)      q  zero   = inrᵖ q
@@ -94,6 +104,47 @@ abstract
           s : (c < b) ≡ (suc c < suc b)
           r = ⇔toPath (suc-creates-< a c .fst) (suc-creates-< a c .snd)
           s = ⇔toPath (suc-creates-< c b .fst) (suc-creates-< c b .snd)
+
+¬suc<0 : ∀ x → [ ¬ (suc x < 0) ]
+¬suc<0 x (k , p) = snotz $ sym (+-suc k (suc x)) ∙ p
+
+min-comm : ∀ x y → min x y ≡ min y x
+min-comm zero zero = refl
+min-comm zero (suc y) = refl
+min-comm (suc x) zero = refl
+min-comm (suc x) (suc y) i = suc $ min-comm x y i
+
+min-tightˡ : ∀ x y → [ x < y ] → min x y ≡ x
+min-tightˡ zero zero x<y = refl
+min-tightˡ zero (suc y) x<y = refl
+min-tightˡ (suc x) zero x<y = ⊥-elim {A = λ _ → zero ≡ suc x} (¬suc<0 x x<y)
+min-tightˡ (suc x) (suc y) x<y i = suc $ min-tightˡ x y (suc-creates-< x y .snd x<y) i
+
+min-tightʳ : ∀ x y → [ y < x ] → min x y ≡ y
+min-tightʳ x y y<x = min-comm x y ∙ min-tightˡ y x y<x
+
+min-identity : ∀ x → min x x ≡ x
+min-identity zero = refl
+min-identity (suc x) i = suc $ min-identity x i
+
+max-comm : ∀ x y → max x y ≡ max y x
+max-comm zero zero = refl
+max-comm zero (suc y) = refl
+max-comm (suc x) zero = refl
+max-comm (suc x) (suc y) i = suc $ max-comm x y i
+
+max-tightˡ : ∀ x y → [ y < x ] → max x y ≡ x
+max-tightˡ zero zero y<x = refl
+max-tightˡ zero (suc y) y<x = ⊥-elim {A = λ _ → suc y ≡ zero} (¬suc<0 y y<x)
+max-tightˡ (suc x) zero y<x = refl
+max-tightˡ (suc x) (suc y) y<x i = suc $ max-tightˡ x y (suc-creates-< y x .snd y<x) i
+
+max-tightʳ : ∀ x y → [ x < y ] → max x y ≡ y
+max-tightʳ x y x<y = max-comm x y ∙ max-tightˡ y x x<y
+
+max-identity : ∀ x → max x x ≡ x
+max-identity zero = refl
+max-identity (suc x) i = suc $ max-identity x i
 
 -- +-reflects-< : ∀ a b x → [ a + x < b + x ] → [ a < b ]
 -- +-reflects-< a b x
@@ -190,6 +241,7 @@ abstract
     k + suc (y + x) ≡⟨ (λ i → k + suc (w≡y (~ i) + x)) ⟩
     k + suc (w + x) ∎) ∙ k+suc[w+x]≡y+z))
 
+  -- NOTE: instead of equational reasoning, this might follow more easily from induction on `z`?
   ·-preserves-< : (x y z : ℕ) → [ 0 < z ] → [ x < y ] → [ (x * z) < (y * z) ]
   ·-preserves-< x y z (k , k+1≡z) (l , l+suc[x]≡y) = l * z + k , (
     (l * z + k) + suc (x * z) ≡⟨ sym $ +-assoc (l * z) k (suc (x * z)) ⟩
@@ -199,6 +251,19 @@ abstract
     l * z + (z + x * z)       ≡⟨ refl ⟩ -- suc x * z ≡ z + x * z holds definitionally
     l * z + (suc x) * z       ≡⟨ *-distribʳ l (suc x) z ⟩
     (l + suc x) * z           ∎) ∙ (λ i → l+suc[x]≡y i * z) ∙ refl
+
+  -- ·-reflects-< : (x y z : ℕ) → [ 0 < z ] → [ (x * z) < (y * z) ] → [ x < y ]
+  -- ·-reflects-< x y zero (k , k+1≡z) _ = ⊥-elim {A = λ _ → [ x < y ]} $ snotz (sym (+-comm k 1) ∙ k+1≡z)
+  -- ·-reflects-< x y (suc zero) _ (l , l+suc[xz]≡yz) = l , (λ i → l + suc (*-identityʳ x (~ i))) ∙ l+suc[xz]≡yz ∙ *-identityʳ y
+  -- ·-reflects-< x y (suc (suc z)) _ p@(l , l+suc[xz]≡yz) =
+  --   let ind = {! ·-reflects-< x y (suc z) (0<suc z)   !}
+  --     -- (x * suc (suc z)) < (y * suc (suc z))
+  --     -- x + x * suc z < y + y * suc z
+  --     -- (x + x * suc z) + < (y + y * suc z)
+  --   in {! *-suc x (suc z)  !}
+  -- -- ·-reflects-< x y zero 0<z xz<yz = {!   !} -- *-suc x z
+  -- -- ·-reflects-< x y (suc z) 0<z xz<yz = {! ·-reflects-< x y z  !}
+  -- --   (x * suc z) < (y * suc z)
 
 +-Semigroup : [ isSemigroup _+_ ]
 +-Semigroup .IsSemigroup.is-set   = isSetℕ
