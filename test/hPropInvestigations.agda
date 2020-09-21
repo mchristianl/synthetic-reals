@@ -143,6 +143,8 @@ weak-LEM' {ℓ = ℓ} P = {! (¬[P⊓¬P] P) ∘ pathTo⇒ (⊓-comm (¬ P) P) !
 -- [ ¬ (¬ P ⊓ P) ]
 -- hProp ℓ = Σ[ A ∈ Type ℓ ] (∀(x y : A) → x ≡ y)
 --         = Σ[ A ∈ Type ℓ ] isProp A
+-- HOTT: Definition 3.3.1. A type P is a mere proposition if for all x, y : P we have x = y.
+-- NOTE: so `isMere P = isProp P`
 -- _≡_ : ∀ {ℓ} {A : Set ℓ} → A → A → Set ℓ
 -- _≡_ {A = A} = PathP (λ i → A)
 -- transport : {A B : Type ℓ} → A ≡ B → A → B

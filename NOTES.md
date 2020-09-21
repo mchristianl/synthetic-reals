@@ -256,6 +256,684 @@ record isEquiv {ℓ ℓ'} {A : Set ℓ} {B : Set ℓ'} (f : A → B) : Set (ℓ 
     equiv-proof : (y : B) → isContr (fiber f y)
 ```
 
+in `Algebra.Consequences.Propositional` shows how type of module parameters can be deduced by its corresponding definitions
+
+```agda
+module _ {_•_ _⁻¹ ε} where
+
+  assoc+id+invʳ⇒invˡ-unique : Associative _•_ → Identity ε _•_ →
+                              RightInverse ε _⁻¹ _•_ →
+                              ∀ x y → (x • y) ≡ ε → x ≡ (y ⁻¹)
+  assoc+id+invʳ⇒invˡ-unique = Base.assoc+id+invʳ⇒invˡ-unique (cong₂ _)
+```
+
+in `Relation.Binary.PropositionalEquality.Properties` we have some "default instances"
+
+```agda
+isEquivalence        :                         IsEquivalence    {A = A} _≡_
+isDecEquivalence     : Decidable _≡_         → IsDecEquivalence {A = A} _≡_
+isPreorder           :                         IsPreorder       {A = A} _≡_ _≡_
+setoid               : Set a                 → Setoid _ _
+decSetoid            : Decidable {A = A} _≡_ → DecSetoid _ _
+preorder             : Set a                 → Preorder _ _ _
+
+isEquivalence        = record { refl = refl ; sym = sym ; trans = trans }
+isDecEquivalence _≟_ = record { isEquivalence = isEquivalence ; _≟_ = _≟_ }
+isPreorder           = record { isEquivalence = isEquivalence ; reflexive = id ; trans = trans }
+setoid A             = record { Carrier = A ; _≈_ = _≡_ ; isEquivalence = isEquivalence }
+decSetoid _≟_        = record { _≈_ = _≡_ ; isDecEquivalence = isDecEquivalence _≟_ }
+preorder A           = record { Carrier = A; _≈_ = _≡_; _∼_ = _≡_; isPreorder = isPreorder}
+```
+
+[in the manual](https://agda.readthedocs.io/en/v2.6.1/language/record-types.html#) it is written:
+
+- _"if x is an implicit or instance field, then it is omitted from new-fields."_
+
+_"The reason for treating implicit and instance fields specially is to allow code like the following:"_
+
+```agda
+data Vec (A : Set) : Nat → Set where
+[] : Vec A zero
+_∷_ : ∀{n} → A → Vec A n → Vec A (suc n)
+
+record R : Set where
+field
+{length} : Nat
+vec      : Vec Nat length
+-- More fields ...
+
+xs : R
+xs = record { vec = 0 ∷ 1 ∷ 2 ∷ [] }
+
+ys = record xs { vec = 0 ∷ [] }
+```
+
+_"Without the special treatment the last expression would need to include a new binding for length (for instance length = _)"_.
+
+Irrelevant record fields are [prefixed with a dot](https://agda.readthedocs.io/en/v2.6.1/language/irrelevance.html#irrelevant-record-fields):
+
+```agda
+record InterestingNumbers : Set where
+  field
+    n      : Nat
+    m      : Nat
+    .prop1 : n + m ≡ n * m + 2
+    .prop2 : suc m ≤ n
+```
+
+these are called ["irrelevancy annotations"](https://agda.readthedocs.io/en/v2.6.1/language/irrelevance.html#irrelevant-record-fields)
+
+## naming scheme
+
+- my personal (LEGACY) approach was:
+  - there is `Properties` and `Consequences`
+    - the difference somehow is, that we do want to open `Consequences` directly
+    - but we do not want to open `Properties` directly, because it might have a name clash
+    - e.g. there is `Properties.Group` which clashes with `Cubical.Structures.Group.Group` when opening `Properties`
+    - but it is totally fine to open `Properties.Group` directly because it does not export a `Group`
+  - this does also not help much, since we would need a single `Properties` module anyways
+  - having a sub-folder `Group.Properties` would help
+
+### how the non-cubical Agda standard library does it:
+
+common file names are `find . -iname "*.agda" | awk 'sub( /.\/.*\//,"",$0 )' | sort | uniq -c | sort -h`
+
+```
+Instances.agda     ( 9×)
+Literals.agda      ( 9×)
+Indexed.agda       (10×)
+All.agda           (12×)
+Categorical.agda   (12×)
+WithK.agda         (18×)
+Core.agda          (21×)
+Setoid.agda        (22×)
+Propositional.agda (23×)
+Base.agda          (31×)
+Properties.agda    (90×)
+```
+
+- there are some deprecation warnings that "document" the design decisions
+  - "Algebra.FunctionProperties.Consequences.Propositional was deprecated in v1.3. Use Algebra.Consequences.Propositional instead."
+  - "Algebra.FunctionProperties.Consequences was deprecated in v1.3. Use Algebra.Consequences.Setoid instead."
+- the non-cubical standard library has two folders in `Algebra`: `Consequences` and `Properties` to collect them for each sub-structure
+  - e.g. `Consequences` contains `Propositional` and `Setoid`
+  - and `Properties` contains `Group`, `Lattice`, `Ring`, ...
+- there can be both: a `Properties` module and a `Properties` folder which provide what we need
+- we have that "Properties" are parametrized modules by their corresponding algebraic structure, e.g. `module Algebra.Properties.AbelianGroup {a ℓ} (G : AbelianGroup a ℓ) where`
+- and "Consequences" makes use of "raw" Definitions, e.g. `Associative`, `Identity`, ...
+- where I do annotate hProps with `ᵖ`, in the cubical standard library they are just lowercased
+  - my reason is to have the unannotated version as a record field of some combined property
+  - but maybe we just use a "short name" for this purpose, e.g.
+    - `associative` for the hProp
+    - `Associative = [ associative ]` for the underlying type
+    - `is-assoc : [ associative ]` for an instance (because this should not conflict with `sym` for pathes)
+    - `+-assoc : [ associative ]` when multiple instances need to be distinguished
+    - `f-preserves-P : P x → P (f x)`
+    - `f-reflects-P : P (f x) → P x`
+    - `f-creates-P : P x ↔ P (f x)` (as suggested on the #agda freenode channel _"In category theory, a similar property of functors is called 'creates'. Like 'f creates Ps'. the idea of 'creates' is that you have a structure on A, and it completely determines the analogous structure in B via f"_)
+      - is this related to the nomer "extensional" as in "+ is <-extensional" ? (because the one single `+-<-extensional` property generates "all" properties that relate `_+_` and `_<_`)
+    - `over`, e.g. `dne-over-≡ : ∀[ x ] ∀[ y ] ¬ ¬ (x ≡ₚ y) ⇔ (x ≡ₚ y)` because in `¬ ¬ (x ≡ₚ y)`, when its syntax tree is drawn with the root node `¬_` on top, then it is "over" `_≡ₚ_` which is below
+    - `under`, the other way around (is this useful?)
+
+.
+
+In the 1.4-rc1 changelog we see that the wording NonZero, Positive, Negative, NonPositive and NonNegative already corresponds to our wording (TODO: adjust the case).
+But they seem to suffix a number with `ℤ` where we use `ᶻ`, e.g. `0ℤ` instead of `0ᶻ`.
+I found that superscript letters carry a little less weight and make formulas more readable when they make heavy use of different number types and I use the "fat" `ℤ` prefix for properties or functions that carry a "written out" name.
+
+> * Added new types and constructors to `Data.Integer.Base`
+>
+> ```agda
+> NonZero     : Pred ℤ 0ℓ
+> Positive    : Pred ℤ 0ℓ
+> Negative    : Pred ℤ 0ℓ
+> NonPositive : Pred ℤ 0ℓ
+> NonNegative : Pred ℤ 0ℓ
+>
+> ≢-nonZero   : p ≢ 0ℤ → NonZero p
+> >-nonZero   : p > 0ℤ → NonZero p
+> <-nonZero   : p < 0ℤ → NonZero p
+> positive    : p > 0ℤ → Positive p
+> negative    : p < 0ℤ → Negative p
+> nonPositive : p ≤ 0ℤ → NonPositive p
+> nonNegative : p ≥ 0ℤ → NonNegative p
+> ```
+
+They write _"See `Data.Nat.Base` for a discussion on the design of these"_.
+
+> Simple predicates
+>
+> Defining `NonZero` in terms of `⊤` and `⊥` allows Agda to
+> automatically infer nonZero-ness for any natural of the form
+> `suc n`. Consequently in many circumstances this eliminates the need
+> to explicitly pass a proof when the NonZero argument is either an
+> implicit or an instance argument.
+>
+> It could alternatively be defined using a datatype with an instance
+> constructor but then it would not be inferrable when passed as an
+> implicit argument.
+>
+> See `Data.Nat.DivMod` for an example.
+
+### naming of lemmas
+
+in `Algebra.Consequences.Setoid {a ℓ} (S : Setoid a ℓ)` we have
+
+```agda
+comm+cancelˡ⇒cancelʳ        : LeftCancellative _•_   → RightCancellative _•_
+comm+cancelʳ⇒cancelˡ        : RightCancellative _•_  → LeftCancellative _•_
+comm+idˡ⇒idʳ                : LeftIdentity e _•_     → RightIdentity e _•_
+comm+idʳ⇒idˡ                : RightIdentity e _•_    → LeftIdentity e _•_
+comm+zeˡ⇒zeʳ                : LeftZero e _•_         → RightZero e _•_
+comm+zeʳ⇒zeˡ                : RightZero e _•_        → LeftZero e _•_
+comm+invˡ⇒invʳ              : LeftInverse e _⁻¹ _•_  → RightInverse e _⁻¹ _•_
+comm+invʳ⇒invˡ              : RightInverse e _⁻¹ _•_ → LeftInverse e _⁻¹ _•_
+assoc+id+invʳ⇒invˡ-unique   : Associative _•_ → Identity e _•_ → RightInverse e _⁻¹ _•_ → ∀ x y → (x • y) ≈ e → x ≈ (y ⁻¹)
+assoc+id+invˡ⇒invʳ-unique   : Associative _•_ → Identity e _•_ → LeftInverse  e _⁻¹ _•_ → ∀ x y → (x • y) ≈ e → y ≈ (x ⁻¹)
+comm+distrˡ⇒distrʳ          : _•_ DistributesOverˡ _◦_ → _•_ DistributesOverʳ _◦_
+comm+distrʳ⇒distrˡ          : _•_ DistributesOverʳ _◦_ → _•_ DistributesOverˡ _◦_
+comm⇒sym[distribˡ]          : ∀ x → Symmetric (λ y z → (x ◦ (y • z)) ≈ ((x ◦ y) • (x ◦ z)))
+assoc+distribʳ+idʳ+invʳ⇒zeˡ : Associative _+_ → _*_ DistributesOverʳ _+_ → RightIdentity 0# _+_ → RightInverse 0# _⁻¹ _+_ → LeftZero 0# _*_
+assoc+distribˡ+idʳ+invʳ⇒zeʳ : Associative _+_ → _*_ DistributesOverˡ _+_ → RightIdentity 0# _+_ → RightInverse 0# _⁻¹ _+_ → RightZero 0# _*_
+subst+comm⇒sym              : Symmetric (λ a b → P (f a b))
+wlog                        : ∀ {r} {_R_ : Rel _ r} → Total _R_ → (∀ a b → a R b → P (f a b)) → ∀ a b → P (f a b)
+```
+
+in `Algebra.Consequences.Propositional` we have
+
+```agda
+assoc+id+invʳ⇒invˡ-unique   : Associative _•_ → Identity ε _•_ → RightInverse ε _⁻¹ _•_ → ∀ x y → (x • y) ≡ ε → x ≡ (y ⁻¹)
+assoc+id+invˡ⇒invʳ-unique   : Associative _•_ → Identity ε _•_ → LeftInverse ε _⁻¹ _•_ → ∀ x y → (x • y) ≡ ε → y ≡ (x ⁻¹)
+assoc+distribʳ+idʳ+invʳ⇒zeˡ : Associative _+_ → _*_ DistributesOverʳ _+_ → RightIdentity 0# _+_ → RightInverse 0# -_ _+_ → LeftZero 0# _*_
+assoc+distribˡ+idʳ+invʳ⇒zeʳ : Associative _+_ → _*_ DistributesOverˡ _+_ → RightIdentity 0# _+_ → RightInverse 0# -_ _+_ → RightZero 0# _*_
+comm+distrˡ⇒distrʳ          : _•_ DistributesOverˡ _◦_ → _•_ DistributesOverʳ _◦_
+comm+distrʳ⇒distrˡ          : _•_ DistributesOverʳ _◦_ → _•_ DistributesOverˡ _◦_
+comm⇒sym[distribˡ]          : ∀ x → Symmetric (λ y z → (x ◦ (y • z)) ≡ ((x ◦ y) • (x ◦ z)))
+sel⇒idem                    : Selective _•_ → Idempotent _•_
+subst+comm⇒sym              : ∀ {f} (f-comm : Commutative f) → Symmetric (λ a b → P (f a b))
+wlog                        : ∀ {f} (f-comm : Commutative f) → ∀ {r} {_R_ : Rel _ r} → Total _R_ → (∀ a b → a R b → P (f a b)) → ∀ a b → P (f a b)
+```
+
+## open module afterwards in where clause
+
+https://agda.readthedocs.io/en/v2.6.1/language/copatterns.html#copatterns
+
+```agda
+backward-2 : {A : Set} → Enumeration A → A → A
+backward-2 e a = backward (backward a)
+  where
+    open Enumeration e
+```
+
+## dot-postfix notation for record fields / projections (copatterns?)
+
+NOTE: there is [`--postfix-projection`](https://github.com/agda/agda/issues/1963) leading to _"Now the prefix dot is used, ambiguously, both for postfix projections and for names that are not in scope"_.
+
+This does only works for "(co)patterns" somehow. It somehow only works on "projections" from "constructor-projection-pairs", meaning that it works on the field-projection functions of a record but not on general functions.
+
+(Is the important "property" of patterns and copatterns here, that they make a "normalized term"?)
+
+In any case: instead of `fst u` we can write `u .fst` or even `u .Σ.fst` (or `Σ.fst u`) which are all definitionally equal.
+
+```agda
+test1' : {A : Type ℓ} {B : A → Type ℓ'} → (u : Σ A B) → fst u ≡ u .fst
+test1' u = refl
+
+test2' : {A : Type ℓ} {B : A → Type ℓ'} → (u : Σ A B) → fst u ≡ u .Σ.fst
+test2' u = refl
+```
+
+[the manual](https://agda.readthedocs.io/en/v2.6.1/language/record-types.html) writes about "copattnerns":
+
+_Elements of record types can be defined using a record expression [...] or using copatterns._
+_Copatterns may be used prefix_
+
+```agda
+p34 : Pair Nat Nat
+Pair.fst p34 = 3
+Pair.snd p34 = 4
+```
+
+_**suffix (in which case they are written prefixed with a dot)**_
+
+```agda
+p56 : Pair Nat Nat
+p56 .Pair.fst = 5
+p56 .Pair.snd = 6
+```
+
+_or using an anonymous copattern-matching lambda (you may only use the suffix form of copatterns in this case)_
+
+```agda
+p78 : Pair Nat Nat
+p78 = λ where
+  .Pair.fst → 7
+  .Pair.snd → 8
+```
+
+in `Agda.Builtin.Cubical.Glue` it is written that _copatterns don't get unfolded unless a projection is applied_
+
+```agda
+-- We make this a record so that isEquiv can be proved using
+-- copatterns. This is good because copatterns don't get unfolded
+-- unless a projection is applied so it should be more efficient.
+record isEquiv {ℓ ℓ'} {A : Set ℓ} {B : Set ℓ'} (f : A → B) : Set (ℓ ⊔ ℓ') where
+  no-eta-equality
+  field
+    equiv-proof : (y : B) → isContr (fiber f y)
+```
+
+## copatterns
+
+My copattern example would be:
+
+```agda
+-- suppose this function
+test2' : {A₁ A₂ A₃ A₄ B₁ B₂ B₃ B₄ : Type ℓ} → ((A₁ × A₂) × A₃) × A₄ → B₁ × (B₂ × (B₃ × B₄))
+test2' a₁₂₃₄ = {!   !} -- Goal: B₁ × (B₂ × (B₃ × B₄))
+
+-- we can "split" the RHS and give two separate "clauses" to construct the RHS
+test3' : {A₁ A₂ A₃ A₄ B₁ B₂ B₃ B₄ : Type ℓ} → ((A₁ × A₂) × A₃) × A₄ → B₁ × (B₂ × (B₃ × B₄))
+test3' a₁₂₃₄ .fst = {!   !} -- Goal : B₁
+test3' a₁₂₃₄ .snd = {!   !} -- Goal : B₂ × (B₃ × B₄)
+
+-- instead of writing `fst` and `snd` as a suffix to the LHS of the clauses, we can write them as a prefix (without the dot) or even mix the style for different clauses
+test3'ᵇ : {A₁ A₂ A₃ A₄ B₁ B₂ B₃ B₄ : Type ℓ} → ((A₁ × A₂) × A₃) × A₄ → B₁ × (B₂ × (B₃ × B₄))
+fst (test3'ᵇ a₁₂₃₄) = {!   !} -- Goal : B₁
+snd (test3'ᵇ a₁₂₃₄) = {!   !} -- Goal : B₂ × (B₃ × B₄)
+
+-- `fst` and `snd` are in scope, but if they would not be in scope, we could prefix them with their module name
+test3'ᶜ : {A₁ A₂ A₃ A₄ B₁ B₂ B₃ B₄ : Type ℓ} → ((A₁ × A₂) × A₃) × A₄ → B₁ × (B₂ × (B₃ × B₄))
+Σ.fst (test3'ᶜ a₁₂₃₄) = {!   !} -- Goal : B₁
+Σ.snd (test3'ᶜ a₁₂₃₄) = {!   !} -- Goal : B₂ × (B₃ × B₄)
+
+-- alternatively we can also use an "anonymous copattern-matching lambda" to create "sub-clauses"
+test3'ᵈ : {A₁ A₂ A₃ A₄ B₁ B₂ B₃ B₄ : Type ℓ} → ((A₁ × A₂) × A₃) × A₄ → B₁ × (B₂ × (B₃ × B₄))
+test3'ᵈ a₁₂₃₄ = λ where
+  .fst → {!   !} -- Goal : B₁
+  .snd → {!   !} -- Goal : B₂ × (B₃ × B₄)
+
+-- where we can move the arguments (in our case only a₁₂₃₄) to the sub-clauses like so
+test3'ᵈ' : {A₁ A₂ A₃ A₄ B₁ B₂ B₃ B₄ : Type ℓ} → ((A₁ × A₂) × A₃) × A₄ → B₁ × (B₂ × (B₃ × B₄))
+test3'ᵈ' = λ where
+   a₁₂₃₄ .fst → {!   !} -- Goal : B₁
+   a₁₂₃₄ .snd → {!   !} -- Goal : B₂ × (B₃ × B₄)
+
+-- the "sub-clauses" of an "anonymous copattern-matching lambda" do only allow for the dotted suffix copattern-notation
+-- meaning, that we have to write `a₁₂₃₄ .fst → {!   !}` and we cannot write `fst a₁₂₃₄ → {!   !}`
+
+-- again, if `fst` and `snd` where not in scope, we could prefix them by their
+test3'ᵉ : {A₁ A₂ A₃ A₄ B₁ B₂ B₃ B₄ : Type ℓ} → ((A₁ × A₂) × A₃) × A₄ → B₁ × (B₂ × (B₃ × B₄))
+test3'ᵉ a₁₂₃₄ = λ where
+  .Σ.fst → {!   !} -- Goal : B₁
+  .Σ.snd → {!   !} -- Goal : B₂ × (B₃ × B₄)
+
+-- copatterns can be "stacked" "on-top" of each other
+test4' : {A₁ A₂ A₃ A₄ B₁ B₂ B₃ B₄ : Type ℓ} → ((A₁ × A₂) × A₃) × A₄ → B₁ × (B₂ × (B₃ × B₄))
+test4' a₁₂₃₄ .fst      = {!   !} -- Goal : B₁
+test4' a₁₂₃₄ .snd .fst = {!   !} -- Goal : B₂
+test4' a₁₂₃₄ .snd .snd = {!   !} -- Goal : B₃ × B₄
+
+-- which corresponds to the following prefix-notation (where brackets are put around the LHS just to make proper right-alignment possible)
+test4'ᵇ : {A₁ A₂ A₃ A₄ B₁ B₂ B₃ B₄ : Type ℓ} → ((A₁ × A₂) × A₃) × A₄ → B₁ × (B₂ × (B₃ × B₄))
+(     fst (test4'ᵇ a₁₂₃₄) ) = {!   !} -- Goal : B₁
+(fst (snd (test4'ᵇ a₁₂₃₄))) = {!   !} -- Goal : B₂
+(snd (snd (test4'ᵇ a₁₂₃₄))) = {!   !} -- Goal : B₃ × B₄
+
+-- without the brackets it just looks like
+test4'ᶜ : {A₁ A₂ A₃ A₄ B₁ B₂ B₃ B₄ : Type ℓ} → ((A₁ × A₂) × A₃) × A₄ → B₁ × (B₂ × (B₃ × B₄))
+fst      (test4'ᶜ a₁₂₃₄)  = {!   !} -- Goal : B₁
+fst (snd (test4'ᶜ a₁₂₃₄)) = {!   !} -- Goal : B₂
+snd (snd (test4'ᶜ a₁₂₃₄)) = {!   !} -- Goal : B₃ × B₄
+
+-- of course, (regular) pattern matching does still work for each clause separately
+test5' : {A₁ A₂ A₃ A₄ B₁ B₂ B₃ B₄ : Type ℓ} → ((A₁ × A₂) × A₃) × A₄ → B₁ × (B₂ × (B₃ × B₄))
+test5' ( a₁₂₃      , a₄) .fst      = {!   !} -- Goal : B₁
+test5' ( a₁₂₃      , a₄) .snd .fst = {!   !} -- Goal : B₂
+test5' ((a₁₂ , a₃) , a₄) .snd .snd = {!   !} -- Goal : B₃ × B₄
+
+-- and copatterns also stack in an "anonymous copattern-matching lambda"
+test5'ᵈ : {A₁ A₂ A₃ A₄ B₁ B₂ B₃ B₄ : Type ℓ} → ((A₁ × A₂) × A₃) × A₄ → B₁ × (B₂ × (B₃ × B₄))
+test5'ᵈ (a₁₂₃ , a₄) = λ where
+  .fst      → {!   !} -- Goal : B₁
+  .snd .fst → {!   !} -- Goal : B₂
+  .snd .snd → {!   !} -- Goal : B₃ × B₄
+
+-- and all the previous "techniques" can be mixed arbitrarily
+test5'ᶠ : {A₁ A₂ A₃ A₄ B₁ B₂ B₃ B₄ : Type ℓ} → ((A₁ × A₂) × A₃) × A₄ → B₁ × (B₂ × (B₃ × B₄))
+test5'ᶠ (a₁₂₃₄    ) .fst = {!  !} -- Goal : B₁
+test5'ᶠ (a₁₂₃ , a₄) .snd = λ where
+  .fst → {!   !} -- Goal : B₂
+  .snd → {!   !} -- Goal : B₃ × B₄
+
+-- and so on and so forth ...
+test6' : {A₁ A₂ A₃ A₄ A₅ A₆ : Type ℓ}
+       → ((((A₁ ×  A₂) ×  A₃) ×  A₄) ×  A₅) × A₆
+       →     A₁ × (A₂  × (A₃  × (A₄  × (A₅  × A₆))))
+test6' a₁₂₃₄₅₆ = λ where
+  .fst → a₁₂₃₄₅₆ .fst .fst .fst .fst .fst
+  .snd .fst → a₁₂₃₄₅₆ .fst .fst .fst .fst .snd
+  .snd .snd .fst → a₁₂₃₄₅₆ .fst .fst .fst .snd
+  .snd .snd .snd .fst → a₁₂₃₄₅₆ .fst .fst .snd
+  .snd .snd .snd .snd .fst → a₁₂₃₄₅₆ .fst .snd
+  .snd .snd .snd .snd .snd      → a₁₂₃₄₅₆ .snd
+```
+
+### example from the standard library
+
+```agda
+module Test1 {A : Type ℓ} {B : Type ℓ'} (i : Iso A B) where
+  open Iso i renaming ( fun to f; inv to g; rightInv to s; leftInv to t)
+
+  -- an implementation of `isoToIsEquiv` with one clause is
+  isoToIsEquiv⁰ : isEquiv f
+  -- ?0-Goal : A
+  -- ?1-Goal : f ?0 ≡ y
+  -- ?2-Goal (?0 , ?1) ≡ z
+  isoToIsEquiv⁰ = record { equiv-proof = λ y → ({!   !} , {!   !}) , λ z → {!    !} }
+
+  -- with the use of copatterns, it is possible to expand this single clause into three separate clauses
+  -- and it is possible to bring `y` and `z` to the LHS of these clauses
+
+  -- the following is the variant which is used in the standard library where they note
+  --   "We make [isEquiv] a record so that isEquiv can be proved using copatterns."
+  --   "This is good because copatterns don't get unfolded unless a projection is applied so it should be more efficient."
+  isoToIsEquivᵃ : isEquiv f
+  isoToIsEquivᵃ .equiv-proof y .fst .fst = {!  !} -- ?0-Goal : A
+  isoToIsEquivᵃ .equiv-proof y .fst .snd = {!  !} -- ?1-Goal : f ?0 ≡ y
+  isoToIsEquivᵃ .equiv-proof y .snd z    = {!  !} -- ?2-Goal : fst (isoToIsEquivᵃ .equiv-proof y) ≡ z
+
+  -- it is equivalent to the following prefix-variant
+  isoToIsEquivᵇ : isEquiv f
+  (fst (fst ((equiv-proof isoToIsEquivᵇ) y))   ) = {!  !} -- ?0-Goal : A
+  (snd (fst ((equiv-proof isoToIsEquivᵇ) y))   ) = {!  !} -- ?1-Goal : f ?0 ≡ y
+  (    (snd ((equiv-proof isoToIsEquivᵇ) y)) z ) = {!  !} -- ?2-Goal : fst (isoToIsEquiv .equiv-proof y) ≡ z
+```
+
+I guess that a "clause" is the smallest unit of computation that agda can "unfold" / "evaluate" (just like in Haskell, I guess).
+If we build a structure and directly project out the first component (such as we do with hProps)
+then it would make sense that only the necessary clauses are "evaluated".
+
+Interestingly, clauses will only be unfolded when they have been "defined", meaning that when we postpone the clauses of a function definition, then all "code" inbetween the function declaration and the clause definition will not unfold the clause. (maybe this does also help to reorder clauses of a single function to help the termination checker (?))
+
+So, if we "evaluate" / "normalize" / "unfold" (?) `fst (fst ((equiv-proof isoToIsEquivᵇ) y)` and this happens to be the first of three copattern clauses (like above),
+then only this copattern clause should be evaluated and the other two copattern clauses can be ignored completely.
+
+That might be what is more "efficient" about copatterns.
+
+The reason then to use a record `isEquiv` with a single field `equiv-proof` is, that copatterns can only be used for record fields ("constructor-projection-pairs" ?).
+
+| term                                                 |   | normal form (C-c C-n)                     | unfolding       |
+|------------------------------------------------------|---|-------------------------------------------|-----------------|
+| `isoToIsEquivᵇ`                                      | ⊢ | `isoToIsEquivᵇ`                           | no              |
+| `equiv-proof isoToIsEquivᵇ`                          | ⊢ | `equiv-proof isoToIsEquivᵇ`               | no              |
+| `λ(y : B) → equiv-proof isoToIsEquivᵇ y`             | ⊢ | `λ y → equiv-proof isoToIsEquivᵇ y`       | no              |
+| `λ(y : B) → snd (equiv-proof isoToIsEquivᵇ y)`       | ⊢ | `λ y z → ?2 (i = i) (y = y) (z = z)`      | yes (clause ?2) |
+| `λ(y : B) → fst (equiv-proof isoToIsEquivᵇ y)`       | ⊢ | `λ y → fst (equiv-proof isoToIsEquivᵇ y)` | no              |
+| `λ(y : B) → fst (fst (equiv-proof isoToIsEquivᵇ y))` | ⊢ | `λ y → ?0 (i = i) (y = y)`                | yes (clause ?0) |
+| `λ(y : B) → snd (fst (equiv-proof isoToIsEquivᵇ y))` | ⊢ | `λ y → ?1 (i = i) (y = y)`                | yes (clause ?1) |
+
+This does only work for "root-level" patterns and copatterns and not for "anonymous copattern-matching lambdas". For example the following definition
+
+```agda
+isoToIsEquivᶜ : isEquiv f
+isoToIsEquivᶜ = λ where
+  .equiv-proof y .fst .fst → {!  !} -- ?0-Goal : A
+  .equiv-proof y .fst .snd → {!  !} -- ?1-Goal : f ?0 ≡ y
+  .equiv-proof y .snd z    → {!  !} -- ?2-Goal : fst (isoToIsEquiv .equiv-proof y) ≡ z
+```
+
+makes the normal form of `isoToIsEquivᶜ` to
+
+```agda
+λ { .equiv-proof y .fst .fst → ?0 (i = i) (y = y)
+  ; .equiv-proof y .fst .snd → ?1 (i = i) (y = y)
+  ; .equiv-proof y .snd z → ?2 (i = i) (y = y) (z = z)
+  }
+```
+
+and the normal form of `equiv-proof isoToIsEquivᶜ` gets even longer
+
+```agda
+equiv-proof
+(λ { .equiv-proof y .fst .fst → ?0 (i = i) (y = y)
+   ; .equiv-proof y .fst .snd → ?1 (i = i) (y = y)
+   ; .equiv-proof y .snd z → ?2 (i = i) (y = y) (z = z)
+   })
+```
+
+and the normal form of `λ(y : B) → equiv-proof isoToIsEquivᶜ y` gets even longer
+
+```agda
+λ y →
+  equiv-proof
+  (λ { .equiv-proof y .fst .fst → ?0 (i = i) (y = y)
+     ; .equiv-proof y .fst .snd → ?1 (i = i) (y = y)
+     ; .equiv-proof y .snd z → ?2 (i = i) (y = y) (z = z)
+     })
+  y
+```
+
+finally the normal form of `λ(y : B) → snd (equiv-proof isoToIsEquivᶜ y)` reduces to the same "clause 2" as for the previous version
+
+```agda
+λ y z → ?2 (i = i) (y = y) (z = z)
+```
+
+Similar things happen for `isoToIsEquiv⁰ = record { equiv-proof = λ y → ({!   !} , {!   !}) , λ z → {!    !} }` although a bit better.
+
+We have that the normal form of `isoToIsEquiv⁰` is
+
+```agda
+record
+{ equiv-proof = λ y →
+    ( ?0 (i = i) (y = y)
+    , ?1 (i = i) (y = y))
+    , (λ z → ?2 (i = i) (y = y) (z = z)
+    )
+}
+```
+
+and the normal form of `equiv-proof isoToIsEquiv⁰` is a little bit smaller
+
+```agda
+λ y →
+  ( ?0 (i = i) (y = y)
+  , ?1 (i = i) (y = y))
+  , (λ z → ?2 (i = i) (y = y) (z = z)
+  )
+```
+
+the normal form of `λ(y : B) → equiv-proof isoToIsEquiv⁰ y` is the same as before (its effect is just that `y` gets renamed to `y` again).
+
+And finally the normal form of `λ(y : B) → snd (equiv-proof isoToIsEquiv⁰ y)` becomes "clause 2"
+
+```agda
+λ y z → ?2 (i = i) (y = y) (z = z)
+```
+
+We get a similar behaviour with
+
+```agda
+isoToIsEquivᵈ = record { equiv-proof = λ y → (a y , b y) , c y } where
+  a = λ y   → {!  !} -- ?0-Goal
+  b = λ y   → {!  !} -- ?1-Goal
+  c = λ y z → {!  !} -- ?2-Goal
+```
+
+and also the `where` clauses are immediately "inlined" into the normalized form when the `where`'s clause is "available" such that for
+
+```agda
+isoToIsEquivᵉ : isEquiv f
+isoToIsEquivᵉ .equiv-proof y = (a , b) , c where
+  a =       {!  !} -- ?0-Goal
+  b =       {!  !} -- ?1-Goal
+  c = λ z → {!  !} -- ?2-Goal
+```
+
+we have that `λ(y : B) → (equiv-proof isoToIsEquivᵈ y)` normalizes to
+
+```agda
+λ y →
+  ( ?0 (i = i) (y = y)
+  , ?1 (i = i) (y = y))
+  , (λ z → ?2 (i = i) (y = y) (z = z)
+  )
+```
+
+But I guess that copatterns within a where block work as intended .. TODO: check this
+
+### My theses
+
+- Patterns allow to split a "computation" (function) into several independent "pieces" (clauses), based on the type(-destructors/projections?) on the LHS.
+- Copatterns allow to split a "computation" (function) into several independent "pieces" (clauses), based on the type(-destructors/projections?) on the RHS.
+- Mixing (nesting) patterns and copatterns allows to split a "computation" (function) into several independent "pieces" (clauses) based on the type(-destructors/projections?) in the (function-)signature.
+- A term will only "normalize further", when it is able to determine a single "piece" (clause). Otherwise it is "blocked" or "already normalized".
+- splitting into copatterns makes sense to allow the partial computation of a partially applied function without "waiting" for its arguments
+
+Also note that case splitting on `_⊎_` blocks further evaluation until `inl` or `inr` is known of the argument.
+
+Therefore I would propose to define algebraic properties with copatterns like so:
+
+```agda
+isCotransᵖ : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
+isCotransᵖ R .fst =                                         ∀ a b →     [ R a b ⇒ (∀[ x ] R a x ⊔ R x b) ]
+isCotransᵖ R .snd = isprop where abstract isprop = isPropΠ2 λ a b → snd ( R a b ⇒ (∀[ x ] R a x ⊔ R x b) )
+```
+
+and generally use copatterns as much as possible.
+
+Well, the "intended" use is
+
+```agda
+isCotransᵖ : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
+isCotransᵖ R = ∀[ a ] ∀[ b ] R a b ⇒ (∀[ x ] R a x ⊔ R x b)
+```
+
+which is the same (almost definitinally).
+
+This normalizes to
+
+```agda
+( ((a b : A) → fst (R a b) → (x : A) → ∥ fst (R a x) ⊎ fst (R x b) ∥)
+, (λ f g i a b aRb c → squash (f a b aRb c) (g a b aRb c) i)
+)
+```
+
+and we could indeed make it a copattern-definition like so
+
+```agda
+isCotransᵖ : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
+isCotransᵖ {A = A} R .fst = (a b : A) → fst (R a b) → (x : A) → ∥ fst (R a x) ⊎ fst (R x b) ∥
+isCotransᵖ {A = A} R .snd f g i a b aRb c = squash (f a b aRb c) (g a b aRb c) i
+```
+
+but this destroys all readability. Also it seems to make no difference in type-checking-time.
+
+There is also the wording of two terms being "equal on the nose". What does it exactly mean? That two unnormalized terms are equal and there is no need to unfold them?
+
+There is also an email of Andrea Vezzosi "Re: [Agda] Identifying inefficiency" (09.04.19, 16:42) on the agda mailing list
+
+> I have found that efficiency problems with algebraic structures can be mitigated by disabling (definitional) eta rules for such record types and defining instances by copatterns. (Ulf gave a talk partly on this at the AIM in Leuven).
+
+He explains what the `no-eta-equality` does in
+
+```agda
+record isEquiv {ℓ ℓ'} {A : Set ℓ} {B : Set ℓ'} (f : A → B) : Set (ℓ ⊔ ℓ') where
+  no-eta-equality
+  field
+    equiv-proof : (y : B) → isContr (fiber f y)
+```
+
+namely:
+
+> This will make it so an element of isEquiv defined by copatterns will
+only be definitionally equal to itself, so things get compared by name
+and arguments.
+>
+> This is similar to what happens with functions defined by standard
+pattern matching, when they cannot reduce.
+>
+> pathToEquiv is defined by copatterns, but now without eta for isEquiv
+the typechecker will not try to observe what happens at each
+projection.
+>
+> Then eta can still be proven propositionally by pattern matching on
+the record constructor.
+(Or in cubical one can define the corresponding path also by copatterns).
+
+also see [eta expansion in the manual](https://agda.readthedocs.io/en/v2.6.0.1/language/record-types.html#eta-expansion)
+
+> The eta rule for a record type [...] states that every `x : R` is definitionally equal to `record { a = R.a x ; b = R.b x ; c = R.c x }`.
+
+There is a note in the cubical standard library, both in the definitions of `IsSemigroup` and `IsMonoid`:
+_"TODO: add no-eta-equality for efficiency? This breaks some proofs later"_.
+
+### example of "cluttered" normalized term
+
+E.g. `≤-≡-≤''` normalizes to 760 lines which might be fine for emacs, but it kills the atom plugin.
+
+NOTE: These 760 lines are instantly normalized in emacs. This is totally an issue of the atom plugin displaying this term.
+
+```agda
+bridges-R3-5 : ∀ x y z → [ x ≤ y ] → [ y < z ] → [ x < z ]
+bridges-R3-5 x y z x≤y y<z = ⊔-elim (y < x) (x < z) (λ _ → x < z) (λ y<x → ⊥-elim (x≤y y<x)) (λ x<z → x<z) (<-cotrans y z y<z x)
+
+≤''-implies-≤ : ∀ x y → [ x ≤'' y ] → [ x ≤ y ]
+≤''-implies-≤ x y x≤''y y<x = <-irrefl x (x≤''y x y<x)
+
+≤-implies-≤'' : ∀ x y → [ x ≤ y ] → [ x ≤'' y ]
+≤-implies-≤'' x y x≤y ε y<ε = bridges-R3-5 x y ε x≤y y<ε
+
+≤-≡-≤'' : ∀ x y → (Liftᵖ {ℓ'} {ℓ} (x ≤ y)) ≡ (x ≤'' y)
+≤-≡-≤'' x y = ⇔toPath
+              ((≤-implies-≤'' x y) ∘ (unliftᵖ (x ≤ y))) -- (λ{ (lift p) → ≤-implies-≤'' x y p})
+              ((liftᵖ (x ≤ y)) ∘ (≤''-implies-≤ x y))
+```
+
+in these 760 lines of normalized term, there occur
+
+- `Agda.Builtin.Cubical.Glue.primGlue`
+- `Cubical.HITs.PropositionalTruncation.elim`
+- `Cubical.Data.Sum.Base.elim`
+- `⊥-elim`
+- `isProp⊥`
+- `transp`
+- `hcomp`
+- `isoToEquiv`
+- `<-irrefl`
+- `<-cotrans`
+- `idEquiv`
+- `isProp[]`
+
+the normalized terms of `≤-implies-≤''`, `≤''-implies-≤`, `_≤''_` and `bridges-R3-5` do not look that ugly:
+
+```agda
+≤-implies-≤'' =
+ λ x₁ y x≤y ε y<ε →
+  Cubical.HITs.PropositionalTruncation.elim
+   (λ x₂ → snd (x₁ < ε))
+   (Cubical.Data.Sum.Base.elim (λ y<x → ⊥-elim (x≤y y<x)) (λ x<z → x<z))
+   (<-cotrans y ε y<ε x₁)
+
+≤''-implies-≤ = λ x₁ y x≤''y y<x → <-irrefl x₁ (x≤''y x₁ y<x)
+
+_≤''_ =
+ λ x₁ y →
+  ( ((ε : Carrier) → fst (y < ε) → fst (x₁ < ε))
+  , (λ f g i x₂ x₃ → snd (x₁ < x₂) (f x₂ x₃) (g x₂ x₃) i)
+  )
+
+bridges-R3-5 =
+ λ x₁ y z x≤y y<z →
+  Cubical.HITs.PropositionalTruncation.elim
+   (λ x₂ → snd (x₁ < z))
+   (Cubical.Data.Sum.Base.elim (λ y<x → ⊥-elim (x≤y y<x)) (λ x<z → x<z))
+   (<-cotrans y z y<z x₁)
+```
+
+THESIS: Maybe we can also make use of copatterns in the `MorePropAlgebra` module to help Agda normalizing this term into something smaller.
+
 ## using equivalences instead of `lemma` and `lemma-back`
 
 - when using "implicational" reasoning `_⇒⟨_⟩` agda is pretty good in determining the arguments within `⟨_⟩`
@@ -295,39 +973,39 @@ record isEquiv {ℓ ℓ'} {A : Set ℓ} {B : Set ℓ'} (f : A → B) : Set (ℓ 
 Booij writes "we identify elements of HProp with ... their first projection". Therefore Agda's first projection `[_]` is not present in Booij's writing (it's implicit).
 
 | Booij                                  | Agda                                                                     |
-| -------------------------------------- | ------------------------------------------------------------------------ |
+|----------------------------------------|--------------------------------------------------------------------------|
 | `⊤              := 1                 ` | `⊤ : hProp _                                                           ` |
 |                                        | `⊤ = Unit , (λ _ _ _ → tt)                                             ` |
-| -------------------------------------- | ------------------------------------------------------------------------ |
+|----------------------------------------|--------------------------------------------------------------------------|
 | `⊥              := 0                 ` | `⊥ : hProp _                                                           ` |
 |                                        | `⊥ = ⊥.⊥ , λ ()                                                        ` |
-| -------------------------------------- | ------------------------------------------------------------------------ |
+|----------------------------------------|--------------------------------------------------------------------------|
 | `P ∧ Q          := P × Q             ` | `A ⊓′ B = A × B                                                        ` |
 |                                        | `A ⊓ B = [ A ] ⊓′ [ B ] , isOfHLevelΣ 1 (isProp[] A) (\ _ → isProp[] B)` |
-| -------------------------------------- | ------------------------------------------------------------------------ |
+|----------------------------------------|--------------------------------------------------------------------------|
 | `P ⇒ Q          := P → Q             ` | `A ⇒ B = ([ A ] → [ B ]) , isPropΠ λ _ → isProp[] B                    ` |
-| -------------------------------------- | ------------------------------------------------------------------------ |
+|----------------------------------------|--------------------------------------------------------------------------|
 | `P ⇔ Q          := P = Q             ` | `A ⇔ B = (A ⇒ B) ⊓ (B ⇒ A)                                             ` |
 |                                        | `⇔toPath : [ P ⇒ Q ] → [ Q ⇒ P ] → P ≡ Q                               ` |
 |                                        | `pathTo⇒ : P ≡ Q → [ P ⇒ Q ]                                           ` |
 |                                        | `pathTo⇐ : P ≡ Q → [ Q ⇒ P ]                                           ` |
-| -------------------------------------- | ------------------------------------------------------------------------ |
+|----------------------------------------|--------------------------------------------------------------------------|
 | `¬P             := P → 0             ` | `¬ A = ([ A ] → ⊥.⊥) , isPropΠ λ _ → ⊥.isProp⊥                         ` |
 |                                        | `x ≢ₚ y = ¬ x ≡ₚ y                                                     ` |
-| -------------------------------------- | ------------------------------------------------------------------------ |
+|----------------------------------------|--------------------------------------------------------------------------|
 | `P ∨ Q          := ∥ P + Q ∥         ` | `A ⊔′ B = ∥ A ⊎ B ∥                                                    ` |
 |                                        | `P ⊔ Q = ∥ [ P ] ⊎ [ Q ] ∥ₚ                                            ` |
-| -------------------------------------- | ------------------------------------------------------------------------ |
+|----------------------------------------|--------------------------------------------------------------------------|
 | `(∀ x : X) R(x) :=  (Π x : X) R(x)   ` | `∀[∶]-syntax {A = A} P = (∀ x → [ P x ]) , isPropΠ (isProp[] ∘ P)      ` |
 |                                        | `∀[]-syntax  {A = A} P = (∀ x → [ P x ]) , isPropΠ (isProp[] ∘ P)      ` |
 |                                        | `syntax ∀[∶]-syntax {A = A} (λ a → P) = ∀[ a ∶ A ] P                   ` |
 |                                        | `syntax  ∀[]-syntax (λ a → P)          = ∀[ a ] P                      ` |
-| -------------------------------------- | ------------------------------------------------------------------------ |
+|----------------------------------------|--------------------------------------------------------------------------|
 | `(∃ x : X) R(x) := ∥ (Σ x : X) R(x) ∥` | `∃[∶]-syntax {A = A} P = ∥ Σ A ([_] ∘ P) ∥ₚ                            ` |
 |                                        | `∃[]-syntax  {A = A} P = ∥ Σ A ([_] ∘ P) ∥ₚ                            ` |
 |                                        | `syntax ∃[∶]-syntax {A = A} (λ x → P) = ∃[ x ∶ A ] P                   ` |
 |                                        | `syntax ∃[]-syntax          (λ x → P) = ∃[ x ] P                       ` |
-| -------------------------------------- | ------------------------------------------------------------------------ |
+|----------------------------------------|--------------------------------------------------------------------------|
 | `isHProp(P)   := (Π p, q : P)(p =ₚ q)` | `isProp A = (x y : A) → x ≡ y                                          ` |
 | `HProp       := (Σ P : 𝓤) isHProp(P)` | `hProp  ℓ = Σ[ A ∈ Type ℓ ] isProp A                                   ` |
 
@@ -965,7 +1643,7 @@ So only the last way in `module Test4` works out nicely. This simple syntax with
         a + x  <  x + b  ⇒⟨ +-<-extensional b a x x ⟩
        (a < x) ⊎ (x < b) ◼) a<b
   }
-```  
+```
 
 ```agda
 open IsPartialOrder ≤-isPartialOrder public
@@ -1008,7 +1686,7 @@ module _ (x y : F) (x·y≡1 : x · y ≡ 1f) where
       x     ≡ y ⁻¹ᶠ     ◼) x·y≡1
 
   ·-linv-unique : (x y : F) → ((x · y) ≡ 1f) → Σ[ p ∈ y # 0f ] x ≡ (_⁻¹ᶠ y {{p}})
-  ·-linv-unique = ·-linv-unique'      
+  ·-linv-unique = ·-linv-unique'
 ```
 
 (* ) IMPORTANT!
@@ -1447,7 +2125,7 @@ data NumberKind : Type where
   isInt     : NumberKind
   isRat     : NumberKind
   isReal    : NumberKind
-  isComplex : NumberKind  
+  isComplex : NumberKind
 ```
 
 the final approach to lift `_≤_`, `min` and `max` from ℕ ended up in `Enumeration.agda`. We get:
@@ -1647,6 +2325,131 @@ tmp6 x≤0 = {!!}
 ```
 
 ## convenient Goal/Have resolution
+
+when a clause is "evaluated" / "unfolded", then the imports from its context will be used at the "call-site"
+
+e.g.
+
+```agda
+NumberKindInterpretation : (x : NumberKind) → Type (NumberKindLevel x)
+NumberKindInterpretation isNat     = ℕ*.ℕ
+NumberKindInterpretation isInt     = ℤ*.ℤ
+NumberKindInterpretation isRat     = ℚ*.ℚ
+NumberKindInterpretation isReal    = ℝ*.ℝ
+NumberKindInterpretation isComplex = ℂ*.ℂ
+```
+
+will result in displaying `ℕ*.ℕ` even when `ℕ*` is opened at the call-site and `ℕ` would be directly available.
+
+This can be adjusted with opening the module `ℕ*` in the pattern
+
+```
+NumberKindInterpretation : (x : NumberKind) → Type (NumberKindLevel x)
+NumberKindInterpretation isNat     = let open ℕ* in ℕ
+NumberKindInterpretation isInt     = let open ℤ* in ℤ
+NumberKindInterpretation isRat     = let open ℚ* in ℚ
+NumberKindInterpretation isReal    = let open ℝ* in ℝ
+NumberKindInterpretation isComplex = let open ℂ* in ℂ
+```
+
+This is also the reason, why `x - y` or `x + (- y)` will show up: it will be the way that is used in the "evaluated" / "unfolded" clause.
+Which is quite the only thing it can do:
+
+- although `_-_` is defined in terms of `-_`, it will not be unfolded (until forced with C-u C-u C-,)
+- and `-_` will not consume the `_+_` to produce a `_-_` unless we set this up with a `DISPLAY` pragma.
+
+There might be some other magic that forces `[_]` to display everytime when dealing with hprops.
+Well ... when thinking about that, it might just be that `[ ∀[ x ] x ≤ x ] y` reduces to `[ y ≤ y ]` "because" that is how `∀[_]` is implemented:
+
+```agda
+∀[]-syntax {A = A} P = (∀ x → [ P x ]) , isPropΠ (isProp[] ∘ P)
+```
+
+So no "magic" is involved. It's just that `[_]` occurs at many places being the reason that it shows up again, even after applying `y`:
+
+```
+  [ ∀[ x ]   x ≤ x ]  y
+⊢  (∀  x → [ x ≤ x ]) y
+⊢          [ y ≤ y ]
+```
+
+### using different signatures for hProp-functions
+
+Suppose we have different hProps to "implement":
+
+```agda
+Item-1  = ∀[ x ] ∀[ y ]                                 x ≤ y ⇔ ¬(y < x)                          -- (definition of _≤_)
+Item-2  = ∀[ x ] ∀[ y ]                                 x # y ⇔ [ <-asym x y ] (x < y) ⊎ᵖ (y < x) -- (definition of _#_)
+Item-6  = ∀[ x ] ∀[ y ] ∀[ z ]  x < y     ⇒  y ≤ z ⇒    x     <     z                             -- <-≤-trans
+Item-7  = ∀[ x ] ∀[ y ] ∀[ z ]  x ≤ y     ⇒  y < z ⇒    x     <     z                             -- ≤-<-trans
+```
+
+These hProps come with a Type such as `[ Item-6 ]` and a proof being an hProp `isProp[] Item-6` and we are tempted to use them in our definitions
+
+```agda
+item-6' : [ Item-6 ]
+item-6' = ...
+```
+
+Unfortunately this leads to showing just `Goal [ Item-6 ]` and when using `item-6` we only get `Have [ Item-6 ]`.
+
+An alternative would be to write this out as
+
+```
+<-≤-trans : [ ∀[ x ] ∀[ y ] ∀[ z ]  x < y     ⇒  y ≤ z ⇒    x     <     z ]
+
+item-6 : [ Item-6 ]
+item-6 = <-≤-trans
+```
+
+Now, `item-6` still gives `Have [ Item-6 ]`, but `<-≤-trans` gives `Have [ (λ x y z → x < y ⇒ y ≤ z ⇒ x < z) ]` (with a certain `DISPLAY` directive to suppress the `∀[]-syntax`).
+
+This approach also checks in `item-6 = <-≤-trans` that `<-≤-trans` really matches `[ Item-6 ]` definitionally. Another variant would be to use
+
+```agda
+_ = typeOf <-≤-trans ≡ [ Item-6 ] ∋ refl
+```
+
+or something like
+
+```agda
+item-2 : [ Item-2 unfold refl to ∀[ x ] ∀[ y ] x # y ⇔ [ <-asym x y ] (x < y) ⊎ᵖ (y < x) ]
+item-2 = ...
+```
+
+where
+
+```agda
+unfold' : ∀{ℓ A} → (x y : A) → _≡_ {ℓ} x y → _
+unfold' x y p = y
+infix -8 unfold'
+syntax unfold' x y p = x unfold p to y
+{-# DISPLAY unfold' x y p = p #-}
+```
+
+but I found more convenient to use
+
+```agda
+<-≤-trans : [ ∀[ x ] ∀[ y ] ∀[ z ] x < y ⇒ y ≤ z ⇒ x < z ]; item-6 = [ Item-6 ] ∋ <-≤-trans
+```
+
+to get `Have [ (λ x y z → x < y ⇒ y ≤ z ⇒ x < z) ]` for `<-≤-trans`, or even
+
+```
+item-1    : ∀ x y   → [ x ≤ y ⇔ ¬(y < x)      ]; _ = [ Item-1 ] ∋ item-1
+≤-<-trans : ∀ x y z → [ x ≤ y ⇒ y < z ⇒ x < z ]; _ = [ Item-7 ] ∋ ≤-<-trans
+```
+
+or, because it somehow better resolves implicit level arguments, even
+
+```
+item-1    : ∀ x y   → [ x ≤ y ⇔ ¬(y < x)      ]; _ = [ Item-1 ]; _ = item-1
+≤-<-trans : ∀ x y z → [ x ≤ y ⇒ y < z ⇒ x < z ]; _ = [ Item-7 ]; _ = ≤-<-trans
+```
+
+to get `Have (x y z : F) → [ x ≤ y ⇒ y < z ⇒ x < z ]` for `≤-<-trans`.
+
+Again, the `...; _ = [ Item-7 ] ∋ ≤-<-trans` amendment is just to ensure that this signature is still definitionally equal to `[ Item-7 ]`.
 
 ### result
 
@@ -2099,7 +2902,7 @@ module ℚ where
 
 as written in the `NOTE`s above, it has some effect, putting new modules at the end of `Number.Postulates` which we did not do at the end:
 
-```
+```agda
 
 {-
 module Translated where
@@ -2118,4 +2921,323 @@ module Translated where
 ℂ = ℂ.ℂ
 -}
 
+```
+
+## multiple instance resolution and negation
+
+see Agda email from 28.08.20, 17:32
+
+```agda
+module _ where
+  abstract
+    -- `ab` for "abstractify", short like `id` for "identity"
+    ab : ∀{ℓ} {X : Type ℓ} → X → X
+    ab R = R
+
+    ab-≡ : ∀{ℓ} {X : Type ℓ} → ab X ≡ X
+    ab-≡ = refl
+
+    ab-≡ᵖ : ∀{ℓ} (P : hProp ℓ) → ab P ≡ P
+    ab-≡ᵖ P = refl
+
+    -- ab-≡ᵖ² : ∀{ℓ ℓ'} {X : Type ℓ} (R : hPropRel X X ℓ') → ab R ≡ R
+    -- ab-≡ᵖ² R = refl
+
+    ab-≡ᵖ² : ∀{ℓ ℓ'} {X : Type ℓ} (R : hPropRel X X ℓ') → ∀ x y → ab (R x y) ≡ R x y
+    ab-≡ᵖ² R x y = refl
+
+    [ab] : ∀{ℓ} {X : Type ℓ} → X → ab X
+    [ab] {X = X} x = transport (sym (ab-≡ {X = X})) x
+    {-
+    infix 1 !_
+    infix 1 !!_
+    infix 1 !!⁻¹_
+
+    !_ : ∀{ℓ} {X : Type ℓ} → X → X
+    ! R = R
+
+    !-≡ : ∀{ℓ} {X : Type ℓ} → (! X) ≡ X
+    !-≡ = refl
+
+    !!_ : ∀{ℓ} {X : Type ℓ} → X → ! X
+    !!_ {X = X} x = transport (sym (!-≡ {X = X})) x
+
+    !!⁻¹_ : ∀{ℓ} {X : Type ℓ} → ! X → X
+    !!⁻¹_ {X = X} x = transport (!-≡ {X = X}) x
+    -}
+
+-- NOTE: this smells like "CPO" https://en.wikipedia.org/wiki/Complete_partial_order
+record CompletePartiallyOrderedFieldWithSqrt {ℓ ℓ' : Level} : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
+  field
+    Carrier : Type ℓ
+    0f      : Carrier
+    1f      : Carrier
+    _+_     : Carrier → Carrier → Carrier
+    _·_     : Carrier → Carrier → Carrier
+    -_      : Carrier → Carrier
+    _<_     : hPropRel Carrier Carrier ℓ'
+    <-irrefl : [ isIrreflᵖ _<_ ]
+    <-trans  : [ isTransᵖ _<_ ]
+    isset   : isSet Carrier
+
+  _≤_ : hPropRel Carrier Carrier ℓ'
+  x ≤ y = ¬ᵖ(y < x)
+
+  _≤ⁱ_ : hPropRel Carrier Carrier ℓ'
+  -- x ≤ᵢ y = ({{p : [ y < x ]}} → ⊥⊥) , λ f g → instanceFunExt {A = [ y < x ]} {B = λ q i → ⊥⊥} {f = f} {g = g} λ {{r}} → ⊥-elim {A = λ _ → f ≡ g} f
+  -- x ≤ᵢ y = ({{p : [ y < x ]}} → ⊥⊥) , λ f g → instanceFunExt (λ {{_}} → ⊥-elim {A = λ _ → f ≡ g} f)
+  x ≤ⁱ y = ¬ⁱ(y < x)
+
+  ≤-≡-≤ⁱ : ∀ x y → x ≤ y ≡ x ≤ⁱ y
+  ≤-≡-≤ⁱ x y = ¬-≡-¬ⁱ (y < x)
+    -- ⇒∶ (λ f {{p}} → f   p  )
+    -- ⇐∶ (λ f   p   → f {{p}})
+
+  ≤ⁱ-inst : ∀{x y} → [ x ≤ y ] → [ x ≤ⁱ y ]
+  ≤ⁱ-inst x≤y = pathTo⇒ (≤-≡-≤ⁱ _ _) x≤y
+
+  _≤ᵃ_ : hPropRel Carrier Carrier ℓ'
+  _≤ᵃ_ x y = ab (x ≤ y)
+
+  ≤-≡-≤ᵃ : ∀ x y → x ≤ y ≡ x ≤ᵃ y
+  ≤-≡-≤ᵃ x y = sym (ab-≡ᵖ (x ≤ y)) -- (ab-≡ᵖ² _≤_ x y)
+
+  ≤ᵃ-inst : ∀{x y} → [ x ≤ y ] → [ x ≤ᵃ y ]
+  ≤ᵃ-inst x≤y = pathTo⇒ (≤-≡-≤ᵃ _ _) x≤y
+
+  field
+    -- NOTE: `[ 0f ≤ x ]` normalizes to `fst (x < 0f) → ⊥⊥` and therefore it takes an explicit argument `fst (x < 0f)`
+    --       when making this an instance argument, agda complains
+    --         Instance arguments with explicit arguments are never considered by instance search
+    -- we circumvent this by introducing `_≤ⁱ_`
+    sqrt₀⁺    : (x : Carrier) → {{    [ 0f ≤ⁱ x ] }} → Carrier
+    sqrt₀⁺'   : (x : Carrier) → {{    [ 0f ≤ᵃ x ] }} → Carrier
+    sqrt₀⁺''  : (x : Carrier) → {{ ab [ 0f ≤  x ] }} → Carrier
+    sqrt₀⁺''' : (x : Carrier) → {{  ! [ 0f ≤  x ] }} → Carrier
+
+  -- sqrt-test : (x y : Carrier) → [ 0f ≤ x ] → [ 0f ≤ y ] → Carrier
+  -- sqrt-test x y 0≤x 0≤y = let instance itx = ≤ⁱ-inst 0≤x
+  --                             instance ity = ≤ⁱ-inst 0≤y
+  --                         in sqrt₀⁺ x
+
+  sqrt-test' : (x y : Carrier) → [ 0f ≤ x ] → [ 0f ≤ y ] → Carrier
+  sqrt-test' x y 0≤x 0≤y = let instance _ = ≤ᵃ-inst 0≤x
+                               instance _ = ≤ᵃ-inst 0≤y
+                           in sqrt₀⁺' x
+
+  sqrt-test'' : (x y : Carrier) → [ 0f ≤ x ] → [ 0f ≤ y ] → Carrier
+  sqrt-test'' x y 0≤x 0≤y = let instance _ = [ab] 0≤x -- transport (sym ab-≡) 0≤x
+                                instance _ = [ab] 0≤y
+                            in (sqrt₀⁺'' x) + (sqrt₀⁺'' y)
+
+  -- other syntax
+  sqrt-test''' : (x y : Carrier) → [ 0f ≤ x ] → [ 0f ≤ y ] → Carrier
+  sqrt-test''' x y 0≤x 0≤y = let instance _ = !! 0≤x -- transport (sym ab-≡) 0≤x
+                                 instance _ = !! 0≤y
+                             in (sqrt₀⁺''' x) + (sqrt₀⁺''' y)
+
+  <-asym : [ isAsymᵖ _<_ ]
+  <-asym = irrefl+trans→asym _<_ <-irrefl <-trans
+
+  _#_ : hPropRel Carrier Carrier ℓ'
+  x # y = ([ x < y ] ⊎ [ y < x ]) , isProp-P⊎Q (x < y) (y < x) (inl (<-asym x y))
+
+  field
+    _⁻¹ : (x : Carrier) → {{p : [ x # 0f ]}} → Carrier
+```
+
+
+## antisymmetry and antisymmetry on sets
+
+we have
+
+```
+IsAntisym        R = ∀ a b → [ R a b   ⇒   R b a   ⇒ a ≡ₚ b ]
+IsAntisymˢ isset R = ∀ a b → [ R a b ] → [ R b a ] → a ≡  b
+```
+
+both are equivalent (on sets):
+
+```
+isAntisym-ˢ≡ᵖ : (isset : isSet A) → isAntisymˢ isset R ≡ isAntisymᵖ R
+```
+
+Wikipedia writes that
+
+```
+if R(a, b) with a ≠ b, then R(b, a) must not hold,
+```
+
+is equivalent to
+
+```
+if R(a, b) and R(b, a), then a = b.
+```
+
+but is this an equivalence constructively?
+I guess that `[ R a b ] → [ R b a ] → a ≡ b` implies `[ R a b ] →  [ a # b ] → [ ¬ R b a ]` in the following way:
+
+```
+[ R a b ] → [ R b a ] → a ≡ b        --
+[ R a b ] × [ R b a ] → a ≡ b        -- by curry/uncurry
+[ R a b   ⊓   R b a ] → a ≡ b        -- definitionally
+¬(a ≡ b) → ¬ [ R a b ⊓ R b a ]       -- by contraposition (NOTE: contraposition is not an equivalence)
+¬(a ≡ b) →   [ R a b ] → [ ¬ R b a ] -- by [P⇒¬Q]≡¬[P⊓Q]
+[ R a b ] →  ¬(a ≡ b)  → [ ¬ R b a ] -- swap arguments
+[ R a b ] →  [ a # b ] → [ ¬ R b a ] -- when `a # b ⇒ ¬(a ≡ b)` (by #-irrefl) (NOTE: also not an equivalence)
+```
+
+- Here we see that `antisymmetry + irreflexivity ⇒ asymmetry`
+  - wikipedia also writes `trans + irrefl ⇒ asym`
+
+```
+isTightᵖ _<_ ≡ isAntisymᵖ  (λ a b → ¬ᵖ (b < a))
+#-tight : [ ¬ (a < b) ] → [ ¬ (b < a) ] → a ≡ b
+          [ ¬ (a # b) ]                 → a ≡ b
+```
+
+- `<-irrefl ⇒ #-irrefl`
+  - which gives `a ≡ b → [ ¬ (a # b) ]`
+- so we do have `¬#-≡-≡` when `#` is tight?
+- on `¬#` we do have double negation elimintation (`¬¬¬# ≡ ¬#`)
+- so `#` gives us `≡-dne` ?? hmm......
+
+the other way could be
+
+```
+[ R a b ] → [ a # b ] → [ ¬ R b a  ]     --
+[ R a b ] → [ a # b ] → [   R b a  ] → ⊥ -- by ¬
+[ R a b ] → [ R b a ] → [   a # b  ] → ⊥ -- swap arguments
+[ R a b ] → [ R b a ] → [ ¬(a # b) ]     -- by ¬
+[ R a b ] → [ R b a ] →     a ≡ b        -- when `¬(a # b) ⇒ a ≡ b` (by #-tight)
+
+[ R a b ] →   ¬(a ≡ b)   → [   ¬ R b a   ]     --
+[ R a b ] →   ¬(a ≡ b)   → [     R b a   ] → ⊥ -- by ¬
+[ R a b ] → [   R b a  ] →     ¬(a ≡ b)    → ⊥ -- swap arguments
+[ R a b ] → [   R b a  ] →   ¬(¬(a ≡ b))       -- by ¬
+[ R a b ] → [   R b a  ] →       a ≡ b        -- when `¬(¬(a ≡ b)) ⇒ a ≡ b`
+```
+
+let's call the weaker one isAntisym'. we have then
+
+```
+isIrrefl _<_ → isAntisym _≤_ ≡ (isAntisym' _≤_ + dne-on-≡) ≡ isTight''' _#_
+isIrrefl _<_ ≡ isIrrefl _#_
+isIrrefl _#_ → isTight''' _#_ → dne-on-≡
+```
+
+## splitting the reals
+
+```agda
+≤-split : ∀ x → [ 0f ≤ x ] → ( x ≡ 0f ) ⊎ [ 0f < x ]
+≤-split x p = let _ = {! [ 0f ≤'' x ]  !} in {! λ(ε : Carrier) → λ(0<ε : [ 0f < ε ]) → <-cotrans 0f ε 0<ε x  !}
+```
+
+- well, I think that this is not possible
+- to obtain the RHS `( x ≡ 0f ) ⊎ [ 0f < x ]` or `[ x ≡ᵖ 0f ⊔ 0f < x ]`
+- we need to decide `inlᵖ` or `inrᵖ`
+- on the LHS which is `[ ¬ (x < 0f) ]` or `∀ ε → [ x < ε ] → [ 0f < ε ]`
+- in either case, we need to split x
+- recalling that we do NOT have `∀ x → [ x # 0 ] ⊎ x ≡ 0` nor `∀ x → [ x # 0 ⊔ x ≡ᵖ 0 ]`
+- we cannot split x at all
+- because we cannot split a real number
+- but what we might be able to do is, to provide an eliminator `≤-elim`
+
+```agda
+≤-elim : ∀{ℓ} → (P : Carrier → Carrier → Type ℓ) → ∀ x y → [ x ≤ y ] → (x ≡ y → P x y) → ([ x < y ] → P x y) → P x y
+≤-elim P x y x≤y f g = {!   !}
+```
+
+- this way we do not decide anything ... or do we?
+- e.g. we might want something like `[ x < 0 ⊔ x ≡ 0 ⊔ 0 < x ]`
+- but this is trichotomy and we do not have it on the reals
+- so an eliminator dealing with all the cases is not complete
+- because we cannot proof that these are all cases
+- since that would constructively amount to picking one of the cases
+- I guess this is what it means that "you cannot split the reals"
+- nonetheless, I think that
+
+```agda
+bridges-R3-5 : ∀ x y z → [ x ≤ y ] → [ y < z ] → [ x < z ]
+bridges-R3-6 : ∀ x y z → [ x < y ] → [ y ≤ z ] → [ x < z ]
+```
+
+- already have what it takes to implement the generic number functions on subspaces of ℝ
+- so we might continue anyways
+
+the following `(ε : Carrier) (0<ε : [ 0f < ε ]) → [ 0f < x ⊔ x < ε ]`
+
+does not imply `[ (0f < x) ⊔ (∀[ ε ] ∀[ 0<ε : [ 0f < ε ] ] x < ε) ]`
+
+or does it?
+
+```
+-- (ε : Carrier) (0<ε : [ 0f < ε ]) → [ 0f < x ⊔ x < ε ]
+-- (ε : Carrier) (0<ε : [ 0f < ε ]) → [ 0f < x ] ⊎ [ x < ε ]
+```
+
+## a failed proof attempt for associativity on Int
+
+I ended up porting the proof from the noncubical standard library.
+
+```agda
+*-assoc : ∀ a b c → (a * b) * c ≡ a * (b * c)
+*-assoc (pos zero) b c =
+  (pos 0 * b) * c  ≡⟨ (λ i → *-nullifiesˡ b i * c) ⟩
+   pos 0      * c  ≡⟨ *-nullifiesˡ c ⟩
+   pos 0           ≡⟨ sym $ *-nullifiesˡ (b * c) ⟩
+   pos 0 * (b * c) ∎
+*-assoc (pos (suc n)) b c = let r = *-assoc (pos n) b c in *-assoc-ind n b c r where
+  *-assoc-ind : ∀ n b c
+              → ((pos n * b) * c) ≡ (pos n * (b * c))
+              → ((pos (suc n) * b) * c) ≡ (pos (suc n) * (b * c))
+  *-assoc-ind n (pos      b ) (pos      c ) p = {!    !}
+    -- pos ((b +ⁿ n *ⁿ b) *ⁿ c)
+    -- pos (b *ⁿ c +ⁿ (n *ⁿ b) *ⁿ c)
+    -- pos (b *ⁿ c +ⁿ n *ⁿ (b *ⁿ c))
+  *-assoc-ind n (pos  zero  ) (negsuc   c ) p = p
+  *-assoc-ind n (pos (suc b)) (negsuc   c ) p = {!   !}
+    -- (b+n(b+1))c+(b+n(b+1)+c)
+    -- (b+nb+n)c+b+nb+n+c
+    -- bc+nbc+nc+b+nb+n+c
+    -- bc+nbc+nc+n+nb+b+c
+    -- nb+nbc+nc+n+bc+b+c
+    -- nbc+nb+nc+n+bc+b+c
+    -- n(bc+b+c)+n+bc+b+c
+    -- negsuc ((b +ⁿ n *ⁿ suc b) *ⁿ c +ⁿ (b +ⁿ n *ⁿ suc b +ⁿ c))
+    -- negsuc (n *ⁿ (b *ⁿ c +ⁿ (b +ⁿ c)) +ⁿ (n +ⁿ (b *ⁿ c +ⁿ (b +ⁿ c))))
+  *-assoc-ind n (negsuc   b ) (pos  zero  ) p = λ i → pos $ *ⁿ-nullifiesʳ n (~ i)
+  *-assoc-ind n (negsuc   b ) (pos (suc c)) p = {!   !}
+    -- negsuc ((n *ⁿ b +ⁿ (n +ⁿ b)) *ⁿ c +ⁿ (n *ⁿ b +ⁿ (n +ⁿ b) +ⁿ c))
+    -- negsuc (n *ⁿ (b *ⁿ c +ⁿ (b +ⁿ c)) +ⁿ (n +ⁿ (b *ⁿ c +ⁿ (b +ⁿ c))))
+  *-assoc-ind n (negsuc   b ) (negsuc   c ) p = {!   !}
+    -- pos (suc (c +ⁿ (n *ⁿ b +ⁿ (n +ⁿ b)) *ⁿ suc c))
+    -- pos (suc (c +ⁿ b *ⁿ suc c +ⁿ n *ⁿ suc (c +ⁿ b *ⁿ suc c)))
+*-assoc (negsuc zero) b c =
+  (negsuc 0 * b) * c  ≡⟨ (λ i → -1*≡- b i * c) ⟩
+  (         - b) * c  ≡⟨ sym $ -distrˡ b c ⟩
+            - (b * c) ≡⟨ sym $ -1*≡- (b * c) ⟩
+   negsuc 0 * (b * c) ∎
+*-assoc (negsuc (suc n)) b c = let r = *-assoc (negsuc n) b c in *-assoc-ind n b c r where
+  *-assoc-ind : ∀ n b c
+              → ((negsuc n * b) * c) ≡ (negsuc n * (b * c))
+              → ((negsuc (suc n) * b) * c) ≡ (negsuc (suc n) * (b * c))
+  *-assoc-ind n (pos  zero  ) (pos      c ) p = refl
+  *-assoc-ind n (pos (suc b)) (pos      c ) p = {!   !}
+    -- negsuc (b +ⁿ n *ⁿ b +ⁿ suc (n +ⁿ b)) * pos c
+    -- negsuc (suc n) * pos (c +ⁿ b *ⁿ c)
+  *-assoc-ind n (pos  zero  ) (negsuc   c ) p = p
+  *-assoc-ind n (pos (suc b)) (negsuc   c ) p = {!   !}
+    -- pos (suc (c +ⁿ (b +ⁿ n *ⁿ b +ⁿ suc (n +ⁿ b)) *ⁿ suc c))
+    -- pos (suc (b *ⁿ c +ⁿ (b +ⁿ c) +ⁿ suc (b *ⁿ c +ⁿ (b +ⁿ c) +ⁿ n *ⁿ suc (b *ⁿ c +ⁿ (b +ⁿ c)))))
+  *-assoc-ind n (negsuc   b ) (pos  zero  ) p = λ i → pos $ *ⁿ-nullifiesʳ (b +ⁿ suc (b +ⁿ n *ⁿ suc b)) i
+  *-assoc-ind n (negsuc   b ) (pos (suc c)) p = {!   !}
+    -- pos (suc (c +ⁿ (b +ⁿ suc (b +ⁿ n *ⁿ suc b)) *ⁿ suc c)) ≡
+    -- pos (suc (b *ⁿ c +ⁿ (b +ⁿ c) +ⁿ suc (b *ⁿ c +ⁿ (b +ⁿ c) +ⁿ n *ⁿ suc (b *ⁿ c +ⁿ (b +ⁿ c)))))
+  *-assoc-ind n (negsuc   b ) (negsuc   c ) p = {!   !}
+    -- negsuc ((b +ⁿ suc (b +ⁿ n *ⁿ suc b)) *ⁿ c +ⁿ (b +ⁿ suc (b +ⁿ n *ⁿ suc b) +ⁿ c))
+    -- negsuc (c +ⁿ b *ⁿ suc c +ⁿ n *ⁿ (c +ⁿ b *ⁿ suc c) +ⁿ suc (n +ⁿ (c +ⁿ b *ⁿ suc c)))
+
+*-assocᵖ : ∀{ℓ} {A : Type ℓ} (isset : isSet A) (_*_ : A → A → A) → hProp ℓ
+*-assocᵖ isset _*_ =  ∀[ a ] ∀[ b ] ∀[ c ] ([ isset ] a * (b * c) ≡ˢ (a * b) * c)
 ```

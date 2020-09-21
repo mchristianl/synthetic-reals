@@ -2,8 +2,7 @@
 ## general TODOs
 
 - make use of .lagda.md for the parts that literally follow Booij's thesis
-- check out `abstract` for performance
-  - also, likely due to [#1646](https://github.com/agda/agda/issues/1646) we might flatten-out the module hierarchy for better performance
+- likely due to [#1646](https://github.com/agda/agda/issues/1646) we might flatten-out the module hierarchy for better performance
 - merge the notes with Hit.agda
 - use equivalences intstead of `lemma` and `lemma-back`
 - can we use `preserves` and `reflects` instead of `lemma` and `lemma-back`?
@@ -39,6 +38,35 @@
 
   postulate coerce : {{_ : Coercible A B}} → A → B
   ```
+- check out `Agda.Builtin.FromNat` for a coercion mechanism
+  ```agda
+  record Number {a} (A : Set a) : Set (lsuc a) where
+    field
+      Constraint : Nat → Set a
+      fromNat : ∀ n → {{_ : Constraint n}} → A
+
+  open Number {{...}} public using (fromNat)
+
+  {-# BUILTIN FROMNAT fromNat #-}
+  {-# DISPLAY Number.fromNat _ n = fromNat n #-}
+  ```
+  - this is used in `Cubical.Data.Nat.Literals` and in `Cubical.HITs.Rationals.QuoQ.Base`
+- check out what is meant by "Instance modules" in non-cubical 1.4-rc1
+  ```agda
+  Category.Monad.Partiality.Instances
+  Codata.Stream.Instances
+  Codata.Covec.Instances
+  Data.List.Instances
+  Data.List.NonEmpty.Instances
+  Data.Maybe.Instances
+  Data.Vec.Instances
+  Function.Identity.Instances
+  ```
+  - check out _"New standardised numeric predicates `NonZero`, `Positive`, `Negative`, `NonPositive`, `NonNegative`, especially designed to work as instance arguments."_
+  - the use of instances seems to be very recent, since they also write _"First instance modules, which provide `Functor`, `Monad`, `Applicative` instances for various datatypes. Found under `Data.X.Instances`."_
+- check out ["irrelevancy annotations"](https://agda.readthedocs.io/en/v2.6.1/language/irrelevance.html#irrelevant-record-fields) and whether they serve as some form of "term abstractification" (i.e. blocking the term normalization)
+  - does this work with `--cubical`? what is its intention?
+- can't we just use ℚ from the non-cubical standard library?
 - subsets and embeddings
   - checkout `Cubical.Foundations.Logic`
     ```agda
@@ -51,28 +79,25 @@
     Subset→Embedding {X = X} A = D , f , ψ
       where ...
     ```
-- use `hProp`s
-  - checkout `Cubical.Structures.Poset`
+    where
     ```agda
-    Order : (ℓ₁ : Level) → Type ℓ₀ → Type (ℓ-max ℓ₀ (ℓ-suc ℓ₁))
-    Order ℓ₁ A = A → A → hProp ℓ₁
+    hasPropFibers : (A → B) → Type _
+    hasPropFibers f = ∀ y → isProp (fiber f y)
 
-    isReflexive : {A : Type ℓ₀} → Order ℓ₁ A → hProp (ℓ-max ℓ₀ ℓ₁)
-    isReflexive {A = X} _⊑_ = ((x : X) → [ x ⊑ x ]) , isPropΠ λ x → snd (x ⊑ x)
-
-    isTransitive : {A : Type ℓ₀} → Order ℓ₁ A → hProp (ℓ-max ℓ₀ ℓ₁)
-    isTransitive {ℓ₀ = ℓ₀} {ℓ₁ = ℓ₁} {A = X} _⊑_ = φ , φ-prop
-      where
-        φ      : Type (ℓ-max ℓ₀ ℓ₁)
-        φ      = ((x y z : X) → [ x ⊑ y ⇒ y ⊑ z ⇒ x ⊑ z ])
-        φ-prop : isProp φ
-        φ-prop = isPropΠ3 λ x y z → snd (x ⊑ y ⇒ y ⊑ z ⇒ x ⊑ z)
-
-    isAntisym : {A : Type ℓ₀} → isSet A → Order ℓ₁ A → hProp (ℓ-max ℓ₀ ℓ₁)
-    isAntisym {ℓ₀ = ℓ₀} {ℓ₁ = ℓ₁} {A = X} A-set _⊑_ = φ , φ-prop
-      where
-        φ      : Type (ℓ-max ℓ₀ ℓ₁)
-        φ      = ((x y : X) → [ x ⊑ y ] → [ y ⊑ x ] → x ≡ y)
-        φ-prop : isProp φ
-        φ-prop = isPropΠ3 λ x y z → isPropΠ λ _ → A-set x y
+    _↪_ : Type ℓ → Type ℓ → Type ℓ
+    A ↪ B = Σ[ f ∈ (A → B) ] hasPropFibers f
     ```
+  - there is also
+- use `hProp`s
+  - ~~checkout `Cubical.Structures.Poset`~~
+  - provide a Σ-theory similar to `CommRingΣTheory` with axioms and structure
+- get the absolute value function `abs` into the number hierarchy
+- get the square root function `sqrt` into the number hierarchy
+- complete all necessary axioms in the number hierarchy
+  - then divide into necessary axioms and derivable theorems
+    - and try to proof the theorems
+
+## later TODOs
+
+- in `Cubical.Functions.Bundle` we have a definition of fibre bundle
+- the `Categories` part of the cubical standard library is quite readable!

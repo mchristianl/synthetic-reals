@@ -1,2 +1,5 @@
 *.agda~
 *.agdai
+*.agda#
+*.md~
+*.jpg

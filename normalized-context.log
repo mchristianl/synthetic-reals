@@ -1,0 +1,907 @@
+Goal type
+
+
+Goal _275
+Have Type (ℓ-max ℓ ℓ')
+bridges-R3-12' : (x₁ y : Carrier) →
+            (fst (y < x₁) → ⊥⊥) →
+            ((ε : Carrier) → fst (x₁ < ε) → fst (y < ε)) → x₁ ≡ y
+bridges-R3-12'
+          = λ x₁ y x≤y [∀x<ε→y<ε] →
+              transp
+              (λ i →
+                 fst
+                 (isTightˢ'''≡isAntisymˢ isset _<_
+                  (irrefl+trans-implies-asym _<_ <-irrefl <-trans) i))
+              i0 #-tight x₁ y x≤y (λ x<y → <-irrefl y ([∀x<ε→y<ε] y x<y))
+≤-⇔-≤'' : (x₁ y : Carrier) →
+            Σ
+            ((fst (y < x₁) → ⊥⊥) → (ε : Carrier) → fst (y < ε) → fst (x₁ < ε))
+            (λ _ →
+               ((ε : Carrier) → fst (y < ε) → fst (x₁ < ε)) → fst (y < x₁) → ⊥⊥)
+≤-⇔-≤''   = λ x₁ y →
+              (λ x≤y ε y<ε →
+                 Cubical.HITs.PropositionalTruncation.elim (λ x₂ → snd (x₁ < ε))
+                 (Cubical.Data.Sum.Base.elim (λ y<x → ⊥-elim (x≤y y<x))
+                  (λ x<z → x<z))
+                 (<-cotrans y ε y<ε x₁))
+              , (λ x≤''y y<x → <-irrefl x₁ (x≤''y x₁ y<x))
+≤-≡-≤'' : (x₁ y : Carrier) →
+            (Lift (fst (y < x₁) → ⊥⊥) ,
+             (λ { (lift p) (lift q)
+                    → λ i →
+                        lift
+                        (isProp[]
+                         ((fst (y < x₁) → ⊥⊥) , (λ f g i₁ x₂ → isProp⊥ (f x₂) (g x₂) i₁)) p
+                         q i)
+                }))
+            ≡
+            (((ε : Carrier) → fst (y < ε) → fst (x₁ < ε)) ,
+             (λ f g i x₂ x₃ → snd (x₁ < x₂) (f x₂ x₃) (g x₂ x₃) i))
+≤-≡-≤''   = λ x₁ y i →
+              Agda.Builtin.Cubical.Glue.primGlue
+              ((ε : Carrier) → fst (y < ε) → fst (x₁ < ε))
+              (λ .x₂ →
+                 (λ { (i = i0)
+                        → Lift (fst (y < x₁) → ⊥⊥) ,
+                          isoToEquiv
+                          (iso
+                           (λ x₃ ε y<ε →
+                              Cubical.HITs.PropositionalTruncation.elim (λ x₄ → snd (x₁ < ε))
+                              (Cubical.Data.Sum.Base.elim (λ y<x → ⊥-elim (lower x₃ y<x))
+                               (λ x<z → x<z))
+                              (<-cotrans y ε y<ε x₁))
+                           (λ x₃ → lift (λ y<x → <-irrefl x₁ (x₃ x₁ y<x)))
+                           (λ b i₁ x₃ x₄ →
+                              snd (x₁ < x₃)
+                              (Cubical.HITs.PropositionalTruncation.elim (λ x₅ → snd (x₁ < x₃))
+                               (Cubical.Data.Sum.Base.elim
+                                (λ y<x → ⊥-elim (<-irrefl x₁ (b x₁ y<x))) (λ x<z → x<z))
+                               (<-cotrans y x₃ x₄ x₁))
+                              (b x₃ x₄) i₁)
+                           (λ a i₁ →
+                              lift
+                              (λ x₃ →
+                                 isProp⊥
+                                 (<-irrefl x₁
+                                  (Cubical.HITs.PropositionalTruncation.elim (λ x₄ → snd (x₁ < x₁))
+                                   (Cubical.Data.Sum.Base.elim (λ y<x → ⊥-elim (lower a y<x))
+                                    (λ x<z → x<z))
+                                   (<-cotrans y x₁ x₃ x₁)))
+                                 (lower a x₃) i₁)))
+                    ; (i = i1)
+                        → ((ε : Carrier) → fst (y < ε) → fst (x₁ < ε)) ,
+                          idEquiv ((ε : Carrier) → fst (y < ε) → fst (x₁ < ε))
+                    })
+                 _ .fst)
+              (λ .x₂ →
+                 (λ { (i = i0)
+                        → Lift (fst (y < x₁) → ⊥⊥) ,
+                          isoToEquiv
+                          (iso
+                           (λ x₃ ε y<ε →
+                              Cubical.HITs.PropositionalTruncation.elim (λ x₄ → snd (x₁ < ε))
+                              (Cubical.Data.Sum.Base.elim (λ y<x → ⊥-elim (lower x₃ y<x))
+                               (λ x<z → x<z))
+                              (<-cotrans y ε y<ε x₁))
+                           (λ x₃ → lift (λ y<x → <-irrefl x₁ (x₃ x₁ y<x)))
+                           (λ b i₁ x₃ x₄ →
+                              snd (x₁ < x₃)
+                              (Cubical.HITs.PropositionalTruncation.elim (λ x₅ → snd (x₁ < x₃))
+                               (Cubical.Data.Sum.Base.elim
+                                (λ y<x → ⊥-elim (<-irrefl x₁ (b x₁ y<x))) (λ x<z → x<z))
+                               (<-cotrans y x₃ x₄ x₁))
+                              (b x₃ x₄) i₁)
+                           (λ a i₁ →
+                              lift
+                              (λ x₃ →
+                                 isProp⊥
+                                 (<-irrefl x₁
+                                  (Cubical.HITs.PropositionalTruncation.elim (λ x₄ → snd (x₁ < x₁))
+                                   (Cubical.Data.Sum.Base.elim (λ y<x → ⊥-elim (lower a y<x))
+                                    (λ x<z → x<z))
+                                   (<-cotrans y x₁ x₃ x₁)))
+                                 (lower a x₃) i₁)))
+                    ; (i = i1)
+                        → ((ε : Carrier) → fst (y < ε) → fst (x₁ < ε)) ,
+                          idEquiv ((ε : Carrier) → fst (y < ε) → fst (x₁ < ε))
+                    })
+                 _ .snd)
+              ,
+              hcomp
+              (λ { j (i = i0)
+                     → λ { (lift p) (lift q)
+                             → λ i₁ →
+                                 lift
+                                 (isProp[]
+                                  ((fst (y < x₁) → ⊥⊥) , (λ f g i₂ x₂ → isProp⊥ (f x₂) (g x₂) i₂)) p
+                                  q i₁)
+                         }
+                 ; j (i = i1)
+                     → λ a b i₁ →
+                         hcomp
+                         (λ { k (i₁ = i0)
+                                → transp
+                                  (λ z →
+                                     (x₂ y₁
+                                      : Agda.Builtin.Cubical.Glue.primGlue
+                                        ((ε : Carrier) → fst (y < ε) → fst (x₁ < ε))
+                                        (λ .x₃ →
+                                           (λ { (z = i0)
+                                                  → Lift (fst (y < x₁) → ⊥⊥) ,
+                                                    isoToEquiv
+                                                    (iso
+                                                     (λ x₄ ε y<ε →
+                                                        Cubical.HITs.PropositionalTruncation.elim
+                                                        (λ x₅ → snd (x₁ < ε))
+                                                        (Cubical.Data.Sum.Base.elim
+                                                         (λ y<x → ⊥-elim (lower x₄ y<x))
+                                                         (λ x<z → x<z))
+                                                        (<-cotrans y ε y<ε x₁))
+                                                     (λ x₄ → lift (λ y<x → <-irrefl x₁ (x₄ x₁ y<x)))
+                                                     (λ b₁ i₂ x₄ x₅ →
+                                                        snd (x₁ < x₄)
+                                                        (Cubical.HITs.PropositionalTruncation.elim
+                                                         (λ x₆ → snd (x₁ < x₄))
+                                                         (Cubical.Data.Sum.Base.elim
+                                                          (λ y<x → ⊥-elim (<-irrefl x₁ (b₁ x₁ y<x)))
+                                                          (λ x<z → x<z))
+                                                         (<-cotrans y x₄ x₅ x₁))
+                                                        (b₁ x₄ x₅) i₂)
+                                                     (λ a₁ i₂ →
+                                                        lift
+                                                        (λ x₄ →
+                                                           isProp⊥
+                                                           (<-irrefl x₁
+                                                            (Cubical.HITs.PropositionalTruncation.elim
+                                                             (λ x₅ → snd (x₁ < x₁))
+                                                             (Cubical.Data.Sum.Base.elim
+                                                              (λ y<x → ⊥-elim (lower a₁ y<x))
+                                                              (λ x<z → x<z))
+                                                             (<-cotrans y x₁ x₄ x₁)))
+                                                           (lower a₁ x₄) i₂)))
+                                              ; (z = i1)
+                                                  → ((ε : Carrier) → fst (y < ε) → fst (x₁ < ε)) ,
+                                                    idEquiv
+                                                    ((ε : Carrier) → fst (y < ε) → fst (x₁ < ε))
+                                              })
+                                           _ .fst)
+                                        (λ .x₃ →
+                                           (λ { (z = i0)
+                                                  → Lift (fst (y < x₁) → ⊥⊥) ,
+                                                    isoToEquiv
+                                                    (iso
+                                                     (λ x₄ ε y<ε →
+                                                        Cubical.HITs.PropositionalTruncation.elim
+                                                        (λ x₅ → snd (x₁ < ε))
+                                                        (Cubical.Data.Sum.Base.elim
+                                                         (λ y<x → ⊥-elim (lower x₄ y<x))
+                                                         (λ x<z → x<z))
+                                                        (<-cotrans y ε y<ε x₁))
+                                                     (λ x₄ → lift (λ y<x → <-irrefl x₁ (x₄ x₁ y<x)))
+                                                     (λ b₁ i₂ x₄ x₅ →
+                                                        snd (x₁ < x₄)
+                                                        (Cubical.HITs.PropositionalTruncation.elim
+                                                         (λ x₆ → snd (x₁ < x₄))
+                                                         (Cubical.Data.Sum.Base.elim
+                                                          (λ y<x → ⊥-elim (<-irrefl x₁ (b₁ x₁ y<x)))
+                                                          (λ x<z → x<z))
+                                                         (<-cotrans y x₄ x₅ x₁))
+                                                        (b₁ x₄ x₅) i₂)
+                                                     (λ a₁ i₂ →
+                                                        lift
+                                                        (λ x₄ →
+                                                           isProp⊥
+                                                           (<-irrefl x₁
+                                                            (Cubical.HITs.PropositionalTruncation.elim
+                                                             (λ x₅ → snd (x₁ < x₁))
+                                                             (Cubical.Data.Sum.Base.elim
+                                                              (λ y<x → ⊥-elim (lower a₁ y<x))
+                                                              (λ x<z → x<z))
+                                                             (<-cotrans y x₁ x₄ x₁)))
+                                                           (lower a₁ x₄) i₂)))
+                                              ; (z = i1)
+                                                  → ((ε : Carrier) → fst (y < ε) → fst (x₁ < ε)) ,
+                                                    idEquiv
+                                                    ((ε : Carrier) → fst (y < ε) → fst (x₁ < ε))
+                                              })
+                                           _ .snd)) →
+                                     x₂ ≡ y₁)
+                                  i0
+                                  (λ { (lift p) (lift q)
+                                         → λ i₂ →
+                                             lift
+                                             (isProp[]
+                                              ((fst (y < x₁) → ⊥⊥) ,
+                                               (λ f g i₃ x₂ → isProp⊥ (f x₂) (g x₂) i₃))
+                                              p q i₂)
+                                     })
+                                  a a k
+                            ; k (i₁ = i1)
+                                → transp
+                                  (λ z →
+                                     (x₂ y₁
+                                      : Agda.Builtin.Cubical.Glue.primGlue
+                                        ((ε : Carrier) → fst (y < ε) → fst (x₁ < ε))
+                                        (λ .x₃ →
+                                           (λ { (z = i0)
+                                                  → Lift (fst (y < x₁) → ⊥⊥) ,
+                                                    isoToEquiv
+                                                    (iso
+                                                     (λ x₄ ε y<ε →
+                                                        Cubical.HITs.PropositionalTruncation.elim
+                                                        (λ x₅ → snd (x₁ < ε))
+                                                        (Cubical.Data.Sum.Base.elim
+                                                         (λ y<x → ⊥-elim (lower x₄ y<x))
+                                                         (λ x<z → x<z))
+                                                        (<-cotrans y ε y<ε x₁))
+                                                     (λ x₄ → lift (λ y<x → <-irrefl x₁ (x₄ x₁ y<x)))
+                                                     (λ b₁ i₂ x₄ x₅ →
+                                                        snd (x₁ < x₄)
+                                                        (Cubical.HITs.PropositionalTruncation.elim
+                                                         (λ x₆ → snd (x₁ < x₄))
+                                                         (Cubical.Data.Sum.Base.elim
+                                                          (λ y<x → ⊥-elim (<-irrefl x₁ (b₁ x₁ y<x)))
+                                                          (λ x<z → x<z))
+                                                         (<-cotrans y x₄ x₅ x₁))
+                                                        (b₁ x₄ x₅) i₂)
+                                                     (λ a₁ i₂ →
+                                                        lift
+                                                        (λ x₄ →
+                                                           isProp⊥
+                                                           (<-irrefl x₁
+                                                            (Cubical.HITs.PropositionalTruncation.elim
+                                                             (λ x₅ → snd (x₁ < x₁))
+                                                             (Cubical.Data.Sum.Base.elim
+                                                              (λ y<x → ⊥-elim (lower a₁ y<x))
+                                                              (λ x<z → x<z))
+                                                             (<-cotrans y x₁ x₄ x₁)))
+                                                           (lower a₁ x₄) i₂)))
+                                              ; (z = i1)
+                                                  → ((ε : Carrier) → fst (y < ε) → fst (x₁ < ε)) ,
+                                                    idEquiv
+                                                    ((ε : Carrier) → fst (y < ε) → fst (x₁ < ε))
+                                              })
+                                           _ .fst)
+                                        (λ .x₃ →
+                                           (λ { (z = i0)
+                                                  → Lift (fst (y < x₁) → ⊥⊥) ,
+                                                    isoToEquiv
+                                                    (iso
+                                                     (λ x₄ ε y<ε →
+                                                        Cubical.HITs.PropositionalTruncation.elim
+                                                        (λ x₅ → snd (x₁ < ε))
+                                                        (Cubical.Data.Sum.Base.elim
+                                                         (λ y<x → ⊥-elim (lower x₄ y<x))
+                                                         (λ x<z → x<z))
+                                                        (<-cotrans y ε y<ε x₁))
+                                                     (λ x₄ → lift (λ y<x → <-irrefl x₁ (x₄ x₁ y<x)))
+                                                     (λ b₁ i₂ x₄ x₅ →
+                                                        snd (x₁ < x₄)
+                                                        (Cubical.HITs.PropositionalTruncation.elim
+                                                         (λ x₆ → snd (x₁ < x₄))
+                                                         (Cubical.Data.Sum.Base.elim
+                                                          (λ y<x → ⊥-elim (<-irrefl x₁ (b₁ x₁ y<x)))
+                                                          (λ x<z → x<z))
+                                                         (<-cotrans y x₄ x₅ x₁))
+                                                        (b₁ x₄ x₅) i₂)
+                                                     (λ a₁ i₂ →
+                                                        lift
+                                                        (λ x₄ →
+                                                           isProp⊥
+                                                           (<-irrefl x₁
+                                                            (Cubical.HITs.PropositionalTruncation.elim
+                                                             (λ x₅ → snd (x₁ < x₁))
+                                                             (Cubical.Data.Sum.Base.elim
+                                                              (λ y<x → ⊥-elim (lower a₁ y<x))
+                                                              (λ x<z → x<z))
+                                                             (<-cotrans y x₁ x₄ x₁)))
+                                                           (lower a₁ x₄) i₂)))
+                                              ; (z = i1)
+                                                  → ((ε : Carrier) → fst (y < ε) → fst (x₁ < ε)) ,
+                                                    idEquiv
+                                                    ((ε : Carrier) → fst (y < ε) → fst (x₁ < ε))
+                                              })
+                                           _ .snd)) →
+                                     x₂ ≡ y₁)
+                                  i0
+                                  (λ { (lift p) (lift q)
+                                         → λ i₂ →
+                                             lift
+                                             (isProp[]
+                                              ((fst (y < x₁) → ⊥⊥) ,
+                                               (λ f g i₃ x₂ → isProp⊥ (f x₂) (g x₂) i₃))
+                                              p q i₂)
+                                     })
+                                  a b k
+                            ; k (j = i0)
+                                → transp
+                                  (λ z →
+                                     (x₂ y₁
+                                      : Agda.Builtin.Cubical.Glue.primGlue
+                                        ((ε : Carrier) → fst (y < ε) → fst (x₁ < ε))
+                                        (λ .x₃ →
+                                           (λ { (z = i0)
+                                                  → Lift (fst (y < x₁) → ⊥⊥) ,
+                                                    isoToEquiv
+                                                    (iso
+                                                     (λ x₄ ε y<ε →
+                                                        Cubical.HITs.PropositionalTruncation.elim
+                                                        (λ x₅ → snd (x₁ < ε))
+                                                        (Cubical.Data.Sum.Base.elim
+                                                         (λ y<x → ⊥-elim (lower x₄ y<x))
+                                                         (λ x<z → x<z))
+                                                        (<-cotrans y ε y<ε x₁))
+                                                     (λ x₄ → lift (λ y<x → <-irrefl x₁ (x₄ x₁ y<x)))
+                                                     (λ b₁ i₂ x₄ x₅ →
+                                                        snd (x₁ < x₄)
+                                                        (Cubical.HITs.PropositionalTruncation.elim
+                                                         (λ x₆ → snd (x₁ < x₄))
+                                                         (Cubical.Data.Sum.Base.elim
+                                                          (λ y<x → ⊥-elim (<-irrefl x₁ (b₁ x₁ y<x)))
+                                                          (λ x<z → x<z))
+                                                         (<-cotrans y x₄ x₅ x₁))
+                                                        (b₁ x₄ x₅) i₂)
+                                                     (λ a₁ i₂ →
+                                                        lift
+                                                        (λ x₄ →
+                                                           isProp⊥
+                                                           (<-irrefl x₁
+                                                            (Cubical.HITs.PropositionalTruncation.elim
+                                                             (λ x₅ → snd (x₁ < x₁))
+                                                             (Cubical.Data.Sum.Base.elim
+                                                              (λ y<x → ⊥-elim (lower a₁ y<x))
+                                                              (λ x<z → x<z))
+                                                             (<-cotrans y x₁ x₄ x₁)))
+                                                           (lower a₁ x₄) i₂)))
+                                              ; (z = i1)
+                                                  → ((ε : Carrier) → fst (y < ε) → fst (x₁ < ε)) ,
+                                                    idEquiv
+                                                    ((ε : Carrier) → fst (y < ε) → fst (x₁ < ε))
+                                              })
+                                           _ .fst)
+                                        (λ .x₃ →
+                                           (λ { (z = i0)
+                                                  → Lift (fst (y < x₁) → ⊥⊥) ,
+                                                    isoToEquiv
+                                                    (iso
+                                                     (λ x₄ ε y<ε →
+                                                        Cubical.HITs.PropositionalTruncation.elim
+                                                        (λ x₅ → snd (x₁ < ε))
+                                                        (Cubical.Data.Sum.Base.elim
+                                                         (λ y<x → ⊥-elim (lower x₄ y<x))
+                                                         (λ x<z → x<z))
+                                                        (<-cotrans y ε y<ε x₁))
+                                                     (λ x₄ → lift (λ y<x → <-irrefl x₁ (x₄ x₁ y<x)))
+                                                     (λ b₁ i₂ x₄ x₅ →
+                                                        snd (x₁ < x₄)
+                                                        (Cubical.HITs.PropositionalTruncation.elim
+                                                         (λ x₆ → snd (x₁ < x₄))
+                                                         (Cubical.Data.Sum.Base.elim
+                                                          (λ y<x → ⊥-elim (<-irrefl x₁ (b₁ x₁ y<x)))
+                                                          (λ x<z → x<z))
+                                                         (<-cotrans y x₄ x₅ x₁))
+                                                        (b₁ x₄ x₅) i₂)
+                                                     (λ a₁ i₂ →
+                                                        lift
+                                                        (λ x₄ →
+                                                           isProp⊥
+                                                           (<-irrefl x₁
+                                                            (Cubical.HITs.PropositionalTruncation.elim
+                                                             (λ x₅ → snd (x₁ < x₁))
+                                                             (Cubical.Data.Sum.Base.elim
+                                                              (λ y<x → ⊥-elim (lower a₁ y<x))
+                                                              (λ x<z → x<z))
+                                                             (<-cotrans y x₁ x₄ x₁)))
+                                                           (lower a₁ x₄) i₂)))
+                                              ; (z = i1)
+                                                  → ((ε : Carrier) → fst (y < ε) → fst (x₁ < ε)) ,
+                                                    idEquiv
+                                                    ((ε : Carrier) → fst (y < ε) → fst (x₁ < ε))
+                                              })
+                                           _ .snd)) →
+                                     x₂ ≡ y₁)
+                                  i0
+                                  (λ { (lift p) (lift q)
+                                         → λ i₂ →
+                                             lift
+                                             (isProp[]
+                                              ((fst (y < x₁) → ⊥⊥) ,
+                                               (λ f g i₃ x₂ → isProp⊥ (f x₂) (g x₂) i₃))
+                                              p q i₂)
+                                     })
+                                  a
+                                  (transp
+                                   (λ i₂ →
+                                      transp
+                                      (λ j₁ →
+                                         Agda.Builtin.Cubical.Glue.primGlue
+                                         ((ε : Carrier) → fst (y < ε) → fst (x₁ < ε))
+                                         (λ .x₂ →
+                                            (λ { ((i₂ ∨ ~ j₁) = i0)
+                                                   → Lift (fst (y < x₁) → ⊥⊥) ,
+                                                     isoToEquiv
+                                                     (iso
+                                                      (λ x₃ ε y<ε →
+                                                         Cubical.HITs.PropositionalTruncation.elim
+                                                         (λ x₄ → snd (x₁ < ε))
+                                                         (Cubical.Data.Sum.Base.elim
+                                                          (λ y<x → ⊥-elim (lower x₃ y<x))
+                                                          (λ x<z → x<z))
+                                                         (<-cotrans y ε y<ε x₁))
+                                                      (λ x₃ →
+                                                         lift (λ y<x → <-irrefl x₁ (x₃ x₁ y<x)))
+                                                      (λ b₁ i₃ x₃ x₄ →
+                                                         snd (x₁ < x₃)
+                                                         (Cubical.HITs.PropositionalTruncation.elim
+                                                          (λ x₅ → snd (x₁ < x₃))
+                                                          (Cubical.Data.Sum.Base.elim
+                                                           (λ y<x →
+                                                              ⊥-elim (<-irrefl x₁ (b₁ x₁ y<x)))
+                                                           (λ x<z → x<z))
+                                                          (<-cotrans y x₃ x₄ x₁))
+                                                         (b₁ x₃ x₄) i₃)
+                                                      (λ a₁ i₃ →
+                                                         lift
+                                                         (λ x₃ →
+                                                            isProp⊥
+                                                            (<-irrefl x₁
+                                                             (Cubical.HITs.PropositionalTruncation.elim
+                                                              (λ x₄ → snd (x₁ < x₁))
+                                                              (Cubical.Data.Sum.Base.elim
+                                                               (λ y<x → ⊥-elim (lower a₁ y<x))
+                                                               (λ x<z → x<z))
+                                                              (<-cotrans y x₁ x₃ x₁)))
+                                                            (lower a₁ x₃) i₃)))
+                                               ; ((i₂ ∨ ~ j₁) = i1)
+                                                   → ((ε : Carrier) → fst (y < ε) → fst (x₁ < ε)) ,
+                                                     idEquiv
+                                                     ((ε : Carrier) → fst (y < ε) → fst (x₁ < ε))
+                                               })
+                                            _ .fst)
+                                         (λ .x₂ →
+                                            (λ { ((i₂ ∨ ~ j₁) = i0)
+                                                   → Lift (fst (y < x₁) → ⊥⊥) ,
+                                                     isoToEquiv
+                                                     (iso
+                                                      (λ x₃ ε y<ε →
+                                                         Cubical.HITs.PropositionalTruncation.elim
+                                                         (λ x₄ → snd (x₁ < ε))
+                                                         (Cubical.Data.Sum.Base.elim
+                                                          (λ y<x → ⊥-elim (lower x₃ y<x))
+                                                          (λ x<z → x<z))
+                                                         (<-cotrans y ε y<ε x₁))
+                                                      (λ x₃ →
+                                                         lift (λ y<x → <-irrefl x₁ (x₃ x₁ y<x)))
+                                                      (λ b₁ i₃ x₃ x₄ →
+                                                         snd (x₁ < x₃)
+                                                         (Cubical.HITs.PropositionalTruncation.elim
+                                                          (λ x₅ → snd (x₁ < x₃))
+                                                          (Cubical.Data.Sum.Base.elim
+                                                           (λ y<x →
+                                                              ⊥-elim (<-irrefl x₁ (b₁ x₁ y<x)))
+                                                           (λ x<z → x<z))
+                                                          (<-cotrans y x₃ x₄ x₁))
+                                                         (b₁ x₃ x₄) i₃)
+                                                      (λ a₁ i₃ →
+                                                         lift
+                                                         (λ x₃ →
+                                                            isProp⊥
+                                                            (<-irrefl x₁
+                                                             (Cubical.HITs.PropositionalTruncation.elim
+                                                              (λ x₄ → snd (x₁ < x₁))
+                                                              (Cubical.Data.Sum.Base.elim
+                                                               (λ y<x → ⊥-elim (lower a₁ y<x))
+                                                               (λ x<z → x<z))
+                                                              (<-cotrans y x₁ x₃ x₁)))
+                                                            (lower a₁ x₃) i₃)))
+                                               ; ((i₂ ∨ ~ j₁) = i1)
+                                                   → ((ε : Carrier) → fst (y < ε) → fst (x₁ < ε)) ,
+                                                     idEquiv
+                                                     ((ε : Carrier) → fst (y < ε) → fst (x₁ < ε))
+                                               })
+                                            _ .snd))
+                                      i₂ a
+                                      ≡
+                                      transp
+                                      (λ j₁ →
+                                         Agda.Builtin.Cubical.Glue.primGlue
+                                         ((ε : Carrier) → fst (y < ε) → fst (x₁ < ε))
+                                         (λ .x₂ →
+                                            (λ { ((i₂ ∨ ~ j₁) = i0)
+                                                   → Lift (fst (y < x₁) → ⊥⊥) ,
+                                                     isoToEquiv
+                                                     (iso
+                                                      (λ x₃ ε y<ε →
+                                                         Cubical.HITs.PropositionalTruncation.elim
+                                                         (λ x₄ → snd (x₁ < ε))
+                                                         (Cubical.Data.Sum.Base.elim
+                                                          (λ y<x → ⊥-elim (lower x₃ y<x))
+                                                          (λ x<z → x<z))
+                                                         (<-cotrans y ε y<ε x₁))
+                                                      (λ x₃ →
+                                                         lift (λ y<x → <-irrefl x₁ (x₃ x₁ y<x)))
+                                                      (λ b₁ i₃ x₃ x₄ →
+                                                         snd (x₁ < x₃)
+                                                         (Cubical.HITs.PropositionalTruncation.elim
+                                                          (λ x₅ → snd (x₁ < x₃))
+                                                          (Cubical.Data.Sum.Base.elim
+                                                           (λ y<x →
+                                                              ⊥-elim (<-irrefl x₁ (b₁ x₁ y<x)))
+                                                           (λ x<z → x<z))
+                                                          (<-cotrans y x₃ x₄ x₁))
+                                                         (b₁ x₃ x₄) i₃)
+                                                      (λ a₁ i₃ →
+                                                         lift
+                                                         (λ x₃ →
+                                                            isProp⊥
+                                                            (<-irrefl x₁
+                                                             (Cubical.HITs.PropositionalTruncation.elim
+                                                              (λ x₄ → snd (x₁ < x₁))
+                                                              (Cubical.Data.Sum.Base.elim
+                                                               (λ y<x → ⊥-elim (lower a₁ y<x))
+                                                               (λ x<z → x<z))
+                                                              (<-cotrans y x₁ x₃ x₁)))
+                                                            (lower a₁ x₃) i₃)))
+                                               ; ((i₂ ∨ ~ j₁) = i1)
+                                                   → ((ε : Carrier) → fst (y < ε) → fst (x₁ < ε)) ,
+                                                     idEquiv
+                                                     ((ε : Carrier) → fst (y < ε) → fst (x₁ < ε))
+                                               })
+                                            _ .fst)
+                                         (λ .x₂ →
+                                            (λ { ((i₂ ∨ ~ j₁) = i0)
+                                                   → Lift (fst (y < x₁) → ⊥⊥) ,
+                                                     isoToEquiv
+                                                     (iso
+                                                      (λ x₃ ε y<ε →
+                                                         Cubical.HITs.PropositionalTruncation.elim
+                                                         (λ x₄ → snd (x₁ < ε))
+                                                         (Cubical.Data.Sum.Base.elim
+                                                          (λ y<x → ⊥-elim (lower x₃ y<x))
+                                                          (λ x<z → x<z))
+                                                         (<-cotrans y ε y<ε x₁))
+                                                      (λ x₃ →
+                                                         lift (λ y<x → <-irrefl x₁ (x₃ x₁ y<x)))
+                                                      (λ b₁ i₃ x₃ x₄ →
+                                                         snd (x₁ < x₃)
+                                                         (Cubical.HITs.PropositionalTruncation.elim
+                                                          (λ x₅ → snd (x₁ < x₃))
+                                                          (Cubical.Data.Sum.Base.elim
+                                                           (λ y<x →
+                                                              ⊥-elim (<-irrefl x₁ (b₁ x₁ y<x)))
+                                                           (λ x<z → x<z))
+                                                          (<-cotrans y x₃ x₄ x₁))
+                                                         (b₁ x₃ x₄) i₃)
+                                                      (λ a₁ i₃ →
+                                                         lift
+                                                         (λ x₃ →
+                                                            isProp⊥
+                                                            (<-irrefl x₁
+                                                             (Cubical.HITs.PropositionalTruncation.elim
+                                                              (λ x₄ → snd (x₁ < x₁))
+                                                              (Cubical.Data.Sum.Base.elim
+                                                               (λ y<x → ⊥-elim (lower a₁ y<x))
+                                                               (λ x<z → x<z))
+                                                              (<-cotrans y x₁ x₃ x₁)))
+                                                            (lower a₁ x₃) i₃)))
+                                               ; ((i₂ ∨ ~ j₁) = i1)
+                                                   → ((ε : Carrier) → fst (y < ε) → fst (x₁ < ε)) ,
+                                                     idEquiv
+                                                     ((ε : Carrier) → fst (y < ε) → fst (x₁ < ε))
+                                               })
+                                            _ .snd))
+                                      i₂ b)
+                                   i0
+                                   (λ i₂ →
+                                      lift
+                                      (λ x₂ →
+                                         isProp⊥
+                                         (<-irrefl x₁
+                                          (transp (λ i₃ → fst (x₁ < transp (λ j₁ → Carrier) i₃ x₁))
+                                           i0
+                                           (a (transp (λ j₁ → Carrier) i0 x₁)
+                                            (transp
+                                             (λ j₁ → fst (y < transp (λ j₂ → Carrier) (~ j₁) x₁)) i0
+                                             x₂))))
+                                         (<-irrefl x₁
+                                          (transp (λ i₃ → fst (x₁ < transp (λ j₁ → Carrier) i₃ x₁))
+                                           i0
+                                           (b (transp (λ j₁ → Carrier) i0 x₁)
+                                            (transp
+                                             (λ j₁ → fst (y < transp (λ j₂ → Carrier) (~ j₁) x₁)) i0
+                                             x₂))))
+                                         i₂))
+                                   i₁)
+                                  k
+                            ; k (j = i1)
+                                → transp
+                                  (λ z →
+                                     (x₂ y₁
+                                      : Agda.Builtin.Cubical.Glue.primGlue
+                                        ((ε : Carrier) → fst (y < ε) → fst (x₁ < ε))
+                                        (λ .x₃ →
+                                           (λ { (z = i0)
+                                                  → Lift (fst (y < x₁) → ⊥⊥) ,
+                                                    isoToEquiv
+                                                    (iso
+                                                     (λ x₄ ε y<ε →
+                                                        Cubical.HITs.PropositionalTruncation.elim
+                                                        (λ x₅ → snd (x₁ < ε))
+                                                        (Cubical.Data.Sum.Base.elim
+                                                         (λ y<x → ⊥-elim (lower x₄ y<x))
+                                                         (λ x<z → x<z))
+                                                        (<-cotrans y ε y<ε x₁))
+                                                     (λ x₄ → lift (λ y<x → <-irrefl x₁ (x₄ x₁ y<x)))
+                                                     (λ b₁ i₂ x₄ x₅ →
+                                                        snd (x₁ < x₄)
+                                                        (Cubical.HITs.PropositionalTruncation.elim
+                                                         (λ x₆ → snd (x₁ < x₄))
+                                                         (Cubical.Data.Sum.Base.elim
+                                                          (λ y<x → ⊥-elim (<-irrefl x₁ (b₁ x₁ y<x)))
+                                                          (λ x<z → x<z))
+                                                         (<-cotrans y x₄ x₅ x₁))
+                                                        (b₁ x₄ x₅) i₂)
+                                                     (λ a₁ i₂ →
+                                                        lift
+                                                        (λ x₄ →
+                                                           isProp⊥
+                                                           (<-irrefl x₁
+                                                            (Cubical.HITs.PropositionalTruncation.elim
+                                                             (λ x₅ → snd (x₁ < x₁))
+                                                             (Cubical.Data.Sum.Base.elim
+                                                              (λ y<x → ⊥-elim (lower a₁ y<x))
+                                                              (λ x<z → x<z))
+                                                             (<-cotrans y x₁ x₄ x₁)))
+                                                           (lower a₁ x₄) i₂)))
+                                              ; (z = i1)
+                                                  → ((ε : Carrier) → fst (y < ε) → fst (x₁ < ε)) ,
+                                                    idEquiv
+                                                    ((ε : Carrier) → fst (y < ε) → fst (x₁ < ε))
+                                              })
+                                           _ .fst)
+                                        (λ .x₃ →
+                                           (λ { (z = i0)
+                                                  → Lift (fst (y < x₁) → ⊥⊥) ,
+                                                    isoToEquiv
+                                                    (iso
+                                                     (λ x₄ ε y<ε →
+                                                        Cubical.HITs.PropositionalTruncation.elim
+                                                        (λ x₅ → snd (x₁ < ε))
+                                                        (Cubical.Data.Sum.Base.elim
+                                                         (λ y<x → ⊥-elim (lower x₄ y<x))
+                                                         (λ x<z → x<z))
+                                                        (<-cotrans y ε y<ε x₁))
+                                                     (λ x₄ → lift (λ y<x → <-irrefl x₁ (x₄ x₁ y<x)))
+                                                     (λ b₁ i₂ x₄ x₅ →
+                                                        snd (x₁ < x₄)
+                                                        (Cubical.HITs.PropositionalTruncation.elim
+                                                         (λ x₆ → snd (x₁ < x₄))
+                                                         (Cubical.Data.Sum.Base.elim
+                                                          (λ y<x → ⊥-elim (<-irrefl x₁ (b₁ x₁ y<x)))
+                                                          (λ x<z → x<z))
+                                                         (<-cotrans y x₄ x₅ x₁))
+                                                        (b₁ x₄ x₅) i₂)
+                                                     (λ a₁ i₂ →
+                                                        lift
+                                                        (λ x₄ →
+                                                           isProp⊥
+                                                           (<-irrefl x₁
+                                                            (Cubical.HITs.PropositionalTruncation.elim
+                                                             (λ x₅ → snd (x₁ < x₁))
+                                                             (Cubical.Data.Sum.Base.elim
+                                                              (λ y<x → ⊥-elim (lower a₁ y<x))
+                                                              (λ x<z → x<z))
+                                                             (<-cotrans y x₁ x₄ x₁)))
+                                                           (lower a₁ x₄) i₂)))
+                                              ; (z = i1)
+                                                  → ((ε : Carrier) → fst (y < ε) → fst (x₁ < ε)) ,
+                                                    idEquiv
+                                                    ((ε : Carrier) → fst (y < ε) → fst (x₁ < ε))
+                                              })
+                                           _ .snd)) →
+                                     x₂ ≡ y₁)
+                                  i0
+                                  (λ { (lift p) (lift q)
+                                         → λ i₂ →
+                                             lift
+                                             (isProp[]
+                                              ((fst (y < x₁) → ⊥⊥) ,
+                                               (λ f g i₃ x₂ → isProp⊥ (f x₂) (g x₂) i₃))
+                                              p q i₂)
+                                     })
+                                  a (λ x₂ x₃ → snd (x₁ < x₂) (a x₂ x₃) (b x₂ x₃) i₁) k
+                            })
+                         a
+                 })
+              (transp
+               (λ j →
+                  (x₂ y₁
+                   : Agda.Builtin.Cubical.Glue.primGlue
+                     ((ε : Carrier) → fst (y < ε) → fst (x₁ < ε))
+                     (λ .x₃ →
+                        (λ { ((i ∧ j) = i0)
+                               → Lift (fst (y < x₁) → ⊥⊥) ,
+                                 isoToEquiv
+                                 (iso
+                                  (λ x₄ ε y<ε →
+                                     Cubical.HITs.PropositionalTruncation.elim (λ x₅ → snd (x₁ < ε))
+                                     (Cubical.Data.Sum.Base.elim (λ y<x → ⊥-elim (lower x₄ y<x))
+                                      (λ x<z → x<z))
+                                     (<-cotrans y ε y<ε x₁))
+                                  (λ x₄ → lift (λ y<x → <-irrefl x₁ (x₄ x₁ y<x)))
+                                  (λ b i₁ x₄ x₅ →
+                                     snd (x₁ < x₄)
+                                     (Cubical.HITs.PropositionalTruncation.elim
+                                      (λ x₆ → snd (x₁ < x₄))
+                                      (Cubical.Data.Sum.Base.elim
+                                       (λ y<x → ⊥-elim (<-irrefl x₁ (b x₁ y<x))) (λ x<z → x<z))
+                                      (<-cotrans y x₄ x₅ x₁))
+                                     (b x₄ x₅) i₁)
+                                  (λ a i₁ →
+                                     lift
+                                     (λ x₄ →
+                                        isProp⊥
+                                        (<-irrefl x₁
+                                         (Cubical.HITs.PropositionalTruncation.elim
+                                          (λ x₅ → snd (x₁ < x₁))
+                                          (Cubical.Data.Sum.Base.elim (λ y<x → ⊥-elim (lower a y<x))
+                                           (λ x<z → x<z))
+                                          (<-cotrans y x₁ x₄ x₁)))
+                                        (lower a x₄) i₁)))
+                           ; ((i ∧ j) = i1)
+                               → ((ε : Carrier) → fst (y < ε) → fst (x₁ < ε)) ,
+                                 idEquiv ((ε : Carrier) → fst (y < ε) → fst (x₁ < ε))
+                           })
+                        _ .fst)
+                     (λ .x₃ →
+                        (λ { ((i ∧ j) = i0)
+                               → Lift (fst (y < x₁) → ⊥⊥) ,
+                                 isoToEquiv
+                                 (iso
+                                  (λ x₄ ε y<ε →
+                                     Cubical.HITs.PropositionalTruncation.elim (λ x₅ → snd (x₁ < ε))
+                                     (Cubical.Data.Sum.Base.elim (λ y<x → ⊥-elim (lower x₄ y<x))
+                                      (λ x<z → x<z))
+                                     (<-cotrans y ε y<ε x₁))
+                                  (λ x₄ → lift (λ y<x → <-irrefl x₁ (x₄ x₁ y<x)))
+                                  (λ b i₁ x₄ x₅ →
+                                     snd (x₁ < x₄)
+                                     (Cubical.HITs.PropositionalTruncation.elim
+                                      (λ x₆ → snd (x₁ < x₄))
+                                      (Cubical.Data.Sum.Base.elim
+                                       (λ y<x → ⊥-elim (<-irrefl x₁ (b x₁ y<x))) (λ x<z → x<z))
+                                      (<-cotrans y x₄ x₅ x₁))
+                                     (b x₄ x₅) i₁)
+                                  (λ a i₁ →
+                                     lift
+                                     (λ x₄ →
+                                        isProp⊥
+                                        (<-irrefl x₁
+                                         (Cubical.HITs.PropositionalTruncation.elim
+                                          (λ x₅ → snd (x₁ < x₁))
+                                          (Cubical.Data.Sum.Base.elim (λ y<x → ⊥-elim (lower a y<x))
+                                           (λ x<z → x<z))
+                                          (<-cotrans y x₁ x₄ x₁)))
+                                        (lower a x₄) i₁)))
+                           ; ((i ∧ j) = i1)
+                               → ((ε : Carrier) → fst (y < ε) → fst (x₁ < ε)) ,
+                                 idEquiv ((ε : Carrier) → fst (y < ε) → fst (x₁ < ε))
+                           })
+                        _ .snd)) →
+                  x₂ ≡ y₁)
+               (~ i)
+               (λ { (lift p) (lift q)
+                      → λ i₁ →
+                          lift
+                          (isProp[]
+                           ((fst (y < x₁) → ⊥⊥) , (λ f g i₂ x₂ → isProp⊥ (f x₂) (g x₂) i₂)) p
+                           q i₁)
+                  }))
+≤-implies-≤'' : (x₁ y : Carrier) →
+            (fst (y < x₁) → ⊥⊥) → (ε : Carrier) → fst (y < ε) → fst (x₁ < ε)
+≤-implies-≤''
+          = λ x₁ y x≤y ε y<ε →
+              Cubical.HITs.PropositionalTruncation.elim (λ x₂ → snd (x₁ < ε))
+              (Cubical.Data.Sum.Base.elim (λ y<x → ⊥-elim (x≤y y<x))
+               (λ x<z → x<z))
+              (<-cotrans y ε y<ε x₁)
+≤''-implies-≤ : (x₁ y : Carrier) →
+            ((ε : Carrier) → fst (y < ε) → fst (x₁ < ε)) → fst (y < x₁) → ⊥⊥
+≤''-implies-≤
+          = λ x₁ y x≤''y y<x → <-irrefl x₁ (x≤''y x₁ y<x)
+_≤''_ : Carrier →
+            Carrier → Σ (Type (ℓ-max ℓ ℓ')) (λ A → (x₁ y : A) → x₁ ≡ y)
+_≤''_     = λ x₁ y →
+              ((ε : Carrier) → fst (y < ε) → fst (x₁ < ε)) ,
+              (λ f g i x₂ x₃ → snd (x₁ < x₂) (f x₂ x₃) (g x₂ x₃) i)
+bridges-R3-12 : (x₁ : Carrier) →
+            (fst (x₁ < 0f) → ⊥⊥) →
+            ((ε : Carrier) → fst (0f < ε) → fst (x₁ < ε)) → x₁ ≡ 0f
+bridges-R3-12
+          = λ x₁ 0≤x [∀ε>0∶x<ε] →
+              transp
+              (λ i →
+                 fst
+                 (isTightˢ'''≡isAntisymˢ isset _<_
+                  (irrefl+trans-implies-asym _<_ <-irrefl <-trans) i))
+              i0 #-tight x₁ 0f (λ 0<x → <-irrefl x₁ ([∀ε>0∶x<ε] x₁ 0<x)) 0≤x
+bridges-R3-6 : (x₁ y z : Carrier) →
+            fst (x₁ < y) → (fst (z < y) → ⊥⊥) → fst (x₁ < z)
+bridges-R3-6
+          = λ x₁ y z x<y y≤z →
+              Cubical.HITs.PropositionalTruncation.elim (λ x₂ → snd (x₁ < z))
+              (Cubical.Data.Sum.Base.elim (λ x<z → x<z)
+               (λ z<y → ⊥-elim (y≤z z<y)))
+              (<-cotrans x₁ y x<y z)
+bridges-R3-5 : (x₁ y z : Carrier) →
+            (fst (y < x₁) → ⊥⊥) → fst (y < z) → fst (x₁ < z)
+bridges-R3-5
+          = λ x₁ y z x≤y y<z →
+              Cubical.HITs.PropositionalTruncation.elim (λ x₂ → snd (x₁ < z))
+              (Cubical.Data.Sum.Base.elim (λ y<x → ⊥-elim (x≤y y<x))
+               (λ x<z → x<z))
+              (<-cotrans y z y<z x₁)
+bridges-R3-4 : (x₁ y : Carrier) →
+            Σ (fst (x₁ < y)) (λ _ → fst (x₁ < y) → ⊥⊥) → ⊥⊥
+bridges-R3-4
+          = λ x₁ y x<y⊓y≤x → snd x<y⊓y≤x (fst x<y⊓y≤x)
+abs : Carrier → Carrier
+abs       = λ x₁ → max x₁ (- x₁)
+≤-antisym : (a b : Carrier) →
+            (fst (b < a) → ⊥⊥) → (fst (a < b) → ⊥⊥) → a ≡ b
+≤-antisym = transp
+            (λ i →
+               fst
+               (isTightˢ'''≡isAntisymˢ isset _<_
+                (irrefl+trans-implies-asym _<_ <-irrefl <-trans) i))
+            i0 #-tight
+≤-trans : (a b c : Carrier) →
+            (fst (b < a) → ⊥⊥) → (fst (c < b) → ⊥⊥) → fst (c < a) → ⊥⊥
+≤-trans   = λ a b c ¬b<a ¬c<b c<a →
+              Cubical.HITs.PropositionalTruncation.elim (λ x₁ ())
+              (Cubical.Data.Sum.Base.elim (λ c<b → ¬c<b c<b) (λ b<a → ¬b<a b<a))
+              (<-cotrans c a c<a b)
+≤-refl : (a : Carrier) → fst (a < a) → ⊥⊥
+≤-refl    = <-irrefl
+_≤_ : Carrier →
+            Carrier → Σ (Type ℓ') (λ A → (x₁ y : A) → x₁ ≡ y)
+_≤_       = λ x₁ y →
+              (fst (y < x₁) → ⊥⊥) , (λ f g i x₂ → isProp⊥ (f x₂) (g x₂) i)
+_#_ : Carrier →
+            Carrier → Σ (Type ℓ') (λ A → (x₁ y : A) → x₁ ≡ y)
+_#_       = λ x₁ y →
+              (fst (x₁ < y) ⊎ fst (y < x₁)) ,
+              isProp⊎ (snd (x₁ < y)) (snd (y < x₁))
+              (inl (irrefl+trans-implies-asym _<_ <-irrefl <-trans x₁ y))
+_-_ : Carrier → Carrier → Carrier
+_-_       = λ a b → a + - b
+<-asym : (a b : Carrier) → fst (a < b) → fst (b < a) → ⊥⊥
+<-asym    = irrefl+trans-implies-asym _<_ <-irrefl <-trans
+p : fst (x < 0f) → ⊥⊥
+x : Carrier
+0≤x² : (x₁ : Carrier) → fst (x₁ · x₁ < 0f) → ⊥⊥
+0≤sqrt : (x₁ : Carrier) ⦃ p = p₁ : ! (fst (x₁ < 0f) → ⊥⊥) ⦄ →
+            fst (sqrt x₁ < 0f) → ⊥⊥
+sqrt : (x₁ : Carrier) ⦃ _ : ! (fst (x₁ < 0f) → ⊥⊥) ⦄ → Carrier
+#-tight : (a b : Carrier) →
+            (fst (a < b) ⊎ fst (b < a) → ⊥⊥) → a ≡ b
+isset : (x₁ y : Carrier) (x₂ y₁ : x₁ ≡ y) → x₂ ≡ y₁
+<-cotrans : (a b : Carrier) →
+            fst (a < b) → (x₁ : Carrier) → ∥ fst (a < x₁) ⊎ fst (x₁ < b) ∥
+<-trans : (a b c : Carrier) →
+            fst (a < b) → fst (b < c) → fst (a < c)
+<-irrefl : (a : Carrier) → fst (a < a) → ⊥⊥
+-_ : Carrier → Carrier
+_·_ : Carrier → Carrier → Carrier
+_+_ : Carrier → Carrier → Carrier
+max : Carrier → Carrier → Carrier
+min : Carrier → Carrier → Carrier
+_<_ : Carrier →
+            Carrier → Σ (Type ℓ') (λ A → (x₁ y : A) → x₁ ≡ y)
+1f : Carrier
+0f : Carrier
+Carrier : Type ℓ
+ℓ' : Level
+ℓ : Level
+ctrl

@@ -14,15 +14,19 @@ open import Cubical.Relation.Binary.Base
 open import Cubical.Data.Sum.Base renaming (_⊎_ to infixr 4 _⊎_)
 open import Cubical.Data.Sigma.Base renaming (_×_ to infixr 4 _×_)
 open import Cubical.Data.Empty renaming (elim to ⊥-elim) -- `⊥` and `elim`
+open import Cubical.Foundations.Logic renaming (¬_ to ¬ᵖ_; inl to inlᵖ; inr to inrᵖ)
 
 open import Utils
+
+hPropRel : ∀ {ℓ} (A B : Type ℓ) (ℓ' : Level) → Type (ℓ-max ℓ (ℓ-suc ℓ'))
+hPropRel A B ℓ' = A → B → hProp ℓ'
 
 module Definitions where
   -- NOTE: one needs these "all-lowercase constructors" to make use of copatterns
 
   _Preserves_⟶_ : ∀{Aℓ Bℓ ℓ ℓ'} {A : Type Aℓ} {B : Type Bℓ} → (A → B) → Rel A A ℓ → Rel B B ℓ' → Set _
   f Preserves P ⟶ Q = ∀{x y} → P x y → Q (f x) (f y)
-  
+
   _Reflects_⟶_ : ∀{Aℓ Bℓ ℓ ℓ'} {A : Type Aℓ} {B : Type Bℓ} → (A → B) → Rel A A ℓ → Rel B B ℓ' → Set _
   f Reflects P ⟶ Q = ∀{x y} → Q (f x) (f y) → P x y
 
@@ -41,23 +45,23 @@ module Definitions where
   -- ...
   --
   -- 3.1 Dcpos
-  -- 
+  --
   -- We start by defining partial orders. By a binary relation R on a set X , we mean a map X → X → HProp, as in Definition 2.7.1.
   -- We can specify which universe the binary relation lands in by saying that R is HPropᵢ-valued or is a relation in universe i if R : X → X → HPropᵢ.
   --
   -- Definition 3.1.1. A binary relation R on a set X is
-  -- 
+  --
   -- 1. reflexive     if (∀ x       : X)   R x x;
   -- 2. irreflexive   if (∀ x       : X) ¬ R x x;
   -- 3. symmetric     if (∀ x, y    : X)   R x y ⇒ R y x;
   -- 4. antisymmetric if (∀ x, y    : X)   R x y ⇒ R y x ⇒ x = y;
   -- 5. transitive    if (∀ x, y, z : X)   R x y ⇒ R y z ⇒ R x z;
   -- 6. cotransitive  if (∀ x, y, z : X)   R x y ⇒ (R x z) ∨ (R z y).
-  -- 
+  --
   -- Remark 3.1.2. Cotransitivity is also known as weak linearity [91, Definition 11.2.7] or the approximate splitting principle [84].
-  -- 
+  --
   -- Definition 3.1.3.
-  -- 
+  --
   -- A preorder, denoted by ≤, is a reflexive transitive relation.
   -- A partial order is an antisymmetric preorder.
 
@@ -71,11 +75,67 @@ module Definitions where
   IsCotrans : {ℓ ℓ' : Level} {A : Type ℓ} → (R : Rel A A ℓ') → Type (ℓ-max ℓ ℓ')
   IsCotrans {A = A} R = (a b : A) → R a b → (∀(x : A) → (R a x) ⊎ (R x b))
 
+  -- NOTE: see Cubical.Structures.Poset
+  IsSymᵖ : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
+  IsSymᵖ {A = A} R = (a b : A) → [ R a b ] → [ R b a ]
+
+  IsIrreflᵖ : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
+  IsIrreflᵖ {A = A} R = (a : A) → [ ¬ᵖ(R a a) ]
+
+  IsCotransᵖ : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
+  IsCotransᵖ {A = A} R = (a b : A) → [ R a b ] → (∀(x : A) → [ (R a x) ⊔ (R x b) ])
+
+  {- NOTE: formulating the properties on witnesses with `[_]` is similar to the previous Propositions-as-types formalism
+           but it is not the way to proceed with hProps
+           the idea is, to produce an hProp again
+           e.g. from `Cubical.Structures.Poset`
+             isTransitive : {A : Type ℓ₀} → Order ℓ₁ A → hProp (ℓ-max ℓ₀ ℓ₁)
+             isTransitive {ℓ₀ = ℓ₀} {ℓ₁ = ℓ₁} {A = X} _⊑_ = φ , φ-prop
+               where
+                 φ      : Type (ℓ-max ℓ₀ ℓ₁)
+                 φ      = ((x y z : X) → [ x ⊑ y ⇒ y ⊑ z ⇒ x ⊑ z ])
+                 φ-prop : isProp φ
+                 φ-prop = isPropΠ3 λ x y z → snd (x ⊑ y ⇒ y ⊑ z ⇒ x ⊑ z)
+  -}
+  IsTransᵖ : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
+  IsTransᵖ {A = A} R = (a b c : A)  → [ R a b ] → [ R b c ] → [ R a c ]
+
+  -- NOTE: this is starting with a lower-case, because `hProp (ℓ-max ℓ ℓ')` is not a type but an element
+  isTransᵖ : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
+  isTransᵖ {ℓ} {ℓ'} {A = A} R = φ , φ-prop
+    where
+      φ : Type (ℓ-max ℓ ℓ')
+      φ = (a b c : A) → [ R a b ⇒ R b c ⇒ R a c ]
+      φ-prop : isProp φ
+      φ-prop = isPropΠ3 λ a b c → snd (R a b ⇒ R b c ⇒ R a c)
+
+  isIrreflᵖ : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
+  isIrreflᵖ {ℓ} {ℓ'} {A = A} R = φ , φ-prop
+    where
+      φ : Type (ℓ-max ℓ ℓ')
+      φ = (a : A) → [ ¬ᵖ (R a a) ]
+      φ-prop : isProp φ
+      φ-prop = isPropΠ λ a → snd (¬ᵖ (R a a))
+
+  isCotransᵖ : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
+  isCotransᵖ {ℓ} {ℓ'} {A = A} R = φ , φ-prop
+    where
+      φ : Type (ℓ-max ℓ ℓ')
+      φ = (a b : A) → [ R a b ⇒ (∀[ x ∶ A ] (R a x) ⊔ (R x b)) ]
+      φ-prop : isProp φ
+      φ-prop = isPropΠ2 λ a b → snd (R a b ⇒ (∀[ x ∶ A ] (R a x) ⊔ (R x b)))
+
   record IsApartnessRel {ℓ ℓ' : Level} {A : Type ℓ} (R : Rel A A ℓ') : Type (ℓ-max ℓ ℓ') where
     field
       isIrrefl  : IsIrrefl R
       isSym     : BinaryRelation.isSym R
       isCotrans : IsCotrans R
+
+  record IsApartnessRelᵖ {ℓ ℓ' : Level} {A : Type ℓ} (R : hPropRel A A ℓ') : Type (ℓ-max ℓ ℓ') where
+    field
+      isIrrefl  : IsIrreflᵖ R
+      isSym     : IsSymᵖ R
+      isCotrans : IsCotransᵖ R
 
   record IsStrictPartialOrder {ℓ ℓ' : Level} {A : Type ℓ} (R : Rel A A ℓ') : Type (ℓ-max ℓ ℓ') where
     constructor isstrictpartialorder
@@ -83,6 +143,38 @@ module Definitions where
       isIrrefl  : IsIrrefl R
       isTrans   : BinaryRelation.isTrans R
       isCotrans : IsCotrans R
+
+  record IsStrictPartialOrderᵖ {ℓ ℓ' : Level} {A : Type ℓ} (R : hPropRel A A ℓ') : Type (ℓ-max ℓ ℓ') where
+    constructor isstrictpartialorderᵖ
+    field
+      isIrrefl  : IsIrreflᵖ R
+      isTrans   : IsTransᵖ R
+      isCotrans : IsCotransᵖ R
+
+  {- NOTE: here again, the previous-way-interpretation would be to put witnesses into the struct with `[_]`
+           but with hProps, we would have `isStrictPartialOrder : hProp`
+           and use `[ isStrictPartialOrder ]` as the witness type
+           with hProps we would need to make heavy use of `Cubical.Foundations.HLevels`
+             isProp×, isProp×2, isProp×3
+           to show the record's `isProp`
+           do we have pathes on records? in order to use `isProp` on records?
+             yes, with record constructors
+  -}
+  record [IsStrictPartialOrder] {ℓ ℓ' : Level} {A : Type ℓ} (R : hPropRel A A ℓ') : Type (ℓ-max ℓ ℓ') where
+    constructor isstrictpartialorderᵖ
+    field
+      isIrrefl  : [ isIrreflᵖ  R ]
+      isTrans   : [ isTransᵖ   R ]
+      isCotrans : [ isCotransᵖ R ]
+
+  isStrictParialOrder : {ℓ ℓ' : Level} {A : Type ℓ} (R : hPropRel A A ℓ') → hProp (ℓ-max ℓ ℓ')
+  isStrictParialOrder R = [IsStrictPartialOrder] R , φ-prop where
+    φ-prop :      isProp ([IsStrictPartialOrder] R)
+    φ-prop (isstrictpartialorderᵖ isIrrefl₀ isTrans₀ isCotrans₀)
+           (isstrictpartialorderᵖ isIrrefl₁ isTrans₁ isCotrans₁) =
+      λ i → isstrictpartialorderᵖ (isProp[] (isIrreflᵖ  R) isIrrefl₀  isIrrefl₁  i)
+                                  (isProp[] (isTransᵖ   R) isTrans₀   isTrans₁   i)
+                                  (isProp[] (isCotransᵖ R) isCotrans₀ isCotrans₁ i)
 
   record IsPreorder {ℓ ℓ' : Level} {A : Type ℓ} (R : Rel A A ℓ') : Type (ℓ-max ℓ ℓ') where
     constructor ispreorder
@@ -93,6 +185,7 @@ module Definitions where
   -- NOTE: there is already
   --       isAntisym : {A : Type ℓ₀} → isSet A → Order ℓ₁ A → hProp (ℓ-max ℓ₀ ℓ₁)
   --       in Cubical.Structures.Poset. Can we use this?
+  import Cubical.Structures.Poset
 
   IsAntisym : {ℓ ℓ' : Level} {A : Type ℓ} → (R : Rel A A ℓ') → Type (ℓ-max ℓ ℓ')
   IsAntisym {A = A} R = ∀ a b → R a b → R b a → a ≡ b
@@ -119,7 +212,7 @@ module Definitions where
 -- TODO: check whether this matches the wording of the (old) standard library
 module Consequences where
   open Definitions
-  
+
   -- Lemma 4.1.7.
   -- Given a strict partial order < on a set X:
   -- 1. we have an apartness relation defined by
@@ -176,7 +269,7 @@ module Consequences where
     (let (isstrictpartialorder <-irrefl <-trans <-cotrans) = isSPO)
     where
     -- open IsStrictPartialOrder isSPO
-    
+
     #-from-<-isProp : ∀ x y → isProp (x # y)
     #-from-<-isProp x y (inl x<y₁) (inl x<y₂) = cong inl (<-isProp x y x<y₁ x<y₂)
     -- NOTE: ⊥-elim could not resolve the level here and needed some hint on `A`
@@ -197,7 +290,7 @@ module Properties where
 
       invUniqueL : {g h : Carrier} → g + h ≡ 0g → g ≡ - h
       invUniqueL {g} {h} p = simplR h (p ∙ sym (invl h))
-      
+
       -- ported from `Algebra.Properties.Group`
       right-helper : ∀ x y → y ≡ - x + (x + y)
       right-helper x y = (
@@ -218,7 +311,7 @@ module Properties where
         (- (- x)) + (- x + x) ≡⟨ sym (right-helper (- x) x) ⟩
         x                    ∎)
 
-  module _ where  
+  module _ where
     open import Cubical.Structures.Ring
     module RingProperties (R : Ring {ℓ}) where
       open Ring R
@@ -261,18 +354,16 @@ module Properties where
             Q = transport (λ i →  a · snd (+-inv b) (~ i) ≡ 0r) P
             R : a · (- b) + a · b ≡ 0r
             R = transport (λ i → ·-rdist-+ a (- b) b i ≡ 0r) Q
-        in a+b≡0→a≡-b R 
+        in a+b≡0→a≡-b R
 
       a·b-a·c≡a·[b-c] : ∀ a b c → a · b - (a · c) ≡ a · (b - c)
       a·b-a·c≡a·[b-c] a b c =
         let P : a · b + a · (- c) ≡ a · (b + - c)
             P = sym (·-rdist-+ a b (- c))
             Q : a · b - a · c ≡ a · (b + - c)
-            Q = transport (λ i →  a · b + a·-b≡-a·b a c i ≡ a · (b + - c) ) P 
+            Q = transport (λ i →  a · b + a·-b≡-a·b a c i ≡ a · (b + - c) ) P
         in  Q
 
-  -- exports  
+  -- exports
   module Group = GroupProperties
   module Ring  = RingProperties
-
-
