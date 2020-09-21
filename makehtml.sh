@@ -14,6 +14,12 @@ agda --html --html-highlight=auto --html-dir=../html HTML.lagda.md
 agda --html --html-dir=../html Number/Instances/Int.agda
 agda --html --html-dir=../html Number/Instances/QuoInt.agda
 
+cd MorePropAlgebra/Properties
+
+while read f; do agda --html --html-dir=../html $f; done < <(ls -1 *.agda)
+
+cd -
+
 cd ..
 
 cd html

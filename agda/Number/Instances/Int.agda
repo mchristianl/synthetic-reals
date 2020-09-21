@@ -319,7 +319,7 @@ abstract
 
   -- usage count: 11 - 14
   pos+pos≡+ⁿ : ∀ a x → (pos a +pos x) ≡ pos (a +ⁿ x)
-  pos+pos≡+ⁿ a zero = λ i → pos $ +ⁿ-comm 0 a i
+  pos+pos≡+ⁿ a  zero   = λ i → pos $ +ⁿ-comm 0 a i
   pos+pos≡+ⁿ a (suc x) = let r = pos+pos≡+ⁿ a x in
     sucInt (pos a +pos x) ≡⟨ (λ i → sucInt $ r i) ⟩
     sucInt (pos (a +ⁿ x)) ≡⟨ refl ⟩
@@ -328,7 +328,7 @@ abstract
 
   -- usage count: 7 - 8
   negsuc+negsuc≡+ⁿ : ∀ a x → (negsuc a +negsuc x) ≡ negsuc (suc (a +ⁿ x))
-  negsuc+negsuc≡+ⁿ a zero = λ i → negsuc $ suc $ +ⁿ-comm 0 a i
+  negsuc+negsuc≡+ⁿ a  zero   = λ i → negsuc $ suc $ +ⁿ-comm 0 a i
   negsuc+negsuc≡+ⁿ a (suc x) = let r = negsuc+negsuc≡+ⁿ a x in
     predInt (negsuc a +negsuc x)    ≡⟨ (λ i → predInt (r i)) ⟩
     predInt (negsuc (suc (a +ⁿ x))) ≡⟨ refl ⟩
@@ -337,44 +337,44 @@ abstract
 
   -- usage count: 6 - 7
   +negsuc-identityˡ : ∀ x → 0 +negsuc x ≡ negsuc x
-  +negsuc-identityˡ zero = refl
+  +negsuc-identityˡ  zero   = refl
   +negsuc-identityˡ (suc x) = λ i → predInt $ +negsuc-identityˡ x i
 
   -- usage count: 0
   pos+negsuc≡⊎ : ∀ a b → (Σ[ y ∈ ℕ ] pos a +negsuc b ≡ pos y) ⊎ (Σ[ y ∈ ℕ ] pos a +negsuc b ≡ negsuc y)
-  pos+negsuc≡⊎ zero zero = inr (0 , refl)
-  pos+negsuc≡⊎ (suc a) zero = inl (a , refl)
-  pos+negsuc≡⊎ zero (suc b) = inr (suc b , λ i → predInt $ +negsuc-identityˡ b i)
+  pos+negsuc≡⊎  zero    zero   = inr (0 , refl)
+  pos+negsuc≡⊎ (suc a)  zero   = inl (a , refl)
+  pos+negsuc≡⊎  zero   (suc b) = inr (suc b , λ i → predInt $ +negsuc-identityˡ b i)
   pos+negsuc≡⊎ (suc a) (suc b) with pos+negsuc≡⊎ a b
   ... | inl (y , p) = inl (y , predInt+negsuc b (pos (suc a)) ∙ p)
   ... | inr (y , p) = inr (y , predInt+negsuc b (pos (suc a)) ∙ p)
 
   -- usage count: 0
   negsuc+pos≡⊎ : ∀ a b → (Σ[ y ∈ ℕ ] negsuc a +pos b ≡ pos y) ⊎ (Σ[ y ∈ ℕ ] negsuc a +pos b ≡ negsuc y)
-  negsuc+pos≡⊎ zero zero = inr (0 , refl)
-  negsuc+pos≡⊎ (suc a) zero = inr (suc a , refl)
-  negsuc+pos≡⊎ zero (suc b) = inl (b , sucInt+pos b (negsuc 0) ∙ +-identityˡ (pos b))
+  negsuc+pos≡⊎  zero    zero   = inr (0 , refl)
+  negsuc+pos≡⊎ (suc a)  zero   = inr (suc a , refl)
+  negsuc+pos≡⊎  zero   (suc b) = inl (b , sucInt+pos b (negsuc 0) ∙ +-identityˡ (pos b))
   negsuc+pos≡⊎ (suc a) (suc b) with negsuc+pos≡⊎ a b
   ... | inl (y , p) = inl (y , sucInt+pos b (negsuc (suc a)) ∙ p)
   ... | inr (y , p) = inr (y , sucInt+pos b (negsuc (suc a)) ∙ p)
 
   -- usage count: 4 - 6
   pos+negsuc≡negsuc+pos : ∀ a b → pos a +negsuc b ≡ negsuc b +pos a
-  pos+negsuc≡negsuc+pos a zero = (λ i → predInt $ pos+pos≡+ⁿ 0 a (~ i)) ∙ predInt+pos a 0
+  pos+negsuc≡negsuc+pos a  zero   = (λ i → predInt $ pos+pos≡+ⁿ 0 a (~ i)) ∙ predInt+pos a 0
   pos+negsuc≡negsuc+pos a (suc b) = (λ i → predInt $ pos+negsuc≡negsuc+pos a b i) ∙ predInt+ (negsuc b) (pos a)
 
   -- usage count: 0 - 1
   predInt- : ∀ a → predInt (- a) ≡ - (sucInt a)
-  predInt- (pos zero) = refl
-  predInt- (pos (suc n)) = refl
-  predInt- (negsuc zero) = refl
+  predInt- (pos     zero  ) = refl
+  predInt- (pos    (suc n)) = refl
+  predInt- (negsuc  zero  ) = refl
   predInt- (negsuc (suc n)) = refl
 
   -- usage count: 2 - 3
   pos+negsuc-swap : ∀ a b → pos (suc a) +negsuc b ≡ -(pos (suc b) + negsuc a)
-  pos+negsuc-swap zero zero = refl
-  pos+negsuc-swap (suc a) zero = λ i → - (predInt+negsuc a 1 ∙ +negsuc-identityˡ a) (~ i)
-  pos+negsuc-swap a (suc b) =
+  pos+negsuc-swap  zero    zero   = refl
+  pos+negsuc-swap (suc a)  zero   = λ i → - (predInt+negsuc a 1 ∙ +negsuc-identityˡ a) (~ i)
+  pos+negsuc-swap      a  (suc b) =
     predInt (pos (suc a) +negsuc b)     ≡⟨ (λ i → predInt $ pos+negsuc-swap a b i) ⟩
     predInt (- (pos (suc b) +negsuc a)) ≡⟨ predInt- (pos (suc b) +negsuc a) ⟩
     - sucInt (pos (suc b) +negsuc a)    ≡⟨ (λ i → - sucInt+negsuc a (pos (suc b)) i) ⟩
@@ -394,7 +394,7 @@ abstract
 
   -- usage count: 1
   +pos-inverse : ∀ a → negsuc a +pos a ≡ negsuc 0
-  +pos-inverse zero = refl
+  +pos-inverse  zero   = refl
   +pos-inverse (suc a) = sucInt+pos a (negsuc (suc a)) ∙ +pos-inverse a
 
   -- usage count: 1
@@ -522,10 +522,10 @@ abstract
 
 abstract
   +-preserves-< : ∀ a b x → [ a < b ] → [ (a + x) < (b + x) ]
-  +-preserves-< a b (pos zero) a<b = a<b
-  +-preserves-< a b (pos (suc n)) a<b = let r = +-preserves-< a b (pos n) a<b
-                                        in sucInt-preserves-< (a +pos n) (b +pos n) r
-  +-preserves-< a b (negsuc zero) a<b = predInt-preserves-< a b a<b
+  +-preserves-< a b (pos     zero  ) a<b = a<b
+  +-preserves-< a b (pos    (suc n)) a<b = let r = +-preserves-< a b (pos n) a<b
+                                           in sucInt-preserves-< (a +pos n) (b +pos n) r
+  +-preserves-< a b (negsuc  zero  ) a<b = predInt-preserves-< a b a<b
   +-preserves-< a b (negsuc (suc n)) a<b = let r = +-preserves-< a b (negsuc n) a<b
                                            in predInt-preserves-< (a +negsuc n) (b +negsuc n) r
 
@@ -555,15 +555,15 @@ abstract
 abstract
   -- equality of _*_ and _*'_
   *≡*' : ∀ x y → x * y ≡ x *' y
-  *≡*' (pos a) (pos b) = refl
-  *≡*' (pos zero) (negsuc b) = refl
+  *≡*' (pos      a ) (pos    b) = refl
+  *≡*' (pos  zero  ) (negsuc b) = refl
   *≡*' (pos (suc a)) (negsuc b) =
     negsuc   (a *ⁿ b +ⁿ (a +ⁿ b))  ≡⟨ (λ i → negsuc $ lemma1 a b i) ⟩
     negsuc   (b +ⁿ a *ⁿ suc b)     ≡⟨ refl ⟩
     neg (suc (b +ⁿ a *ⁿ suc b))    ∎
-  *≡*' (negsuc a) (pos zero) = λ i → signed sneg $ *ⁿ-nullifiesʳ a (~ i)
+  *≡*' (negsuc a) (pos  zero  ) = λ i → signed sneg $ *ⁿ-nullifiesʳ a (~ i)
   *≡*' (negsuc a) (pos (suc b)) = λ i → negsuc $ lemma1 a b i
-  *≡*' (negsuc a) (negsuc b) = refl
+  *≡*' (negsuc a) (negsuc   b ) = refl
 
   *'-nullifiesʳ : ∀ x → x *' 0 ≡ 0
   *'-nullifiesʳ (pos    n) i = signed spos (*ⁿ-nullifiesʳ n i)
