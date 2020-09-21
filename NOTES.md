@@ -3175,3 +3175,69 @@ or does it?
 -- (ε : Carrier) (0<ε : [ 0f < ε ]) → [ 0f < x ⊔ x < ε ]
 -- (ε : Carrier) (0<ε : [ 0f < ε ]) → [ 0f < x ] ⊎ [ x < ε ]
 ```
+
+## a failed proof attempt for associativity on Int
+
+I ended up porting the proof from the noncubical standard library.
+
+```agda
+*-assoc : ∀ a b c → (a * b) * c ≡ a * (b * c)
+*-assoc (pos zero) b c =
+  (pos 0 * b) * c  ≡⟨ (λ i → *-nullifiesˡ b i * c) ⟩
+   pos 0      * c  ≡⟨ *-nullifiesˡ c ⟩
+   pos 0           ≡⟨ sym $ *-nullifiesˡ (b * c) ⟩
+   pos 0 * (b * c) ∎
+*-assoc (pos (suc n)) b c = let r = *-assoc (pos n) b c in *-assoc-ind n b c r where
+  *-assoc-ind : ∀ n b c
+              → ((pos n * b) * c) ≡ (pos n * (b * c))
+              → ((pos (suc n) * b) * c) ≡ (pos (suc n) * (b * c))
+  *-assoc-ind n (pos      b ) (pos      c ) p = {!    !}
+    -- pos ((b +ⁿ n *ⁿ b) *ⁿ c)
+    -- pos (b *ⁿ c +ⁿ (n *ⁿ b) *ⁿ c)
+    -- pos (b *ⁿ c +ⁿ n *ⁿ (b *ⁿ c))
+  *-assoc-ind n (pos  zero  ) (negsuc   c ) p = p
+  *-assoc-ind n (pos (suc b)) (negsuc   c ) p = {!   !}
+    -- (b+n(b+1))c+(b+n(b+1)+c)
+    -- (b+nb+n)c+b+nb+n+c
+    -- bc+nbc+nc+b+nb+n+c
+    -- bc+nbc+nc+n+nb+b+c
+    -- nb+nbc+nc+n+bc+b+c
+    -- nbc+nb+nc+n+bc+b+c
+    -- n(bc+b+c)+n+bc+b+c
+    -- negsuc ((b +ⁿ n *ⁿ suc b) *ⁿ c +ⁿ (b +ⁿ n *ⁿ suc b +ⁿ c))
+    -- negsuc (n *ⁿ (b *ⁿ c +ⁿ (b +ⁿ c)) +ⁿ (n +ⁿ (b *ⁿ c +ⁿ (b +ⁿ c))))
+  *-assoc-ind n (negsuc   b ) (pos  zero  ) p = λ i → pos $ *ⁿ-nullifiesʳ n (~ i)
+  *-assoc-ind n (negsuc   b ) (pos (suc c)) p = {!   !}
+    -- negsuc ((n *ⁿ b +ⁿ (n +ⁿ b)) *ⁿ c +ⁿ (n *ⁿ b +ⁿ (n +ⁿ b) +ⁿ c))
+    -- negsuc (n *ⁿ (b *ⁿ c +ⁿ (b +ⁿ c)) +ⁿ (n +ⁿ (b *ⁿ c +ⁿ (b +ⁿ c))))
+  *-assoc-ind n (negsuc   b ) (negsuc   c ) p = {!   !}
+    -- pos (suc (c +ⁿ (n *ⁿ b +ⁿ (n +ⁿ b)) *ⁿ suc c))
+    -- pos (suc (c +ⁿ b *ⁿ suc c +ⁿ n *ⁿ suc (c +ⁿ b *ⁿ suc c)))
+*-assoc (negsuc zero) b c =
+  (negsuc 0 * b) * c  ≡⟨ (λ i → -1*≡- b i * c) ⟩
+  (         - b) * c  ≡⟨ sym $ -distrˡ b c ⟩
+            - (b * c) ≡⟨ sym $ -1*≡- (b * c) ⟩
+   negsuc 0 * (b * c) ∎
+*-assoc (negsuc (suc n)) b c = let r = *-assoc (negsuc n) b c in *-assoc-ind n b c r where
+  *-assoc-ind : ∀ n b c
+              → ((negsuc n * b) * c) ≡ (negsuc n * (b * c))
+              → ((negsuc (suc n) * b) * c) ≡ (negsuc (suc n) * (b * c))
+  *-assoc-ind n (pos  zero  ) (pos      c ) p = refl
+  *-assoc-ind n (pos (suc b)) (pos      c ) p = {!   !}
+    -- negsuc (b +ⁿ n *ⁿ b +ⁿ suc (n +ⁿ b)) * pos c
+    -- negsuc (suc n) * pos (c +ⁿ b *ⁿ c)
+  *-assoc-ind n (pos  zero  ) (negsuc   c ) p = p
+  *-assoc-ind n (pos (suc b)) (negsuc   c ) p = {!   !}
+    -- pos (suc (c +ⁿ (b +ⁿ n *ⁿ b +ⁿ suc (n +ⁿ b)) *ⁿ suc c))
+    -- pos (suc (b *ⁿ c +ⁿ (b +ⁿ c) +ⁿ suc (b *ⁿ c +ⁿ (b +ⁿ c) +ⁿ n *ⁿ suc (b *ⁿ c +ⁿ (b +ⁿ c)))))
+  *-assoc-ind n (negsuc   b ) (pos  zero  ) p = λ i → pos $ *ⁿ-nullifiesʳ (b +ⁿ suc (b +ⁿ n *ⁿ suc b)) i
+  *-assoc-ind n (negsuc   b ) (pos (suc c)) p = {!   !}
+    -- pos (suc (c +ⁿ (b +ⁿ suc (b +ⁿ n *ⁿ suc b)) *ⁿ suc c)) ≡
+    -- pos (suc (b *ⁿ c +ⁿ (b +ⁿ c) +ⁿ suc (b *ⁿ c +ⁿ (b +ⁿ c) +ⁿ n *ⁿ suc (b *ⁿ c +ⁿ (b +ⁿ c)))))
+  *-assoc-ind n (negsuc   b ) (negsuc   c ) p = {!   !}
+    -- negsuc ((b +ⁿ suc (b +ⁿ n *ⁿ suc b)) *ⁿ c +ⁿ (b +ⁿ suc (b +ⁿ n *ⁿ suc b) +ⁿ c))
+    -- negsuc (c +ⁿ b *ⁿ suc c +ⁿ n *ⁿ (c +ⁿ b *ⁿ suc c) +ⁿ suc (n +ⁿ (c +ⁿ b *ⁿ suc c)))
+
+*-assocᵖ : ∀{ℓ} {A : Type ℓ} (isset : isSet A) (_*_ : A → A → A) → hProp ℓ
+*-assocᵖ isset _*_ =  ∀[ a ] ∀[ b ] ∀[ c ] ([ isset ] a * (b * c) ≡ˢ (a * b) * c)
+```
