@@ -4,7 +4,7 @@ open import Cubical.Foundations.Everything renaming (_⁻¹ to _⁻¹ᵖ; assoc 
 open import Function.Base using (_∋_)
 open import MorePropAlgebra.Bundles
 
-import Cubical.Structures.AbGroup as Std
+import Cubical.Algebra.AbGroup as Std
 
 module MorePropAlgebra.Properties.AbGroup {ℓ} (assumptions : AbGroup {ℓ}) where
 open AbGroup assumptions renaming (Carrier to G)
