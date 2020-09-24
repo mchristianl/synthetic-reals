@@ -140,6 +140,9 @@ signed sneg (suc x) = neg (suc x)
 
 infix 8 -_
 infix 7 _*_
+infix 7 _*'_
+infix 7 _*''_
+infixl 4 _<_
 
 -- multiplication on integers
 -- NOTE: this definition leads to a lot cases and a lot of calculations
