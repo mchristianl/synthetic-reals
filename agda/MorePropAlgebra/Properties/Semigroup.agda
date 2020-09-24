@@ -1,7 +1,7 @@
 {-# OPTIONS --cubical --no-import-sorts  #-}
 
 open import Cubical.Foundations.Everything renaming (_⁻¹ to _⁻¹ᵖ; assoc to ∙-assoc)
-import Cubical.Structures.Semigroup as Std
+import Cubical.Algebra.Semigroup as Std
 open import MorePropAlgebra.Bundles
 
 module MorePropAlgebra.Properties.Semigroup {ℓ} (assumptions : Semigroup {ℓ}) where

@@ -4,7 +4,7 @@ open import Cubical.Foundations.Everything renaming (_⁻¹ to _⁻¹ᵖ; assoc 
 open import Function.Base using (_∋_; _$_)
 
 open import MorePropAlgebra.Bundles
-import Cubical.Structures.Ring as Std
+import Cubical.Algebra.Ring as Std
 
 module MorePropAlgebra.Properties.Ring {ℓ} (assumptions : Ring {ℓ}) where
 open Ring assumptions renaming (Carrier to R)

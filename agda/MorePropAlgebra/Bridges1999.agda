@@ -22,7 +22,7 @@ open import Cubical.Data.Unit.Base using (Unit)
 import Data.Sum
 import Cubical.Data.Sigma
 
-import Cubical.Structures.CommRing
+import Cubical.Algebra.CommRing
 
 import Cubical.Core.Primitives
 import Agda.Builtin.Cubical.Glue

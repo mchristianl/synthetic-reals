@@ -3,7 +3,7 @@
 
 open import Cubical.Foundations.Everything renaming (_⁻¹ to _⁻¹ᵖ; assoc to ∙-assoc)
 open import Function.Base using (_∋_)
-import Cubical.Structures.Group as Std
+import Cubical.Algebra.Group as Std
 -- import Cubical.Structures.Group.Properties
 open import MorePropAlgebra.Bundles
 

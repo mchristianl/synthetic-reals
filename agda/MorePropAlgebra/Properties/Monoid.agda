@@ -2,7 +2,7 @@
 
 open import Cubical.Foundations.Everything renaming (_⁻¹ to _⁻¹ᵖ; assoc to ∙-assoc)
 open import Function.Base using (_∋_; _$_)
-import Cubical.Structures.Monoid as Std
+import Cubical.Algebra.Monoid as Std
 open import MorePropAlgebra.Bundles
 
 module MorePropAlgebra.Properties.Monoid {ℓ} (assumptions : Monoid {ℓ}) where
