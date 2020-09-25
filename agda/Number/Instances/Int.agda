@@ -243,6 +243,16 @@ private
               suc (n +ⁿ (m +ⁿ n *ⁿ suc (suc m))) ≡⟨ refl ⟩
               suc n +ⁿ (m +ⁿ n *ⁿ suc (suc m))   ∎
 
+    lemma7 : ∀ a b → b +ⁿ a *ⁿ suc b ≡ a +ⁿ b *ⁿ suc a
+    lemma7 a b =
+      b +ⁿ a *ⁿ suc b    ≡⟨ (λ i → b +ⁿ *ⁿ-suc a b i) ⟩
+      b +ⁿ (a +ⁿ a *ⁿ b) ≡⟨ (λ i → +ⁿ-assoc b a (a *ⁿ b) i) ⟩
+      (b +ⁿ a) +ⁿ a *ⁿ b ≡⟨ (λ i → +ⁿ-comm b a i +ⁿ a *ⁿ b) ⟩
+      (a +ⁿ b) +ⁿ a *ⁿ b ≡⟨ (λ i → +ⁿ-assoc a b (a *ⁿ b) (~ i)) ⟩
+      a +ⁿ (b +ⁿ a *ⁿ b) ≡⟨ (λ i → a +ⁿ (b +ⁿ *ⁿ-comm a b i)) ⟩
+      a +ⁿ (b +ⁿ b *ⁿ a) ≡⟨ (λ i → a +ⁿ *ⁿ-suc b a (~ i)) ⟩
+      a +ⁿ b *ⁿ suc a    ∎
+
 abstract
   <-irrefl : (a : ℤ) → [ ¬ (a < a) ]
   <-irrefl (pos  zero  ) = <ⁿ-irrefl 0
@@ -595,14 +605,7 @@ abstract
   *-comm (pos (suc a)) (negsuc   b ) = λ i → negsuc $ *ⁿ-comm a b i +ⁿ +ⁿ-comm a b i
   *-comm (negsuc   a ) (pos  zero  ) = refl
   *-comm (negsuc   a ) (pos (suc b)) = λ i → negsuc $ *ⁿ-comm a b i +ⁿ +ⁿ-comm a b i
-  *-comm (negsuc   a ) (negsuc   b ) =
-    pos (suc (b +ⁿ a *ⁿ suc b))    ≡⟨ (λ i → pos $ suc $ b +ⁿ *ⁿ-suc a b i) ⟩
-    pos (suc (b +ⁿ (a +ⁿ a *ⁿ b))) ≡⟨ (λ i → pos $ suc $ +ⁿ-assoc b a (a *ⁿ b) i) ⟩
-    pos (suc ((b +ⁿ a) +ⁿ a *ⁿ b)) ≡⟨ (λ i → pos $ suc $ +ⁿ-comm b a i +ⁿ a *ⁿ b) ⟩
-    pos (suc ((a +ⁿ b) +ⁿ a *ⁿ b)) ≡⟨ (λ i → pos $ suc $ +ⁿ-assoc a b (a *ⁿ b) (~ i)) ⟩
-    pos (suc (a +ⁿ (b +ⁿ a *ⁿ b))) ≡⟨ (λ i → pos $ suc $ a +ⁿ (b +ⁿ *ⁿ-comm a b i)) ⟩
-    pos (suc (a +ⁿ (b +ⁿ b *ⁿ a))) ≡⟨ (λ i → pos $ suc $ a +ⁿ *ⁿ-suc b a (~ i)) ⟩
-    pos (suc (a +ⁿ b *ⁿ suc a))    ∎
+  *-comm (negsuc   a ) (negsuc   b ) i = pos (suc (lemma7 a b i))
 
   -distrʳ : ∀ a b → -(a * b) ≡ a * (- b)
   -distrʳ a b = (λ i → - *-comm a b i) ∙ -distrˡ b a ∙ *-comm (- b) a
