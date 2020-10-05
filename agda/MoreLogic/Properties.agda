@@ -15,6 +15,7 @@ open import Function.Base using (_∋_)
 open import Cubical.Relation.Nullary.Base renaming (¬_ to ¬ᵗ_)
 open import Cubical.Foundations.Logic renaming (inl to inlᵖ; inr to inrᵖ)
 open import Cubical.Data.Empty renaming (elim to ⊥-elim) renaming (⊥ to ⊥⊥) -- `⊥` and `elim`
+open import Cubical.HITs.PropositionalTruncation.Base -- ∣_∣
 
 import Cubical.Data.Empty as Empty
 open import Cubical.Data.Unit.Base
@@ -25,6 +26,9 @@ open import Utils
 
 open import MoreLogic.Reasoning
 open import MoreLogic.Definitions
+
+symₚ : ∀{ℓ} → {A : Type ℓ} {x y : A} → [ x ≡ₚ y ] → [ y ≡ₚ x ]
+symₚ {x = x} x≡y = substₚ (λ p → p ≡ₚ x) x≡y ∣ refl ∣
 
 ⊔-identityˡ-↑ : (P : hProp ℓ) → ⊥↑ {ℓ} ⊔ P ≡ P
 ⊔-identityˡ-↑ P =
@@ -167,20 +171,26 @@ funExt-⊥₂ f g =  funExt₂ᶜ λ a b → ⊥-elim {A = λ _ → f a b ≡ g 
 
 -- weak deMorgan laws: only these three hold without further assumptions
 
-deMorgan₂ : (P Q : hProp ℓ) → [ ¬ (P ⊔ Q) ] → [ ¬ P ⊓ ¬ Q ]
+deMorgan₂ : (P : hProp ℓ) (Q : hProp ℓ') → [ ¬ (P ⊔ Q) ] → [ ¬ P ⊓ ¬ Q ]
 abstract deMorgan₂ P Q ¬[p⊔q] = (λ p →  ⊥-elim (¬[p⊔q] (inlᵖ p))) , λ q → ⊥-elim (¬[p⊔q] (inrᵖ q))
 
-deMorgan₂-back : (P Q : hProp ℓ) → [ ¬ P ⊓ ¬ Q ] → [ ¬ (P ⊔ Q) ]
+deMorgan₂-back : (P : hProp ℓ) (Q : hProp ℓ') → [ ¬ P ⊓ ¬ Q ] → [ ¬ (P ⊔ Q) ]
 abstract deMorgan₂-back P Q (¬p , ¬q) p⊔q = ⊔-elim P Q (λ p⊔q → ⊥) ¬p ¬q p⊔q
 
-deMorgan₁-back : (P Q : hProp ℓ) → [ ¬ P ⊔ ¬ Q ] → [ ¬ (P ⊓ Q) ]
+deMorgan₁-back : (P : hProp ℓ) (Q : hProp ℓ') → [ ¬ P ⊔ ¬ Q ] → [ ¬ (P ⊓ Q) ]
 abstract deMorgan₁-back {ℓ = ℓ} P Q [¬p⊔¬q] (p , q) = ⊔-elim (¬ P) (¬ Q) (λ [¬p⊔¬q] → ⊥) (λ ¬p → ¬p p) (λ ¬q → ¬q q) [¬p⊔¬q]
 
-¬-⊓-distrib  : (P Q : hProp ℓ) → [ ¬ (P ⊓ Q) ] → [ (P ⇒ ¬ Q) ⊓ (Q ⇒ ¬ P) ]
+¬-⊓-distrib  : (P : hProp ℓ) (Q : hProp ℓ') → [ ¬ (P ⊓ Q) ] → [ (P ⇒ ¬ Q) ⊓ (Q ⇒ ¬ P) ]
 ¬-⊓-distrib P Q ¬p⊓q = (λ p q → ¬p⊓q (p , q)) , (λ q p → ¬p⊓q (p , q))
 
-implication : (P Q : hProp ℓ) → [ ¬ (P ⊓ Q) ] → [ P ⇒ ¬ Q ]
+implication : (P : hProp ℓ) (Q : hProp ℓ') → [ ¬ (P ⊓ Q) ] → [ P ⇒ ¬ Q ]
 implication {ℓ = ℓ} P Q ¬[p⊓q] p q = ⊥-elim (¬[p⊓q] (p , q))
+
+uncurryₚ : ∀{ℓ ℓ' ℓ''} (P : hProp ℓ) (Q : hProp ℓ')(R : hProp ℓ'') → (f : [ P ] → [ Q ] → [ R ]) → [ P ⊓ Q ] → [ R ]
+uncurryₚ P Q R f = uncurry f
+
+⊓¬¬⇒¬¬⊓ : ∀{ℓ ℓ'} (P : hProp ℓ) (Q : hProp ℓ') → [ ¬ ¬ P ] → [ ¬ ¬ Q ] → [ ¬ ¬ (P ⊓ Q) ]
+⊓¬¬⇒¬¬⊓ P Q ¬¬p ¬¬q = contraposition (¬ (P ⊓ Q)) (P ⇒ ¬ Q) (implication P Q) λ p⇒¬q → ¬¬p (contraposition P (¬ Q) p⇒¬q ¬¬q)
 
 -- Q and P are disjoint if P ⇒ ¬ Q or equivalently Q ⇒ ¬ P
 

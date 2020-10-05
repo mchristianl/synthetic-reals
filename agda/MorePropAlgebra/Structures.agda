@@ -351,6 +351,53 @@ isConstructiveField 0f 1f _+_ _·_ -_ _#_ {- _⁻¹ -} .snd (isconstructivefield
 -- and max computes least upper bounds in the sense that for every x, y, z : A, we have
 --   max(x,y) ≤ z ⇔ x ≤ z ∧ y ≤ z.
 
+-- Remark 4.1.9.
+--   1. From the fact that (A, ≤, min, max) is a lattice, it does not follow that for every x and y,
+--        max(x, y) = x ∨ max(x, y) = y,
+--      which would hold in a linear order.
+--      However, in Lemma 6.7.1 we characterize max as
+--        z < max(x, y) ⇔ z < x ∨ z < y,
+--     and similarly for min.
+--   2. In a partial order, for two fixed elements a and b, all joins and meets of a, b are equal,
+--      so that Lemma 2.6.20 the type of joins and the type of meets are propositions.
+--      Hence, providing the maps min and max as in the above definition is equivalent to
+--      the showing the existence of all binary joins and meets.
+
+-- NOTE: in the non-cubical standard library, we have
+--
+--   record IsLattice (∨ ∧ : Op₂ A) : Set (a ⊔ ℓ) where
+--     field
+--       ∨-comm        : Commutative ∨  -- ∀ x y     →                 (x ∨ y) ≈ (y ∨ x)
+--       ∨-assoc       : Associative ∨  -- ∀ x y z   →                 ((x ∨ y) ∨ z) ≈ (x ∨ (y ∨ z))
+--       ∨-cong        : Congruent₂ ∨   -- ∀ x y u v → x ≈ y → u ≈ v → (x ∨ u) ≈ (y ∨ v)
+--       ∧-comm        : Commutative ∧  -- ∀ x y     →                 (x ∧ y) ≈ (y ∧ x)
+--       ∧-assoc       : Associative ∧  -- ∀ x y z   →                 ((x ∧ y) ∧ z) ≈ (x ∧ (y ∧ z))
+--       ∧-cong        : Congruent₂ ∧   -- ∀ x y u v → x ≈ y → u ≈ v → (x ∧ u) ≈ (y ∧ v)
+--       absorptive    : Absorptive ∨ ∧ -- ∀ x y     →                 ((x ∨ (x ∧ y)) ≈ x) × ((x ∧ (x ∨ y)) ≈ x)
+--
+-- where they derive
+--
+--   ∨-absorbs-∧ : ∨ Absorbs ∧
+--   ∨-absorbs-∧ = proj₁ absorptive
+--
+--   ∧-absorbs-∨ : ∧ Absorbs ∨
+--   ∧-absorbs-∨ = proj₂ absorptive
+--
+--   ∧-congˡ : LeftCongruent ∧
+--   ∧-congˡ y≈z = ∧-cong refl y≈z
+--
+--   ∧-congʳ : RightCongruent ∧
+--   ∧-congʳ y≈z = ∧-cong y≈z refl
+--
+--   ∨-congˡ : LeftCongruent ∨
+--   ∨-congˡ y≈z = ∨-cong refl y≈z
+--
+--   ∨-congʳ : RightCongruent ∨
+--   ∨-congʳ y≈z = ∨-cong y≈z refl
+--
+-- and additionally we might also proof Lemma 6.7.1 and Lemma 2.6.20 (as mentioned in the remark above)
+-- maybe we can proof from a linearorder that we have MinTrichtotomy and MaxTrichtotomy
+
 record IsLattice {A : Type ℓ} (_≤_ : hPropRel A A ℓ') (min max : A → A → A) : Type (ℓ-max ℓ ℓ') where
   constructor islattice
   field
