@@ -118,6 +118,17 @@ record IsLinearlyOrderedCommRing {ℓ ℓ'} {F : Type ℓ} (0f 1f : F) (_+_ _·_
     is-LinearlyOrderedCommSemiring : [ isLinearlyOrderedCommSemiring 0f 1f _+_ _·_ _<_ min max ]
     +-inverse : ∀ x → (x + (- x) ≡ 0f) × ((- x) + x ≡ 0f)
 
+  infixl 6 _-_
+
+  _-_ : F → F → F
+  x - y = x + (- y)
+
+  +-linv : (x : F) → (- x) + x ≡ 0f
+  +-linv x = +-inverse x .snd
+
+  +-rinv : (x : F) → x + (- x) ≡ 0f
+  +-rinv x = +-inverse x .fst
+
   open IsLinearlyOrderedCommSemiring is-LinearlyOrderedCommSemiring public
 
 isLinearlyOrderedCommRing : ∀{ℓ ℓ'} {F : Type ℓ} (0f 1f : F) (_+_ _·_ : F → F → F) (-_ : F → F) (_<_ : hPropRel F F ℓ') (min max : F → F → F) → hProp (ℓ-max ℓ ℓ')

@@ -98,7 +98,7 @@ import Cubical.HITs.Ints.QuoInt as QuoInt
 
 open import Cubical.Foundations.Univalence
 
-open import Number.Instances.Int
+open import Number.Instances.Int hiding (ℤbundle)
 
 open import Cubical.Data.Int as Int renaming
   ( Int to ℤ
@@ -346,3 +346,15 @@ is-LinearlyOrderedCommRingᶻ = transport γ is-LinearlyOrderedCommRing where
     _<ⁱ_ = <ᶠ≡< (~ i)
     minⁱ = minᶠ≡min (~ i)
     maxⁱ = maxᶠ≡max (~ i)
+
+ℤbundle : LinearlyOrderedCommRing {ℓ-zero} {ℓ-zero}
+ℤbundle .LinearlyOrderedCommRing.Carrier                    = QuoInt.ℤ
+ℤbundle .LinearlyOrderedCommRing.0f                         = 0
+ℤbundle .LinearlyOrderedCommRing.1f                         = 1
+ℤbundle .LinearlyOrderedCommRing._+_                        = QuoInt._+_
+ℤbundle .LinearlyOrderedCommRing._·_                        = QuoInt._*_
+ℤbundle .LinearlyOrderedCommRing.-_                         = QuoInt.-_
+ℤbundle .LinearlyOrderedCommRing.min                        = minᶠ
+ℤbundle .LinearlyOrderedCommRing.max                        = maxᶠ
+ℤbundle .LinearlyOrderedCommRing._<_                        = _<ᶠ_
+ℤbundle .LinearlyOrderedCommRing.is-LinearlyOrderedCommRing = is-LinearlyOrderedCommRingᶻ
