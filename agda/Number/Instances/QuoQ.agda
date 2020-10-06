@@ -47,7 +47,10 @@ open import Cubical.Data.Nat using (suc; zero; ℕ) renaming
 open import Cubical.Data.NatPlusOne using (HasFromNat; 1+_; ℕ₊₁)
 open import Cubical.HITs.Ints.QuoInt using (HasFromNat; signed)
 
-open import Number.Instances.QuoInt using (ℤbundle) renaming (_<ᶠ_ to _<ᶻ_)
+open import Number.Instances.QuoInt using (ℤbundle) renaming
+  ( _<ᶠ_ to _<ᶻ_
+  ; ·-reflects-<ᶠ to ·ᶻ-reflects-<ᶻ
+  )
 
 module Definitions where
   open import Cubical.HITs.Ints.QuoInt hiding (_+_; -_; +-assoc; +-comm)
@@ -154,7 +157,27 @@ module Definitions where
   0<ᶻpos[suc]      0  = 0<1
   0<ᶻpos[suc] (suc x) = <-trans 0 (pos (suc x)) (pos (suc (suc x))) (0<ᶻpos[suc] x) (suc-creates-< (pos x) (pos (suc x)) .fst (pos<pos[suc] x))
 
+  -- *-nullifiesʳ : ∀(x : ℤ) → x * 0 ≡ 0
+  -- *-nullifiesʳ (pos zero) = refl
+  -- *-nullifiesʳ (pos (suc n)) = {! *-nullifiesʳ (pos n)  !}
+  -- *-nullifiesʳ (neg zero) = refl
+  -- *-nullifiesʳ (neg (suc n)) = {! *-nullifiesʳ (neg n)  !}
+  -- *-nullifiesʳ (posneg i) = refl
+
+  *-nullifiesˡ : ∀(x : ℤ) → 0 * x ≡ 0
+  *-nullifiesˡ x = {!   !}
+
+  *-preserves-<0 : ∀ a b → [ 0 < a ] → [ 0 < b ] → [ 0 < a * b ]
+  *-preserves-<0 a b p q = subst (λ p → [ p < a * b ]) (*-nullifiesˡ b) (·-preserves-< 0 a b q p)
+
   -- data Trichotomy
+
+  ·-creates-< : ∀ a b x → [ 0 < x ] → [ (a < b) ⇔ ((a * x) < (b * x)) ]
+  ·-creates-< a b x p .fst q = ·-preserves-< a b x p q
+  ·-creates-< a b x p .snd q = ·ᶻ-reflects-<ᶻ a b x p q
+
+  ·-creates-<-≡ : ∀ a b x → [ 0 < x ] → (a < b) ≡ ((a * x) < (b * x))
+  ·-creates-<-≡ a b x p = ⇔toPath (·-creates-< a b x p .fst) (·-creates-< a b x p .snd)
 
   open import Cubical.HITs.SetQuotients as SetQuotient using () renaming (_/_ to _//_)
 
@@ -167,6 +190,7 @@ module Definitions where
     (a * c) * (b₁ * b₂) ≡⟨ (λ i → (a * c) * ·-comm b₁ b₂ i) ⟩
     (a * c) * (b₂ * b₁) ∎
 
+  -- TODO: we might extract definition and properties in the where clauses upfront
   infixl 4 _<ᶠ_
   _<ᶠ_ : hPropRel ℚ ℚ ℓ-zero
   a <ᶠ b = SetQuotient.rec2 {R = _∼_} {B = hProp ℓ-zero} isSetHProp _<'_ <'-respects-∼ˡ <'-respects-∼ʳ a b where
@@ -180,22 +204,26 @@ module Definitions where
       aⁿᶻ = [1+ aⁿ ⁿ]ᶻ
       bⁿᶻ = [1+ bⁿ ⁿ]ᶻ
       xⁿᶻ = [1+ xⁿ ⁿ]ᶻ
+      0<aⁿᶻ : [ 0 < aⁿᶻ ]
+      0<aⁿᶻ = 0<ᶻpos[suc] _
+      0<bⁿᶻ : [ 0 < bⁿᶻ ]
+      0<bⁿᶻ = 0<ᶻpos[suc] _
       p : aᶻ * bⁿᶻ ≡ bᶻ * aⁿᶻ
       p = a~b
       γ : ((aᶻ * xⁿᶻ) < (xᶻ * aⁿᶻ)) ≡ ((bᶻ * xⁿᶻ) < (xᶻ * bⁿᶻ))
       γ with <-tricho 0 aᶻ
-      ... | inl (inl 0<a) =
-        (aᶻ * xⁿᶻ)              < (xᶻ * aⁿᶻ)              ≡⟨ {! ·-preserves-< (aᶻ * xⁿᶻ) (xᶻ * aⁿᶻ) (aᶻ * bⁿᶻ) ?  !} ⟩
-        (aᶻ * xⁿᶻ) * (aᶻ * bⁿᶻ) < (xᶻ * aⁿᶻ) * (aᶻ * bⁿᶻ) ≡⟨ {!   !} ⟩
-        (aᶻ * xⁿᶻ) * (bᶻ * aⁿᶻ) < (xᶻ * aⁿᶻ) * (aᶻ * bⁿᶻ) ≡⟨ {!   !} ⟩
+      ... | inl (inl 0<aᶻ) =
+        (aᶻ * xⁿᶻ)              < (xᶻ * aⁿᶻ)              ≡⟨ ·-creates-<-≡ (aᶻ * xⁿᶻ) (xᶻ * aⁿᶻ) (aᶻ * bⁿᶻ) (*-preserves-<0 aᶻ bⁿᶻ 0<aᶻ 0<bⁿᶻ) ⟩
+        (aᶻ * xⁿᶻ) * (aᶻ * bⁿᶻ) < (xᶻ * aⁿᶻ) * (aᶻ * bⁿᶻ) ≡⟨ (λ i → (aᶻ * xⁿᶻ) * p i < (xᶻ * aⁿᶻ) * (aᶻ * bⁿᶻ)) ⟩
+        (aᶻ * xⁿᶻ) * (bᶻ * aⁿᶻ) < (xᶻ * aⁿᶻ) * (aᶻ * bⁿᶻ) ≡⟨ (λ i → ·-comm (aᶻ * xⁿᶻ) (bᶻ * aⁿᶻ) i < (xᶻ * aⁿᶻ) * (aᶻ * bⁿᶻ)) ⟩
         (bᶻ * aⁿᶻ) * (aᶻ * xⁿᶻ) < (xᶻ * aⁿᶻ) * (aᶻ * bⁿᶻ) ≡⟨ (λ i → lemma1 bᶻ aⁿᶻ aᶻ xⁿᶻ i < lemma1 xᶻ aⁿᶻ aᶻ bⁿᶻ i) ⟩
-        (bᶻ * xⁿᶻ) * (aᶻ * aⁿᶻ) < (xᶻ * bⁿᶻ) * (aᶻ * aⁿᶻ) ≡⟨ {!   !} ⟩
+        (bᶻ * xⁿᶻ) * (aᶻ * aⁿᶻ) < (xᶻ * bⁿᶻ) * (aᶻ * aⁿᶻ) ≡⟨ sym $ ·-creates-<-≡ (bᶻ * xⁿᶻ) (xᶻ * bⁿᶻ) (aᶻ * aⁿᶻ) (*-preserves-<0 aᶻ aⁿᶻ 0<aᶻ 0<aⁿᶻ) ⟩
         (bᶻ * xⁿᶻ)              < (xᶻ * bⁿᶻ)              ∎
-      ... | inl (inr a<0) = {!   !}
-      ... | inr      0≡a  =
+      ... | inl (inr aᶻ<0) = {!   !}
+      ... | inr      0≡aᶻ  =
         (aᶻ * xⁿᶻ) < (xᶻ * aⁿᶻ) ≡⟨ {!   !} ⟩
         ( 0 * xⁿᶻ) < (xᶻ * aⁿᶻ) ≡⟨ {!   !} ⟩
-          0        < (xᶻ * aⁿᶻ) ≡⟨ {!   !} ⟩
+          0        < (xᶻ * aⁿᶻ) ≡⟨ {! κ   !} ⟩
           0        < (xᶻ * bⁿᶻ) ≡⟨ {!   !} ⟩
         ( 0 * xⁿᶻ) < (xᶻ * bⁿᶻ) ≡⟨ {!   !} ⟩
         (bᶻ * xⁿᶻ) < (xᶻ * bⁿᶻ) ∎ where
@@ -334,14 +362,20 @@ open Definitions public renaming
 open LinearlyOrderedCommRing ℤbundle using () renaming
   ( min to minᶻ
   ; max to maxᶻ
-  ; _<_ to _<ᶻ_
+  -- ; _<_ to _<ᶻ_
+  ; <-irrefl to <ᶻ-irrefl
   )
 
 open import Cubical.HITs.Rationals.QuoQ renaming
-  ([_] to [_]ᶠ)
+  ( [_] to [_]ᶠ
+  ; ℕ₊₁→ℤ to [1+_ⁿ]ᶻ
+  )
+
+open import Cubical.HITs.SetQuotients as SetQuotient using () renaming (_/_ to _//_)
+open import Cubical.HITs.Ints.QuoInt using (ℤ) renaming (_*_ to _*ᶻ_)
 
 <-asym : ∀ x y → [ x < y ] → [ ¬(y < x) ]
-<-asym x y = {!   !}
+<-asym x y = {!    !}
 
 _#_ : hPropRel ℚ ℚ ℓ-zero
 x # y = [ <-asym x y ] (x < y) ⊎ᵖ (y < x)
@@ -376,8 +410,16 @@ is-CommSemiring : [ isCommSemiring 0 1 _+_ _*_ ]
 is-CommSemiring .IsCommSemiring.is-Semiring = is-Semiring
 is-CommSemiring .IsCommSemiring.·-comm      = *-comm
 
+<-irrefl : ∀ a → [ ¬(a < a) ]
+<-irrefl = SetQuotient.elimProp {R = _∼_} (λ a → isProp[] (¬(a < a))) γ where
+  γ : (a : ℤ × ℕ₊₁) → [ ¬([ a ]ᶠ < [ a ]ᶠ) ]
+  γ a@(aᶻ , aⁿ) = κ where
+    aⁿᶻ = [1+ aⁿ ⁿ]ᶻ
+    κ : [ ¬((aᶻ *ᶻ aⁿᶻ) <ᶻ (aᶻ *ᶻ aⁿᶻ)) ]
+    κ = <ᶻ-irrefl (aᶻ *ᶻ aⁿᶻ)
+
 <-StrictLinearOrder : [ isStrictLinearOrder _<_ ]
-<-StrictLinearOrder .IsStrictLinearOrder.is-irrefl = {!   !}
+<-StrictLinearOrder .IsStrictLinearOrder.is-irrefl = <-irrefl
 <-StrictLinearOrder .IsStrictLinearOrder.is-trans  = {!   !}
 <-StrictLinearOrder .IsStrictLinearOrder.is-tricho = {!   !}
 

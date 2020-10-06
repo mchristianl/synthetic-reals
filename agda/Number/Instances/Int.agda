@@ -42,6 +42,7 @@ open import Number.Instances.Nat using (lemma10''; lemma12'') renaming
   ; 0<suc to 0<ⁿsuc
   ; *-nullifiesʳ to *ⁿ-nullifiesʳ
   ; *-nullifiesˡ to *ⁿ-nullifiesˡ
+  ; *-reflects-< to *ⁿ-reflects-<ⁿ
   ; ·-preserves-< to ·ⁿ-preserves-<ⁿ
   ; +-createsʳ-< to +ⁿ-createsʳ-<ⁿ
   ; +-createsˡ-< to +ⁿ-createsˡ-<ⁿ
@@ -665,6 +666,21 @@ abstract
       (y *ⁿ suc z        ) <ⁿ (x *ⁿ suc z        ) ⇒ᵖ⟨ +ⁿ-createsʳ-<ⁿ (y *ⁿ suc z) (x *ⁿ suc z) z .fst ⟩
       (y *ⁿ suc z +ⁿ z   ) <ⁿ (x *ⁿ suc z +ⁿ z   ) ⇒ᵖ⟨ pathTo⇐ (λ i → lemma3 y z i <ⁿ lemma3 x z i) ⟩
       (y *ⁿ z +ⁿ (y +ⁿ z)) <ⁿ (x *ⁿ z +ⁿ (x +ⁿ z)) ◼ᵖ) .snd q
+
+  ·-reflects-< : (x y z : ℤ) → [ 0 < z ] → [ (x * z) < (y * z) ] → [ x < y ]
+  ·-reflects-< (pos    x) (pos    y) (pos      z ) p q = *ⁿ-reflects-<ⁿ x y z p q
+  ·-reflects-< (pos    x) (negsuc y) (pos  zero  ) p q = <ⁿ-irrefl 0 p
+  ·-reflects-< (negsuc x) (pos    y) (pos  zero  ) p q = tt
+  ·-reflects-< (negsuc x) (pos    y) (pos (suc z)) p q = tt
+  ·-reflects-< (negsuc x) (negsuc y) (pos  zero  ) p (k , q) = ⊥-elim {A = λ _ → [ y <ⁿ x ]} $ snotzⁿ (sym (+ⁿ-suc k 0) ∙ q)
+  ·-reflects-< (negsuc x) (negsuc y) (pos (suc z)) p q = (
+    (y *ⁿ z +ⁿ (y +ⁿ z)) <ⁿ (x *ⁿ z +ⁿ (x +ⁿ z)) ⇒ᵖ⟨ pathTo⇒ (λ i → +ⁿ-assoc (y *ⁿ z) y z i <ⁿ +ⁿ-assoc (x *ⁿ z) x z i) ⟩
+    ((y *ⁿ z +ⁿ y) +ⁿ z) <ⁿ ((x *ⁿ z +ⁿ x) +ⁿ z) ⇒ᵖ⟨ +ⁿ-createsʳ-<ⁿ (y *ⁿ z +ⁿ y) (x *ⁿ z +ⁿ x) z .snd ⟩
+    (y *ⁿ z +ⁿ y       ) <ⁿ (x *ⁿ z +ⁿ x       ) ⇒ᵖ⟨ pathTo⇒ (λ i → γ y i <ⁿ γ x i) ⟩
+    (y *ⁿ suc z        ) <ⁿ (x *ⁿ suc z        ) ⇒ᵖ⟨ *ⁿ-reflects-<ⁿ y x (suc z) (0<ⁿsuc z) ⟩
+     y                   <ⁿ  x                   ◼ᵖ) .snd q where
+     γ : ∀ x → x *ⁿ z +ⁿ x ≡ x *ⁿ suc z
+     γ x = sym $ *ⁿ-comm x (suc z) ∙ +ⁿ-comm x (z *ⁿ x) ∙ (λ i → *ⁿ-comm z x i +ⁿ x)
 
 abstract
   *-sucInt : ∀ m n → (m * sucInt n) ≡ (m + (m * n))

@@ -108,6 +108,12 @@ abstract
 ¬suc<0 : ∀ x → [ ¬ (suc x < 0) ]
 ¬suc<0 x (k , p) = snotz $ sym (+-suc k (suc x)) ∙ p
 
+*-reflects-< : ∀ a b x → [ 0 < x ] → [ (a * x) < (b * x) ] → [ a < b ]
+*-reflects-< zero zero x p q = q
+*-reflects-< zero (suc b) x p q = 0<suc b
+*-reflects-< (suc a) zero x p q = ⊥-elim {A = λ _ → [ suc a < 0 ]} $ ¬-<-zero q
+*-reflects-< (suc a) (suc b) x p q = suc-creates-< a b .fst $ *-reflects-< a b x p (+-createsˡ-< (a * x) (b * x) x .snd q)
+
 min-comm : ∀ x y → min x y ≡ min y x
 min-comm zero zero = refl
 min-comm zero (suc y) = refl

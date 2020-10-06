@@ -358,3 +358,12 @@ is-LinearlyOrderedCommRingᶻ = transport γ is-LinearlyOrderedCommRing where
 ℤbundle .LinearlyOrderedCommRing.max                        = maxᶠ
 ℤbundle .LinearlyOrderedCommRing._<_                        = _<ᶠ_
 ℤbundle .LinearlyOrderedCommRing.is-LinearlyOrderedCommRing = is-LinearlyOrderedCommRingᶻ
+
+_*ᶠ_ = QuoInt._*_
+
+·-reflects-<ᶠ : (x y z : QuoInt.ℤ) → [ 0 <ᶠ z ] → [ (x *ᶠ z) <ᶠ (y *ᶠ z) ] → [ x <ᶠ y ]
+·-reflects-<ᶠ = transport γ ·-reflects-< where
+  γ : ((x y z :        ℤ) → [ 0 <  z ] → [  x *  z  <   y *  z  ] → [ x <  y ])
+    ≡ ((x y z : QuoInt.ℤ) → [ 0 <ᶠ z ] → [ (x *ᶠ z) <ᶠ (y *ᶠ z) ] → [ x <ᶠ y ])
+  γ i = let _*'_ = QuoInt*≡* (~ i); _<'_ = <ᶠ≡< (~ i); 0ⁱ = transport (λ j → Z≡ℤ (~ i ∧ j)) 0 in
+      ((x y z :    Z≡ℤ (~ i)) → [ 0ⁱ <' z ] → [ (x *' z) <' (y *' z) ] → [ x <' y ])
