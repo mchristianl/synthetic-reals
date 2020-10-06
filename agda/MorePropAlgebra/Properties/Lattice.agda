@@ -175,11 +175,11 @@ module OnType where
     (·-inv''     : ∀ x → [ ∃[ y ] (x · y) ≡ₚ 1f ])
     where
 
-    ≤-min-· : ∀ a b c w → [ w ≤ (a · c) ] → [ w ≤ (b · c) ] → [ w ≤ (min a b · c) ]
-    ≤-min-· a b c w w≤a·c w≤b· = {! is-min a b  !}
-
-    ≤-max-· : ∀ a b c w → [ (a · c) ≤ w ] → [ (b · c) ≤ w ] → [ (max a b · c) ≤ w ]
-    ≤-max-· a b c w a·c≤w b·c≤ = {!   !}
+    -- ≤-min-· : ∀ a b c w → [ w ≤ (a · c) ] → [ w ≤ (b · c) ] → [ w ≤ (min a b · c) ]
+    -- ≤-min-· a b c w w≤a·c w≤b· = {! is-min a b  !}
+    --
+    -- ≤-max-· : ∀ a b c w → [ (a · c) ≤ w ] → [ (b · c) ≤ w ] → [ (max a b · c) ≤ w ]
+    -- ≤-max-· a b c w a·c≤w b·c≤ = {!   !}
 
   module ≤-dicho⇒+
     (_+_ : A → A → A)
@@ -299,33 +299,67 @@ module OnSet (is-set : isSet A)
   ) where
 
   open OnType public using (min-≤; max-≤)
+  module ≤-dicho⇒+ = OnType.≤-dicho⇒+
+  module ≤-dicho⇒· = OnType.≤-dicho⇒·
 
   ≤-reflectsʳ-≡ : ∀ x y → [ (∀[ z ] z ≤ x ⇔ z ≤ y) ⇔ x ≡ˢ y ]
-  ≤-reflectsʳ-≡ = {!   !}
+  ≤-reflectsʳ-≡ x y .fst p = ∣∣-elim (λ c → is-set x y) (λ x → x) (OnType.≤-reflectsʳ-≡ x y .fst p)
+  ≤-reflectsʳ-≡ x y .snd p = OnType.≤-reflectsʳ-≡ x y .snd ∣ p ∣
 
   ≤-reflectsˡ-≡ : ∀ x y → [ (∀[ z ] x ≤ z ⇔ y ≤ z) ⇔ x ≡ˢ y ]
-  ≤-reflectsˡ-≡ = {!   !}
+  ≤-reflectsˡ-≡ x y .fst p = ∣∣-elim (λ c → is-set x y) (λ x → x) (OnType.≤-reflectsˡ-≡ x y .fst p)
+  ≤-reflectsˡ-≡ x y .snd p = OnType.≤-reflectsˡ-≡ x y .snd ∣ p ∣
 
   min-identity : ∀ x → [ min x x ≡ˢ x ]
-  min-identity = {!   !}
+  min-identity x = ∣∣-elim (λ c → is-set (min x x) x) (λ x → x) (OnType.min-identity x)
+
+  min-identity-≤ : ∀ x y → [ x ≤ y ] → [ min x y ≡ˢ x ]
+  min-identity-≤ x y p = ∣∣-elim (λ c → is-set (min x y) x) (λ x → x) (OnType.min-identity-≤ x y p)
+
+  max-identity-≤ : ∀ x y → [ x ≤ y ] → [ max x y ≡ˢ y ]
+  max-identity-≤ x y p = ∣∣-elim (λ c → is-set (max x y) y) (λ x → x) (OnType.max-identity-≤ x y p)
 
   min-comm : ∀ x y → [ min x y ≡ˢ min y x ]
-  min-comm = {!   !}
+  min-comm x y = ∣∣-elim (λ c → is-set (min x y) (min y x)) (λ x → x) (OnType.min-comm x y)
 
   min-assoc : ∀ x y z → [ min (min x y) z ≡ˢ min x (min y z) ]
-  min-assoc = {!   !}
+  min-assoc x y z = ∣∣-elim (λ c → is-set (min (min x y) z) (min x (min y z))) (λ x → x) (OnType.min-assoc x y z)
 
   max-identity : ∀ x → [ max x x ≡ˢ x ]
-  max-identity = {!   !}
+  max-identity x = ∣∣-elim (λ c → is-set (max x x) x) (λ x → x) (OnType.max-identity x)
 
   max-comm : ∀ x y → [ max x y ≡ˢ max y x ]
   max-comm x y = ∣∣-elim (λ c → is-set (max x y) (max y x)) (λ x → x) (OnType.max-comm x y)
 
   max-assoc : ∀ x y z → [ max (max x y) z ≡ˢ max x (max y z) ]
-  max-assoc = {! max y x   !}
+  max-assoc x y z = ∣∣-elim (λ c → is-set (max (max x y) z) (max x (max y z))) (λ x → x) (OnType.max-assoc x y z)
 
   min-max-absorptive : ∀ x y → [ min x (max x y) ≡ˢ x ]
-  min-max-absorptive = {!   !}
+  min-max-absorptive x y = ∣∣-elim (λ c → is-set (min x (max x y)) x) (λ x → x) (OnType.min-max-absorptive x y)
 
   max-min-absorptive : ∀ x y → [ max x (min x y) ≡ˢ x ]
-  max-min-absorptive = {!   !}
+  max-min-absorptive x y = ∣∣-elim (λ c → is-set (max x (min x y)) x) (λ x → x) (OnType.max-min-absorptive x y)
+
+  +-min-distribʳ : (_+_ : A → A → A)
+                 → (+-creates-≤ : ∀ a b x → [ (a ≤ b) ⇔ ((a + x) ≤ (b + x)) ])
+                 → (≤-min-+ : ∀ a b c w → [ w ≤ (a + c) ] → [ w ≤ (b + c) ] → [ w ≤ (min a b + c) ])
+                 → ∀ x y z → [ (min x y + z) ≡ˢ min (x + z) (y + z) ]
+  +-min-distribʳ _+_ +-creates-≤ ≤-min-+ x y z = ∣∣-elim (λ c → is-set (min x y + z) (min (x + z) (y + z))) (λ x → x) (OnType.+-min-distribʳ _+_ +-creates-≤ ≤-min-+ x y z)
+
+  ·-min-distribʳ : (0f : A) (_·_ : A → A → A)
+                 → (·-creates-≤ : ∀ a b x → [ 0f ≤ x ] → [ (a ≤ b) ⇔ ((a · x) ≤ (b · x)) ])
+                 → (≤-min-· : ∀ a b c w → [ w ≤ (a · c) ] → [ w ≤ (b · c) ] → [ w ≤ (min a b · c) ])
+                 → ∀ x y z → [ 0f ≤ z ] → [ (min x y · z) ≡ˢ min (x · z) (y · z) ]
+  ·-min-distribʳ 0f _·_ ·-creates-≤ ≤-min-· x y z 0≤z = ∣∣-elim (λ c → is-set (min x y · z) (min (x · z) (y · z))) (λ x → x) (OnType.·-min-distribʳ 0f _·_ ·-creates-≤ ≤-min-· x y z 0≤z)
+
+  +-max-distribʳ : (_+_ : A → A → A)
+                 → (+-creates-≤ : ∀ a b x → [ (a ≤ b) ⇔ ((a + x) ≤ (b + x)) ])
+                 → (≤-max-+ : ∀ a b c w → [ (a + c) ≤ w ] → [ (b + c) ≤ w ] → [ (max a b + c) ≤ w ])
+                 → ∀ x y z → [ (max x y + z) ≡ˢ max (x + z) (y + z) ]
+  +-max-distribʳ _+_ +-creates-≤ ≤-max-+ x y z = ∣∣-elim (λ c → is-set (max x y + z) (max (x + z) (y + z))) (λ x → x) (OnType.+-max-distribʳ _+_ +-creates-≤ ≤-max-+ x y z)
+
+  ·-max-distribʳ : (0f : A) (_·_ : A → A → A)
+                 → (·-creates-≤ : ∀ a b x → [ 0f ≤ x ] → [ (a ≤ b) ⇔ ((a · x) ≤ (b · x)) ])
+                 → (≤-max-· : ∀ a b c w → [ (a · c) ≤ w ] → [ (b · c) ≤ w ] → [ (max a b · c) ≤ w ])
+                 → ∀ x y z → [ 0f ≤ z ] → [ (max x y · z) ≡ˢ max (x · z) (y · z) ]
+  ·-max-distribʳ 0f _·_ ·-creates-≤ ≤-max-· x y z 0≤z = ∣∣-elim (λ c → is-set (max x y · z) (max (x · z) (y · z))) (λ x → x) (OnType.·-max-distribʳ 0f _·_ ·-creates-≤ ≤-max-· x y z 0≤z)

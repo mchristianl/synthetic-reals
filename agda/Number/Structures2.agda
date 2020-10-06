@@ -48,7 +48,7 @@ record IsLinearlyOrderedCommSemiring {ℓ ℓ'} {F : Type ℓ} (0f 1f : F) (_+_ 
   field
     is-CommSemiring     : [ isCommSemiring 0f 1f _+_ _·_ ]
     <-StrictLinearOrder : [ isStrictLinearOrder _<_ ]
-    ≤-isLattice         : [ isLattice _≤_ min max ]
+    ≤-Lattice         : [ isLattice _≤_ min max ]
     +-<-ext             : ∀ w x y z → [ (w + x) < (y + z) ] → [ (w < y) ⊔ (x < z) ]
     ·-preserves-<       : ∀ x y z   → [ 0f < z ] → [ x < y ] → [ (x · z) < (y · z) ]
 
@@ -99,9 +99,9 @@ record IsLinearlyOrderedCommSemiring {ℓ ℓ'} {F : Type ℓ} (0f 1f : F) (_+_ 
 
   _ : [ isCommSemiring 0f 1f _+_ _·_             ]; _ = is-CommSemiring
   _ : [ isStrictLinearOrder _<_                  ]; _ = <-StrictLinearOrder
-  _ : [ isLattice _≤_ min max                    ]; _ = ≤-isLattice
+  _ : [ isLattice _≤_ min max                    ]; _ = ≤-Lattice
 
-  open IsLattice ≤-isLattice renaming (≤-antisym to ≤-antisymᵗ) public
+  open IsLattice ≤-Lattice renaming (≤-antisym to ≤-antisymᵗ) public
 
   ≤-antisym : [ isAntisymˢ _≤_ is-set ]
   ≤-antisym = isAntisymˢ⇔isAntisym _≤_ is-set .snd ≤-antisymᵗ

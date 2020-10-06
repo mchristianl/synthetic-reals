@@ -838,15 +838,15 @@ is-CommSemiring .IsCommSemiring.·-comm      = *-comm
 ... | eq a≡b = inr ∣ a≡b ∣
 ... | gt b<a = inl (inr b<a)
 
-≤-isLattice : [ isLattice (λ x y → ¬ᵖ (y < x)) min max ]
-≤-isLattice .IsLattice.≤-PartialOrder = linearorder⇒partialorder _ (≤'-isLinearOrder <-StrictLinearOrder)
-≤-isLattice .IsLattice.is-min         = is-min
-≤-isLattice .IsLattice.is-max         = is-max
+≤-Lattice : [ isLattice (λ x y → ¬ᵖ (y < x)) min max ]
+≤-Lattice .IsLattice.≤-PartialOrder = linearorder⇒partialorder _ (≤'-isLinearOrder <-StrictLinearOrder)
+≤-Lattice .IsLattice.is-min         = is-min
+≤-Lattice .IsLattice.is-max         = is-max
 
 is-LinearlyOrderedCommSemiring : [ isLinearlyOrderedCommSemiring 0 1 _+_ _*_ _<_ min max ]
 is-LinearlyOrderedCommSemiring .IsLinearlyOrderedCommSemiring.is-CommSemiring     = is-CommSemiring
 is-LinearlyOrderedCommSemiring .IsLinearlyOrderedCommSemiring.<-StrictLinearOrder = <-StrictLinearOrder
-is-LinearlyOrderedCommSemiring .IsLinearlyOrderedCommSemiring.≤-isLattice         = ≤-isLattice
+is-LinearlyOrderedCommSemiring .IsLinearlyOrderedCommSemiring.≤-Lattice           = ≤-Lattice
 is-LinearlyOrderedCommSemiring .IsLinearlyOrderedCommSemiring.+-<-ext             = +-<-ext
 is-LinearlyOrderedCommSemiring .IsLinearlyOrderedCommSemiring.·-preserves-<       = ·-preserves-<
 

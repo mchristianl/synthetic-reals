@@ -47,7 +47,7 @@ open import Cubical.Data.Nat using (suc; zero; ℕ) renaming
 open import Cubical.Data.NatPlusOne using (HasFromNat; 1+_; ℕ₊₁)
 open import Cubical.HITs.Ints.QuoInt using (HasFromNat; signed)
 
-open import Number.Instances.QuoInt using (ℤbundle)
+open import Number.Instances.QuoInt using (ℤbundle) renaming (_<ᶠ_ to _<ᶻ_)
 
 module Definitions where
   open import Cubical.HITs.Ints.QuoInt hiding (_+_; -_; +-assoc; +-comm)
@@ -99,17 +99,73 @@ module Definitions where
   suc-creates-< x y .fst p = substₚ (λ p → sucℤ x < p) (∣ +-comm y (pos 1) ∣) $ substₚ (λ p → p < y + pos 1) (∣ +-comm x (pos 1) ∣) (+-preserves-< x y (pos 1) p)
   suc-creates-< x y .snd p = +-reflects-< x y (pos 1) $ substₚ (λ p → p < y + pos 1) (∣ +-comm (pos 1) x ∣) $ substₚ (λ p → sucℤ x < p) (∣ +-comm (pos 1) y ∣) p
 
+  +-creates-≤ : ∀ a b x → [ (a ≤ b) ⇔ ((a + x) ≤ (b + x)) ]
+  +-creates-≤ a b x = {!   !}
+
+  ·-creates-≤ : ∀ a b x → [ 0f ≤ x ] → [ (a ≤ b) ⇔ ((a · x) ≤ (b · x)) ]
+  ·-creates-≤ a b x = {!   !}
+
+  ℤlattice : Lattice {ℓ-zero} {ℓ-zero}
+  ℤlattice = record { LinearlyOrderedCommRing ℤbundle renaming (≤-Lattice to is-Lattice) }
+
+  open import MorePropAlgebra.Properties.Lattice ℤlattice
+  open OnSet is-set hiding (+-min-distribʳ; ·-min-distribʳ; +-max-distribʳ; ·-max-distribʳ)
+
+  ≤-dicho : ∀ x y → [ (x ≤ y) ⊔ (y ≤ x) ]
+  ≤-dicho x y with <-tricho x y
+  ... | inl (inl x<y) = inlᵖ $ <-asym x y x<y
+  ... | inl (inr y<x) = inrᵖ $ <-asym y x y<x
+  ... | inr      x≡y  = inlᵖ $ subst (λ p → [ ¬(p <ᶻ x) ]) x≡y (<-irrefl x)
+
+  ≤-min-+ : ∀ a b c w → [ w ≤ (a + c) ] → [ w ≤ (b + c) ] → [ w ≤ (min a b + c) ]
+  ≤-max-+ : ∀ a b c w → [ (a + c) ≤ w ] → [ (b + c) ≤ w ] → [ (max a b + c) ≤ w ]
+  ≤-min-· : ∀ a b c w → [ w ≤ (a · c) ] → [ w ≤ (b · c) ] → [ w ≤ (min a b · c) ]
+  ≤-max-· : ∀ a b c w → [ (a · c) ≤ w ] → [ (b · c) ≤ w ] → [ (max a b · c) ≤ w ]
+
+  ≤-min-+ = OnType.≤-dicho⇒+.≤-min-+ _+_ ≤-dicho
+  ≤-max-+ = OnType.≤-dicho⇒+.≤-max-+ _+_ ≤-dicho
+  ≤-min-· = OnType.≤-dicho⇒·.≤-min-· _·_ ≤-dicho
+  ≤-max-· = OnType.≤-dicho⇒·.≤-max-· _·_ ≤-dicho
+
+  +-min-distribʳ : ∀ x y z              → (min x y + z) ≡ min (x + z) (y + z)
+  ·-min-distribʳ : ∀ x y z → [ 0f ≤ z ] → (min x y · z) ≡ min (x · z) (y · z)
+  +-max-distribʳ : ∀ x y z              → (max x y + z) ≡ max (x + z) (y + z)
+  ·-max-distribʳ : ∀ x y z → [ 0f ≤ z ] → (max x y · z) ≡ max (x · z) (y · z)
+  +-min-distribˡ : ∀ x y z              → (z + min x y) ≡ min (z + x) (z + y)
+  ·-min-distribˡ : ∀ x y z → [ 0f ≤ z ] → (z · min x y) ≡ min (z · x) (z · y)
+  +-max-distribˡ : ∀ x y z              → (z + max x y) ≡ max (z + x) (z + y)
+  ·-max-distribˡ : ∀ x y z → [ 0f ≤ z ] → (z · max x y) ≡ max (z · x) (z · y)
+
+  +-min-distribʳ = OnSet.+-min-distribʳ is-set _+_ +-creates-≤ ≤-min-+
+  ·-min-distribʳ = OnSet.·-min-distribʳ is-set 0f _·_ ·-creates-≤ ≤-min-·
+  +-max-distribʳ = OnSet.+-max-distribʳ is-set _+_ +-creates-≤ ≤-max-+
+  ·-max-distribʳ = OnSet.·-max-distribʳ is-set 0f _·_ ·-creates-≤ ≤-max-·
+
+  +-min-distribˡ x y z   = +-comm z (min x y) ∙ +-min-distribʳ x y z   ∙ (λ i → min (+-comm x z i) (+-comm y z i))
+  ·-min-distribˡ x y z p = ·-comm z (min x y) ∙ ·-min-distribʳ x y z p ∙ (λ i → min (·-comm x z i) (·-comm y z i))
+  +-max-distribˡ x y z   = +-comm z (max x y) ∙ +-max-distribʳ x y z   ∙ (λ i → max (+-comm x z i) (+-comm y z i))
+  ·-max-distribˡ x y z p = ·-comm z (max x y) ∙ ·-max-distribʳ x y z p ∙ (λ i → max (·-comm x z i) (·-comm y z i))
+
+  pos<pos[suc] : ∀ x → [ pos x < pos (suc x) ]
+  pos<pos[suc] 0 = 0<1
+  pos<pos[suc] (suc x) = suc-creates-< (pos x) (pos (suc x)) .fst (pos<pos[suc] x)
+
+  0<ᶻpos[suc] : ∀ x → [ 0 < pos (suc x) ]
+  0<ᶻpos[suc]      0  = 0<1
+  0<ᶻpos[suc] (suc x) = <-trans 0 (pos (suc x)) (pos (suc (suc x))) (0<ᶻpos[suc] x) (suc-creates-< (pos x) (pos (suc x)) .fst (pos<pos[suc] x))
+
   -- data Trichotomy
 
   open import Cubical.HITs.SetQuotients as SetQuotient using () renaming (_/_ to _//_)
 
-  lemma1 : ∀ a b₁ b₂ c → (a * b₁) * (b₂ * c) ≡ (a * c) * (b₁ * b₂)
+  lemma1 : ∀ a b₁ b₂ c → (a * b₁) * (b₂ * c) ≡ (a * c) * (b₂ * b₁)
   lemma1 a b₁ b₂ c =
-    (a * b₁) * (b₂ * c) ≡⟨ {!   !} ⟩
-    a * (b₁ * (b₂ * c)) ≡⟨ {!   !} ⟩
-    a * ((b₁ * b₂) * c) ≡⟨ {!   !} ⟩
-    a * (c * (b₁ * b₂)) ≡⟨ {!   !} ⟩
-    (a * c) * (b₁ * b₂) ∎
+    (a * b₁) * (b₂ * c) ≡⟨ sym $ ·-assoc a b₁ (b₂ * c) ⟩
+    a * (b₁ * (b₂ * c)) ≡⟨ (λ i → a * ·-assoc b₁ b₂ c i) ⟩
+    a * ((b₁ * b₂) * c) ≡⟨ (λ i → a * ·-comm (b₁ * b₂) c i) ⟩
+    a * (c * (b₁ * b₂)) ≡⟨ ·-assoc a c (b₁ * b₂) ⟩
+    (a * c) * (b₁ * b₂) ≡⟨ (λ i → (a * c) * ·-comm b₁ b₂ i) ⟩
+    (a * c) * (b₂ * b₁) ∎
 
   infixl 4 _<ᶠ_
   _<ᶠ_ : hPropRel ℚ ℚ ℓ-zero
@@ -120,94 +176,153 @@ module Definitions where
           bⁿᶻ = [1+ bⁿ ⁿ]ᶻ
       in (aᶻ * bⁿᶻ) < (bᶻ * aⁿᶻ)
     <'-respects-∼ˡ : ∀ a b x → a ∼ b → a <' x ≡ b <' x
-    <'-respects-∼ˡ a@(aᶻ , aⁿ) b@(bᶻ , bⁿ) x@(xᶻ , xⁿ) a~b =
-      let aⁿᶻ = [1+ aⁿ ⁿ]ᶻ
-          bⁿᶻ = [1+ bⁿ ⁿ]ᶻ
-          xⁿᶻ = [1+ xⁿ ⁿ]ᶻ
-          p : aᶻ * bⁿᶻ ≡ bᶻ * aⁿᶻ
-          p = a~b
+    <'-respects-∼ˡ a@(aᶻ , aⁿ) b@(bᶻ , bⁿ) x@(xᶻ , xⁿ) a~b = γ where
+      aⁿᶻ = [1+ aⁿ ⁿ]ᶻ
+      bⁿᶻ = [1+ bⁿ ⁿ]ᶻ
+      xⁿᶻ = [1+ xⁿ ⁿ]ᶻ
+      p : aᶻ * bⁿᶻ ≡ bᶻ * aⁿᶻ
+      p = a~b
+      γ : ((aᶻ * xⁿᶻ) < (xᶻ * aⁿᶻ)) ≡ ((bᶻ * xⁿᶻ) < (xᶻ * bⁿᶻ))
+      γ with <-tricho 0 aᶻ
+      ... | inl (inl 0<a) =
+        (aᶻ * xⁿᶻ)              < (xᶻ * aⁿᶻ)              ≡⟨ {! ·-preserves-< (aᶻ * xⁿᶻ) (xᶻ * aⁿᶻ) (aᶻ * bⁿᶻ) ?  !} ⟩
+        (aᶻ * xⁿᶻ) * (aᶻ * bⁿᶻ) < (xᶻ * aⁿᶻ) * (aᶻ * bⁿᶻ) ≡⟨ {!   !} ⟩
+        (aᶻ * xⁿᶻ) * (bᶻ * aⁿᶻ) < (xᶻ * aⁿᶻ) * (aᶻ * bⁿᶻ) ≡⟨ {!   !} ⟩
+        (bᶻ * aⁿᶻ) * (aᶻ * xⁿᶻ) < (xᶻ * aⁿᶻ) * (aᶻ * bⁿᶻ) ≡⟨ (λ i → lemma1 bᶻ aⁿᶻ aᶻ xⁿᶻ i < lemma1 xᶻ aⁿᶻ aᶻ bⁿᶻ i) ⟩
+        (bᶻ * xⁿᶻ) * (aᶻ * aⁿᶻ) < (xᶻ * bⁿᶻ) * (aᶻ * aⁿᶻ) ≡⟨ {!   !} ⟩
+        (bᶻ * xⁿᶻ)              < (xᶻ * bⁿᶻ)              ∎
+      ... | inl (inr a<0) = {!   !}
+      ... | inr      0≡a  =
+        (aᶻ * xⁿᶻ) < (xᶻ * aⁿᶻ) ≡⟨ {!   !} ⟩
+        ( 0 * xⁿᶻ) < (xᶻ * aⁿᶻ) ≡⟨ {!   !} ⟩
+          0        < (xᶻ * aⁿᶻ) ≡⟨ {!   !} ⟩
+          0        < (xᶻ * bⁿᶻ) ≡⟨ {!   !} ⟩
+        ( 0 * xⁿᶻ) < (xᶻ * bⁿᶻ) ≡⟨ {!   !} ⟩
+        (bᶻ * xⁿᶻ) < (xᶻ * bⁿᶻ) ∎ where
+          bᶻ≡0 : bᶻ ≡ 0
+          bᶻ≡0 = {!   !}
+          κ : ∀ x y z → [ 0 < y ] → [ 0 < z ] → (0 < (x * y)) ≡ (0 < (x * z))
+          κ x y z p q =
+             0      < (x * y) ≡⟨ {!   !} ⟩
+            (0 * y) < (x * y) ≡⟨ {!   !} ⟩
+             0      <  x      ≡⟨ {!   !} ⟩
+            (0 * z) < (x * z) ≡⟨ {!   !} ⟩
+             0      < (x * z) ∎
       -- in (aᶻ * xⁿᶻ)              < (xᶻ * aⁿᶻ)              ≡⟨ {!   !} ⟩
       --    (aᶻ * xⁿᶻ) / (aᶻ * bⁿᶻ) < (xᶻ * aⁿᶻ) / (bᶻ * aⁿᶻ) ≡⟨ {!   !} ⟩
       --          xⁿᶻ  /       bⁿᶻ  <  xᶻ        /  bᶻ        ≡⟨ {!   !} ⟩
       --    (bᶻ * xⁿᶻ) < (xᶻ * bⁿᶻ) ∎
 
       -- aᶻ > 0:
-      in (aᶻ * xⁿᶻ)              < (xᶻ * aⁿᶻ)              ≡⟨ {!   !} ⟩
-         (aᶻ * xⁿᶻ) * (bᶻ * aⁿᶻ) < (xᶻ * aⁿᶻ) * (aᶻ * bⁿᶻ) ≡⟨ {!   !} ⟩
-         (bᶻ * aⁿᶻ) * (aᶻ * xⁿᶻ) < (xᶻ * aⁿᶻ) * (aᶻ * bⁿᶻ) ≡⟨ {!   !} ⟩
-         (bᶻ * xⁿᶻ) * (aᶻ * aⁿᶻ) < (xᶻ * bⁿᶻ) * (aᶻ * aⁿᶻ) ≡⟨ {!   !} ⟩
-         (bᶻ * xⁿᶻ)              < (xᶻ * bⁿᶻ)              ∎
     <'-respects-∼ʳ : ∀ x a b → a ∼ b → x <' a ≡ x <' b
     <'-respects-∼ʳ x@(xᶻ , xⁿ) a@(aᶻ , aⁿ) b@(bᶻ , bⁿ) a~b =
       let aⁿᶻ = [1+ aⁿ ⁿ]ᶻ
           bⁿᶻ = [1+ bⁿ ⁿ]ᶻ
           xⁿᶻ = [1+ xⁿ ⁿ]ᶻ
-      in {!   !}
-
+          p : aᶻ * bⁿᶻ ≡ bᶻ * aⁿᶻ
+          p = a~b
+      in (xᶻ * aⁿᶻ)              < (aᶻ * xⁿᶻ)              ≡⟨ {!   !} ⟩
+         (xᶻ * aⁿᶻ) * (aᶻ * bⁿᶻ) < (aᶻ * xⁿᶻ) * (aᶻ * bⁿᶻ) ≡⟨ {!   !} ⟩
+         (xᶻ * aⁿᶻ) * (aᶻ * bⁿᶻ) < (aᶻ * xⁿᶻ) * (bᶻ * aⁿᶻ) ≡⟨ {!   !} ⟩
+         (xᶻ * aⁿᶻ) * (aᶻ * bⁿᶻ) < (bᶻ * aⁿᶻ) * (aᶻ * xⁿᶻ) ≡⟨ {!   !} ⟩
+         (xᶻ * bⁿᶻ) * (aᶻ * aⁿᶻ) < (bᶻ * xⁿᶻ) * (aᶻ * aⁿᶻ) ≡⟨ {!   !} ⟩
+         (xᶻ * bⁿᶻ)              < (bᶻ * xⁿᶻ)              ∎
 
   _≤ᶠ_ : hPropRel ℚ ℚ ℓ-zero
   x ≤ᶠ y = ¬ᵖ (y <ᶠ x)
 
   minᶠ : ℚ → ℚ → ℚ
-  minᶠ a b = onCommonDenomSym min' min'-sym g a b where
+  minᶠ a b = onCommonDenomSym min' min'-sym min'-respects-∼ a b where
     min' : ℤ × ℕ₊₁ → ℤ × ℕ₊₁ → ℤ
     min' (aᶻ , aⁿ) (bᶻ , bⁿ) =
       let aⁿᶻ = [1+ aⁿ ⁿ]ᶻ
           bⁿᶻ = [1+ bⁿ ⁿ]ᶻ
       in min (aᶻ * bⁿᶻ) (bᶻ * aⁿᶻ)
     min'-sym : ∀ x y → min' x y ≡ min' y x
-    min'-sym (aᶻ , aⁿ) (bᶻ , bⁿ) = {! is-min  !}
-    g : (a@(aᶻ , aⁿ) b@(bᶻ , bⁿ) x@(xᶻ , xⁿ) : ℤ × ℕ₊₁)
+    min'-sym (aᶻ , aⁿ) (bᶻ , bⁿ) = min-comm (aᶻ * [1+ bⁿ ⁿ]ᶻ) (bᶻ * [1+ aⁿ ⁿ]ᶻ)
+    min'-respects-∼ : (a@(aᶻ , aⁿ) b@(bᶻ , bⁿ) x@(xᶻ , xⁿ) : ℤ × ℕ₊₁)
       → a ∼ b
       → [1+ bⁿ ⁿ]ᶻ * min' a x ≡ [1+ aⁿ ⁿ]ᶻ * min' b x
-    g a@(aᶻ , aⁿ) b@(bᶻ , bⁿ) x@(xᶻ , xⁿ) a~b =
+    min'-respects-∼ a@(aᶻ , aⁿ) b@(bᶻ , bⁿ) x@(xᶻ , xⁿ) a~b =
+      bⁿᶻ * min (aᶻ * xⁿᶻ) (xᶻ * aⁿᶻ)           ≡⟨ ·-min-distribˡ (aᶻ * xⁿᶻ) (xᶻ * aⁿᶻ) bⁿᶻ 0≤bⁿᶻ ⟩
+      min (bⁿᶻ * (aᶻ * xⁿᶻ)) (bⁿᶻ * (xᶻ * aⁿᶻ)) ≡⟨ (λ i → min (·-assoc bⁿᶻ aᶻ xⁿᶻ i) (bⁿᶻ * (xᶻ * aⁿᶻ))) ⟩
+      min ((bⁿᶻ * aᶻ) * xⁿᶻ) (bⁿᶻ * (xᶻ * aⁿᶻ)) ≡⟨ (λ i → min ((·-comm bⁿᶻ aᶻ i) * xⁿᶻ) (bⁿᶻ * (xᶻ * aⁿᶻ))) ⟩
+      min ((aᶻ * bⁿᶻ) * xⁿᶻ) (bⁿᶻ * (xᶻ * aⁿᶻ)) ≡⟨ (λ i → min (p i * xⁿᶻ) (bⁿᶻ * (xᶻ * aⁿᶻ))) ⟩
+      min ((bᶻ * aⁿᶻ) * xⁿᶻ) (bⁿᶻ * (xᶻ * aⁿᶻ)) ≡⟨ (λ i → min (·-comm bᶻ aⁿᶻ i * xⁿᶻ) (·-assoc bⁿᶻ xᶻ aⁿᶻ i)) ⟩
+      min ((aⁿᶻ * bᶻ) * xⁿᶻ) ((bⁿᶻ * xᶻ) * aⁿᶻ) ≡⟨ (λ i → min (·-assoc aⁿᶻ bᶻ xⁿᶻ (~ i)) (·-comm (bⁿᶻ * xᶻ) aⁿᶻ i)) ⟩
+      min (aⁿᶻ * (bᶻ * xⁿᶻ)) (aⁿᶻ * (bⁿᶻ * xᶻ)) ≡⟨ sym $ ·-min-distribˡ (bᶻ * xⁿᶻ) (bⁿᶻ * xᶻ) aⁿᶻ 0≤aⁿᶻ ⟩
+      aⁿᶻ * min (bᶻ * xⁿᶻ) (bⁿᶻ * xᶻ)           ≡⟨ (λ i → aⁿᶻ * min (bᶻ * xⁿᶻ) (·-comm bⁿᶻ xᶻ i)) ⟩
+      aⁿᶻ * min (bᶻ * xⁿᶻ) (xᶻ * bⁿᶻ)           ∎
+      where
+        aⁿᶻ = [1+ aⁿ ⁿ]ᶻ
+        bⁿᶻ = [1+ bⁿ ⁿ]ᶻ
+        xⁿᶻ = [1+ xⁿ ⁿ]ᶻ
+        p : aᶻ * bⁿᶻ ≡ bᶻ * aⁿᶻ
+        p = a~b
+        0≤aⁿᶻ : [ 0 ≤ aⁿᶻ ]
+        0≤aⁿᶻ (k , p) = snotzⁿ $ sym (+ⁿ-suc k _) ∙ p
+        0≤bⁿᶻ : [ 0 ≤ bⁿᶻ ]
+        0≤bⁿᶻ (k , p) = snotzⁿ $ sym (+ⁿ-suc k _) ∙ p
+
+  -- same proof as for min
+  maxᶠ : ℚ → ℚ → ℚ
+  maxᶠ a b = onCommonDenomSym max' max'-sym max'-respects-∼ a b where
+    max' : ℤ × ℕ₊₁ → ℤ × ℕ₊₁ → ℤ
+    max' (aᶻ , aⁿ) (bᶻ , bⁿ) =
       let aⁿᶻ = [1+ aⁿ ⁿ]ᶻ
           bⁿᶻ = [1+ bⁿ ⁿ]ᶻ
-          xⁿᶻ = [1+ xⁿ ⁿ]ᶻ
-          p : aᶻ * bⁿᶻ ≡ bᶻ * aⁿᶻ
-          p = a~b
-      -- aᶻ > 0
-      in bⁿᶻ * min (aᶻ * xⁿᶻ) (xᶻ * aⁿᶻ)           ≡⟨ {!   !} ⟩
-         min (bⁿᶻ * (aᶻ * xⁿᶻ)) (bⁿᶻ * (xᶻ * aⁿᶻ)) ≡⟨ {!   !} ⟩
-         min ((aᶻ * bⁿᶻ) * xⁿᶻ) (bⁿᶻ * (xᶻ * aⁿᶻ)) ≡⟨ {!   !} ⟩
-         min ((bᶻ * aⁿᶻ) * xⁿᶻ) (bⁿᶻ * (xᶻ * aⁿᶻ)) ≡⟨ {!   !} ⟩
-         min (aⁿᶻ * (bᶻ * xⁿᶻ)) (aⁿᶻ * (bⁿᶻ * xᶻ)) ≡⟨ {!   !} ⟩
-         aⁿᶻ * min (bᶻ * xⁿᶻ) (bⁿᶻ * xᶻ)           ≡⟨ {!   !} ⟩
-         aⁿᶻ * min (bᶻ * xⁿᶻ) (xᶻ * bⁿᶻ)           ∎
+      in max (aᶻ * bⁿᶻ) (bᶻ * aⁿᶻ)
+    max'-sym : ∀ x y → max' x y ≡ max' y x
+    max'-sym (aᶻ , aⁿ) (bᶻ , bⁿ) = max-comm (aᶻ * [1+ bⁿ ⁿ]ᶻ) (bᶻ * [1+ aⁿ ⁿ]ᶻ)
+    max'-respects-∼ : (a@(aᶻ , aⁿ) b@(bᶻ , bⁿ) x@(xᶻ , xⁿ) : ℤ × ℕ₊₁)
+      → a ∼ b
+      → [1+ bⁿ ⁿ]ᶻ * max' a x ≡ [1+ aⁿ ⁿ]ᶻ * max' b x
+    max'-respects-∼ a@(aᶻ , aⁿ) b@(bᶻ , bⁿ) x@(xᶻ , xⁿ) a~b =
+      bⁿᶻ * max (aᶻ * xⁿᶻ) (xᶻ * aⁿᶻ)           ≡⟨ ·-max-distribˡ (aᶻ * xⁿᶻ) (xᶻ * aⁿᶻ) bⁿᶻ 0≤bⁿᶻ ⟩
+      max (bⁿᶻ * (aᶻ * xⁿᶻ)) (bⁿᶻ * (xᶻ * aⁿᶻ)) ≡⟨ (λ i → max (·-assoc bⁿᶻ aᶻ xⁿᶻ i) (bⁿᶻ * (xᶻ * aⁿᶻ))) ⟩
+      max ((bⁿᶻ * aᶻ) * xⁿᶻ) (bⁿᶻ * (xᶻ * aⁿᶻ)) ≡⟨ (λ i → max ((·-comm bⁿᶻ aᶻ i) * xⁿᶻ) (bⁿᶻ * (xᶻ * aⁿᶻ))) ⟩
+      max ((aᶻ * bⁿᶻ) * xⁿᶻ) (bⁿᶻ * (xᶻ * aⁿᶻ)) ≡⟨ (λ i → max (p i * xⁿᶻ) (bⁿᶻ * (xᶻ * aⁿᶻ))) ⟩
+      max ((bᶻ * aⁿᶻ) * xⁿᶻ) (bⁿᶻ * (xᶻ * aⁿᶻ)) ≡⟨ (λ i → max (·-comm bᶻ aⁿᶻ i * xⁿᶻ) (·-assoc bⁿᶻ xᶻ aⁿᶻ i)) ⟩
+      max ((aⁿᶻ * bᶻ) * xⁿᶻ) ((bⁿᶻ * xᶻ) * aⁿᶻ) ≡⟨ (λ i → max (·-assoc aⁿᶻ bᶻ xⁿᶻ (~ i)) (·-comm (bⁿᶻ * xᶻ) aⁿᶻ i)) ⟩
+      max (aⁿᶻ * (bᶻ * xⁿᶻ)) (aⁿᶻ * (bⁿᶻ * xᶻ)) ≡⟨ sym $ ·-max-distribˡ (bᶻ * xⁿᶻ) (bⁿᶻ * xᶻ) aⁿᶻ 0≤aⁿᶻ ⟩
+      aⁿᶻ * max (bᶻ * xⁿᶻ) (bⁿᶻ * xᶻ)           ≡⟨ (λ i → aⁿᶻ * max (bᶻ * xⁿᶻ) (·-comm bⁿᶻ xᶻ i)) ⟩
+      aⁿᶻ * max (bᶻ * xⁿᶻ) (xᶻ * bⁿᶻ)           ∎
+      where
+        aⁿᶻ = [1+ aⁿ ⁿ]ᶻ
+        bⁿᶻ = [1+ bⁿ ⁿ]ᶻ
+        xⁿᶻ = [1+ xⁿ ⁿ]ᶻ
+        p : aᶻ * bⁿᶻ ≡ bᶻ * aⁿᶻ
+        p = a~b
+        0≤aⁿᶻ : [ 0 ≤ aⁿᶻ ]
+        0≤aⁿᶻ (k , p) = snotzⁿ $ sym (+ⁿ-suc k _) ∙ p
+        0≤bⁿᶻ : [ 0 ≤ bⁿᶻ ]
+        0≤bⁿᶻ (k , p) = snotzⁿ $ sym (+ⁿ-suc k _) ∙ p
 
-  pos<pos[suc] : ∀ x → [ pos x < pos (suc x) ]
-  pos<pos[suc] 0 = 0<1
-  pos<pos[suc] (suc x) = suc-creates-< (pos x) (pos (suc x)) .fst (pos<pos[suc] x)
-
-  0<ᶻpos[suc] : ∀ x → [ 0 < pos (suc x) ]
-  0<ᶻpos[suc]      0  = 0<1
-  0<ᶻpos[suc] (suc x) = <-trans 0 (pos (suc x)) (pos (suc (suc x))) (0<ᶻpos[suc] x) (suc-creates-< (pos x) (pos (suc x)) .fst (pos<pos[suc] x))
-
-  maxᶠ : ℚ → ℚ → ℚ
-  maxᶠ a b = onCommonDenom f g h a b where
-    f : ℤ × ℕ₊₁ → ℤ × ℕ₊₁ → ℤ
-    f (aᶻ , aⁿ) (bᶻ , bⁿ) = max (aᶻ * [1+ bⁿ ⁿ]ᶻ) (bᶻ * [1+ aⁿ ⁿ]ᶻ)
-    g : (a@(aᶻ , aⁿ) b@(bᶻ , bⁿ) c@(cᶻ , cⁿ) : ℤ × ℕ₊₁)
-      → aᶻ * [1+ bⁿ ⁿ]ᶻ         ≡ bᶻ * [1+ aⁿ ⁿ]ᶻ
-      →      [1+ bⁿ ⁿ]ᶻ * f a c ≡      [1+ aⁿ ⁿ]ᶻ * f b c
-    g a@(aᶻ , aⁿ) b@(bᶻ , bⁿ) c@(cᶻ , cⁿ) aᶻ*bⁿ'≡bᶻ*aⁿ' = let
-      aⁿ' = [1+ aⁿ ⁿ]ᶻ
-      bⁿ' = [1+ bⁿ ⁿ]ᶻ
-      cⁿ' = [1+ cⁿ ⁿ]ᶻ
-      0<aⁿ' : [ 0 < aⁿ' ]
-      0<aⁿ' = 0<ᶻpos[suc] _
-      0<bⁿ' : [ 0 < bⁿ' ]
-      0<bⁿ' = 0<ᶻpos[suc] _
-      0<cⁿ' : [ 0 < cⁿ' ]
-      0<cⁿ' = 0<ᶻpos[suc] _
-      γ : bⁿ' * max (aᶻ * cⁿ') (cᶻ * aⁿ')
-        ≡ aⁿ' * max (bᶻ * cⁿ') (cᶻ * bⁿ')
-      γ = {!   !}
-      in γ
-    h : (a@(aᶻ , aⁿ) b@(bᶻ , bⁿ) c@(cᶻ , cⁿ) : ℤ × ℕ₊₁)
-      →     bᶻ * [1+ cⁿ ⁿ]ᶻ ≡     cᶻ * [1+ bⁿ ⁿ]ᶻ
-      → f a b  * [1+ cⁿ ⁿ]ᶻ ≡ f a c  * [1+ bⁿ ⁿ]ᶻ
-    h a@(aᶻ , aⁿ) b@(bᶻ , bⁿ) c@(cᶻ , cⁿ) bᶻ*cⁿ≡cᶻ*bⁿ = {!   !}
+  -- maxᶠ : ℚ → ℚ → ℚ
+  -- maxᶠ a b = onCommonDenom f g h a b where
+  --   f : ℤ × ℕ₊₁ → ℤ × ℕ₊₁ → ℤ
+  --   f (aᶻ , aⁿ) (bᶻ , bⁿ) = max (aᶻ * [1+ bⁿ ⁿ]ᶻ) (bᶻ * [1+ aⁿ ⁿ]ᶻ)
+  --   g : (a@(aᶻ , aⁿ) b@(bᶻ , bⁿ) c@(cᶻ , cⁿ) : ℤ × ℕ₊₁)
+  --     → aᶻ * [1+ bⁿ ⁿ]ᶻ         ≡ bᶻ * [1+ aⁿ ⁿ]ᶻ
+  --     →      [1+ bⁿ ⁿ]ᶻ * f a c ≡      [1+ aⁿ ⁿ]ᶻ * f b c
+  --   g a@(aᶻ , aⁿ) b@(bᶻ , bⁿ) c@(cᶻ , cⁿ) aᶻ*bⁿ'≡bᶻ*aⁿ' = let
+  --     aⁿ' = [1+ aⁿ ⁿ]ᶻ
+  --     bⁿ' = [1+ bⁿ ⁿ]ᶻ
+  --     cⁿ' = [1+ cⁿ ⁿ]ᶻ
+  --     0<aⁿ' : [ 0 < aⁿ' ]
+  --     0<aⁿ' = 0<ᶻpos[suc] _
+  --     0<bⁿ' : [ 0 < bⁿ' ]
+  --     0<bⁿ' = 0<ᶻpos[suc] _
+  --     0<cⁿ' : [ 0 < cⁿ' ]
+  --     0<cⁿ' = 0<ᶻpos[suc] _
+  --     γ : bⁿ' * max (aᶻ * cⁿ') (cᶻ * aⁿ')
+  --       ≡ aⁿ' * max (bᶻ * cⁿ') (cᶻ * bⁿ')
+  --     γ = {!   !}
+  --     in γ
+  --   h : (a@(aᶻ , aⁿ) b@(bᶻ , bⁿ) c@(cᶻ , cⁿ) : ℤ × ℕ₊₁)
+  --     →     bᶻ * [1+ cⁿ ⁿ]ᶻ ≡     cᶻ * [1+ bⁿ ⁿ]ᶻ
+  --     → f a b  * [1+ cⁿ ⁿ]ᶻ ≡ f a c  * [1+ bⁿ ⁿ]ᶻ
+  --   h a@(aᶻ , aⁿ) b@(bᶻ , bⁿ) c@(cᶻ , cⁿ) bᶻ*cⁿ≡cᶻ*bⁿ = {!   !}
 
 open Definitions public renaming
   ( _<ᶠ_ to _<_
@@ -224,6 +339,16 @@ open LinearlyOrderedCommRing ℤbundle using () renaming
 
 open import Cubical.HITs.Rationals.QuoQ renaming
   ([_] to [_]ᶠ)
+
+<-asym : ∀ x y → [ x < y ] → [ ¬(y < x) ]
+<-asym x y = {!   !}
+
+_#_ : hPropRel ℚ ℚ ℓ-zero
+x # y = [ <-asym x y ] (x < y) ⊎ᵖ (y < x)
+
+·-inv'' : ∀ x → [ (∃[ y ] ([ isSetℚ ] (x * y) ≡ˢ 1)) ⇔ (x # 0) ]
+·-inv'' x .fst p = {!   !}
+·-inv'' x .snd p = {!   !}
 
 +-Semigroup : [ isSemigroup _+_ ]
 +-Semigroup .IsSemigroup.is-set   = isSetℚ
@@ -256,15 +381,15 @@ is-CommSemiring .IsCommSemiring.·-comm      = *-comm
 <-StrictLinearOrder .IsStrictLinearOrder.is-trans  = {!   !}
 <-StrictLinearOrder .IsStrictLinearOrder.is-tricho = {!   !}
 
-≤-isLattice : [ isLattice _≤_ min max ]
-≤-isLattice .IsLattice.≤-PartialOrder = linearorder⇒partialorder _ (≤'-isLinearOrder <-StrictLinearOrder)
-≤-isLattice .IsLattice.is-min         = {!   !}
-≤-isLattice .IsLattice.is-max         = {!   !}
+≤-Lattice : [ isLattice _≤_ min max ]
+≤-Lattice .IsLattice.≤-PartialOrder = linearorder⇒partialorder _ (≤'-isLinearOrder <-StrictLinearOrder)
+≤-Lattice .IsLattice.is-min         = {!   !}
+≤-Lattice .IsLattice.is-max         = {!   !}
 
 is-LinearlyOrderedCommSemiring : [ isLinearlyOrderedCommSemiring 0 1 _+_ _*_ _<_ min max ]
 is-LinearlyOrderedCommSemiring .IsLinearlyOrderedCommSemiring.is-CommSemiring     = is-CommSemiring
 is-LinearlyOrderedCommSemiring .IsLinearlyOrderedCommSemiring.<-StrictLinearOrder = <-StrictLinearOrder
-is-LinearlyOrderedCommSemiring .IsLinearlyOrderedCommSemiring.≤-isLattice         = ≤-isLattice
+is-LinearlyOrderedCommSemiring .IsLinearlyOrderedCommSemiring.≤-Lattice           = ≤-Lattice
 is-LinearlyOrderedCommSemiring .IsLinearlyOrderedCommSemiring.+-<-ext             = {!   !}
 is-LinearlyOrderedCommSemiring .IsLinearlyOrderedCommSemiring.·-preserves-<       = {!   !}
 
@@ -274,7 +399,7 @@ is-LinearlyOrderedCommRing. IsLinearlyOrderedCommRing.+-inverse                 
 
 is-LinearlyOrderedField : [ isLinearlyOrderedField 0 1 _+_ _*_ -_ _<_ min max ]
 is-LinearlyOrderedField .IsLinearlyOrderedField.is-LinearlyOrderedCommRing = is-LinearlyOrderedCommRing
-is-LinearlyOrderedField .IsLinearlyOrderedField.·-inv''                    = {!   !}
+is-LinearlyOrderedField .IsLinearlyOrderedField.·-inv''                    = ·-inv''
 
 ℚbundle : LinearlyOrderedField {ℓ-zero} {ℓ-zero}
 ℚbundle .LinearlyOrderedField.Carrier                  = ℚ

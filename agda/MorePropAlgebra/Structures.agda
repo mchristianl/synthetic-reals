@@ -477,15 +477,15 @@ record IsAlmostPartiallyOrderedField {F : Type ℓ} (0f 1f : F) (_+_ _·_ : F �
     -- 4. NOTE: we already have ≤-isPartialOrder in ≤-isLattice
     -- ≤-isPartialOrder : IsPartialOrder _≤_
     -- 5.
-    ≤-isLattice : [ isLattice _≤_ min max ]
+    ≤-Lattice : [ isLattice _≤_ min max ]
 
   _ : isSet F                                     ; _ = is-set
   _ : [ isCommRing 0f 1f _+_ _·_ (-_)            ]; _ = is-CommRing
   _ : [ isStrictPartialOrder _<_                 ]; _ = <-StrictPartialOrder
   _ : [ isNonzeroInverseˢ'' is-set 0f 1f _·_ _#_ ]; _ = ·-inv''
-  _ : [ isLattice _≤_ min max                    ]; _ = ≤-isLattice
+  _ : [ isLattice _≤_ min max                    ]; _ = ≤-Lattice
 
-  open IsLattice ≤-isLattice renaming (≤-antisym to ≤-antisymᵗ) public
+  open IsLattice ≤-Lattice renaming (≤-antisym to ≤-antisymᵗ) public
 
   ≤-antisym : [ isAntisymˢ _≤_ is-set ]
   ≤-antisym = isAntisymˢ⇔isAntisym _≤_ is-set .snd ≤-antisymᵗ
