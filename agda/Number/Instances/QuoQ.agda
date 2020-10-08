@@ -105,8 +105,16 @@ module Definitions where
   +-creates-≤ : ∀ a b x → [ (a ≤ b) ⇔ ((a + x) ≤ (b + x)) ]
   +-creates-≤ a b x = {!   !}
 
+  ·-creates-< : ∀ a b x → [ 0 < x ] → [ (a < b) ⇔ ((a * x) < (b * x)) ]
+  ·-creates-< a b x p .fst q = ·-preserves-< a b x p q
+  ·-creates-< a b x p .snd q = ·ᶻ-reflects-<ᶻ a b x p q
+
   ·-creates-≤ : ∀ a b x → [ 0f ≤ x ] → [ (a ≤ b) ⇔ ((a · x) ≤ (b · x)) ]
-  ·-creates-≤ a b x = {!   !}
+  ·-creates-≤ a b x 0≤x .fst p = {!   !}
+  ·-creates-≤ a b x 0≤x .snd p = {!   !}
+
+  ·-creates-≤-≡ : ∀ a b x → [ 0f ≤ x ] → (a ≤ b) ≡ ((a · x) ≤ (b · x))
+  ·-creates-≤-≡ a b x 0≤x = uncurry ⇔toPath $ ·-creates-≤ a b x 0≤x
 
   ℤlattice : Lattice {ℓ-zero} {ℓ-zero}
   ℤlattice = record { LinearlyOrderedCommRing ℤbundle renaming (≤-Lattice to is-Lattice) }
@@ -171,10 +179,6 @@ module Definitions where
   *-preserves-<0 a b p q = subst (λ p → [ p < a * b ]) (*-nullifiesˡ b) (·-preserves-< 0 a b q p)
 
   -- data Trichotomy
-
-  ·-creates-< : ∀ a b x → [ 0 < x ] → [ (a < b) ⇔ ((a * x) < (b * x)) ]
-  ·-creates-< a b x p .fst q = ·-preserves-< a b x p q
-  ·-creates-< a b x p .snd q = ·ᶻ-reflects-<ᶻ a b x p q
 
   ·-creates-<-≡ : ∀ a b x → [ 0 < x ] → (a < b) ≡ ((a * x) < (b * x))
   ·-creates-<-≡ a b x p = ⇔toPath (·-creates-< a b x p .fst) (·-creates-< a b x p .snd)
@@ -363,7 +367,12 @@ open LinearlyOrderedCommRing ℤbundle using () renaming
   ( min to minᶻ
   ; max to maxᶻ
   -- ; _<_ to _<ᶻ_
+  ; _≤_ to _≤ᶻ_
   ; <-irrefl to <ᶻ-irrefl
+  ; is-min to is-minᶻ
+  ; is-max to is-maxᶻ
+  ; ·-assoc to ·ᶻ-assoc
+  ; ·-comm to ·ᶻ-comm
   )
 
 open import Cubical.HITs.Rationals.QuoQ renaming
@@ -422,6 +431,65 @@ is-CommSemiring .IsCommSemiring.·-comm      = *-comm
 <-StrictLinearOrder .IsStrictLinearOrder.is-irrefl = <-irrefl
 <-StrictLinearOrder .IsStrictLinearOrder.is-trans  = {!   !}
 <-StrictLinearOrder .IsStrictLinearOrder.is-tricho = {!   !}
+
+open import Cubical.Data.NatPlusOne using (_*₊₁_)
+
+⇔toPath' : ∀{ℓ} {P Q : hProp ℓ} → [ P ⇔ Q ] → P ≡ Q
+⇔toPath' = uncurry ⇔toPath
+
+pathTo⇔ : ∀{ℓ} {P Q : hProp ℓ} → P ≡ Q → [ P ⇔ Q ]
+pathTo⇔ p≡q = (pathTo⇒ p≡q , pathTo⇐ p≡q)
+
+⊓⇔⊓ : ∀{ℓ ℓ' ℓ'' ℓ'''} {P : hProp ℓ} {Q : hProp ℓ'} {R : hProp ℓ''} {S : hProp ℓ'''}
+   → [ (P ⇔ R) ⊓ (Q ⇔ S) ] → [ (P ⊓ Q) ⇔ (R ⊓ S) ]
+⊓⇔⊓ (p⇔r , q⇔s) .fst (p , q) = p⇔r .fst p , q⇔s .fst q
+⊓⇔⊓ (p⇔r , q⇔s) .snd (r , s) = p⇔r .snd r , q⇔s .snd s
+
+⊓≡⊓ : ∀{ℓ} {P Q R S : hProp ℓ} → P ≡ R → Q ≡ S → (P ⊓ Q) ≡ (R ⊓ S)
+⊓≡⊓ p≡r q≡s i = p≡r i ⊓ q≡s i
+
+is-min : (x y z : ℚ) → [ (z ≤ min x y) ⇔ (z ≤ x) ⊓ (z ≤ y) ]
+is-min = SetQuotient.elimProp3  {R = _∼_} (λ x y z → isProp[] ((z ≤ min x y) ⇔ (z ≤ x) ⊓ (z ≤ y))) γ where
+  γ : (a b c : ℤ × ℕ₊₁) → [ ([ c ]ᶠ ≤ min [ a ]ᶠ [ b ]ᶠ) ⇔ ([ c ]ᶠ ≤ [ a ]ᶠ) ⊓ ([ c ]ᶠ ≤ [ b ]ᶠ) ]
+  γ a@(aᶻ , aⁿ) b@(bᶻ , bⁿ) c@(cᶻ , cⁿ) = pathTo⇔ (sym κ) where -- κ₁ , κ₂
+    aⁿᶻ = [1+ aⁿ ⁿ]ᶻ
+    bⁿᶻ = [1+ bⁿ ⁿ]ᶻ
+    cⁿᶻ = [1+ cⁿ ⁿ]ᶻ
+    0≤aⁿᶻ : [ 0 ≤ᶻ aⁿᶻ ]
+    0≤aⁿᶻ (k , p) = snotzⁿ $ sym (+ⁿ-suc k _) ∙ p
+    0≤bⁿᶻ : [ 0 ≤ᶻ bⁿᶻ ]
+    0≤bⁿᶻ (k , p) = snotzⁿ $ sym (+ⁿ-suc k _) ∙ p
+    0≤cⁿᶻ : [ 0 ≤ᶻ cⁿᶻ ]
+    0≤cⁿᶻ (k , p) = snotzⁿ $ sym (+ⁿ-suc k _) ∙ p
+    -- -- note, that the following holds definitionally (TODO: put this at the definition of `min`)
+    -- _ =    min [ aᶻ , aⁿ ]ᶠ [ bᶻ , bⁿ ]ᶠ                 ≡⟨ refl ⟩
+    --     [ (minᶻ (aᶻ *ᶻ bⁿᶻ) (bᶻ *ᶻ aⁿᶻ) , aⁿ *₊₁ bⁿ) ]ᶠ  ∎
+    -- -- and we also have definitionally
+    -- _ : [1+ aⁿ *₊₁ bⁿ ⁿ]ᶻ ≡ aⁿᶻ *ᶻ bⁿᶻ
+    -- _ = refl
+    -- -- therefore, we have for the LHS:
+    -- _ = ([ cᶻ , cⁿ ]ᶠ ≤ min [ aᶻ , aⁿ ]ᶠ [ bᶻ , bⁿ ]ᶠ)                      ≡⟨ refl ⟩
+    --     ([ cᶻ , cⁿ ]ᶠ ≤ [ (minᶻ (aᶻ *ᶻ bⁿᶻ) (bᶻ *ᶻ aⁿᶻ) , aⁿ *₊₁ bⁿ) ]ᶠ)    ≡⟨ refl ⟩
+    --     (¬([ (minᶻ (aᶻ *ᶻ bⁿᶻ) (bᶻ *ᶻ aⁿᶻ) , aⁿ *₊₁ bⁿ) ]ᶠ < [ cᶻ , cⁿ ]ᶠ)) ≡⟨ refl ⟩
+    --     ¬((minᶻ (aᶻ *ᶻ bⁿᶻ) (bᶻ *ᶻ aⁿᶻ) *ᶻ cⁿᶻ) <ᶻ (cᶻ *ᶻ (aⁿᶻ *ᶻ bⁿᶻ)))    ≡⟨ refl ⟩
+    --     ((cᶻ *ᶻ (aⁿᶻ *ᶻ bⁿᶻ)) ≤ᶻ (minᶻ (aᶻ *ᶻ bⁿᶻ) (bᶻ *ᶻ aⁿᶻ) *ᶻ cⁿᶻ))     ∎
+    -- -- similar for the RHS:
+    -- _ =  ([ cᶻ , cⁿ ]ᶠ ≤ [ aᶻ , aⁿ ]ᶠ) ⊓  ([ cᶻ , cⁿ ]ᶠ ≤ [ bᶻ , bⁿ ]ᶠ) ≡⟨ refl ⟩
+    --     ¬([ aᶻ , aⁿ ]ᶠ < [ cᶻ , cⁿ ]ᶠ) ⊓ ¬([ bᶻ , bⁿ ]ᶠ < [ cᶻ , cⁿ ]ᶠ) ≡⟨ refl ⟩
+    --     ¬((aᶻ *ᶻ cⁿᶻ)  <ᶻ (cᶻ *ᶻ aⁿᶻ)) ⊓ ¬((bᶻ *ᶻ cⁿᶻ)  <ᶻ (cᶻ *ᶻ bⁿᶻ)) ≡⟨ refl ⟩
+    --      ((cᶻ *ᶻ aⁿᶻ)  ≤ᶻ (aᶻ *ᶻ cⁿᶻ)) ⊓  ((cᶻ *ᶻ bⁿᶻ)  ≤ᶻ (bᶻ *ᶻ cⁿᶻ)) ∎
+    -- -- therfore, only properties on ℤ remain
+    -- RHS = [ ((cᶻ *ᶻ aⁿᶻ)  ≤ᶻ (aᶻ *ᶻ cⁿᶻ)) ⊓  ((cᶻ *ᶻ bⁿᶻ)  ≤ᶻ (bᶻ *ᶻ cⁿᶻ)) ]
+    -- LHS = [ ((cᶻ *ᶻ (aⁿᶻ *ᶻ bⁿᶻ)) ≤ᶻ (minᶻ (aᶻ *ᶻ bⁿᶻ) (bᶻ *ᶻ aⁿᶻ) *ᶻ cⁿᶻ)) ]
+    -- strategy: multiply everything with aⁿᶻ, bⁿᶻ, cⁿᶻ
+    κ = (
+      ((cᶻ *ᶻ aⁿᶻ)         ≤ᶻ (aᶻ *ᶻ cⁿᶻ)        ) ⊓ ((cᶻ *ᶻ bⁿᶻ)         ≤ᶻ (bᶻ *ᶻ cⁿᶻ)        ) ≡⟨ ⊓≡⊓ (Definitions.·-creates-≤-≡ (cᶻ *ᶻ aⁿᶻ) (aᶻ *ᶻ cⁿᶻ) bⁿᶻ 0≤bⁿᶻ) (Definitions.·-creates-≤-≡ (cᶻ *ᶻ bⁿᶻ) (bᶻ *ᶻ cⁿᶻ) aⁿᶻ 0≤aⁿᶻ) ⟩
+      ((cᶻ *ᶻ aⁿᶻ) *ᶻ bⁿᶻ  ≤ᶻ (aᶻ *ᶻ cⁿᶻ) *ᶻ bⁿᶻ ) ⊓ ((cᶻ *ᶻ bⁿᶻ) *ᶻ aⁿᶻ  ≤ᶻ (bᶻ *ᶻ cⁿᶻ) *ᶻ aⁿᶻ ) ≡⟨ ⊓≡⊓ (λ i → ·ᶻ-assoc cᶻ aⁿᶻ bⁿᶻ (~ i) ≤ᶻ ·ᶻ-assoc aᶻ cⁿᶻ bⁿᶻ (~ i)) (λ i → ·ᶻ-assoc cᶻ bⁿᶻ aⁿᶻ (~ i) ≤ᶻ ·ᶻ-assoc bᶻ cⁿᶻ aⁿᶻ (~ i)) ⟩
+      ( cᶻ *ᶻ (aⁿᶻ *ᶻ bⁿᶻ) ≤ᶻ  aᶻ *ᶻ (cⁿᶻ *ᶻ bⁿᶻ)) ⊓ ( cᶻ *ᶻ (bⁿᶻ *ᶻ aⁿᶻ) ≤ᶻ  bᶻ *ᶻ (cⁿᶻ *ᶻ aⁿᶻ)) ≡⟨ ⊓≡⊓ (λ i → cᶻ *ᶻ (aⁿᶻ *ᶻ bⁿᶻ) ≤ᶻ  aᶻ *ᶻ (·ᶻ-comm cⁿᶻ bⁿᶻ i)) (λ i → cᶻ *ᶻ (·ᶻ-comm bⁿᶻ aⁿᶻ i) ≤ᶻ  bᶻ *ᶻ (·ᶻ-comm cⁿᶻ aⁿᶻ i)) ⟩
+      ( cᶻ *ᶻ (aⁿᶻ *ᶻ bⁿᶻ) ≤ᶻ  aᶻ *ᶻ (bⁿᶻ *ᶻ cⁿᶻ)) ⊓ ( cᶻ *ᶻ (aⁿᶻ *ᶻ bⁿᶻ) ≤ᶻ  bᶻ *ᶻ (aⁿᶻ *ᶻ cⁿᶻ)) ≡⟨ sym $ ⇔toPath' $ is-minᶻ (aᶻ *ᶻ (bⁿᶻ *ᶻ cⁿᶻ)) (bᶻ *ᶻ (aⁿᶻ *ᶻ cⁿᶻ)) (cᶻ *ᶻ (aⁿᶻ *ᶻ bⁿᶻ)) ⟩
+      ((cᶻ *ᶻ (aⁿᶻ *ᶻ bⁿᶻ)) ≤ᶻ minᶻ (aᶻ *ᶻ (bⁿᶻ *ᶻ cⁿᶻ)) (bᶻ *ᶻ (aⁿᶻ *ᶻ cⁿᶻ)))                    ≡⟨ (λ i → ((cᶻ *ᶻ (aⁿᶻ *ᶻ bⁿᶻ)) ≤ᶻ minᶻ (·ᶻ-assoc aᶻ bⁿᶻ cⁿᶻ i) (·ᶻ-assoc bᶻ aⁿᶻ cⁿᶻ i))) ⟩
+      ((cᶻ *ᶻ (aⁿᶻ *ᶻ bⁿᶻ)) ≤ᶻ minᶻ ((aᶻ *ᶻ bⁿᶻ) *ᶻ cⁿᶻ) ((bᶻ *ᶻ aⁿᶻ) *ᶻ cⁿᶻ))                    ≡⟨ (λ i → (cᶻ *ᶻ (aⁿᶻ *ᶻ bⁿᶻ)) ≤ᶻ Definitions.·-min-distribʳ (aᶻ *ᶻ bⁿᶻ) (bᶻ *ᶻ aⁿᶻ) cⁿᶻ 0≤cⁿᶻ (~ i)) ⟩
+      ((cᶻ *ᶻ (aⁿᶻ *ᶻ bⁿᶻ)) ≤ᶻ (minᶻ (aᶻ *ᶻ bⁿᶻ) (bᶻ *ᶻ aⁿᶻ) *ᶻ cⁿᶻ))                             ∎)
 
 ≤-Lattice : [ isLattice _≤_ min max ]
 ≤-Lattice .IsLattice.≤-PartialOrder = linearorder⇒partialorder _ (≤'-isLinearOrder <-StrictLinearOrder)
