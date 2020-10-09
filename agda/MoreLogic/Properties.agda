@@ -27,6 +27,9 @@ open import Utils
 open import MoreLogic.Reasoning
 open import MoreLogic.Definitions
 
+isProp⊤ : isProp [ ⊤ ]
+isProp⊤ tt tt = refl
+
 symₚ : ∀{ℓ} → {A : Type ℓ} {x y : A} → [ x ≡ₚ y ] → [ y ≡ₚ x ]
 symₚ {x = x} x≡y = substₚ (λ p → p ≡ₚ x) x≡y ∣ refl ∣
 
