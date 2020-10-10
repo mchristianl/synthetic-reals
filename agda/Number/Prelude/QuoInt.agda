@@ -15,6 +15,9 @@ open import Cubical.HITs.Ints.QuoInt public using
   ; pos
   ; neg
   ; sucℤ-+ʳ
+  ; Sign
+  ; spos
+  ; sneg
   ) renaming
   ( isSetℤ         to is-setᶻ
   ; _+_            to _+ᶻ_
@@ -26,6 +29,7 @@ open import Cubical.HITs.Ints.QuoInt public using
   ; +-assoc        to +ᶻ-assoc
   ; sign           to signᶻ
   ; abs            to absᶻ
+  ; _*S_           to _·ˢ_
   )
 
 open import Number.Instances.QuoInt public using (ℤlattice) renaming
@@ -59,6 +63,7 @@ open import Number.Instances.QuoInt public using (ℤlattice) renaming
   ; pos<pos[suc]   to pos<ᶻpos[suc]
   ; 0<ᶻpos[suc]    to 0<ᶻpos[suc]
   ; ·-nullifiesˡ   to ·ᶻ-nullifiesˡ
+  ; ·-nullifiesʳ   to ·ᶻ-nullifiesʳ
   ; ·-preserves-<0 to ·ᶻ-preserves-<ᶻ0
   ; ·-creates-<-≡  to ·ᶻ-creates-<ᶻ-≡
   )

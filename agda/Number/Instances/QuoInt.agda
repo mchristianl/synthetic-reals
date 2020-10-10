@@ -101,12 +101,12 @@ suc-creates-< : ∀ x y → [ (x < y) ⇔ (sucℤ x < sucℤ y) ]
 suc-creates-< x y .fst p = substₚ (λ p → sucℤ x < p) (∣ +-comm y (pos 1) ∣) $ substₚ (λ p → p < y + pos 1) (∣ +-comm x (pos 1) ∣) (+-preserves-< x y (pos 1) p)
 suc-creates-< x y .snd p = +-reflects-< x y (pos 1) $ substₚ (λ p → p < y + pos 1) (∣ +-comm (pos 1) x ∣) $ substₚ (λ p → sucℤ x < p) (∣ +-comm (pos 1) y ∣) p
 
-+-creates-≤ : ∀ a b x → [ (a ≤ b) ⇔ ((a + x) ≤ (b + x)) ]
-+-creates-≤ a b x = {!   !}
-
 ·-creates-< : ∀ a b x → [ 0 < x ] → [ (a < b) ⇔ ((a · x) < (b · x)) ]
 ·-creates-< a b x p .fst q = ·-preserves-< a b x p q
 ·-creates-< a b x p .snd q = ·-reflects-< a b x p q
+
++-creates-≤ : ∀ a b x → [ (a ≤ b) ⇔ ((a + x) ≤ (b + x)) ]
++-creates-≤ a b x = {!   !}
 
 ·-creates-≤ : ∀ a b x → [ 0 ≤ x ] → [ (a ≤ b) ⇔ ((a · x) ≤ (b · x)) ]
 ·-creates-≤ a b x 0≤x .fst p = {!   !}
@@ -164,20 +164,18 @@ pos<pos[suc] (suc x) = suc-creates-< (pos x) (pos (suc x)) .fst (pos<pos[suc] x)
 0<ᶻpos[suc]      0  = 0<1
 0<ᶻpos[suc] (suc x) = <-trans 0 (pos (suc x)) (pos (suc (suc x))) (0<ᶻpos[suc] x) (suc-creates-< (pos x) (pos (suc x)) .fst (pos<pos[suc] x))
 
--- ·-nullifiesʳ : ∀(x : ℤ) → x · 0 ≡ 0
--- ·-nullifiesʳ (pos zero) = refl
--- ·-nullifiesʳ (pos (suc n)) = {! ·-nullifiesʳ (pos n)  !}
--- ·-nullifiesʳ (neg zero) = refl
--- ·-nullifiesʳ (neg (suc n)) = {! ·-nullifiesʳ (neg n)  !}
--- ·-nullifiesʳ (posneg i) = refl
-
 ·-nullifiesˡ : ∀(x : ℤ) → 0 · x ≡ 0
-·-nullifiesˡ x = {!   !}
+·-nullifiesˡ (pos zero) = refl
+·-nullifiesˡ (neg zero) = refl
+·-nullifiesˡ (posneg i) = refl
+·-nullifiesˡ (pos (suc n)) = refl
+·-nullifiesˡ (neg (suc n)) = sym posneg
+
+·-nullifiesʳ : ∀(x : ℤ) → x · 0 ≡ 0
+·-nullifiesʳ x = ·-comm x 0 ∙ ·-nullifiesˡ x
 
 ·-preserves-<0 : ∀ a b → [ 0 < a ] → [ 0 < b ] → [ 0 < a · b ]
 ·-preserves-<0 a b p q = subst (λ p → [ p < a · b ]) (·-nullifiesˡ b) (·-preserves-< 0 a b q p)
-
--- data Trichotomy
 
 ·-creates-<-≡ : ∀ a b x → [ 0 < x ] → (a < b) ≡ ((a · x) < (b · x))
 ·-creates-<-≡ a b x p = ⇔toPath (·-creates-< a b x p .fst) (·-creates-< a b x p .snd)
