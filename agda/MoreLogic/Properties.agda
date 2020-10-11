@@ -109,6 +109,12 @@ weak-LEMᵗ _ ¬[p⊔¬p] = ¬[p⊔¬p] (inr (λ p → ¬[p⊔¬p] (inl p)))
 contraposition : (P : hProp ℓ) (Q : hProp ℓ') → [ P ⇒ Q ] → [ ¬ Q ⇒ ¬ P ]
 contraposition P Q f ¬q p = ⊥-elim (¬q (f p))
 
+instance≡ : ∀{ℓ ℓ'} {A : Type ℓ} {B : A → Type ℓ'} → ({{x : A}} → B x) ≡ ((x : A) → B x)
+instance≡ = isoToPath (iso (λ f a → f {{a}}) (λ f {{a}} → f a) (λ f i → f) (λ f i → f))
+
+implicit≡ : ∀{ℓ ℓ'} {A : Type ℓ} {B : A → Type ℓ'} → ({x : A} → B x) ≡ ((x : A) → B x)
+implicit≡ = isoToPath (iso (λ f a → f {a}) (λ f {a} → f a) (λ f i → f) (λ f i → f))
+
 instanceFunExt : {A : Type ℓ} {B : A → I → Type ℓ'}
                  {f : {{x : A}} → B x i0} {g : {{x : A}} → B x i1}
                → ({{x : A}} → PathP (B x) (f {{x}}) (g {{x}}))

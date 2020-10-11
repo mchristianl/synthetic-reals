@@ -1,4 +1,9 @@
 
+## immediate TODOs
+
+- split `·-reflects-<` into `·-reflects-<ˡ` and `·-reflects-<ʳ`
+- we have `+-rinv`, `+-inverse` and `ʳ` `ˡ` variants in use ⇒ unify them!
+
 ## general TODOs
 
 - Lemma 6.7.1. contains more properties that are provable on ordered fields already

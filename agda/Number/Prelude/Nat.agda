@@ -3,20 +3,20 @@
 module Number.Prelude.Nat where
 
 open import Cubical.Data.Nat.Order public using () renaming
-  ( _<_ to _<ⁿᵗ_
-  ; <-trans to <ⁿ-trans -- TODO: use different version
-  ; _≟_ to _≟ⁿ_
-  ; lt to ltⁿ
-  ; gt to gtⁿ
-  ; eq to eqⁿ
+  ( _<_      to _<ⁿᵗ_
+  ; <-trans  to <ⁿ-trans -- TODO: use different version
+  ; _≟_      to _≟ⁿ_
+  ; lt       to ltⁿ
+  ; gt       to gtⁿ
+  ; eq       to eqⁿ
   ; ¬-<-zero to ¬-<ⁿ-zero
   )
-open import Data.Nat.Base public using () renaming
-  ( _⊔_ to maxⁿ
-  ; _⊓_ to minⁿ
-  ; _+_ to _+ⁿ_
-  ; _*_ to _·ⁿ_
-  ; pred to predⁿ
+open import Data.Nat public using () renaming
+  ( _⊔_    to maxⁿ
+  ; _⊓_    to minⁿ
+  ; _+_    to _+ⁿ_
+  ; _*_    to _·ⁿ_
+  ; pred   to predⁿ
   )
 open import Cubical.Data.Nat public using (suc; zero; ℕ; HasFromNat) renaming
   ( +-comm      to +ⁿ-comm
@@ -32,6 +32,8 @@ open import Cubical.Data.Nat public using (suc; zero; ℕ; HasFromNat) renaming
   ; snotz       to snotzⁿ
   ; injSuc      to injSucⁿ
   ; isSetℕ      to is-setⁿ
+  ; inj-m+      to +ⁿ-preserves-≡ˡ
+  ; inj-+m      to +ⁿ-preserves-≡ʳ
   )
 open import Number.Instances.Nat as Nat public using () renaming
   ( bundle         to ℕbundle
@@ -62,6 +64,8 @@ open import Number.Instances.Nat as Nat public using () renaming
   ; is-min         to is-minⁿ
   ; is-max         to is-maxⁿ
   ; +-<-ext        to +ⁿ-<ⁿ-ext
+  ; ·-reflects-≡ʳ  to ·ⁿ-reflects-≡ʳ
+  ; ·-reflects-≡ˡ  to ·ⁿ-reflects-≡ˡ
   )
 
 open import MorePropAlgebra.Definitions

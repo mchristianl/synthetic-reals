@@ -18,7 +18,7 @@ open import Cubical.Foundations.Logic renaming (¬_ to ¬ᵖ_; inl to inlᵖ; in
 open import Function.Base using (it; _∋_; _$_)
 open import Cubical.Foundations.Isomorphism
 
-open import Cubical.HITs.PropositionalTruncation --.Properties
+open import Cubical.HITs.PropositionalTruncation renaming (elim to ∣∣-elim)
 
 open import Utils using (!_; !!_)
 open import MoreLogic.Reasoning
@@ -31,7 +31,13 @@ open import MorePropAlgebra.Consequences
 open import Number.Structures2
 open import Number.Bundles2
 
-open import Cubical.Data.NatPlusOne using (HasFromNat; 1+_; ℕ₊₁; ℕ₊₁→ℕ)
+open import Cubical.Data.NatPlusOne using (HasFromNat; 1+_; ℕ₊₁; ℕ₊₁→ℕ) renaming
+  ( _*₊₁_         to _·₊₁_
+  ; *₊₁-comm      to ·₊₁-comm
+  ; *₊₁-assoc     to ·₊₁-assoc
+  ; *₊₁-identityˡ to ·₊₁-identityˡ
+  ; *₊₁-identityʳ to ·₊₁-identityʳ
+  )
 open import Cubical.HITs.SetQuotients as SetQuotient using () renaming (_/_ to _//_)
 
 open import Cubical.Data.Nat.Literals
@@ -47,13 +53,20 @@ open import Cubical.HITs.Rationals.QuoQ using
   ; onCommonDenom
   ; onCommonDenomSym
   ; eq/
+  ; eq/⁻¹
   ; _//_
   ; _∼_
+  ; [_/_]
   ) renaming
   ( [_] to [_]ᶠ
   ; ℕ₊₁→ℤ to [1+_ⁿ]ᶻ
+  ; _*_ to _·_
+  ; *-comm to ·-comm
+  ; *-assoc to ·-assoc
   )
 
+{-# DISPLAY [_/_] (pos 1) (1+ 0) = 1 #-}
+{-# DISPLAY [_/_] (pos 0) (1+ 0) = 0 #-}
 
 <-irrefl : ∀ a → [ ¬(a < a) ]
 <-irrefl = SetQuotient.elimProp {R = _∼_} (λ a → isProp[] (¬(a < a))) γ where
@@ -92,156 +105,25 @@ open import Cubical.HITs.Rationals.QuoQ using
     ... | inl p = inl p
     ... | inr p = inr ∣ eq/ {R = _∼_} a b p ∣
 
+<-StrictLinearOrder : [ isStrictLinearOrder _<_ ]
+<-StrictLinearOrder .IsStrictLinearOrder.is-irrefl = <-irrefl
+<-StrictLinearOrder .IsStrictLinearOrder.is-trans  = <-trans
+<-StrictLinearOrder .IsStrictLinearOrder.is-tricho = <-tricho
+
+<-StrictPartialOrder : [ isStrictPartialOrder _<_ ]
+<-StrictPartialOrder = strictlinearorder⇒strictpartialorder _<_ <-StrictLinearOrder
+
 _#_ : hPropRel ℚ ℚ ℓ-zero
 x # y = [ <-asym x y ] (x < y) ⊎ᵖ (y < x)
 
-injᶻⁿ⁺¹ : ∀ x → [ 0 <ᶻ x ] → Σ[ y ∈ ℕ₊₁ ] x ≡ [1+ y ⁿ]ᶻ
-injᶻⁿ⁺¹ (signed spos zero) p = ⊥-elim {A = λ _ → Σ[ y ∈ ℕ₊₁ ] ℤ.posneg i0 ≡ [1+ y ⁿ]ᶻ}  (¬-<ⁿ-zero p)
-injᶻⁿ⁺¹ (signed sneg  zero) p = ⊥-elim {A = λ _ → Σ[ y ∈ ℕ₊₁ ] ℤ.posneg i1 ≡ [1+ y ⁿ]ᶻ}  (¬-<ⁿ-zero p)
-injᶻⁿ⁺¹ (ℤ.posneg i)        p = ⊥-elim {A = λ _ → Σ[ y ∈ ℕ₊₁ ] ℤ.posneg i  ≡ [1+ y ⁿ]ᶻ}  (¬-<ⁿ-zero p)
-injᶻⁿ⁺¹ (signed spos (suc n)) p =  1+ n , refl
+#-ApartnessRel : [ isApartnessRel _#_ ]
+#-ApartnessRel = #''-isApartnessRel <-StrictPartialOrder <-asym
 
--flips-<ᶻ0 : ∀ x → [ (x <ᶻ 0) ⇔ (0 <ᶻ (-ᶻ x)) ]
--flips-<ᶻ0 (signed spos zero) = (λ x → x) , (λ x → x)
--flips-<ᶻ0 (signed sneg  zero) = (λ x → x) , (λ x → x)
--flips-<ᶻ0 (ℤ.posneg i)        = (λ x → x) , (λ x → x)
--flips-<ᶻ0 (signed spos (suc n)) .fst p  = ¬-<ⁿ-zero p
--flips-<ᶻ0 (signed sneg  (suc n)) .fst tt = n , +ⁿ-comm n 1
--flips-<ᶻ0 (signed sneg  (suc n)) .snd p  = tt
-
-
--- -flips-< : ∀ x y → [ x <ᶻ y ⇔ - y <ᶻ - x ]
-
--- #-Dichotomyˢ : {A : Type ℓ} (is-set : isSet A) (_#_ : hPropRel A A ℓ) )(#-tight : ∀ x y → [ x # y ⇔ ¬([ is-set ] x ≡ˢ y) ] ) (x : A) → hProp ℓ
--- #-Dichotomyˢ x = [ #-tight x 0 .fst ] x # 0 ⊎ᵖ (x ≡ 0)
-
-#ᶻ-dicho : ∀ x → [ x #ᶻ 0 ] ⊎ (x ≡ 0)
-#ᶻ-dicho x = <ᶻ-tricho x 0
-
-⊕-identityʳ : ∀ s → (s Bool.⊕ spos) ≡ s
-⊕-identityʳ spos = refl
-⊕-identityʳ sneg  = refl
-
-·ᶻ-preserves-signˡ : ∀ x y → [ 0 <ᶻ y ] → signᶻ (x ·ᶻ y) ≡ signᶻ x
-·ᶻ-preserves-signˡ x (signed spos zero) p = ⊥-elim {A = λ _ → signᶻ (x ·ᶻ ℤ.posneg i0) ≡ signᶻ x} (¬-<ⁿ-zero p)
-·ᶻ-preserves-signˡ x (signed sneg  zero) p = ⊥-elim {A = λ _ → signᶻ (x ·ᶻ ℤ.posneg i1) ≡ signᶻ x} (¬-<ⁿ-zero p)
-·ᶻ-preserves-signˡ x (ℤ.posneg i)        p = ⊥-elim {A = λ _ → signᶻ (x ·ᶻ ℤ.posneg i ) ≡ signᶻ x} (¬-<ⁿ-zero p)
-·ᶻ-preserves-signˡ (signed spos zero) (signed spos (suc n)) p = refl
-·ᶻ-preserves-signˡ (signed sneg  zero) (signed spos (suc n)) p = refl
-·ᶻ-preserves-signˡ (ℤ.posneg i)        (signed spos (suc n)) p = refl
-·ᶻ-preserves-signˡ (signed s (suc n₁)) (signed spos (suc n)) p = ⊕-identityʳ s
-
--- funExt' : {ℓ : Level} {A : Type ℓ} {ℓ' : Level}
---       {B : I → Type ℓ'} {f : B x i0}
---       {g : B i1} →
---       ((x : A) → PathP (B x) (f x) (g x)) →
---       PathP (λ i₁ → (x : A) → B x i₁) f g
-
--- funExt : {B : A → I → Type ℓ'}
---   {f : (x : A) → B x i0} {g : (x : A) → B x i1}
---   → ((x : A) → PathP (B x) (f x) (g x))
---   → PathP (λ i → (x : A) → B x i) f g
--- funExt p i x = p x i
-
--- funExt' : ∀{ℓ' ℓ} {A₁ A₂ : Type ℓ} (A : A₁ ≡ A₂) {B : I → Type ℓ'}
---   {f : (x : A i0) → B i0} {g : (x : A i1) → B i1}
---   → ((x : A) → PathP B (f x) (g x))
---   → PathP (λ i → (x : A) → B i) f g
--- funExt' p i x = p x i
-
--- funExt' : ∀{ℓ ℓ'} {A B : Type ℓ} {C : Type ℓ'} (A≡B : A ≡ B) (f : A → C) (g : B → C)
---         → ∀ x y → (x≡y : PathP (λ i → A≡B i) x y)
---         → f x ≡ g y → PathP (λ i → A≡B i → C) f g
--- funExt' A≡B f g x y p q i = λ(z : A≡B i) → {! q   !}
-
-absⁿ⁺¹' : ℤ → ℕ₊₁
-absⁿ⁺¹' (pos zero)    = 1+ 0
-absⁿ⁺¹' (neg zero)    = 1+ 0
-absⁿ⁺¹' (posneg i)    = 1+ 0
-absⁿ⁺¹' (pos (suc n)) = 1+ n
-absⁿ⁺¹' (neg (suc n)) = 1+ n
-
--- absⁿ⁺¹'-identity⁺ : ∀ x → signed spos (ℕ₊₁→ℕ x) ≡ [1+ absⁿ⁺¹' x ⁿ]ᶻ
--- absⁿ⁺¹'-identity⁺ x = ?
-
-absⁿ⁺¹'-identity⁺ : ∀ x → [ 0 <ⁿ x ] → [1+ absⁿ⁺¹' (pos x) ⁿ]ᶻ ≡ pos x
-absⁿ⁺¹'-identity⁺ zero    p = ⊥-elim {A = λ _ → [1+ absⁿ⁺¹' (pos zero) ⁿ]ᶻ ≡ pos zero} (<ⁿ-irrefl 0 p)
-absⁿ⁺¹'-identity⁺ (suc x) p = refl
-
-absⁿ⁺¹'-identity⁻ : ∀ x → [ 0 <ⁿ x ] → [1+ absⁿ⁺¹' (neg x) ⁿ]ᶻ ≡ pos x
-absⁿ⁺¹'-identity⁻ zero p = ⊥-elim {A = λ _ → [1+ absⁿ⁺¹' (neg zero) ⁿ]ᶻ ≡ pos zero} (<ⁿ-irrefl 0 p)
-absⁿ⁺¹'-identity⁻ (suc x) p = refl
-
-#ᶻ⇒≢ : ∀ x → [ x #ᶻ 0 ] → ¬ᵗ(0 ≡ x)
-#ᶻ⇒≢ x (inl p) q = <ᶻ-irrefl 0 $ subst (λ p → [ p <ᶻ pos 0 ]) (sym q) p
-#ᶻ⇒≢ x (inr p) q = <ᶻ-irrefl 0 $ subst (λ p → [ pos 0 <ᶻ p ]) (sym q) p
-
-absⁿ⁺¹'-identity : ∀ x → [ x #ᶻ 0 ] → [1+ absⁿ⁺¹' x ⁿ]ᶻ ≡ pos (absᶻ x)
-absⁿ⁺¹'-identity (pos zero)    p = ⊥-elim {A = λ _ → pos 1 ≡ pos 0} $ #ᶻ⇒≢ (posneg i0) p refl
-absⁿ⁺¹'-identity (neg zero)    p = ⊥-elim {A = λ _ → pos 1 ≡ pos 0} $ #ᶻ⇒≢ (posneg i1) p posneg
-absⁿ⁺¹'-identity (posneg i)    p = ⊥-elim {A = λ _ → pos 1 ≡ pos 0} $ #ᶻ⇒≢ (posneg i ) p (λ j → posneg (i ∧ j))
-absⁿ⁺¹'-identity (pos (suc n)) p = refl
-absⁿ⁺¹'-identity (neg (suc n)) p = refl
-
-absⁿ⁺¹'-identityⁿ : ∀ x → [ x #ᶻ 0 ] → suc (ℕ₊₁.n (absⁿ⁺¹' x)) ≡ absᶻ x
-absⁿ⁺¹'-identityⁿ x p i = absᶻ (absⁿ⁺¹'-identity x p i)
-
-<ᶻ-split-pos : ∀ z → [ 0 <ᶻ z ] → Σ[ n ∈ ℕ ] z ≡ pos (suc n)
-<ᶻ-split-pos (pos zero)    p = ⊥-elim {A = λ _ → Σ[ n ∈ ℕ ] posneg i0 ≡ pos (suc n)} (<ᶻ-irrefl 0 p)
-<ᶻ-split-pos (neg zero)    p = ⊥-elim {A = λ _ → Σ[ n ∈ ℕ ] posneg i1 ≡ pos (suc n)} (<ᶻ-irrefl 0 p)
-<ᶻ-split-pos (posneg i)    p = ⊥-elim {A = λ _ → Σ[ n ∈ ℕ ] posneg i  ≡ pos (suc n)} (<ᶻ-irrefl 0 p)
-<ᶻ-split-pos (pos (suc n)) p = n , refl
-
-<ᶻ-split-neg : ∀ z → [ z <ᶻ 0 ] → Σ[ n ∈ ℕ ] z ≡ neg (suc n)
-<ᶻ-split-neg (pos zero)    p = ⊥-elim {A = λ _ → Σ[ n ∈ ℕ ] posneg i0   ≡ neg (suc n)} (<ᶻ-irrefl 0 p)
-<ᶻ-split-neg (neg zero)    p = ⊥-elim {A = λ _ → Σ[ n ∈ ℕ ] posneg i1   ≡ neg (suc n)} (<ᶻ-irrefl 0 p)
-<ᶻ-split-neg (posneg i)    p = ⊥-elim {A = λ _ → Σ[ n ∈ ℕ ] posneg i    ≡ neg (suc n)} (<ᶻ-irrefl 0 p)
-<ᶻ-split-neg (pos (suc m)) p = ⊥-elim {A = λ _ → Σ[ n ∈ ℕ ] pos (suc m) ≡ neg (suc n)} (¬suc<ⁿ0 m p)
-<ᶻ-split-neg (neg (suc m)) p = m , refl
-
-0<ᶻ-signᶻ : ∀ z → [ 0 <ᶻ z ] → signᶻ z ≡ spos
-0<ᶻ-signᶻ z p i = signᶻ $ <ᶻ-split-pos z p .snd i
-
-<ᶻ0-signᶻ : ∀ z → [ z <ᶻ 0 ] → signᶻ z ≡ sneg
-<ᶻ0-signᶻ z p i = signᶻ $ <ᶻ-split-neg z p .snd i
-
-signᶻ-pos : ∀ n → signᶻ (pos n) ≡ spos
-signᶻ-pos zero = refl
-signᶻ-pos (suc n) = refl
-
-sign' : ℤ × ℕ₊₁ → Sign
-sign' (z , n) = signᶻ z
-
--- ⊕-identityʳ : ∀ s → s ⊕ spos ≡ s
--- ⊕-identityʳ s = ?
-
--- ·ᶻ-reflects-signᶻ : ∀ a b → signᶻ (a ·ᶻ pos (suc b)) ≡ signᶻ a
--- ·ᶻ-reflects-signᶻ (pos zero) b = refl
--- ·ᶻ-reflects-signᶻ (neg zero) b = refl
--- ·ᶻ-reflects-signᶻ (posneg i) b = refl
--- ·ᶻ-reflects-signᶻ (pos (suc n)) b = refl
--- ·ᶻ-reflects-signᶻ (neg (suc n)) b = refl
-
-sign'-preserves-∼ : (a b : ℤ × ℕ₊₁) → a ∼ b → sign' a ≡ sign' b
-sign'-preserves-∼ a@(aᶻ , aⁿ) b@(bᶻ , bⁿ) p =  sym (lem aᶻ bⁿ) ∙ ψ ∙ lem bᶻ aⁿ where
-  a' = absᶻ aᶻ ·ⁿ suc (ℕ₊₁.n bⁿ)
-  b' = absᶻ bᶻ ·ⁿ suc (ℕ₊₁.n aⁿ)
-  γ : signed (signᶻ aᶻ ⊕ spos) a' ≡ signed (signᶻ bᶻ ⊕ spos) b'
-  γ = p
-  ψ : signᶻ (signed (signᶻ aᶻ ⊕ spos) a') ≡ signᶻ (signed (signᶻ bᶻ ⊕ spos) b')
-  ψ i = signᶻ (γ i)
-  lem : ∀ x y → signᶻ (signed (signᶻ x ⊕ spos) (absᶻ x ·ⁿ suc (ℕ₊₁.n y))) ≡ signᶻ x
-  lem (pos zero)    y = refl
-  lem (neg zero)    y = refl
-  lem (posneg i)    y = refl
-  lem (pos (suc n)) y = refl
-  lem (neg (suc n)) y = refl
-
-sign : ℚ → Sign
-sign = SetQuotient.rec {R = _∼_} {B = Sign} Bool.isSetBool sign' sign'-preserves-∼
-
-sign-signᶻ-identity : ∀ z n → sign [ z , n ]ᶠ ≡ signᶻ z
-sign-signᶻ-identity z n = refl
+open IsApartnessRel #-ApartnessRel public renaming
+  ( is-irrefl  to #-irrefl
+  ; is-sym     to #-sym
+  ; is-cotrans to #-cotrans
+  )
 
 #-split' : ∀ z n → [ [ z , n ]ᶠ # 0 ] → [ z <ᶻ 0 ] ⊎ [ 0 <ᶻ z ]
 #-split' (pos zero) _ p = p
@@ -250,32 +132,8 @@ sign-signᶻ-identity z n = refl
 #-split' (pos (suc n)) _ p = transport (λ i → [ suc (·ⁿ-identityʳ n i) <ⁿ 0 ] ⊎ [ 0 <ⁿ suc (·ⁿ-identityʳ n i) ]) p
 #-split' (neg (suc n)) _ p = p
 
-∼-preserves-< : ∀ aᶻ aⁿ bᶻ bⁿ → (aᶻ , aⁿ) ∼ (bᶻ , bⁿ) → [ ((aᶻ <ᶻ 0) ⇒ (bᶻ <ᶻ 0)) ⊓ ((0 <ᶻ aᶻ) ⇒ (0 <ᶻ bᶻ)) ]
-∼-preserves-< aᶻ aⁿ bᶻ bⁿ r = γ where
-  aⁿᶻ = [1+ aⁿ ⁿ]ᶻ
-  bⁿᶻ = [1+ bⁿ ⁿ]ᶻ
-  0<aⁿᶻ : [ 0 <ᶻ aⁿᶻ ]
-  0<aⁿᶻ = ℕ₊₁.n aⁿ , +ⁿ-comm (ℕ₊₁.n aⁿ) 1
-  0<bⁿᶻ : [ 0 <ᶻ bⁿᶻ ]
-  0<bⁿᶻ = ℕ₊₁.n bⁿ , +ⁿ-comm (ℕ₊₁.n bⁿ) 1
-  γ : [ ((aᶻ <ᶻ 0) ⇒ (bᶻ <ᶻ 0)) ⊓ ((0 <ᶻ aᶻ) ⇒ (0 <ᶻ bᶻ)) ]
-  γ .fst aᶻ<0 = (
-    aᶻ <ᶻ 0               ⇒ᵖ⟨ ·ᶻ-preserves-<ᶻ aᶻ 0 bⁿᶻ 0<bⁿᶻ ⟩
-    aᶻ ·ᶻ bⁿᶻ <ᶻ 0 ·ᶻ bⁿᶻ ⇒ᵖ⟨ (subst (λ p → [ aᶻ ·ᶻ bⁿᶻ <ᶻ p ]) $ ·ᶻ-nullifiesˡ bⁿᶻ) ⟩
-    aᶻ ·ᶻ bⁿᶻ <ᶻ 0        ⇒ᵖ⟨ subst (λ p → [ p <ᶻ 0 ]) r ⟩
-    bᶻ ·ᶻ aⁿᶻ <ᶻ 0        ⇒ᵖ⟨ subst (λ p → [ bᶻ ·ᶻ aⁿᶻ <ᶻ p ]) (sym (·ᶻ-nullifiesˡ aⁿᶻ)) ⟩
-    bᶻ ·ᶻ aⁿᶻ <ᶻ 0 ·ᶻ aⁿᶻ ⇒ᵖ⟨ ·ᶻ-reflects-<ᶻ bᶻ 0 aⁿᶻ 0<aⁿᶻ ⟩
-    bᶻ        <ᶻ 0        ◼ᵖ) .snd aᶻ<0
-  γ .snd 0<aᶻ = (
-    0        <ᶻ aᶻ        ⇒ᵖ⟨ ·ᶻ-preserves-<ᶻ 0 aᶻ bⁿᶻ 0<bⁿᶻ ⟩
-    0 ·ᶻ bⁿᶻ <ᶻ aᶻ ·ᶻ bⁿᶻ ⇒ᵖ⟨ (subst (λ p → [ p <ᶻ aᶻ ·ᶻ bⁿᶻ ]) $ ·ᶻ-nullifiesˡ bⁿᶻ) ⟩
-    0        <ᶻ aᶻ ·ᶻ bⁿᶻ ⇒ᵖ⟨ subst (λ p → [ 0 <ᶻ p ]) r ⟩
-    0        <ᶻ bᶻ ·ᶻ aⁿᶻ ⇒ᵖ⟨ subst (λ p → [ p <ᶻ bᶻ ·ᶻ aⁿᶻ ]) (sym (·ᶻ-nullifiesˡ aⁿᶻ)) ⟩
-    0 ·ᶻ aⁿᶻ <ᶻ bᶻ ·ᶻ aⁿᶻ ⇒ᵖ⟨ ·ᶻ-reflects-<ᶻ 0 bᶻ aⁿᶻ 0<aⁿᶻ ⟩
-    0        <ᶻ bᶻ        ◼ᵖ) .snd 0<aᶻ
-
 _⁻¹'  : (x : ℤ × ℕ₊₁) → [ [ x ]ᶠ # 0 ] → ℚ
-(xᶻ , xⁿ) ⁻¹' = λ _ → [ signed (signᶻ xᶻ) (ℕ₊₁→ℕ xⁿ) , absⁿ⁺¹' xᶻ ]ᶠ
+(xᶻ , xⁿ) ⁻¹' = λ _ → [ signed (signᶻ xᶻ) (ℕ₊₁→ℕ xⁿ) , absᶻ⁺¹ xᶻ ]ᶠ
 
 ⁻¹'-respects-∼ : (a b : ℤ × ℕ₊₁) (p : a ∼ b)
                 → PathP (λ i → [ eq/ a b p i # 0 ] → ℚ) (a ⁻¹') (b ⁻¹')
@@ -290,17 +148,17 @@ _⁻¹'  : (x : ℤ × ℕ₊₁) → [ [ x ]ᶠ # 0 ] → ℚ
   η i = sign (eq/ a b p i)
   s : aᶻ ·ᶻ bⁿᶻ ≡ bᶻ ·ᶻ aⁿᶻ
   s = p
-  r : [ [ aᶻ , aⁿ ]ᶠ # 0 ] → (signed (signᶻ aᶻ) (ℕ₊₁→ℕ aⁿ) , absⁿ⁺¹' aᶻ) ∼ (signed (signᶻ bᶻ) (ℕ₊₁→ℕ bⁿ) , absⁿ⁺¹' bᶻ)
+  r : [ [ aᶻ , aⁿ ]ᶠ # 0 ] → (signed (signᶻ aᶻ) (ℕ₊₁→ℕ aⁿ) , absᶻ⁺¹ aᶻ) ∼ (signed (signᶻ bᶻ) (ℕ₊₁→ℕ bⁿ) , absᶻ⁺¹ bᶻ)
   r q = φ where
-    φ : signed (signᶻ aᶻ) (ℕ₊₁→ℕ aⁿ) ·ᶻ [1+ absⁿ⁺¹' bᶻ ⁿ]ᶻ ≡ signed (signᶻ bᶻ) (ℕ₊₁→ℕ bⁿ) ·ᶻ [1+ absⁿ⁺¹' aᶻ ⁿ]ᶻ
+    φ : signed (signᶻ aᶻ) (ℕ₊₁→ℕ aⁿ) ·ᶻ [1+ absᶻ⁺¹ bᶻ ⁿ]ᶻ ≡ signed (signᶻ bᶻ) (ℕ₊₁→ℕ bⁿ) ·ᶻ [1+ absᶻ⁺¹ aᶻ ⁿ]ᶻ
     φ with #-split' aᶻ aⁿ q
     ... | inl aᶻ<0 =
-      signed (signᶻ aᶻ) (ℕ₊₁→ℕ aⁿ) ·ᶻ [1+ absⁿ⁺¹' bᶻ ⁿ]ᶻ ≡⟨ (λ i → signed (<ᶻ0-signᶻ aᶻ aᶻ<0 i) (ℕ₊₁→ℕ aⁿ) ·ᶻ absⁿ⁺¹'-identity bᶻ (inl bᶻ<0) i) ⟩
+      signed (signᶻ aᶻ) (ℕ₊₁→ℕ aⁿ) ·ᶻ [1+ absᶻ⁺¹ bᶻ ⁿ]ᶻ ≡⟨ (λ i → signed (<ᶻ0-signᶻ aᶻ aᶻ<0 i) (ℕ₊₁→ℕ aⁿ) ·ᶻ absᶻ⁺¹-identity bᶻ (inl bᶻ<0) i) ⟩
       signed  sneg      (ℕ₊₁→ℕ aⁿ) ·ᶻ pos (absᶻ bᶻ)      ≡⟨ cong₂ signed (λ i → sneg ·ˢ q₁ i) q₂ ⟩
-      signed  sneg      (ℕ₊₁→ℕ bⁿ) ·ᶻ pos (absᶻ aᶻ)      ≡⟨ (λ i → signed (<ᶻ0-signᶻ bᶻ bᶻ<0 (~ i)) (ℕ₊₁→ℕ bⁿ) ·ᶻ absⁿ⁺¹'-identity aᶻ (inl aᶻ<0) (~ i)) ⟩
-      signed (signᶻ bᶻ) (ℕ₊₁→ℕ bⁿ) ·ᶻ [1+ absⁿ⁺¹' aᶻ ⁿ]ᶻ ∎ where
+      signed  sneg      (ℕ₊₁→ℕ bⁿ) ·ᶻ pos (absᶻ aᶻ)      ≡⟨ (λ i → signed (<ᶻ0-signᶻ bᶻ bᶻ<0 (~ i)) (ℕ₊₁→ℕ bⁿ) ·ᶻ absᶻ⁺¹-identity aᶻ (inl aᶻ<0) (~ i)) ⟩
+      signed (signᶻ bᶻ) (ℕ₊₁→ℕ bⁿ) ·ᶻ [1+ absᶻ⁺¹ aᶻ ⁿ]ᶻ ∎ where
       bᶻ<0 : [ bᶻ <ᶻ 0 ]
-      bᶻ<0 = ∼-preserves-< aᶻ aⁿ bᶻ bⁿ p .fst aᶻ<0
+      bᶻ<0 = ∼-preserves-<ᶻ aᶻ aⁿ bᶻ bⁿ p .fst aᶻ<0
       abstract
         c      = suc (<ᶻ-split-neg aᶻ aᶻ<0 .fst)
         d      = suc (<ᶻ-split-neg bᶻ bᶻ<0 .fst)
@@ -322,12 +180,12 @@ _⁻¹'  : (x : ℤ × ℕ₊₁) → [ [ x ]ᶠ # 0 ] → ℚ
       q₂ = (suc (ℕ₊₁.n aⁿ) ·ⁿ       d ≡ suc (ℕ₊₁.n bⁿ) ·ⁿ      c  ⇒⟨ transport (λ i → suc (ℕ₊₁.n aⁿ) ·ⁿ absb≡d (~ i) ≡ suc (ℕ₊₁.n bⁿ) ·ⁿ absa≡c (~ i)) ⟩
             suc (ℕ₊₁.n aⁿ) ·ⁿ absᶻ bᶻ ≡ suc (ℕ₊₁.n bⁿ) ·ⁿ absᶻ aᶻ ◼) (λ i → absᶻ (transport s' (sym s) i))
     ... | inr 0<aᶻ =
-      signed (signᶻ aᶻ ⊕ spos) (suc (ℕ₊₁.n aⁿ) ·ⁿ suc (ℕ₊₁.n (absⁿ⁺¹' bᶻ))) ≡⟨ (λ i → signed (0<ᶻ-signᶻ aᶻ 0<aᶻ i ⊕ spos) (suc (ℕ₊₁.n aⁿ) ·ⁿ suc (ℕ₊₁.n (absⁿ⁺¹' bᶻ)))) ⟩
-      signed             spos  (suc (ℕ₊₁.n aⁿ) ·ⁿ suc (ℕ₊₁.n (absⁿ⁺¹' bᶻ))) ≡⟨ transport s' (sym s) ⟩
-      signed             spos  (suc (ℕ₊₁.n bⁿ) ·ⁿ suc (ℕ₊₁.n (absⁿ⁺¹' aᶻ))) ≡⟨ (λ i → signed (0<ᶻ-signᶻ bᶻ 0<bᶻ (~ i) ⊕ spos) (suc (ℕ₊₁.n bⁿ) ·ⁿ suc (ℕ₊₁.n (absⁿ⁺¹' aᶻ)))) ⟩
-      signed (signᶻ bᶻ ⊕ spos) (suc (ℕ₊₁.n bⁿ) ·ⁿ suc (ℕ₊₁.n (absⁿ⁺¹' aᶻ))) ∎ where
+      signed (signᶻ aᶻ ⊕ spos) (suc (ℕ₊₁.n aⁿ) ·ⁿ suc (ℕ₊₁.n (absᶻ⁺¹ bᶻ))) ≡⟨ (λ i → signed (0<ᶻ-signᶻ aᶻ 0<aᶻ i ⊕ spos) (suc (ℕ₊₁.n aⁿ) ·ⁿ suc (ℕ₊₁.n (absᶻ⁺¹ bᶻ)))) ⟩
+      signed             spos  (suc (ℕ₊₁.n aⁿ) ·ⁿ suc (ℕ₊₁.n (absᶻ⁺¹ bᶻ))) ≡⟨ transport s' (sym s) ⟩
+      signed             spos  (suc (ℕ₊₁.n bⁿ) ·ⁿ suc (ℕ₊₁.n (absᶻ⁺¹ aᶻ))) ≡⟨ (λ i → signed (0<ᶻ-signᶻ bᶻ 0<bᶻ (~ i) ⊕ spos) (suc (ℕ₊₁.n bⁿ) ·ⁿ suc (ℕ₊₁.n (absᶻ⁺¹ aᶻ)))) ⟩
+      signed (signᶻ bᶻ ⊕ spos) (suc (ℕ₊₁.n bⁿ) ·ⁿ suc (ℕ₊₁.n (absᶻ⁺¹ aᶻ))) ∎ where
       0<bᶻ : [ 0 <ᶻ bᶻ ]
-      0<bᶻ = ∼-preserves-< aᶻ aⁿ bᶻ bⁿ p .snd 0<aᶻ
+      0<bᶻ = ∼-preserves-<ᶻ aᶻ aⁿ bᶻ bⁿ p .snd 0<aᶻ
       abstract
         c       = <ᶻ-split-pos aᶻ 0<aᶻ .fst
         d       = <ᶻ-split-pos bᶻ 0<bᶻ .fst
@@ -345,18 +203,302 @@ _⁻¹'  : (x : ℤ × ℕ₊₁) → [ [ x ]ᶠ # 0 ] → ℚ
              pos (suc (ℕ₊₁.n aⁿ) ·ⁿ suc d)
            ≡ pos (suc (ℕ₊₁.n bⁿ) ·ⁿ suc c) ≡⟨ (λ i → pos (suc (ℕ₊₁.n aⁿ) ·ⁿ absb≡sd (~ i)) ≡ pos (suc (ℕ₊₁.n bⁿ) ·ⁿ absa≡sc (~ i))) ⟩
              pos (suc (ℕ₊₁.n aⁿ) ·ⁿ absᶻ bᶻ)
-           ≡ pos (suc (ℕ₊₁.n bⁿ) ·ⁿ absᶻ aᶻ) ≡⟨ (λ i → pos (suc (ℕ₊₁.n aⁿ) ·ⁿ absⁿ⁺¹'-identityⁿ bᶻ (inr 0<bᶻ) (~ i)) ≡ pos (suc (ℕ₊₁.n bⁿ) ·ⁿ absⁿ⁺¹'-identityⁿ aᶻ (inr 0<aᶻ) (~ i))) ⟩
-             pos (suc (ℕ₊₁.n aⁿ) ·ⁿ suc (ℕ₊₁.n (absⁿ⁺¹' bᶻ)))
-           ≡ pos (suc (ℕ₊₁.n bⁿ) ·ⁿ suc (ℕ₊₁.n (absⁿ⁺¹' aᶻ))) ∎
+           ≡ pos (suc (ℕ₊₁.n bⁿ) ·ⁿ absᶻ aᶻ) ≡⟨ (λ i → pos (suc (ℕ₊₁.n aⁿ) ·ⁿ absᶻ⁺¹-identityⁿ bᶻ (inr 0<bᶻ) (~ i)) ≡ pos (suc (ℕ₊₁.n bⁿ) ·ⁿ absᶻ⁺¹-identityⁿ aᶻ (inr 0<aᶻ) (~ i))) ⟩
+             pos (suc (ℕ₊₁.n aⁿ) ·ⁿ suc (ℕ₊₁.n (absᶻ⁺¹ bᶻ)))
+           ≡ pos (suc (ℕ₊₁.n bⁿ) ·ⁿ suc (ℕ₊₁.n (absᶻ⁺¹ aᶻ))) ∎
   -- eq/ a b r : [ a ]ᶠ ≡ [ b ]ᶠ
   γ : [ [ a ]ᶠ # 0 ] ≡ [ [ b ]ᶠ # 0 ]
   γ i = [ eq/ a b p i # 0 ]
   κ : PathP _ (a ⁻¹') (b ⁻¹')
-  κ i = λ(q : [ eq/ a b p i # 0 ]) → eq/ (signed (signᶻ aᶻ) (ℕ₊₁→ℕ aⁿ) , absⁿ⁺¹' aᶻ) (signed (signᶻ bᶻ) (ℕ₊₁→ℕ bⁿ) , absⁿ⁺¹' bᶻ) (r (ψ q)) i where
+  κ i = λ(q : [ eq/ a b p i # 0 ]) → eq/ (signed (signᶻ aᶻ) (ℕ₊₁→ℕ aⁿ) , absᶻ⁺¹ aᶻ) (signed (signᶻ bᶻ) (ℕ₊₁→ℕ bⁿ) , absᶻ⁺¹ bᶻ) (r (ψ q)) i where
     ψ : [ eq/ a b p i # 0 ] → [ eq/ a b p i0 # 0 ]
     ψ p = transport (λ j → γ (i ∧ ~ j)) p
 
-_⁻¹ : (x : ℚ) → [ x # 0 ] → ℚ
-_⁻¹ = SetQuotient.elim {R = _∼_} {B = λ x → [ x # 0 ] → ℚ} φ _⁻¹' ⁻¹'-respects-∼ where
+_⁻¹ : (x : ℚ) → {{ _ : [ x # 0 ]}} → ℚ
+(x ⁻¹) {{p}} = SetQuotient.elim {R = _∼_} {B = λ x → [ x # 0 ] → ℚ} φ _⁻¹' ⁻¹'-respects-∼ x p where
   φ : ∀ x → isSet ([ x # 0 ] → ℚ)
   φ x = isSetΠ (λ _ → isSetℚ)
+  -- φ' : ∀ x → isSet ({{_ : [ x # 0 ]}} → ℚ)
+  -- φ' x = transport (λ i → ∀ x → isSet (instance≡ {A = [ x # 0 ]} {B = λ _ → ℚ} (~ i))) φ x
+
+⊕-diagonal : ∀ s → s ⊕ s ≡ spos
+⊕-diagonal spos = refl
+⊕-diagonal sneg = refl
+
+zeroᶠ : ∀ x → [ 0 / x ] ≡ 0
+zeroᶠ x = eq/ (0 , x) (0 , 1) refl
+
+#⇒#ᶻ : ∀ xᶻ xⁿ → [ [ xᶻ / xⁿ ] # 0 ] → [ xᶻ #ᶻ 0 ]
+#⇒#ᶻ (pos zero)    xⁿ p = p
+#⇒#ᶻ (neg zero)    xⁿ p = p
+#⇒#ᶻ (posneg i)    xⁿ p = p
+#⇒#ᶻ (pos (suc n)) xⁿ (inl p) = inl (transport (λ i → [ suc (·ⁿ-identityʳ n i) <ⁿ 0 ]) p)
+#⇒#ᶻ (pos (suc n)) xⁿ (inr p) = inr (transport (λ i → [ 0 <ⁿ suc (·ⁿ-identityʳ n i) ]) p)
+#⇒#ᶻ (neg (suc n)) xⁿ p = inl tt
+
+#ᶻ⇒# : ∀ xᶻ xⁿ → [ xᶻ #ᶻ 0 ] → [ [ xᶻ / xⁿ ] # 0 ]
+#ᶻ⇒# (pos zero) xⁿ p = p
+#ᶻ⇒# (neg zero) xⁿ p = p
+#ᶻ⇒# (posneg i) xⁿ p = p
+#ᶻ⇒# (pos (suc n)) xⁿ (inl p) = inl (transport (λ i → [ suc (·ⁿ-identityʳ n (~ i)) <ⁿ 0 ]) p)
+#ᶻ⇒# (pos (suc n)) xⁿ (inr p) = inr (transport (λ i → [ 0 <ⁿ suc (·ⁿ-identityʳ n (~ i)) ]) p)
+#ᶻ⇒# (neg (suc n)) xⁿ p = inl tt
+
+·-invʳ' : ∀ x → (p : [ [ x ]ᶠ # 0 ]) → [ x ]ᶠ · ([ x ]ᶠ ⁻¹) {{p}} ≡ 1
+·-invʳ' x@(xᶻ , xⁿ) p = γ where
+  aᶻ  : ℤ
+  aⁿ  : ℕ₊₁
+  aᶻ  = signed (signᶻ xᶻ ⊕ signᶻ xᶻ) (absᶻ xᶻ ·ⁿ suc (ℕ₊₁.n xⁿ))
+  aⁿ  = 1+ (ℕ₊₁.n (absᶻ⁺¹ xᶻ) +ⁿ ℕ₊₁.n xⁿ ·ⁿ suc (ℕ₊₁.n (absᶻ⁺¹ xᶻ)))
+  aⁿᶻ = [1+ aⁿ ⁿ]ᶻ
+  η = absᶻ xᶻ ·ⁿ suc (ℕ₊₁.n xⁿ) ≡⟨ ·ⁿ-comm (absᶻ xᶻ) (suc (ℕ₊₁.n xⁿ)) ⟩
+      suc (ℕ₊₁.n xⁿ) ·ⁿ absᶻ xᶻ ≡⟨ (λ i → suc (ℕ₊₁.n xⁿ) ·ⁿ absᶻ⁺¹-identityⁿ xᶻ (#⇒#ᶻ xᶻ xⁿ p) (~ i)) ⟩
+      suc (ℕ₊₁.n xⁿ) ·ⁿ suc (ℕ₊₁.n (absᶻ⁺¹ xᶻ)) ∎
+  ψ : aᶻ ≡ aⁿᶻ
+  ψ = signed (signᶻ xᶻ ⊕ signᶻ xᶻ) (absᶻ xᶻ ·ⁿ suc (ℕ₊₁.n xⁿ)) ≡⟨ cong₂ signed (⊕-diagonal (signᶻ xᶻ)) refl ⟩
+      signed  spos                 (absᶻ xᶻ ·ⁿ suc (ℕ₊₁.n xⁿ)) ≡⟨ cong pos η ⟩
+      pos (suc (ℕ₊₁.n xⁿ) ·ⁿ suc (ℕ₊₁.n (absᶻ⁺¹ xᶻ))) ∎
+  φ : aᶻ ·ᶻ 1 ≡ 1 ·ᶻ aⁿᶻ
+  φ = ·ᶻ-identity aᶻ .fst ∙ ψ ∙ sym (·ᶻ-identity aⁿᶻ .snd)
+  κ : (aᶻ , aⁿ) ∼ (pos 1 , (1+ 0))
+  κ = φ
+  γ : [ aᶻ , aⁿ ]ᶠ ≡ 1
+  γ = eq/ (aᶻ , aⁿ) (pos 1 , (1+ 0)) κ
+
+·-invʳ : ∀ x → (p : [ x # 0 ]) → x · (x ⁻¹) {{p}} ≡ 1
+·-invʳ = let P : ℚ → hProp ℓ-zero
+             P x = ∀ᵖ[ p ∶ x # 0 ] ([ isSetℚ ] x · (x ⁻¹) {{p}} ≡ˢ 1)
+         in  SetQuotient.elimProp {R = _∼_} (λ x → isProp[] (P x)) ·-invʳ'
+
+·-invˡ : ∀ x → (p : [ x # 0 ]) → (x ⁻¹) {{p}} · x ≡ 1
+·-invˡ x p = ·-comm _ x ∙ ·-invʳ x p
+
+-- ·-inv#0 : ∀ x y → x · y ≡ 1f → [ (x # 0f) ⊓ (y # 0f) ]
+-- ·-inv#0 x y x·y≡1 .fst = ·-inv'' x .fst ∣ (y ,              x·y≡1) ∣
+-- ·-inv#0 x y x·y≡1 .snd = ·-inv'' y .fst ∣ (x , ·-comm y x ∙ x·y≡1) ∣
+
+-- module _ (aᶻ : ℤ) (aⁿ : ℕ₊₁) (let aⁿᶻ = [1+ aⁿ ⁿ]ᶻ) where
+  -- multiply-denominator : [ aᶻ / aⁿ ] · [ aⁿᶻ / (1+ 0) ] ≡ [ aᶻ ·ᶻ aⁿᶻ / (1+ 0) ]
+  -- multiply-denominator = {!   !}
+
+-- ℚ-cancelˡ : ∀ {a b} (c : ℕ₊₁) → [ ℕ₊₁→ℤ c ℤ.* a / c *₊₁ b ] ≡ [ a / b ]
+-- ℚ-cancelʳ : ∀ {a b} (c : ℕ₊₁) → [ a ℤ.* ℕ₊₁→ℤ c / b *₊₁ c ] ≡ [ a / b ]
+module _ (aᶻ : ℤ) (aⁿ bⁿ : ℕ₊₁) (let aⁿᶻ = [1+ aⁿ ⁿ]ᶻ) (let bⁿᶻ = [1+ bⁿ ⁿ]ᶻ) where
+  private
+    lem : ∀ a b → signᶻ a ≡ signᶻ (signed (signᶻ a ⊕ spos) (absᶻ a ·ⁿ (ℕ₊₁→ℕ b)))
+    lem (pos zero) b j = signᶻ (posneg (i0 ∧ ~ j))
+    lem (neg zero) b j = signᶻ (posneg (i1 ∧ ~ j))
+    lem (posneg i) b j = signᶻ (posneg (i  ∧ ~ j))
+    lem (pos (suc n)) b = refl
+    lem (neg (suc n)) b = refl
+
+  expand-fraction : [ aᶻ / aⁿ ] ≡ [ aᶻ ·ᶻ bⁿᶻ / aⁿ ·₊₁ bⁿ ]
+  expand-fraction = eq/ _ _ γ where
+    cᶻ : ℤ
+    cᶻ = signed (signᶻ aᶻ ⊕ spos) (absᶻ aᶻ ·ⁿ (ℕ₊₁→ℕ bⁿ))
+    cⁿ : ℕ₊₁
+    cⁿ = 1+ (ℕ₊₁.n bⁿ +ⁿ ℕ₊₁.n aⁿ ·ⁿ (ℕ₊₁→ℕ bⁿ))
+    κ = absᶻ aᶻ ·ⁿ ((ℕ₊₁→ℕ aⁿ)  ·ⁿ (ℕ₊₁→ℕ bⁿ)) ≡[ i ]⟨ absᶻ aᶻ ·ⁿ ·ⁿ-comm (ℕ₊₁→ℕ aⁿ) (ℕ₊₁→ℕ bⁿ) i ⟩
+        absᶻ aᶻ ·ⁿ ((ℕ₊₁→ℕ bⁿ)  ·ⁿ (ℕ₊₁→ℕ aⁿ)) ≡⟨ ·ⁿ-assoc (absᶻ aᶻ) (ℕ₊₁→ℕ bⁿ) (ℕ₊₁→ℕ aⁿ) ⟩
+        (absᶻ aᶻ ·ⁿ (ℕ₊₁→ℕ bⁿ)) ·ⁿ (ℕ₊₁→ℕ aⁿ)  ∎
+    γ : (aᶻ , aⁿ) ∼ (cᶻ , cⁿ)
+    γ i = signed (lem aᶻ bⁿ i ⊕ spos) (κ i)
+
+·-≡' : ∀ aᶻ aⁿ bᶻ bⁿ → [ aᶻ / aⁿ ] · [ bᶻ / bⁿ ] ≡ [ aᶻ ·ᶻ bᶻ / aⁿ ·₊₁ bⁿ ]
+·-≡' aᶻ aⁿ bᶻ bⁿ = refl
+
+∼⁻¹ : ∀ aᶻ aⁿ bᶻ bⁿ → [ aᶻ / aⁿ ] ≡ [ bᶻ / bⁿ ] → (aᶻ , aⁿ) ∼ (bᶻ , bⁿ)
+∼⁻¹ aᶻ aⁿ bᶻ bⁿ p = eq/⁻¹ _ _ p
+
+signᶻ-absᶻ-identity : ∀ a → signed (signᶻ a) (absᶻ a) ≡ a
+signᶻ-absᶻ-identity (pos zero) j = posneg (i0 ∧ j)
+signᶻ-absᶻ-identity (neg zero) j = posneg (i1 ∧ j)
+signᶻ-absᶻ-identity (posneg i) j = posneg (i  ∧ j)
+signᶻ-absᶻ-identity (pos (suc n)) = refl
+signᶻ-absᶻ-identity (neg (suc n)) = refl
+
+absᶻ-preserves-·ᶻ : ∀ a b → absᶻ (a ·ᶻ b) ≡ absᶻ a ·ⁿ absᶻ b
+absᶻ-preserves-·ᶻ a b = refl
+
+signᶻ-absᶻ-≡ : ∀ a b → signᶻ a ≡ signᶻ b → absᶻ a ≡ absᶻ b → a ≡ b
+signᶻ-absᶻ-≡ a b p q = transport (λ i → signᶻ-absᶻ-identity a i ≡ signᶻ-absᶻ-identity b i) λ i → signed (p i) (q i)
+
+ℚ-reflects-nom : ∀ aᶻ bᶻ n → [ aᶻ / n ] ≡ [ bᶻ / n ] → aᶻ ≡ bᶻ
+ℚ-reflects-nom aᶻ bᶻ n p = signᶻ-absᶻ-≡ aᶻ bᶻ φ η where
+  n' = suc (ℕ₊₁.n n)
+  0<n' : [ 0 <ⁿ n' ]
+  0<n' = 0<ⁿsuc (ℕ₊₁.n n)
+  s = signed (signᶻ aᶻ       ) (absᶻ aᶻ ·ⁿ n') ≡⟨ cong₂ signed (sym (⊕-identityʳ (signᶻ aᶻ))) refl ⟩
+      signed (signᶻ aᶻ ⊕ spos) (absᶻ aᶻ ·ⁿ n') ≡⟨ eq/⁻¹ _ _ p ⟩
+      signed (signᶻ bᶻ ⊕ spos) (absᶻ bᶻ ·ⁿ n') ≡⟨ cong₂ signed (⊕-identityʳ (signᶻ bᶻ)) refl ⟩
+      signed (signᶻ bᶻ       ) (absᶻ bᶻ ·ⁿ n') ∎
+  φ : signᶻ aᶻ ≡ signᶻ bᶻ
+  φ i = sign (p i)
+  κ : absᶻ aᶻ ·ⁿ n' ≡ absᶻ bᶻ ·ⁿ n'
+  κ i = absᶻ (s i)
+  η : absᶻ aᶻ ≡ absᶻ bᶻ
+  η = ·ⁿ-reflects-≡ʳ (absᶻ aᶻ) (absᶻ bᶻ) n' 0<n' κ
+
+ℕ₊₁→ℕ-reflects-≡ : ∀ a b → (ℕ₊₁→ℕ a) ≡ (ℕ₊₁→ℕ b) → a ≡ b
+ℕ₊₁→ℕ-reflects-≡ (1+ a) (1+ b) p i = 1+ +ⁿ-preserves-≡ˡ {1} {a} {b} p i
+
+ℚ-reflects-denom : ∀ z aⁿ bⁿ → [ z #ᶻ 0 ] → [ z / aⁿ ] ≡ [ z / bⁿ ] → aⁿ ≡ bⁿ
+ℚ-reflects-denom z aⁿ bⁿ z#0 p = {! ℕ₊₁→ℕ bⁿ  !} where
+  κ : absᶻ z ·ⁿ (ℕ₊₁→ℕ bⁿ) ≡ absᶻ z ·ⁿ (ℕ₊₁→ℕ aⁿ)
+  κ i = absᶻ (eq/⁻¹ _ _ p i)
+  γ : ℕ₊₁→ℕ bⁿ ≡ ℕ₊₁→ℕ aⁿ
+  γ = {! ·ⁿ-reflects   !}
+
+pos-reflects-≡ : ∀ a b → pos a ≡ pos b → a ≡ b
+pos-reflects-≡ a b p i = absᶻ (p i)
+
+snotz' : ∀ n → ¬ᵗ (suc n ≡ 0)
+snotz' n p = let caseNat = λ{ 0 → ⊥⊥ ; (suc n) → ℕ } in subst caseNat p 0
+
+¬0≡1ⁿ : ¬ᵗ _≡_ {A = ℕ} 0 1
+¬0≡1ⁿ p = snotzⁿ {0} (sym p)
+
+¬0≡1ᶻ : ¬ᵗ _≡_ {A = ℤ} 0 1
+¬0≡1ᶻ p = ¬0≡1ⁿ $ pos-reflects-≡ 0 1 p
+
+¬0≡1ᶠ : ¬ᵗ _≡_ {A = ℚ} 0 1
+¬0≡1ᶠ p = ¬0≡1ᶻ $ ℚ-reflects-nom 0 1 1 p
+
+signed0≡0 : ∀ s → signed s 0 ≡ 0
+signed0≡0 spos   = refl
+signed0≡0 sneg i = posneg (~ i)
+
+·-nullifiesˡ' : ∀ bᶻ bⁿ → 0 · [ bᶻ / bⁿ ] ≡ 0
+·-nullifiesˡ' bᶻ bⁿ =
+  [ signed (signᶻ bᶻ) 0 / (1+ (ℕ₊₁.n bⁿ +ⁿ 0)) ] ≡⟨ cong₂ [_/_] (signed0≡0 (signᶻ bᶻ)) refl ⟩
+  [                   0 / (1+ (ℕ₊₁.n bⁿ +ⁿ 0)) ] ≡⟨ zeroᶠ (1+ (ℕ₊₁.n bⁿ +ⁿ 0)) ⟩
+  [                   0 / (1+ 0)               ] ∎
+
+·-nullifiesʳ' : ∀ bᶻ bⁿ → [ bᶻ / bⁿ ] · 0 ≡ 0
+·-nullifiesʳ' bᶻ bⁿ = ·-comm [ bᶻ / bⁿ ] 0 ∙ ·-nullifiesˡ' bᶻ bⁿ
+
+·-inv-<ᶻ' : (a@(aᶻ , aⁿ) b@(bᶻ , bⁿ) : ℤ × ℕ₊₁) → ([ a ]ᶠ · [ b ]ᶠ ≡ 1) → [ (0 <ᶻ aᶻ) ⊓ (0 <ᶻ bᶻ) ] ⊎ [ (aᶻ <ᶻ 0) ⊓ (bᶻ <ᶻ 0) ]
+·-inv-<ᶻ' a@(aᶻ , aⁿ) b@(bᶻ , bⁿ) p = γ where
+  aⁿᶻ = [1+ aⁿ ⁿ]ᶻ
+  bⁿᶻ = [1+ bⁿ ⁿ]ᶻ
+  κ = ([ aᶻ /  aⁿ ] · [ bᶻ /   bⁿ ] ≡ [     1      /   (1+ 0)  ] ⇒⟨ transport (cong₂ _≡_ refl (transport (λ i → 1 ≡ [ ·ᶻ-identity aⁿᶻ .snd i / ·₊₁-identityˡ aⁿ i ]) (expand-fraction 1 1 aⁿ) ∙ expand-fraction aⁿᶻ aⁿ bⁿ)) ⟩
+       [ aᶻ ·ᶻ bᶻ   /   aⁿ ·₊₁ bⁿ ] ≡ [ aⁿᶻ ·ᶻ bⁿᶻ / aⁿ ·₊₁ bⁿ ] ⇒⟨ ℚ-reflects-nom _ _ (aⁿ ·₊₁ bⁿ) ⟩
+         aᶻ ·ᶻ bᶻ                   ≡   aⁿᶻ ·ᶻ bⁿᶻ               ◼) p
+  φ₀ : [ 0 <ⁿ ((ℕ₊₁→ℕ aⁿ) ·ⁿ (ℕ₊₁→ℕ bⁿ)) ]
+  φ₀ = 0<ⁿsuc _
+  φ₁ : [ 0 <ᶻ aⁿᶻ ·ᶻ bⁿᶻ ]
+  φ₁ = φ₀
+  φ₂ : [ 0 <ᶻ aᶻ  ·ᶻ bᶻ  ]
+  φ₂ = subst (λ p → [ 0 <ᶻ p ]) (sym κ) φ₁
+  γ : [ (0 <ᶻ aᶻ) ⊓ (0 <ᶻ bᶻ) ] ⊎ [ (aᶻ <ᶻ 0) ⊓ (bᶻ <ᶻ 0) ]
+  γ with <ᶻ-tricho 0 aᶻ
+  ... | inl (inl 0<aᶻ) = inl (0<aᶻ , ·ᶻ-reflects-0<ᶻ aᶻ bᶻ φ₂ .fst .fst 0<aᶻ)
+  ... | inl (inr aᶻ<0) = inr (aᶻ<0 , ·ᶻ-reflects-0<ᶻ aᶻ bᶻ φ₂ .snd .fst aᶻ<0)
+  ... | inr      0≡aᶻ  = ⊥-elim {A = λ _ → [ (0 <ᶻ aᶻ) ⊓ (0 <ᶻ bᶻ) ] ⊎ [ (aᶻ <ᶻ 0) ⊓ (bᶻ <ᶻ 0) ]} (¬0≡1ᶠ η) where
+    η =   0                      ≡⟨ sym $ zeroᶠ (aⁿ ·₊₁ bⁿ) ⟩
+        [ 0        / aⁿ ·₊₁ bⁿ ] ≡⟨ (λ i → [ ·ᶻ-nullifiesˡ bᶻ (~ i) / aⁿ ·₊₁ bⁿ ]) ⟩
+        [ 0  ·ᶻ bᶻ / aⁿ ·₊₁ bⁿ ] ≡⟨ (λ i → [ 0≡aᶻ i ·ᶻ bᶻ / aⁿ ·₊₁ bⁿ ]) ⟩
+        [ aᶻ ·ᶻ bᶻ / aⁿ ·₊₁ bⁿ ] ≡⟨ p ⟩
+          1                      ∎
+
+
+  -- ([ aᶻ / aⁿ ] · [ aⁿᶻ / (1+ 0) ]) · ([ bᶻ / bⁿ ] · [ bⁿᶻ / (1+ 0) ]) ≡ [ aⁿᶻ / (1+ 0) ] · [ bⁿᶻ / (1+ 0) ]
+  -- [ aᶻ ·ᶻ aⁿᶻ / (1+ 0) ] · [ bᶻ ·ᶻ bⁿᶻ / (1+ 0) ] ≡ [ aⁿᶻ ·ᶻ bⁿᶻ / (1+ 0) ]
+  -- [ aᶻ ·ᶻ aⁿᶻ ·ᶻ bᶻ · bⁿᶻ / (1+ 0) ] ≡ [ aⁿᶻ ·ᶻ bⁿᶻ / (1+ 0) ]
+  -- aᶻ ·ᶻ aⁿᶻ ·ᶻ bᶻ · bⁿᶻ ≡ aⁿᶻ ·ᶻ bⁿᶻ
+  -- aᶻ ·ᶻ aⁿᶻ ·ᶻ bᶻ ≡ aⁿᶻ
+  -- aᶻ ·ᶻ bᶻ ·ᶻ aⁿᶻ ≡ 1 ·ᶻ aⁿᶻ
+  -- aᶻ ·ᶻ bᶻ ≡ 1
+  --
+  -- [ aᶻ ·ᶻ bⁿᶻ / aⁿ · bⁿ ] · [ bᶻ ·ᶻ aⁿᶻ / bⁿ ]ᶠ ≡ [ 1 / (1+ 0) ]
+
+
+-- ·-inv#0ˡ' a@(pos zero , aⁿ) b@(bᶻ , bⁿ) p = ⊥-elim {A = λ _ → [ [ posneg i0 , aⁿ ]ᶠ # 0 ]} $ ¬0≡1ᶠ $ sym (·-nullifiesˡ' bᶻ bⁿ) ∙ (λ i → zeroᶠ aⁿ (~ i) · [ bᶻ , bⁿ ]ᶠ) ∙ (λ i → [ posneg (~ i0) / aⁿ ] · [ bᶻ , bⁿ ]ᶠ) ∙ p
+-- ·-inv#0ˡ' a@(neg zero , aⁿ) b@(bᶻ , bⁿ) p = {! (λ i → [ posneg (~ i) / aⁿ ] · [ bᶻ , bⁿ ]ᶠ) ∙ p  !}
+-- ·-inv#0ˡ' a@(posneg i , aⁿ) b@(bᶻ , bⁿ) p = {!   !}
+-- ·-inv#0ˡ' a@(pos (suc n) , aⁿ) b@(bᶻ , bⁿ) p = {!   !}
+-- ·-inv#0ˡ' a@(neg (suc n) , aⁿ) b@(bᶻ , bⁿ) p = {!   !}
+
+private
+  lem0<ᶻ₁ : ∀ aᶻ → [ 0 <ᶻ aᶻ ] → aᶻ ≡ signed (signᶻ aᶻ ⊕ spos) (absᶻ aᶻ ·ⁿ 1)
+  lem0<ᶻ₁ aᶻ 0<aᶻ =
+    aᶻ                                                            ≡⟨ γ ⟩
+    pos (suc n)                                                   ≡⟨ (λ i → pos (suc (·ⁿ-identityʳ n (~ i)))) ⟩
+    pos (suc (n ·ⁿ 1))                                            ≡⟨ refl ⟩
+    signed (signᶻ (pos (suc n)) ⊕ spos) (absᶻ (pos (suc n)) ·ⁿ 1) ≡⟨ (λ i → signed (signᶻ (γ (~ i)) ⊕ spos) (absᶻ (γ (~ i)) ·ⁿ 1)) ⟩
+    signed (signᶻ  aᶻ           ⊕ spos) (absᶻ  aᶻ           ·ⁿ 1) ∎ where
+    abstract
+      n = <ᶻ-split-pos aᶻ 0<aᶻ .fst
+      γ : aᶻ ≡ pos (suc n)
+      γ = <ᶻ-split-pos aᶻ 0<aᶻ .snd
+
+  lem0<ᶻ₂ : ∀ aᶻ → [ aᶻ <ᶻ 0  ] → aᶻ ≡ signed (signᶻ aᶻ ⊕ spos) (absᶻ aᶻ ·ⁿ 1)
+  lem0<ᶻ₂ aᶻ aᶻ<0 =
+    aᶻ                                                            ≡⟨ γ ⟩
+    neg (suc n)                                                   ≡⟨ (λ i → neg (suc (·ⁿ-identityʳ n (~ i)))) ⟩
+    neg (suc (n ·ⁿ 1))                                            ≡⟨ refl ⟩
+    signed (signᶻ (neg (suc n)) ⊕ spos) (absᶻ (neg (suc n)) ·ⁿ 1) ≡⟨ (λ i → signed (signᶻ (γ (~ i)) ⊕ spos) (absᶻ (γ (~ i)) ·ⁿ 1)) ⟩
+    signed (signᶻ  aᶻ           ⊕ spos) (absᶻ  aᶻ           ·ⁿ 1) ∎ where
+    abstract
+      n = <ᶻ-split-neg aᶻ aᶻ<0 .fst
+      γ : aᶻ ≡ neg (suc n)
+      γ = <ᶻ-split-neg aᶻ aᶻ<0 .snd
+
+·-inv#0' : (a b : ℤ × ℕ₊₁) → ([ a ]ᶠ · [ b ]ᶠ ≡ 1) → [ [ a ]ᶠ # 0 ⊓ [ b ]ᶠ # 0 ]
+·-inv#0' a@(aᶻ , aⁿ) b@(bᶻ , bⁿ) p with ·-inv-<ᶻ' a b p
+... | inl (0<aᶻ , 0<bᶻ) = inr (subst (λ p → [ 0 <ᶻ p ]) (lem0<ᶻ₁ aᶻ 0<aᶻ) 0<aᶻ)
+                        , inr (subst (λ p → [ 0 <ᶻ p ]) (lem0<ᶻ₁ bᶻ 0<bᶻ) 0<bᶻ)
+... | inr (aᶻ<0 , bᶻ<0) = inl (subst (λ p → [ p <ᶻ 0 ]) (lem0<ᶻ₂ aᶻ aᶻ<0) aᶻ<0)
+                        , inl (subst (λ p → [ p <ᶻ 0 ]) (lem0<ᶻ₂ bᶻ bᶻ<0) bᶻ<0)
+
+·-inv#0 : ∀ x y → x · y ≡ 1 → [(x # 0) ⊓ (y # 0)]
+·-inv#0 = let P : ℚ → ℚ → hProp ℓ-zero
+              P x y = ([ isSetℚ ] (x · y) ≡ˢ 1) ⇒ ((x # 0) ⊓ (y # 0))
+          in  SetQuotient.elimProp2 {R = _∼_} {C = λ x y → [ P x y ]} (λ x y → isProp[] (P x y)) ·-inv#0'
+
+·-inv#0ˡ' : (a b : ℤ × ℕ₊₁) → ([ a ]ᶠ · [ b ]ᶠ ≡ 1) → [ [ a ]ᶠ # 0 ]
+·-inv#0ˡ' a b p = ·-inv#0' a b p .fst
+
+·-inv#0ˡ : ∀ x y → x · y ≡ 1 → [ x # 0 ]
+·-inv#0ˡ x y p = ·-inv#0 x y p .fst
+
+-- ·-reflects-signʳ : ∀ a b c → [ 0 < c ] → a · b ≡ c → [ ((0 < b) ⇒ (0 < a)) ⊓ ((b < 0) ⇒ (a < 0)) ]
+-- ·-reflects-signʳ a b c p q .fst 0<b = {!   !}
+-- ·-reflects-signʳ a b c p q .snd b<0 = {!   !}
+-- ⁻¹-preserves-sign : ∀ z z⁻¹ → [ 0f < z ] → z · z⁻¹ ≡ 1f → [ 0f < z⁻¹ ]
+-- ⁻¹-preserves-sign z z⁻¹
+
+-- -- TODO: this is a plain copy from `MorePropAlgebra.Properties.AlmostPartiallyOrderedField`
+-- --       we might put it into `MorePropAlgebra.Consequences`
+-- -- uniqueness of inverses from `·-assoc` + `·-comm` + `·-lid` + `·-rid`
+-- ·-rinv-unique'' : (x y z : F) → [ x · y ≡ˢ 1f ] → [ x · z ≡ˢ 1f ] → [ y ≡ˢ z ]
+-- ·-rinv-unique'' x y z x·y≡1 x·z≡1 =
+--   (      x  · y  ≡ˢ     1f ⇒ᵖ⟨ (λ x·y≡1 i → z · x·y≡1 i) ⟩
+--     z · (x  · y) ≡ˢ z · 1f ⇒ᵖ⟨ pathTo⇒ (λ i → ·-assoc z x y i ≡ˢ ·-rid z i) ⟩
+--    (z ·  x) · y  ≡ˢ z      ⇒ᵖ⟨ pathTo⇒ (λ i → (·-comm z x i) · y  ≡ˢ z) ⟩
+--    (x ·  z) · y  ≡ˢ z      ⇒ᵖ⟨ pathTo⇒ (λ i → x·z≡1 i · y  ≡ˢ z) ⟩
+--       1f    · y  ≡ˢ z      ⇒ᵖ⟨ pathTo⇒ (λ i → ·-lid y i ≡ˢ z) ⟩
+--               y  ≡ˢ z      ◼ᵖ) .snd x·y≡1
+
+-- ·-inv#0 : ∀ x y → x · y ≡ 1 → [ x # 0 ⊓ y # 0 ]
+-- ·-inv#0 x y p .fst = ·-inv#0ˡ x y p
+-- ·-inv#0 x y p .snd = ·-inv#0ˡ y x (·-comm y x ∙ p)
+
+·-inv'' : ∀ x → [ (∃[ y ] ([ isSetℚ ] (x · y) ≡ˢ 1)) ⇔ (x # 0) ]
+·-inv'' = SetQuotient.elimProp {R = _∼_} φ λ x → κ₁ x , κ₂ x where
+  φ : (x : ℚ) → _
+  φ x = isProp[] ((∃[ y ] ([ isSetℚ ] (x · y) ≡ˢ 1)) ⇔ (x # 0))
+  κ₁ : ∀ x → [ ∃[ y ] ([ isSetℚ ] ([ x ]ᶠ · y) ≡ˢ 1) ] → [ [ x ]ᶠ # 0 ]
+  κ₁ x p = ∣∣-elim (λ _ → φ') (λ{ (y , q) → γ y q } ) p    where
+    φ' = isProp[] ([ x ]ᶠ # 0)
+    γ : ∀ y → [ [ isSetℚ ] ([ x ]ᶠ · y) ≡ˢ 1 ] → [ [ x ]ᶠ # 0 ]
+    γ y q = ·-inv#0ˡ [ x ]ᶠ y q
+  κ₂ : ∀ x → [ [ x ]ᶠ # 0 ] → [ ∃[ y ] ([ isSetℚ ] ([ x ]ᶠ · y) ≡ˢ 1) ]
+  κ₂ x p = ∣ ([ x ]ᶠ ⁻¹) {{p}} , ·-invʳ' x p ∣
+  -- κ₁ : ∀ x → [ ∃[ y ] ([ isSetℚ ] (x · y) ≡ˢ 1) ] → [ x # 0 ]
+  -- κ₁ x p = ∣∣-elim (λ _ → φ') (λ{ (y , q) → γ y q } ) p    where
+  --   φ' = isProp[] (x # 0)
+  --   γ : ∀ y → [ [ isSetℚ ] (x · y) ≡ˢ 1 ] → [ x # 0 ]
+  --   γ y q = ·-inv#0ˡ x y q
+  -- κ₂ : ∀ x → [ x # 0 ] → [ ∃[ y ] ([ isSetℚ ] (x · y) ≡ˢ 1) ]
+  -- κ₂ x x#0 = ∣ (x ⁻¹) {{x#0}} , ·-invʳ x x#0 ∣

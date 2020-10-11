@@ -34,7 +34,10 @@ open import Number.Bundles2
 
 open import Cubical.Data.Nat as Nat renaming (_*_ to _·_)
 open import Cubical.Data.Nat.Order renaming (_<_ to _<ᵗ_)
-open import Cubical.Data.Nat.Properties renaming
+open import Cubical.Data.Nat.Properties using
+  ( inj-*sm
+  ; inj-sm*
+  ) renaming
   ( *-distribʳ  to ·-distribʳ
   ; *-distribˡ  to ·-distribˡ
   ; *-assoc     to ·-assoc
@@ -108,6 +111,14 @@ abstract
           s : (c < b) ≡ (suc c < suc b)
           r = ⇔toPath (suc-creates-< a c .fst) (suc-creates-< a c .snd)
           s = ⇔toPath (suc-creates-< c b .fst) (suc-creates-< c b .snd)
+
+·-reflects-≡ʳ : ∀ a b x → [ 0 < x ] → a · x ≡ b · x → a ≡ b
+·-reflects-≡ʳ a b zero    p q = ⊥-elim {A = λ _ → a ≡ b} $ <-irrefl 0 p
+·-reflects-≡ʳ a b (suc x) p q = inj-*sm {l = a} {m = x} {n = b} q
+
+·-reflects-≡ˡ : ∀ a b x → [ 0 < x ] → x · a ≡ x · b → a ≡ b
+·-reflects-≡ˡ a b zero    p q = ⊥-elim {A = λ _ → a ≡ b} $ <-irrefl 0 p
+·-reflects-≡ˡ a b (suc x) p q = inj-sm* {m = x} {l = a} {n = b} q
 
 ¬suc<0 : ∀ x → [ ¬ (suc x < 0) ]
 ¬suc<0 x (k , p) = snotz $ sym (+-suc k (suc x)) ∙ p
