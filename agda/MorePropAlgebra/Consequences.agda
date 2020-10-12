@@ -1,4 +1,4 @@
-{-# OPTIONS --cubical --no-import-sorts  #-}
+{-# OPTIONS --cubical --no-import-sorts --allow-unsolved-metas #-}
 
 module MorePropAlgebra.Consequences where
 
@@ -183,7 +183,8 @@ module _ {ℓ ℓ' : Level} {A : Type ℓ} (R : hPropRel A A ℓ')
 
 -- for these pathes, `A` and `hProp.fst` need to be in the same universe to omit ugly lifting into `ℓ-max ℓ ℓ'`
 --   although this would be possible to have (with lifting)
-module _ {ℓ : Level} {A : Type ℓ} (R : hPropRel A A ℓ)
+module _ {ℓ : Level} {A : Type ℓ} (_≤_ : hPropRel A A ℓ)
+  (let R   = _≤_)
   (let _<_ = R) -- different semantics
   (let _≤_ = R) --
   (let _#_ = R) --
@@ -333,7 +334,7 @@ module _ {ℓ ℓ'} {X : Type ℓ} {_<_ : hPropRel X X ℓ'} (<-SLO : [ isStrict
   private
     <-cotrans : [ isCotrans _<_ ]
     <-cotrans = IsStrictPartialOrder.is-cotrans (strictlinearorder⇒strictpartialorder _<_ <-SLO)
-    
+
   abstract
     ≤'-isLinearOrder : [ isLinearOrder _≤'_ ]
     IsLinearOrder.is-connex  ≤'-isLinearOrder a b with <-tricho a b

@@ -32,9 +32,19 @@ open import Number.Structures2
 open import Number.Bundles2
 
 
-open import Cubical.Data.Nat as Nat
+open import Cubical.Data.Nat as Nat renaming (_*_ to _·_)
 open import Cubical.Data.Nat.Order renaming (_<_ to _<ᵗ_)
-open import Cubical.Data.Nat.Properties
+open import Cubical.Data.Nat.Properties using
+  ( inj-*sm
+  ; inj-sm*
+  ) renaming
+  ( *-distribʳ  to ·-distribʳ
+  ; *-distribˡ  to ·-distribˡ
+  ; *-assoc     to ·-assoc
+  ; *-comm      to ·-comm
+  ; *-identityʳ to ·-identityʳ
+  ; *-identityˡ to ·-identityˡ
+  )
 -- open import Data.Nat.Properties using (+-assoc)
 open import Data.Nat.Base using () renaming
   ( _⊔_ to max
@@ -50,15 +60,12 @@ _<_ : (x y : ℕ) → hProp ℓ-zero
 0<suc : ∀ a → 0 <ᵗ suc a
 0<suc a = a , +-comm a 1
 
-*-nullifiesˡ : ∀ x → 0 * x ≡ 0
-*-nullifiesˡ x = refl
+·-nullifiesˡ : ∀ x → 0 · x ≡ 0
+·-nullifiesˡ x = refl
 
-*-nullifiesʳ : ∀ x → x * 0 ≡ 0
-*-nullifiesʳ zero = refl
-*-nullifiesʳ (suc x) = *-nullifiesʳ x
-
-isProp⊤ : isProp [ ⊤ ]
-isProp⊤ tt tt = refl
+·-nullifiesʳ : ∀ x → x · 0 ≡ 0
+·-nullifiesʳ zero = refl
+·-nullifiesʳ (suc x) = ·-nullifiesʳ x
 
 abstract
   lemma10   : ∀ n → (n <ᵗ 0) ≡ [ ⊥ ]
@@ -105,8 +112,22 @@ abstract
           r = ⇔toPath (suc-creates-< a c .fst) (suc-creates-< a c .snd)
           s = ⇔toPath (suc-creates-< c b .fst) (suc-creates-< c b .snd)
 
+·-reflects-≡ʳ : ∀ a b x → [ 0 < x ] → a · x ≡ b · x → a ≡ b
+·-reflects-≡ʳ a b zero    p q = ⊥-elim {A = λ _ → a ≡ b} $ <-irrefl 0 p
+·-reflects-≡ʳ a b (suc x) p q = inj-*sm {l = a} {m = x} {n = b} q
+
+·-reflects-≡ˡ : ∀ a b x → [ 0 < x ] → x · a ≡ x · b → a ≡ b
+·-reflects-≡ˡ a b zero    p q = ⊥-elim {A = λ _ → a ≡ b} $ <-irrefl 0 p
+·-reflects-≡ˡ a b (suc x) p q = inj-sm* {m = x} {l = a} {n = b} q
+
 ¬suc<0 : ∀ x → [ ¬ (suc x < 0) ]
 ¬suc<0 x (k , p) = snotz $ sym (+-suc k (suc x)) ∙ p
+
+·-reflects-< : ∀ a b x → [ 0 < x ] → [ (a · x) < (b · x) ] → [ a < b ]
+·-reflects-< zero zero x p q = q
+·-reflects-< zero (suc b) x p q = 0<suc b
+·-reflects-< (suc a) zero x p q = ⊥-elim {A = λ _ → [ suc a < 0 ]} $ ¬-<-zero q
+·-reflects-< (suc a) (suc b) x p q = suc-creates-< a b .fst $ ·-reflects-< a b x p (+-createsˡ-< (a · x) (b · x) x .snd q)
 
 min-comm : ∀ x y → min x y ≡ min y x
 min-comm zero zero = refl
@@ -242,54 +263,54 @@ abstract
     k + suc (w + x) ∎) ∙ k+suc[w+x]≡y+z))
 
   -- NOTE: instead of equational reasoning, this might follow more easily from induction on `z`?
-  ·-preserves-< : (x y z : ℕ) → [ 0 < z ] → [ x < y ] → [ (x * z) < (y * z) ]
-  ·-preserves-< x y z (k , k+1≡z) (l , l+suc[x]≡y) = l * z + k , (
-    (l * z + k) + suc (x * z) ≡⟨ sym $ +-assoc (l * z) k (suc (x * z)) ⟩
-    l * z + (k + suc (x * z)) ≡⟨ refl ⟩ -- 1 + x ≡ suc x holds definitionally
-    l * z + (k + (1 + x * z)) ≡⟨ (λ i → l * z + +-assoc k 1 (x * z) i) ⟩
-    l * z + ((k + 1) + x * z) ≡⟨ (λ i → l * z + (k+1≡z i + x * z)) ⟩
-    l * z + (z + x * z)       ≡⟨ refl ⟩ -- suc x * z ≡ z + x * z holds definitionally
-    l * z + (suc x) * z       ≡⟨ *-distribʳ l (suc x) z ⟩
-    (l + suc x) * z           ∎) ∙ (λ i → l+suc[x]≡y i * z) ∙ refl
+  ·-preserves-< : (x y z : ℕ) → [ 0 < z ] → [ x < y ] → [ (x · z) < (y · z) ]
+  ·-preserves-< x y z (k , k+1≡z) (l , l+suc[x]≡y) = l · z + k , (
+    (l · z + k) + suc (x · z) ≡⟨ sym $ +-assoc (l · z) k (suc (x · z)) ⟩
+    l · z + (k + suc (x · z)) ≡⟨ refl ⟩ -- 1 + x ≡ suc x holds definitionally
+    l · z + (k + (1 + x · z)) ≡⟨ (λ i → l · z + +-assoc k 1 (x · z) i) ⟩
+    l · z + ((k + 1) + x · z) ≡⟨ (λ i → l · z + (k+1≡z i + x · z)) ⟩
+    l · z + (z + x · z)       ≡⟨ refl ⟩ -- suc x · z ≡ z + x · z holds definitionally
+    l · z + (suc x) · z       ≡⟨ ·-distribʳ l (suc x) z ⟩
+    (l + suc x) · z           ∎) ∙ (λ i → l+suc[x]≡y i · z) ∙ refl
 
-  -- ·-reflects-< : (x y z : ℕ) → [ 0 < z ] → [ (x * z) < (y * z) ] → [ x < y ]
+  -- ·-reflects-< : (x y z : ℕ) → [ 0 < z ] → [ (x · z) < (y · z) ] → [ x < y ]
   -- ·-reflects-< x y zero (k , k+1≡z) _ = ⊥-elim {A = λ _ → [ x < y ]} $ snotz (sym (+-comm k 1) ∙ k+1≡z)
-  -- ·-reflects-< x y (suc zero) _ (l , l+suc[xz]≡yz) = l , (λ i → l + suc (*-identityʳ x (~ i))) ∙ l+suc[xz]≡yz ∙ *-identityʳ y
+  -- ·-reflects-< x y (suc zero) _ (l , l+suc[xz]≡yz) = l , (λ i → l + suc (·-identityʳ x (~ i))) ∙ l+suc[xz]≡yz ∙ ·-identityʳ y
   -- ·-reflects-< x y (suc (suc z)) _ p@(l , l+suc[xz]≡yz) =
   --   let ind = {! ·-reflects-< x y (suc z) (0<suc z)   !}
-  --     -- (x * suc (suc z)) < (y * suc (suc z))
-  --     -- x + x * suc z < y + y * suc z
-  --     -- (x + x * suc z) + < (y + y * suc z)
-  --   in {! *-suc x (suc z)  !}
-  -- -- ·-reflects-< x y zero 0<z xz<yz = {!   !} -- *-suc x z
+  --     -- (x · suc (suc z)) < (y · suc (suc z))
+  --     -- x + x · suc z < y + y · suc z
+  --     -- (x + x · suc z) + < (y + y · suc z)
+  --   in {! ·-suc x (suc z)  !}
+  -- -- ·-reflects-< x y zero 0<z xz<yz = {!   !} -- ·-suc x z
   -- -- ·-reflects-< x y (suc z) 0<z xz<yz = {! ·-reflects-< x y z  !}
-  -- --   (x * suc z) < (y * suc z)
+  -- --   (x · suc z) < (y · suc z)
 
 +-Semigroup : [ isSemigroup _+_ ]
 +-Semigroup .IsSemigroup.is-set   = isSetℕ
 +-Semigroup .IsSemigroup.is-assoc = +-assoc
 
-·-Semigroup : [ isSemigroup _*_ ]
+·-Semigroup : [ isSemigroup _·_ ]
 ·-Semigroup .IsSemigroup.is-set   = isSetℕ
-·-Semigroup .IsSemigroup.is-assoc = *-assoc
+·-Semigroup .IsSemigroup.is-assoc = ·-assoc
 
 +-Monoid : [ isMonoid 0 _+_ ]
 +-Monoid .IsMonoid.is-Semigroup = +-Semigroup
 +-Monoid .IsMonoid.is-identity x = +-zero x , refl
 
-·-Monoid : [ isMonoid 1 _*_ ]
+·-Monoid : [ isMonoid 1 _·_ ]
 ·-Monoid .IsMonoid.is-Semigroup = ·-Semigroup
-·-Monoid .IsMonoid.is-identity x = *-identityʳ x , *-identityˡ x
+·-Monoid .IsMonoid.is-identity x = ·-identityʳ x , ·-identityˡ x
 
-is-Semiring : [ isSemiring 0 1 _+_ _*_ ]
+is-Semiring : [ isSemiring 0 1 _+_ _·_ ]
 is-Semiring .IsSemiring.+-Monoid = +-Monoid
 is-Semiring .IsSemiring.·-Monoid = ·-Monoid
 is-Semiring .IsSemiring.+-comm   = +-comm
-is-Semiring .IsSemiring.is-dist x y z = sym (*-distribˡ x y z) , sym (*-distribʳ x y z)
+is-Semiring .IsSemiring.is-dist x y z = sym (·-distribˡ x y z) , sym (·-distribʳ x y z)
 
-is-CommSemiring : [ isCommSemiring 0 1 _+_ _*_ ]
+is-CommSemiring : [ isCommSemiring 0 1 _+_ _·_ ]
 is-CommSemiring .IsCommSemiring.is-Semiring = is-Semiring
-is-CommSemiring .IsCommSemiring.·-comm      = *-comm
+is-CommSemiring .IsCommSemiring.·-comm      = ·-comm
 
 <-StrictLinearOrder : [ isStrictLinearOrder _<_ ]
 <-StrictLinearOrder .IsStrictLinearOrder.is-irrefl = <-irrefl
@@ -299,25 +320,25 @@ is-CommSemiring .IsCommSemiring.·-comm      = *-comm
 ... | eq a≡b = inr ∣ a≡b ∣
 ... | gt b<a = inl (inr b<a)
 
-≤-isLattice : [ isLattice (λ x y → ¬ᵖ (y < x)) min max ]
-≤-isLattice .IsLattice.≤-PartialOrder = linearorder⇒partialorder _ (≤'-isLinearOrder <-StrictLinearOrder)
-≤-isLattice .IsLattice.is-min         = is-min
-≤-isLattice .IsLattice.is-max         = is-max
+≤-Lattice : [ isLattice (λ x y → ¬ᵖ (y < x)) min max ]
+≤-Lattice .IsLattice.≤-PartialOrder = linearorder⇒partialorder _ (≤'-isLinearOrder <-StrictLinearOrder)
+≤-Lattice .IsLattice.is-min         = is-min
+≤-Lattice .IsLattice.is-max         = is-max
 
-is-LinearlyOrderedCommSemiring : [ isLinearlyOrderedCommSemiring 0 1 _+_ _*_ _<_ min max ]
+is-LinearlyOrderedCommSemiring : [ isLinearlyOrderedCommSemiring 0 1 _+_ _·_ _<_ min max ]
 is-LinearlyOrderedCommSemiring .IsLinearlyOrderedCommSemiring.is-CommSemiring     = is-CommSemiring
 is-LinearlyOrderedCommSemiring .IsLinearlyOrderedCommSemiring.<-StrictLinearOrder = <-StrictLinearOrder
-is-LinearlyOrderedCommSemiring .IsLinearlyOrderedCommSemiring.≤-isLattice         = ≤-isLattice
+is-LinearlyOrderedCommSemiring .IsLinearlyOrderedCommSemiring.≤-Lattice           = ≤-Lattice
 is-LinearlyOrderedCommSemiring .IsLinearlyOrderedCommSemiring.+-<-ext             = +-<-ext
 is-LinearlyOrderedCommSemiring .IsLinearlyOrderedCommSemiring.·-preserves-<       = ·-preserves-<
 
-ℕbundle : LinearlyOrderedCommSemiring {ℓ-zero} {ℓ-zero}
-ℕbundle .LinearlyOrderedCommSemiring.Carrier                         = ℕ
-ℕbundle .LinearlyOrderedCommSemiring.0f                              = 0
-ℕbundle .LinearlyOrderedCommSemiring.1f                              = 1
-ℕbundle .LinearlyOrderedCommSemiring._+_                             = _+_
-ℕbundle .LinearlyOrderedCommSemiring._·_                             = _*_
-ℕbundle .LinearlyOrderedCommSemiring.min                             = min
-ℕbundle .LinearlyOrderedCommSemiring.max                             = max
-ℕbundle .LinearlyOrderedCommSemiring._<_                             = _<_
-ℕbundle .LinearlyOrderedCommSemiring.is-LinearlyOrderedCommSemiring  = is-LinearlyOrderedCommSemiring
+bundle : LinearlyOrderedCommSemiring {ℓ-zero} {ℓ-zero}
+bundle .LinearlyOrderedCommSemiring.Carrier                         = ℕ
+bundle .LinearlyOrderedCommSemiring.0f                              = 0
+bundle .LinearlyOrderedCommSemiring.1f                              = 1
+bundle .LinearlyOrderedCommSemiring._+_                             = _+_
+bundle .LinearlyOrderedCommSemiring._·_                             = _·_
+bundle .LinearlyOrderedCommSemiring.min                             = min
+bundle .LinearlyOrderedCommSemiring.max                             = max
+bundle .LinearlyOrderedCommSemiring._<_                             = _<_
+bundle .LinearlyOrderedCommSemiring.is-LinearlyOrderedCommSemiring  = is-LinearlyOrderedCommSemiring

@@ -16,6 +16,7 @@ open import Cubical.Data.Empty renaming (elim to ⊥-elim; ⊥ to ⊥⊥) -- `�
 open import Cubical.Foundations.Logic renaming (¬_ to ¬ᵖ_; inl to inlᵖ; inr to inrᵖ)
 open import Function.Base using (it; _∋_; _$_)
 open import Cubical.Foundations.Isomorphism
+open import Cubical.Foundations.Univalence
 
 open import Cubical.HITs.PropositionalTruncation --.Properties
 
@@ -34,315 +35,290 @@ import Agda.Builtin.Int as Builtin
 import Data.Integer.Base as BuiltinBase
 import Data.Integer.Properties as BuiltinProps
 
-open import Number.Instances.Nat using (lemma10''; lemma12'') renaming
-  ( _<_ to _<ⁿ_
-  ; <-irrefl  to <ⁿ-irrefl
-  ; <-cotrans to <ⁿ-cotrans
-  ; suc-creates-< to sucⁿ-creates-<ⁿ
-  ; 0<suc to 0<ⁿsuc
-  ; *-nullifiesʳ to *ⁿ-nullifiesʳ
-  ; *-nullifiesˡ to *ⁿ-nullifiesˡ
-  ; ·-preserves-< to ·ⁿ-preserves-<ⁿ
-  ; +-createsʳ-< to +ⁿ-createsʳ-<ⁿ
-  ; +-createsˡ-< to +ⁿ-createsˡ-<ⁿ
-  ; ¬suc<0       to ¬suc<ⁿ0
-  ; min-comm     to minⁿ-comm
-  ; min-tightˡ   to minⁿ-tightˡ
-  ; min-tightʳ   to minⁿ-tightʳ
-  ; min-identity to minⁿ-identity
-  ; max-comm     to maxⁿ-comm
-  ; max-tightˡ   to maxⁿ-tightˡ
-  ; max-tightʳ   to maxⁿ-tightʳ
-  ; max-identity to maxⁿ-identity
-  )
-open import Data.Nat.Base using () renaming
-  ( _⊔_ to maxⁿ
-  ; _⊓_ to minⁿ
-  ; _+_ to _+ⁿ_
-  ; _*_ to _*ⁿ_
-  ; pred to predⁿ
-  )
+open import Cubical.Data.Nat.Literals
+open import Number.Prelude.Nat
+open import Number.Prelude.Int
+import Cubical.Data.Int as Int
+import Number.Instances.Int
 
-open import Cubical.Data.Int renaming
-  ( Int to ℤ
-  ; isSetInt to isSetℤ
-  -- ; neg to infix 8 -_
-  ; _-_ to infix 7 _-_
-  ; _+_ to infix 5 _+_
-  )
--- open import Cubical.HITs.Ints.QuoInt.Properties
-open import Cubical.Data.Nat using (suc; zero; ℕ) renaming
-  ( +-comm to +ⁿ-comm
-  ; +-assoc to +ⁿ-assoc
-  ; *-comm to *ⁿ-comm
-  ; *-suc to *ⁿ-suc
-  ; *-assoc to *ⁿ-assoc
-  ; +-suc to +ⁿ-suc
-  ; *-distribˡ to *ⁿ-distribˡ
-  ; *-distribʳ to *ⁿ-distribʳ
-  ; *-identityʳ to *ⁿ-identityʳ
-  ; snotz to snotzⁿ
-  ; injSuc to injSucⁿ
-  )
-open import Cubical.Data.Nat.Order using () renaming
-  ( <-trans to <ⁿ-trans
-  ; _<_ to _<ⁿᵗ_
-  ; _≟_ to _≟ⁿ_
-  ; lt to ltⁿ
-  ; gt to gtⁿ
-  ; eq to eqⁿ
-  ; ¬-<-zero to ¬-<ⁿ-zero
-  )
+open import Cubical.HITs.Ints.QuoInt as QuoInt using
+  ( ℤ
+  ; _+_
+  ; -_
+  ; Int≡ℤ
+  ; signed
+  ; posneg
+  ; ℤ→Int
+  ; sucℤ
+  ; predℤ
+  ; sign
+  ; abs
+  ; pos
+  ; neg
+  ; +-comm
+  ; +-assoc
+  ; sucℤ-+ʳ
+  ) renaming
+  ( _*_ to _·_ )
 
-import Cubical.HITs.Ints.QuoInt as QuoInt
+ℤ≡Int = sym Int≡ℤ
 
-open import Cubical.Foundations.Univalence
+private
+  _·ᵗʳ_ : Int → Int → Int
+  _·ᵗʳ_ = transport (λ i → (ℤ≡Int i → ℤ≡Int i → ℤ≡Int i)) _·_
 
-open import Number.Instances.Int
+  ·≡·ᵗʳ : PathP (λ i → (ℤ≡Int i → ℤ≡Int i → ℤ≡Int i)) _·_ _·ᵗʳ_
+  ·≡·ᵗʳ i = transp (λ j → ℤ≡Int (i ∧ j) → ℤ≡Int (i ∧ j) → ℤ≡Int (i ∧ j)) (~ i) _·_
 
-open import Cubical.Data.Int as Int renaming
-  ( Int to ℤ
-  ; isSetInt to isSetℤ
-  -- ; neg to infix 8 -_
-  ; _-_ to infix 7 _-_
-  ; _+_ to infix 5 _+_
-  )
-import Cubical.HITs.Ints.QuoInt as QuoInt
+  lemma1 : ∀ a b → b +ⁿ a ·ⁿ suc b ≡ a ·ⁿ b +ⁿ (a +ⁿ b)
+  lemma1 a b =
+    b +ⁿ a ·ⁿ suc b    ≡⟨ (λ i → b +ⁿ ·ⁿ-suc a b i) ⟩
+    b +ⁿ (a +ⁿ a ·ⁿ b) ≡⟨ +ⁿ-assoc b a (a ·ⁿ b) ⟩
+    (b +ⁿ a) +ⁿ a ·ⁿ b ≡⟨ (λ i → +ⁿ-comm b a i +ⁿ a ·ⁿ b) ⟩
+    (a +ⁿ b) +ⁿ a ·ⁿ b ≡⟨ +ⁿ-comm (a +ⁿ b) (a ·ⁿ b) ⟩
+    a ·ⁿ b +ⁿ (a +ⁿ b) ∎
 
-_·_ = QuoInt._*_
-Z   = QuoInt.ℤ
-Z≡ℤ = sym QuoInt.Int≡ℤ
+  ·ᵗʳ≡'·ᶻ : ∀ a b → a ·ᵗʳ b ≡ a ·ᶻ b
+  ·ᵗʳ≡'·ᶻ (posᶻ      0 ) (posᶻ      0 )   = refl
+  ·ᵗʳ≡'·ᶻ (posᶻ      0 ) (posᶻ (suc b))   = refl
+  ·ᵗʳ≡'·ᶻ (posᶻ (suc a)) (posᶻ      0 )   = refl
+  ·ᵗʳ≡'·ᶻ (posᶻ (suc a)) (posᶻ (suc b))   = refl
+  ·ᵗʳ≡'·ᶻ (posᶻ      0 ) (negsucᶻ   b )   = refl
+  ·ᵗʳ≡'·ᶻ (posᶻ (suc a)) (negsucᶻ   b ) i = negsucᶻ (lemma1 a b i)
+  ·ᵗʳ≡'·ᶻ (negsucᶻ   a ) (posᶻ      0 ) i = ℤ→Int (signed sneg (·ⁿ-nullifiesʳ a i))
+  ·ᵗʳ≡'·ᶻ (negsucᶻ   a ) (posᶻ (suc b)) i = negsucᶻ (lemma1 a b i)
+  ·ᵗʳ≡'·ᶻ (negsucᶻ   a ) (negsucᶻ   b )   = refl
 
-_*ᶻ_ : ℤ → ℤ → ℤ
-_*ᶻ_ = transport (λ i → (Z≡ℤ i → Z≡ℤ i → Z≡ℤ i)) QuoInt._*_
+  ·ᵗʳ≡·ᶻ : _·ᵗʳ_ ≡ _·ᶻ_
+  ·ᵗʳ≡·ᶻ i a b = ·ᵗʳ≡'·ᶻ a b i
 
-QuoInt*≡*ᶻ : PathP (λ i → (Z≡ℤ i → Z≡ℤ i → Z≡ℤ i)) QuoInt._*_ _*ᶻ_
-QuoInt*≡*ᶻ i = transp (λ j → Z≡ℤ (i ∧ j) → Z≡ℤ (i ∧ j) → Z≡ℤ (i ∧ j)) (~ i) QuoInt._*_
+·≡·ᶻ : PathP (λ i → (ℤ≡Int i → ℤ≡Int i → ℤ≡Int i)) _·_ _·ᶻ_
+·≡·ᶻ = J (λ _⋆_ _ → PathP (λ i → (ℤ≡Int i → ℤ≡Int i → ℤ≡Int i)) _·_ _⋆_) ·≡·ᵗʳ ·ᵗʳ≡·ᶻ
 
-lemma1 : ∀ a b → b +ⁿ a *ⁿ suc b ≡ a *ⁿ b +ⁿ (a +ⁿ b)
-lemma1 a b =
-  b +ⁿ a *ⁿ suc b    ≡⟨ (λ i → b +ⁿ *ⁿ-suc a b i) ⟩
-  b +ⁿ (a +ⁿ a *ⁿ b) ≡⟨ +ⁿ-assoc b a (a *ⁿ b) ⟩
-  (b +ⁿ a) +ⁿ a *ⁿ b ≡⟨ (λ i → +ⁿ-comm b a i +ⁿ a *ⁿ b) ⟩
-  (a +ⁿ b) +ⁿ a *ⁿ b ≡⟨ +ⁿ-comm (a +ⁿ b) (a *ⁿ b) ⟩
-  a *ⁿ b +ⁿ (a +ⁿ b) ∎
-
-*ᶻ≡*' : ∀ a b → a *ᶻ b ≡ a * b
-*ᶻ≡*' (pos      0 ) (pos      0 )   = refl
-*ᶻ≡*' (pos      0 ) (pos (suc b))   = refl
-*ᶻ≡*' (pos (suc a)) (pos      0 )   = refl
-*ᶻ≡*' (pos (suc a)) (pos (suc b))   = refl
-*ᶻ≡*' (pos      0 ) (negsuc   b )   = refl
-*ᶻ≡*' (pos (suc a)) (negsuc   b ) i = negsuc (lemma1 a b i)
-*ᶻ≡*' (negsuc   a ) (pos      0 ) i = QuoInt.ℤ→Int (QuoInt.signed sneg (*ⁿ-nullifiesʳ a i))
-*ᶻ≡*' (negsuc   a ) (pos (suc b)) i = negsuc (lemma1 a b i)
-*ᶻ≡*' (negsuc   a ) (negsuc   b )   = refl
-
-*ᶻ≡* : _*ᶻ_ ≡ _*_
-*ᶻ≡* i a b = *ᶻ≡*' a b i
-
-QuoInt*≡* : PathP (λ i → (Z≡ℤ i → Z≡ℤ i → Z≡ℤ i)) QuoInt._*_ _*_
-QuoInt*≡* = J (λ _⋆_ _ → PathP (λ i → (Z≡ℤ i → Z≡ℤ i → Z≡ℤ i)) QuoInt._*_ _⋆_) QuoInt*≡*ᶻ *ᶻ≡*
-
--- *-assoc''''' : ∀ a b c → a * (b * c) ≡ (a * b) * c
--- *-assoc''''' = transport γ QuoInt.*-assoc where
+-- ·-assoc''''' : ∀ a b c → a · (b · c) ≡ (a · b) · c
+-- ·-assoc''''' = transport γ ·-assoc where
 --   γ : ((m n o : Z) → m · (n · o) ≡ (m · n) · o)
---     ≡ ((a b c : ℤ) → a * (b * c) ≡ (a * b) * c)
---   γ i = let _⋆_ = QuoInt*≡* i in (x y z : Z≡ℤ i) → x ⋆ (y ⋆ z) ≡ (x ⋆ y) ⋆ z
+--     ≡ ((a b c : ℤ) → a · (b · c) ≡ (a · b) · c)
+--   γ i = let _⋆_ = QuoInt·≡· i in (x y z : ℤ≡Int i) → x ⋆ (y ⋆ z) ≡ (x ⋆ y) ⋆ z
 
-_+ᶻ_ : ℤ → ℤ → ℤ
-_+ᶻ_ = transport (λ i → (Z≡ℤ i → Z≡ℤ i → Z≡ℤ i)) QuoInt._+_
+sucInt-preserves-ℤ→Int : ∀ a → sucInt (ℤ→Int a) ≡ ℤ→Int (sucℤ a)
+sucInt-preserves-ℤ→Int (signed spos n) = refl
+sucInt-preserves-ℤ→Int (signed sneg zero) = refl
+sucInt-preserves-ℤ→Int (signed sneg (suc zero)) = refl
+sucInt-preserves-ℤ→Int (signed sneg (suc (suc n))) = refl
+sucInt-preserves-ℤ→Int (posneg i) = refl
 
-QuoInt+≡+ᶻ : PathP (λ i → (Z≡ℤ i → Z≡ℤ i → Z≡ℤ i)) QuoInt._+_ _+ᶻ_
-QuoInt+≡+ᶻ i = transp (λ j → Z≡ℤ (i ∧ j) → Z≡ℤ (i ∧ j) → Z≡ℤ (i ∧ j)) (~ i) QuoInt._+_
+predInt-preserves-ℤ→Int : ∀ a → predInt (ℤ→Int a) ≡ ℤ→Int (predℤ a)
+predInt-preserves-ℤ→Int (signed spos zero) = refl
+predInt-preserves-ℤ→Int (signed spos (suc n)) = refl
+predInt-preserves-ℤ→Int (signed sneg zero) = refl
+predInt-preserves-ℤ→Int (signed sneg (suc n)) = refl
+predInt-preserves-ℤ→Int (posneg i) = refl
 
-sucInt-preserves-ℤ→Int : ∀ a → sucInt (QuoInt.ℤ→Int a) ≡ QuoInt.ℤ→Int (QuoInt.sucℤ a)
-sucInt-preserves-ℤ→Int (QuoInt.signed spos n) = refl
-sucInt-preserves-ℤ→Int (QuoInt.signed sneg zero) = refl
-sucInt-preserves-ℤ→Int (QuoInt.signed sneg (suc zero)) = refl
-sucInt-preserves-ℤ→Int (QuoInt.signed sneg (suc (suc n))) = refl
-sucInt-preserves-ℤ→Int (QuoInt.posneg i) = refl
+-sucℤ-sucℤ≡id : ∀ a → - sucℤ (- sucℤ a) ≡ a
+-sucℤ-sucℤ≡id (signed spos n) = refl
+-sucℤ-sucℤ≡id (signed sneg zero) = posneg
+-sucℤ-sucℤ≡id (signed sneg (suc n)) = refl
+-sucℤ-sucℤ≡id (posneg i) j = posneg (i ∧ j)
 
-predInt-preserves-ℤ→Int : ∀ a → predInt (QuoInt.ℤ→Int a) ≡ QuoInt.ℤ→Int (QuoInt.predℤ a)
-predInt-preserves-ℤ→Int (QuoInt.signed spos zero) = refl
-predInt-preserves-ℤ→Int (QuoInt.signed spos (suc n)) = refl
-predInt-preserves-ℤ→Int (QuoInt.signed sneg zero) = refl
-predInt-preserves-ℤ→Int (QuoInt.signed sneg (suc n)) = refl
-predInt-preserves-ℤ→Int (QuoInt.posneg i) = refl
+sucℤ-sucℤ-≡id : ∀ a → sucℤ (- sucℤ (- a)) ≡ a
+sucℤ-sucℤ-≡id (signed spos zero) i = posneg (~ i)
+sucℤ-sucℤ-≡id (signed spos (suc n)) = refl
+sucℤ-sucℤ-≡id (signed sneg n) = refl
+sucℤ-sucℤ-≡id (posneg i) j = posneg (i ∨ (~ j))
 
--sucℤ-sucℤ≡id : ∀ a → QuoInt.- QuoInt.sucℤ (QuoInt.- QuoInt.sucℤ a) ≡ a
--sucℤ-sucℤ≡id (QuoInt.signed spos n) = refl
--sucℤ-sucℤ≡id (QuoInt.signed sneg zero) = QuoInt.posneg
--sucℤ-sucℤ≡id (QuoInt.signed sneg (suc n)) = refl
--sucℤ-sucℤ≡id (QuoInt.posneg i) j = QuoInt.posneg (i ∧ j)
-
-sucℤ-sucℤ-≡id : ∀ a → QuoInt.sucℤ (QuoInt.- QuoInt.sucℤ (QuoInt.- a)) ≡ a
-sucℤ-sucℤ-≡id (QuoInt.signed spos zero) i = QuoInt.posneg (~ i)
-sucℤ-sucℤ-≡id (QuoInt.signed spos (suc n)) = refl
-sucℤ-sucℤ-≡id (QuoInt.signed sneg n) = refl
-sucℤ-sucℤ-≡id (QuoInt.posneg i) j = QuoInt.posneg (i ∨ (~ j))
-
--sucℤ-sucℤ≡sucℤ-sucℤ- : ∀ a → QuoInt.- QuoInt.sucℤ (QuoInt.- QuoInt.sucℤ a) ≡ QuoInt.sucℤ (QuoInt.- QuoInt.sucℤ (QuoInt.- a))
+-sucℤ-sucℤ≡sucℤ-sucℤ- : ∀ a → - sucℤ (- sucℤ a) ≡ sucℤ (- sucℤ (- a))
 -sucℤ-sucℤ≡sucℤ-sucℤ- a = -sucℤ-sucℤ≡id a ∙ sym (sucℤ-sucℤ-≡id a)
 
-+ᶻ≡'+ : ∀ a b → a +ᶻ b ≡ a + b
-+ᶻ≡'+ (pos      0 ) (pos      0 )   = refl
-+ᶻ≡'+ (pos      0 ) (pos (suc b))  i = sucInt (+-comm (pos b) 0 i)
-+ᶻ≡'+ (pos (suc a)) (pos      0 )  i = QuoInt.ℤ→Int (QuoInt.sucℤ (QuoInt.+-comm (QuoInt.pos a) 0 i))
-+ᶻ≡'+ (pos (suc a)) (pos (suc b))   =
-  (pos (suc a) +ᶻ pos (suc b))  ≡⟨ sym (sucInt-preserves-ℤ→Int (QuoInt.signed spos a QuoInt.+ QuoInt.signed spos (suc b))) ⟩
-  sucInt (pos a +ᶻ pos (suc b)) ≡⟨ (λ i → sucInt $ (+ᶻ≡'+ (pos a) (pos (suc b)) ∙ sucInt+ (pos a) (pos b)) i) ⟩
-  sucInt (pos (suc a) +pos b)   ∎
-+ᶻ≡'+ (pos      0 ) (negsuc   b )   = sym (+negsuc-identityˡ b)
-+ᶻ≡'+ (pos (suc a)) (negsuc   b )   =
-  (pos (suc a) +ᶻ negsuc b)  ≡⟨ sym $ sucInt-preserves-ℤ→Int (QuoInt.signed spos a QuoInt.+ QuoInt.signed sneg (suc b)) ⟩
-  sucInt (pos a +ᶻ negsuc b) ≡⟨ (λ i → sucInt $ +ᶻ≡'+ (pos a) (negsuc b) i) ⟩
-  sucInt (pos a +  negsuc b) ≡⟨ sucInt+ (pos a) (negsuc b) ⟩
-  (pos (suc a) +negsuc b)    ∎
-+ᶻ≡'+ (negsuc   a ) (pos      0 )   i = QuoInt.ℤ→Int $ QuoInt.-_ $  QuoInt.sucℤ $ QuoInt.-_ $ QuoInt.+-comm (QuoInt.signed sneg a) (QuoInt.pos 0) i
-+ᶻ≡'+ (negsuc   a ) (pos (suc b))   =
-  (negsuc a +ᶻ pos (suc b))  ≡⟨ (λ i → QuoInt.ℤ→Int $ QuoInt.- QuoInt.sucℤ (QuoInt.- QuoInt.sucℤ-+ʳ (QuoInt.signed sneg a) (QuoInt.signed spos b) (~ i))) ⟩
-  QuoInt.ℤ→Int (QuoInt.- QuoInt.sucℤ (QuoInt.- QuoInt.sucℤ (QuoInt.signed sneg a QuoInt.+ QuoInt.signed spos b))) ≡⟨ (λ i → QuoInt.ℤ→Int $ -sucℤ-sucℤ≡sucℤ-sucℤ- (QuoInt.signed sneg a QuoInt.+ QuoInt.signed spos b) i) ⟩
-  QuoInt.ℤ→Int (QuoInt.sucℤ (QuoInt.- QuoInt.sucℤ (QuoInt.- (QuoInt.signed sneg a QuoInt.+ QuoInt.signed spos b)))) ≡⟨ sym $ sucInt-preserves-ℤ→Int (QuoInt.- QuoInt.sucℤ (QuoInt.- (QuoInt.signed sneg a QuoInt.+ QuoInt.signed spos b))) ⟩
-  sucInt (negsuc a +ᶻ pos b) ≡⟨ (λ i → sucInt $ +ᶻ≡'+ (negsuc a) (pos b) i) ⟩
-  sucInt (negsuc a +pos b)   ∎
-+ᶻ≡'+ (negsuc zero) (negsuc b) = sym $ negsuc+negsuc≡+ⁿ 0 b
-+ᶻ≡'+ (negsuc (suc a)) (negsuc b) =
- (negsuc (suc a) +ᶻ negsuc b)   ≡⟨ sym $ predInt-preserves-ℤ→Int (QuoInt.- QuoInt.sucℤ (QuoInt.- (QuoInt.signed sneg a QuoInt.+ QuoInt.signed sneg (suc b)))) ⟩
- predInt (negsuc a +ᶻ negsuc b) ≡⟨ (λ i → predInt $ +ᶻ≡'+ (negsuc a) (negsuc b) i) ⟩
- predInt (negsuc a +  negsuc b) ≡⟨ predInt+ (negsuc a) (negsuc b) ⟩
- (negsuc (suc a) +negsuc b)     ∎
+private
+  _+ᵗʳ_ : Int → Int → Int
+  _+ᵗʳ_ = transport (λ i → (ℤ≡Int i → ℤ≡Int i → ℤ≡Int i)) _+_
 
-+ᶻ≡+ : _+ᶻ_ ≡ _+_
-+ᶻ≡+ i a b = +ᶻ≡'+ a b i
+  +≡+ᵗʳ : PathP (λ i → (ℤ≡Int i → ℤ≡Int i → ℤ≡Int i)) _+_ _+ᵗʳ_
+  +≡+ᵗʳ i = transp (λ j → ℤ≡Int (i ∧ j) → ℤ≡Int (i ∧ j) → ℤ≡Int (i ∧ j)) (~ i) _+_
 
-QuoInt+≡+ : PathP (λ i → (Z≡ℤ i → Z≡ℤ i → Z≡ℤ i)) QuoInt._+_ _+_
-QuoInt+≡+ = J (λ _+ᶻ_ _ → PathP (λ i → (Z≡ℤ i → Z≡ℤ i → Z≡ℤ i)) QuoInt._+_ _+ᶻ_) QuoInt+≡+ᶻ +ᶻ≡+
+  +ᵗʳ≡'+ᶻ : ∀ a b → a +ᵗʳ b ≡ a +ᶻ b
+  +ᵗʳ≡'+ᶻ (posᶻ      0 ) (posᶻ      0 )   = refl
+  +ᵗʳ≡'+ᶻ (posᶻ      0 ) (posᶻ (suc b))  i = sucInt (Int.+-comm (posᶻ b) 0 i)
+  +ᵗʳ≡'+ᶻ (posᶻ (suc a)) (posᶻ      0 )  i = ℤ→Int (sucℤ (+-comm (pos a) 0 i))
+  +ᵗʳ≡'+ᶻ (posᶻ (suc a)) (posᶻ (suc b))   =
+    (posᶻ (suc a) +ᵗʳ posᶻ (suc b))  ≡⟨ sym (sucInt-preserves-ℤ→Int (signed spos a + signed spos (suc b))) ⟩
+    sucInt (posᶻ a +ᵗʳ posᶻ (suc b)) ≡⟨ (λ i → sucInt $ (+ᵗʳ≡'+ᶻ (posᶻ a) (posᶻ (suc b)) ∙ sucInt+ (posᶻ a) (posᶻ b)) i) ⟩
+    sucInt (posᶻ (suc a) +pos b)   ∎
+  +ᵗʳ≡'+ᶻ (posᶻ      0 ) (negsucᶻ   b )   = sym (+negsuc-identityˡ b)
+  +ᵗʳ≡'+ᶻ (posᶻ (suc a)) (negsucᶻ   b )   =
+    (posᶻ (suc a) +ᵗʳ negsucᶻ b)  ≡⟨ sym $ sucInt-preserves-ℤ→Int (signed spos a + signed sneg (suc b)) ⟩
+    sucInt (posᶻ a +ᵗʳ negsucᶻ b) ≡⟨ (λ i → sucInt $ +ᵗʳ≡'+ᶻ (posᶻ a) (negsucᶻ b) i) ⟩
+    sucInt (posᶻ a +ᶻ  negsucᶻ b) ≡⟨ sucInt+ (posᶻ a) (negsucᶻ b) ⟩
+    (posᶻ (suc a) +negsuc b)    ∎
+  +ᵗʳ≡'+ᶻ (negsucᶻ   a ) (posᶻ      0 )   i = ℤ→Int $ -_ $  sucℤ $ -_ $ +-comm (signed sneg a) (pos 0) i
+  +ᵗʳ≡'+ᶻ (negsucᶻ   a ) (posᶻ (suc b))   =
+    (negsucᶻ a +ᵗʳ posᶻ (suc b))  ≡⟨ (λ i → ℤ→Int $ - sucℤ (- sucℤ-+ʳ (signed sneg a) (signed spos b) (~ i))) ⟩
+    ℤ→Int (- sucℤ (- sucℤ (signed sneg a + signed spos b))) ≡⟨ (λ i → ℤ→Int $ -sucℤ-sucℤ≡sucℤ-sucℤ- (signed sneg a + signed spos b) i) ⟩
+    ℤ→Int (sucℤ (- sucℤ (- (signed sneg a + signed spos b)))) ≡⟨ sym $ sucInt-preserves-ℤ→Int (- sucℤ (- (signed sneg a + signed spos b))) ⟩
+    sucInt (negsucᶻ a +ᵗʳ posᶻ b) ≡⟨ (λ i → sucInt $ +ᵗʳ≡'+ᶻ (negsucᶻ a) (posᶻ b) i) ⟩
+    sucInt (negsucᶻ a +pos b)   ∎
+  +ᵗʳ≡'+ᶻ (negsucᶻ zero) (negsucᶻ b) = sym $ negsuc+negsuc≡+ⁿ 0 b
+  +ᵗʳ≡'+ᶻ (negsucᶻ (suc a)) (negsucᶻ b) =
+   (negsucᶻ (suc a) +ᵗʳ negsucᶻ b)   ≡⟨ sym $ predInt-preserves-ℤ→Int (- sucℤ (- (signed sneg a + signed sneg (suc b)))) ⟩
+   predInt (negsucᶻ a +ᵗʳ negsucᶻ b) ≡⟨ (λ i → predInt $ +ᵗʳ≡'+ᶻ (negsucᶻ a) (negsucᶻ b) i) ⟩
+   predInt (negsucᶻ a +ᶻ  negsucᶻ b) ≡⟨ predInt+ (negsucᶻ a) (negsucᶻ b) ⟩
+   (negsucᶻ (suc a) +negsuc b)     ∎
 
--ᶻ_ : ℤ → ℤ
--ᶻ_ = transport (λ i → (Z≡ℤ i → Z≡ℤ i)) QuoInt.-_
+  +ᵗʳ≡+ᶻ : _+ᵗʳ_ ≡ _+ᶻ_
+  +ᵗʳ≡+ᶻ i a b = +ᵗʳ≡'+ᶻ a b i
 
-QuoInt-≡-ᶻ : PathP (λ i → (Z≡ℤ i → Z≡ℤ i)) QuoInt.-_ -ᶻ_
-QuoInt-≡-ᶻ i = transp (λ j → Z≡ℤ (i ∧ j) → Z≡ℤ (i ∧ j)) (~ i) QuoInt.-_
++≡+ᶻ : PathP (λ i → (ℤ≡Int i → ℤ≡Int i → ℤ≡Int i)) _+_ _+ᶻ_
++≡+ᶻ = J (λ _+ᵗʳ_ _ → PathP (λ i → (ℤ≡Int i → ℤ≡Int i → ℤ≡Int i)) _+_ _+ᵗʳ_) +≡+ᵗʳ +ᵗʳ≡+ᶻ
 
--ᶻ≡'- : ∀ a → -ᶻ a ≡ - a
--ᶻ≡'- (pos zero) = refl
--ᶻ≡'- (pos (suc n)) = refl
--ᶻ≡'- (negsuc n) = refl
+private
+  -ᵗʳ_ : Int → Int
+  -ᵗʳ_ = transport (λ i → (ℤ≡Int i → ℤ≡Int i)) -_
 
--ᶻ≡- : (-ᶻ_) ≡ (-_)
--ᶻ≡- i a = -ᶻ≡'- a i
+  -≡-ᵗʳ : PathP (λ i → (ℤ≡Int i → ℤ≡Int i)) -_ -ᵗʳ_
+  -≡-ᵗʳ i = transp (λ j → ℤ≡Int (i ∧ j) → ℤ≡Int (i ∧ j)) (~ i) -_
 
-QuoInt-≡- : PathP (λ i → (Z≡ℤ i → Z≡ℤ i)) (QuoInt.-_) (-_)
-QuoInt-≡- = J (λ -ᶻ_ _ → PathP (λ i → (Z≡ℤ i → Z≡ℤ i)) QuoInt.-_ -ᶻ_) QuoInt-≡-ᶻ -ᶻ≡-
+  -ᵗʳ≡'-ᶻ : ∀ a → -ᵗʳ a ≡ -ᶻ a
+  -ᵗʳ≡'-ᶻ (posᶻ zero) = refl
+  -ᵗʳ≡'-ᶻ (posᶻ (suc n)) = refl
+  -ᵗʳ≡'-ᶻ (negsucᶻ n) = refl
 
-minᶠ : QuoInt.ℤ → QuoInt.ℤ → QuoInt.ℤ
-minᶠ x y with QuoInt.sign x | QuoInt.sign y
-... | QuoInt.spos | QuoInt.spos = QuoInt.pos (minⁿ (QuoInt.abs x) (QuoInt.abs y))
-... | QuoInt.spos | QuoInt.sneg = y
-... | QuoInt.sneg | QuoInt.spos = x
-... | QuoInt.sneg | QuoInt.sneg = QuoInt.neg (maxⁿ (QuoInt.abs x) (QuoInt.abs y))
+  -ᵗʳ≡-ᶻ : (-ᵗʳ_) ≡ (-ᶻ_)
+  -ᵗʳ≡-ᶻ i a = -ᵗʳ≡'-ᶻ a i
 
-maxᶠ : QuoInt.ℤ → QuoInt.ℤ → QuoInt.ℤ
-maxᶠ x y with QuoInt.sign x | QuoInt.sign y
-... | QuoInt.spos | QuoInt.spos = QuoInt.pos (maxⁿ (QuoInt.abs x) (QuoInt.abs y))
-... | QuoInt.spos | QuoInt.sneg = x
-... | QuoInt.sneg | QuoInt.spos = y
-... | QuoInt.sneg | QuoInt.sneg = QuoInt.neg (minⁿ (QuoInt.abs x) (QuoInt.abs y))
+-≡-ᶻ : PathP (λ i → (ℤ≡Int i → ℤ≡Int i)) (-_) (-ᶻ_)
+-≡-ᶻ = J (λ -ᵗʳ_ _ → PathP (λ i → (ℤ≡Int i → ℤ≡Int i)) -_ -ᵗʳ_) -≡-ᵗʳ -ᵗʳ≡-ᶻ
 
-minᶻ : ℤ → ℤ → ℤ
-minᶻ = transport (λ i → (Z≡ℤ i → Z≡ℤ i → Z≡ℤ i)) minᶠ
+min : ℤ → ℤ → ℤ
+min x y with sign x | sign y
+... | spos | spos = pos (minⁿ (abs x) (abs y))
+... | spos | sneg = y
+... | sneg | spos = x
+... | sneg | sneg = neg (maxⁿ (abs x) (abs y))
 
-maxᶻ : ℤ → ℤ → ℤ
-maxᶻ = transport (λ i → (Z≡ℤ i → Z≡ℤ i → Z≡ℤ i)) maxᶠ
+max : ℤ → ℤ → ℤ
+max x y with sign x | sign y
+... | spos | spos = pos (maxⁿ (abs x) (abs y))
+... | spos | sneg = x
+... | sneg | spos = y
+... | sneg | sneg = neg (minⁿ (abs x) (abs y))
 
-minᶠ≡minᶻ : PathP (λ i → (Z≡ℤ i → Z≡ℤ i → Z≡ℤ i)) minᶠ minᶻ
-minᶠ≡minᶻ i = transp (λ j → Z≡ℤ (i ∧ j) → Z≡ℤ (i ∧ j) → Z≡ℤ (i ∧ j)) (~ i) minᶠ
+private
+  minᵗʳ : Int → Int → Int
+  minᵗʳ = transport (λ i → (ℤ≡Int i → ℤ≡Int i → ℤ≡Int i)) min
 
-maxᶠ≡maxᶻ : PathP (λ i → (Z≡ℤ i → Z≡ℤ i → Z≡ℤ i)) maxᶠ maxᶻ
-maxᶠ≡maxᶻ i = transp (λ j → Z≡ℤ (i ∧ j) → Z≡ℤ (i ∧ j) → Z≡ℤ (i ∧ j)) (~ i) maxᶠ
+  maxᵗʳ : Int → Int → Int
+  maxᵗʳ = transport (λ i → (ℤ≡Int i → ℤ≡Int i → ℤ≡Int i)) max
 
-minᶻ≡'min : ∀ a b → minᶻ a b ≡ min a b
-minᶻ≡'min (pos      0 ) (pos      0 ) = refl
-minᶻ≡'min (pos      0 ) (pos (suc b)) = refl
-minᶻ≡'min (pos (suc a)) (pos      0 ) = refl
-minᶻ≡'min (pos (suc a)) (pos (suc b)) = refl
-minᶻ≡'min (pos      0 ) (negsuc   b ) = refl
-minᶻ≡'min (pos (suc a)) (negsuc   b ) = refl
-minᶻ≡'min (negsuc   a ) (pos      0 ) = refl
-minᶻ≡'min (negsuc   a ) (pos (suc b)) = refl
-minᶻ≡'min (negsuc   a ) (negsuc   b ) = refl
+  min≡minᵗʳ : PathP (λ i → (ℤ≡Int i → ℤ≡Int i → ℤ≡Int i)) min minᵗʳ
+  min≡minᵗʳ i = transp (λ j → ℤ≡Int (i ∧ j) → ℤ≡Int (i ∧ j) → ℤ≡Int (i ∧ j)) (~ i) min
 
-maxᶻ≡'max : ∀ a b → maxᶻ a b ≡ max a b
-maxᶻ≡'max (pos      0 ) (pos      0 ) = refl
-maxᶻ≡'max (pos      0 ) (pos (suc b)) = refl
-maxᶻ≡'max (pos (suc a)) (pos      0 ) = refl
-maxᶻ≡'max (pos (suc a)) (pos (suc b)) = refl
-maxᶻ≡'max (pos      0 ) (negsuc   b ) = refl
-maxᶻ≡'max (pos (suc a)) (negsuc   b ) = refl
-maxᶻ≡'max (negsuc   a ) (pos      0 ) = refl
-maxᶻ≡'max (negsuc   a ) (pos (suc b)) = refl
-maxᶻ≡'max (negsuc   a ) (negsuc   b ) = refl
+  max≡maxᵗʳ : PathP (λ i → (ℤ≡Int i → ℤ≡Int i → ℤ≡Int i)) max maxᵗʳ
+  max≡maxᵗʳ i = transp (λ j → ℤ≡Int (i ∧ j) → ℤ≡Int (i ∧ j) → ℤ≡Int (i ∧ j)) (~ i) max
 
-minᶻ≡min : minᶻ ≡ min
-minᶻ≡min i a b = minᶻ≡'min a b i
+  minᵗʳ≡'minᶻ : ∀ a b → minᵗʳ a b ≡ minᶻ a b
+  minᵗʳ≡'minᶻ (posᶻ      0 ) (posᶻ      0 ) = refl
+  minᵗʳ≡'minᶻ (posᶻ      0 ) (posᶻ (suc b)) = refl
+  minᵗʳ≡'minᶻ (posᶻ (suc a)) (posᶻ      0 ) = refl
+  minᵗʳ≡'minᶻ (posᶻ (suc a)) (posᶻ (suc b)) = refl
+  minᵗʳ≡'minᶻ (posᶻ      0 ) (negsucᶻ   b ) = refl
+  minᵗʳ≡'minᶻ (posᶻ (suc a)) (negsucᶻ   b ) = refl
+  minᵗʳ≡'minᶻ (negsucᶻ   a ) (posᶻ      0 ) = refl
+  minᵗʳ≡'minᶻ (negsucᶻ   a ) (posᶻ (suc b)) = refl
+  minᵗʳ≡'minᶻ (negsucᶻ   a ) (negsucᶻ   b ) = refl
 
-maxᶻ≡max : maxᶻ ≡ max
-maxᶻ≡max i a b = maxᶻ≡'max a b i
+  maxᵗʳ≡'maxᶻ : ∀ a b → maxᵗʳ a b ≡ maxᶻ a b
+  maxᵗʳ≡'maxᶻ (posᶻ      0 ) (posᶻ      0 ) = refl
+  maxᵗʳ≡'maxᶻ (posᶻ      0 ) (posᶻ (suc b)) = refl
+  maxᵗʳ≡'maxᶻ (posᶻ (suc a)) (posᶻ      0 ) = refl
+  maxᵗʳ≡'maxᶻ (posᶻ (suc a)) (posᶻ (suc b)) = refl
+  maxᵗʳ≡'maxᶻ (posᶻ      0 ) (negsucᶻ   b ) = refl
+  maxᵗʳ≡'maxᶻ (posᶻ (suc a)) (negsucᶻ   b ) = refl
+  maxᵗʳ≡'maxᶻ (negsucᶻ   a ) (posᶻ      0 ) = refl
+  maxᵗʳ≡'maxᶻ (negsucᶻ   a ) (posᶻ (suc b)) = refl
+  maxᵗʳ≡'maxᶻ (negsucᶻ   a ) (negsucᶻ   b ) = refl
 
-minᶠ≡min : PathP (λ i → (Z≡ℤ i → Z≡ℤ i → Z≡ℤ i)) minᶠ min
-minᶠ≡min = J (λ minᶻ _ → PathP (λ i → (Z≡ℤ i → Z≡ℤ i → Z≡ℤ i)) minᶠ minᶻ) minᶠ≡minᶻ minᶻ≡min
+  minᵗʳ≡minᶻ : minᵗʳ ≡ minᶻ
+  minᵗʳ≡minᶻ i a b = minᵗʳ≡'minᶻ a b i
 
-maxᶠ≡max : PathP (λ i → (Z≡ℤ i → Z≡ℤ i → Z≡ℤ i)) maxᶠ max
-maxᶠ≡max = J (λ maxᶻ _ → PathP (λ i → (Z≡ℤ i → Z≡ℤ i → Z≡ℤ i)) maxᶠ maxᶻ) maxᶠ≡maxᶻ maxᶻ≡max
+  maxᵗʳ≡maxᶻ : maxᵗʳ ≡ maxᶻ
+  maxᵗʳ≡maxᶻ i a b = maxᵗʳ≡'maxᶻ a b i
 
-_<ᶠ_ : ∀(x y : QuoInt.ℤ) → hProp ℓ-zero
-x <ᶠ y with QuoInt.sign x | QuoInt.sign y
-... | QuoInt.spos | QuoInt.spos = QuoInt.abs x <ⁿ QuoInt.abs y
-... | QuoInt.spos | QuoInt.sneg = ⊥
-... | QuoInt.sneg | QuoInt.spos = ⊤
-... | QuoInt.sneg | QuoInt.sneg = QuoInt.abs y <ⁿ QuoInt.abs x
+min≡min : PathP (λ i → (ℤ≡Int i → ℤ≡Int i → ℤ≡Int i)) min minᶻ
+min≡min = J (λ minᵗʳ _ → PathP (λ i → (ℤ≡Int i → ℤ≡Int i → ℤ≡Int i)) min minᵗʳ) min≡minᵗʳ minᵗʳ≡minᶻ
 
-_<ᶻ_ : ℤ → ℤ → hProp ℓ-zero
-_<ᶻ_ = transport (λ i → (Z≡ℤ i → Z≡ℤ i → hProp ℓ-zero)) _<ᶠ_
+max≡max : PathP (λ i → (ℤ≡Int i → ℤ≡Int i → ℤ≡Int i)) max maxᶻ
+max≡max = J (λ maxᵗʳ _ → PathP (λ i → (ℤ≡Int i → ℤ≡Int i → ℤ≡Int i)) max maxᵗʳ) max≡maxᵗʳ maxᵗʳ≡maxᶻ
 
-<ᶠ≡<ᶻ : PathP (λ i → (Z≡ℤ i → Z≡ℤ i → hProp ℓ-zero)) _<ᶠ_ _<ᶻ_
-<ᶠ≡<ᶻ i = transp (λ j → Z≡ℤ (i ∧ j) → Z≡ℤ (i ∧ j) → hProp ℓ-zero) (~ i) _<ᶠ_
+infixl 4 _<_
+_<_ : ∀(x y : ℤ) → hProp ℓ-zero
+x < y with sign x | sign y
+... | spos | spos = abs x <ⁿ abs y
+... | spos | sneg = ⊥
+... | sneg | spos = ⊤
+... | sneg | sneg = abs y <ⁿ abs x
 
-<ᶻ⇔< : ∀ a b → [ (a <ᶻ b) ⇔ (a < b) ]
-<ᶻ⇔< (pos      0 ) (pos      0 ) .fst pᶻ = pᶻ
-<ᶻ⇔< (pos      0 ) (pos (suc b)) .fst pᶻ = pᶻ
-<ᶻ⇔< (pos (suc a)) (pos      0 ) .fst pᶻ = pᶻ
-<ᶻ⇔< (pos (suc a)) (pos (suc b)) .fst pᶻ = pᶻ
-<ᶻ⇔< (pos      0 ) (negsuc   b ) .fst pᶻ = pᶻ
-<ᶻ⇔< (pos (suc a)) (negsuc   b ) .fst pᶻ = pᶻ
-<ᶻ⇔< (negsuc   a ) (pos      0 ) .fst pᶻ = pᶻ
-<ᶻ⇔< (negsuc   a ) (pos (suc b)) .fst pᶻ = pᶻ
-<ᶻ⇔< (negsuc   a ) (negsuc   b ) .fst pᶻ = sucⁿ-creates-<ⁿ b a .snd pᶻ
-<ᶻ⇔< (pos      0 ) (pos      0 ) .snd p  = p
-<ᶻ⇔< (pos      0 ) (pos (suc b)) .snd p  = p
-<ᶻ⇔< (pos (suc a)) (pos      0 ) .snd p  = p
-<ᶻ⇔< (pos (suc a)) (pos (suc b)) .snd p  = p
-<ᶻ⇔< (negsuc   a ) (pos      0 ) .snd p  = p
-<ᶻ⇔< (negsuc   a ) (pos (suc b)) .snd p  = p
-<ᶻ⇔< (negsuc   a ) (negsuc   b ) .snd p  = sucⁿ-creates-<ⁿ b a .fst p
+private
 
-<ᶻ≡< : _<ᶻ_ ≡ _<_
-<ᶻ≡< i a b = ⇔toPath {P = a <ᶻ b} {Q = a < b} (<ᶻ⇔< a b .fst) (<ᶻ⇔< a b .snd) i
+  _<ᵗʳ_ : Int → Int → hProp ℓ-zero
+  _<ᵗʳ_ = transport (λ i → (ℤ≡Int i → ℤ≡Int i → hProp ℓ-zero)) _<_
 
-<ᶠ≡< : PathP (λ i → (Z≡ℤ i → Z≡ℤ i → hProp ℓ-zero)) _<ᶠ_ _<_
-<ᶠ≡< = J (λ _<ᶻ_ _ → PathP (λ i → (Z≡ℤ i → Z≡ℤ i → hProp ℓ-zero)) _<ᶠ_ _<ᶻ_) <ᶠ≡<ᶻ <ᶻ≡<
+  <≡<ᵗʳ : PathP (λ i → (ℤ≡Int i → ℤ≡Int i → hProp ℓ-zero)) _<_ _<ᵗʳ_
+  <≡<ᵗʳ i = transp (λ j → ℤ≡Int (i ∧ j) → ℤ≡Int (i ∧ j) → hProp ℓ-zero) (~ i) _<_
 
-is-LinearlyOrderedCommRingᶻ : [ isLinearlyOrderedCommRing 0 1 QuoInt._+_ QuoInt._*_ QuoInt.-_ _<ᶠ_ minᶠ maxᶠ ]
-is-LinearlyOrderedCommRingᶻ = transport γ is-LinearlyOrderedCommRing where
-  γ : [ isLinearlyOrderedCommRing 0 1 _+_ _*_ -_ _<_ min max ]
-    ≡ [ isLinearlyOrderedCommRing 0 1 QuoInt._+_ QuoInt._*_ QuoInt.-_ _<ᶠ_ minᶠ maxᶠ ]
-  γ i = [ isLinearlyOrderedCommRing 0ⁱ 1ⁱ _+ⁱ_ _*ⁱ_ -ⁱ_ _<ⁱ_ minⁱ maxⁱ ] where
-    0ⁱ = transport (λ j → Z≡ℤ (~ i ∧ j)) 0
-    1ⁱ = transport (λ j → Z≡ℤ (~ i ∧ j)) 1
-    _+ⁱ_ = QuoInt+≡+ (~ i)
-    _*ⁱ_ = QuoInt*≡* (~ i)
-    -ⁱ_  = QuoInt-≡- (~ i)
-    _<ⁱ_ = <ᶠ≡< (~ i)
-    minⁱ = minᶠ≡min (~ i)
-    maxⁱ = maxᶠ≡max (~ i)
+  <ᵗʳ⇔<ᶻ : ∀ a b → [ (a <ᵗʳ b) ⇔ (a <ᶻ b) ]
+  <ᵗʳ⇔<ᶻ (posᶻ      0 ) (posᶻ      0 ) .fst pᵗʳ = pᵗʳ
+  <ᵗʳ⇔<ᶻ (posᶻ      0 ) (posᶻ (suc b)) .fst pᵗʳ = pᵗʳ
+  <ᵗʳ⇔<ᶻ (posᶻ (suc a)) (posᶻ      0 ) .fst pᵗʳ = pᵗʳ
+  <ᵗʳ⇔<ᶻ (posᶻ (suc a)) (posᶻ (suc b)) .fst pᵗʳ = pᵗʳ
+  <ᵗʳ⇔<ᶻ (posᶻ      0 ) (negsucᶻ   b ) .fst pᵗʳ = pᵗʳ
+  <ᵗʳ⇔<ᶻ (posᶻ (suc a)) (negsucᶻ   b ) .fst pᵗʳ = pᵗʳ
+  <ᵗʳ⇔<ᶻ (negsucᶻ   a ) (posᶻ      0 ) .fst pᵗʳ = pᵗʳ
+  <ᵗʳ⇔<ᶻ (negsucᶻ   a ) (posᶻ (suc b)) .fst pᵗʳ = pᵗʳ
+  <ᵗʳ⇔<ᶻ (negsucᶻ   a ) (negsucᶻ   b ) .fst pᵗʳ = sucⁿ-creates-<ⁿ b a .snd pᵗʳ
+  <ᵗʳ⇔<ᶻ (posᶻ      0 ) (posᶻ      0 ) .snd p  = p
+  <ᵗʳ⇔<ᶻ (posᶻ      0 ) (posᶻ (suc b)) .snd p  = p
+  <ᵗʳ⇔<ᶻ (posᶻ (suc a)) (posᶻ      0 ) .snd p  = p
+  <ᵗʳ⇔<ᶻ (posᶻ (suc a)) (posᶻ (suc b)) .snd p  = p
+  <ᵗʳ⇔<ᶻ (negsucᶻ   a ) (posᶻ      0 ) .snd p  = p
+  <ᵗʳ⇔<ᶻ (negsucᶻ   a ) (posᶻ (suc b)) .snd p  = p
+  <ᵗʳ⇔<ᶻ (negsucᶻ   a ) (negsucᶻ   b ) .snd p  = sucⁿ-creates-<ⁿ b a .fst p
+
+  <ᵗʳ≡<ᶻ : _<ᵗʳ_ ≡ _<ᶻ_
+  <ᵗʳ≡<ᶻ i a b = ⇔toPath {P = a <ᵗʳ b} {Q = a <ᶻ b} (<ᵗʳ⇔<ᶻ a b .fst) (<ᵗʳ⇔<ᶻ a b .snd) i
+
+<≡<ᶻ : PathP (λ i → (ℤ≡Int i → ℤ≡Int i → hProp ℓ-zero)) _<_ _<ᶻ_
+<≡<ᶻ = J (λ _<ᵗʳ_ _ → PathP (λ i → (ℤ≡Int i → ℤ≡Int i → hProp ℓ-zero)) _<_ _<ᵗʳ_) <≡<ᵗʳ <ᵗʳ≡<ᶻ
+
+is-LinearlyOrderedCommRing : [ isLinearlyOrderedCommRing 0 1 _+_ _·_ -_ _<_ min max ]
+is-LinearlyOrderedCommRing = transport γ is-LinearlyOrderedCommRingᶻ where
+  γ : ([ isLinearlyOrderedCommRing 0 1 _+ᶻ_ _·ᶻ_ (-ᶻ_) _<ᶻ_ minᶻ maxᶻ ])
+    ≡ [ isLinearlyOrderedCommRing 0 1 _+_ _·_ -_ _<_ min max ]
+  γ i = [ isLinearlyOrderedCommRing 0ⁱ 1ⁱ _+ⁱ_ _·ⁱ_ -ⁱ_ _<ⁱ_ minⁱ maxⁱ ] where
+    0ⁱ = transport (λ j → ℤ≡Int (~ i ∧ j)) 0
+    1ⁱ = transport (λ j → ℤ≡Int (~ i ∧ j)) 1
+    _+ⁱ_ = +≡+ᶻ (~ i)
+    _·ⁱ_ = ·≡·ᶻ (~ i)
+    -ⁱ_  = -≡-ᶻ (~ i)
+    _<ⁱ_ = <≡<ᶻ (~ i)
+    minⁱ = min≡min (~ i)
+    maxⁱ = max≡max (~ i)
+
+bundle : LinearlyOrderedCommRing {ℓ-zero} {ℓ-zero}
+bundle .LinearlyOrderedCommRing.Carrier                    = ℤ
+bundle .LinearlyOrderedCommRing.0f                         = 0
+bundle .LinearlyOrderedCommRing.1f                         = 1
+bundle .LinearlyOrderedCommRing._+_                        = _+_
+bundle .LinearlyOrderedCommRing._·_                        = _·_
+bundle .LinearlyOrderedCommRing.-_                         = -_
+bundle .LinearlyOrderedCommRing.min                        = min
+bundle .LinearlyOrderedCommRing.max                        = max
+bundle .LinearlyOrderedCommRing._<_                        = _<_
+bundle .LinearlyOrderedCommRing.is-LinearlyOrderedCommRing = is-LinearlyOrderedCommRing
+
+·-reflects-< : (x y z : ℤ) → [ 0 < z ] → [ (x · z) < (y · z) ] → [ x < y ]
+·-reflects-< = transport γ ·ᶻ-reflects-<ᶻ where
+  γ : ((x y z : Int) → [ 0 <ᶻ z ] → [  x ·ᶻ z  <ᶻ  y ·ᶻ z  ] → [ x <ᶻ y ])
+    ≡ ((x y z :   ℤ) → [ 0 < z ] → [ (x · z) < (y · z) ] → [ x < y ])
+  γ i = let _·'_ = ·≡·ᶻ (~ i); _<'_ = <≡<ᶻ (~ i); 0ⁱ = transport (λ j → ℤ≡Int (~ i ∧ j)) 0 in
+      ((x y z :    ℤ≡Int (~ i)) → [ 0ⁱ <' z ] → [ (x ·' z) <' (y ·' z) ] → [ x <' y ])

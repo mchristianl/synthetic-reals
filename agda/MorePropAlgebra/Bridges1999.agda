@@ -129,11 +129,11 @@ R1-8 = ∀[ x ] ∀[ p ∶ [ x # 0f ] ] [ is-set ] x · (x ⁻¹) {{p}} ≡ˢ 1f
 R1-9 = ∀[ x ] ∀[ y ] ∀[ z ]       [ is-set ]      x · (y + z) ≡ˢ x · y + x · z
 
 -- _<_ axioms
-R2-1 = ∀[ x ] ∀[ y ]                                  ¬((x < y) ⊓ (y < x))
-R2-2 = ∀[ x ] ∀[ y ]   ( x < y)            ⇒ (∀[ z ]    (z < y) ⊔ (x < z))
-R2-3 = ∀[ x ] ∀[ y ]  ¬( x # y)            ⇒ [ is-set ]       x ≡ˢ y
-R2-4 = ∀[ x ] ∀[ y ]   ( x < y)            ⇒ (∀[ z ]    (x + z) < (y + z))
-R2-5 = ∀[ x ] ∀[ y ]   (0f < x) ⇒ (0f < y) ⇒                 0f < x · y
+R2-1 = ∀[ x ] ∀[ y ]                                  ¬((x < y) ⊓ (y < x)) -- <-asym
+R2-2 = ∀[ x ] ∀[ y ]   ( x < y)            ⇒ (∀[ z ]    (z < y) ⊔ (x < z)) -- <-cotrans
+R2-3 = ∀[ x ] ∀[ y ]  ¬( x # y)            ⇒ [ is-set ]       x ≡ˢ y       -- #-tight
+R2-4 = ∀[ x ] ∀[ y ]   ( x < y)            ⇒ (∀[ z ]    (x + z) < (y + z)) -- +-preserves-<
+R2-5 = ∀[ x ] ∀[ y ]   (0f < x) ⇒ (0f < y) ⇒                 0f < x · y    -- ·-preserves-0<
 
 -- Special properties of _<_
 -- R3-1 Axiom of Archimedes: `∀(x ∈ ℝ) → ∃[ n ∈ ℤ ] x < n`
@@ -144,24 +144,24 @@ R2-5 = ∀[ x ] ∀[ y ]   (0f < x) ⇒ (0f < y) ⇒                 0f < x · y
 --   least upper bound.
 
 -- derivable properties
-Prop-1  = ∀[ x ]                                                            ¬(x < x)
-Prop-2  = ∀[ x ]                                                              x ≤ x
-Prop-3  = ∀[ x ] ∀[ y ] ∀[ z ] (    x < y    ) ⇒ (y < z ) ⇒                   x < z
+Prop-1  = ∀[ x ]                                                            ¬(x < x) -- <-irrefl
+Prop-2  = ∀[ x ]                                                              x ≤ x  -- ≤-refl
+Prop-3  = ∀[ x ] ∀[ y ] ∀[ z ] (    x < y    ) ⇒ (y < z ) ⇒                   x < z  -- <-trans
 Prop-4  = ∀[ x ] ∀[ y ]                                               ¬((x < y) ⊓ (y ≤ x))
-Prop-5  = ∀[ x ] ∀[ y ] ∀[ z ] (    x ≤ y    ) ⇒ (y < z ) ⇒                   x < z
-Prop-6  = ∀[ x ] ∀[ y ] ∀[ z ] (    x < y    ) ⇒ (y ≤ z ) ⇒                   x < z
-Prop-7  = ∀[ x ] ∀[ y ]                                               (¬(x < y) ⇔    (y ≤ x))
-Prop-8  = ∀[ x ] ∀[ y ]                                               (¬(x ≤ y) ⇔ ¬ ¬(y < x))
-Prop-9  = ∀[ x ] ∀[ y ] ∀[ z ] (    y ≤ z    ) ⇒ (x ≤ y ) ⇒                  (x ≤ z)
-Prop-10 = ∀[ x ] ∀[ y ]        (    x ≤ y    ) ⇒ (y ≤ x ) ⇒                        [ is-set ] x ≡ˢ y
+Prop-5  = ∀[ x ] ∀[ y ] ∀[ z ] (    x ≤ y    ) ⇒ (y < z ) ⇒                   x < z  -- ≤-<-trans
+Prop-6  = ∀[ x ] ∀[ y ] ∀[ z ] (    x < y    ) ⇒ (y ≤ z ) ⇒                   x < z  -- <-≤-trans
+Prop-7  = ∀[ x ] ∀[ y ]                                               (¬(x < y) ⇔    (y ≤ x)) -- definition of ≤
+Prop-8  = ∀[ x ] ∀[ y ]                                               (¬(x ≤ y) ⇔ ¬ ¬(y < x)) -- ≤ weaker than <
+Prop-9  = ∀[ x ] ∀[ y ] ∀[ z ] (    y ≤ z    ) ⇒ (x ≤ y ) ⇒                  (x ≤ z) -- ≤-trans
+Prop-10 = ∀[ x ] ∀[ y ]        (    x ≤ y    ) ⇒ (y ≤ x ) ⇒                        [ is-set ] x ≡ˢ y -- ≤-antisym
 Prop-11 = ∀[ x ] ∀[ y ]                                               ¬((x < y) ⊓ ([ is-set ] x ≡ˢ y))
 Prop-12 = ∀[ x ]               (   0f ≤ x    )            ⇒ ([ is-set ] x ≡ˢ 0f ⇔ (∀[ ε ] (0f < ε) ⇒ (x < ε)))
 Prop-13 = ∀[ x ] ∀[ y ]        (   0f < x + y)            ⇒            (0f < x) ⊔ (0f < y)
-Prop-14 = ∀[ x ]               (   0f < x    )            ⇒                 - x < 0f
-Prop-15 = ∀[ x ] ∀[ y ] ∀[ z ] (    x < y    ) ⇒ (z < 0f) ⇒               y · z < x · z
-Prop-16 = ∀[ x ]               (    x # 0f   )            ⇒                  0f < x · x
+Prop-14 = ∀[ x ]               (   0f < x    )            ⇒                 - x < 0f -- -flips-<0
+Prop-15 = ∀[ x ] ∀[ y ] ∀[ z ] (    x < y    ) ⇒ (z < 0f) ⇒               y · z < x · z -- ·-preserves-<
+Prop-16 = ∀[ x ]               (    x # 0f   )            ⇒                  0f < x · x -- sqr-positive
 Prop-17 =                                                                    0f < 1f
-Prop-18 = ∀[ x ]                                                             0f ≤ x · x
+Prop-18 = ∀[ x ]                                                             0f ≤ x · x -- sqr-nonnegative
 Prop-19 = ∀[ x ]               (   0f < x    ) ⇒ (x < 1f) ⇒               x · x < x
 Prop-20 = ∀[ x ]               ( - 1f < x    ) ⇒ (x < 1f) ⇒       ¬((x < x · x) ⊓ (- x < x · x))
 Prop-21 = ∀[ x ]               (   0f < x · x)            ⇒                   x # 0f

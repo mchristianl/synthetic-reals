@@ -87,9 +87,10 @@ abstract
   ·-linv        : ∀ x                    → (p : [ x # 0f ]) → [ (x ⁻¹) {{p}} · x ≡ˢ 1f ]
   ·-linv-unique : (x y : F) → x · y ≡ 1f → (p : [ y # 0f ]) → x ≡ (y ⁻¹) {{p}}
 
-  <-≤-trans : ∀ x y z → [ x < y ⇒ y ≤ z ⇒ x < z ]
-  ≤-<-trans : ∀ x y z → [ x ≤ y ⇒ y < z ⇒ x < z ]
-  ≤-⇔-≤''   : ∀ x y   → [  (x ≤ y) ⇔ (x ≤'' y)  ]
+  <-≤-trans    : ∀ x y z → [ x < y ⇒ y ≤ z ⇒ x < z ]
+  ≤-<-trans    : ∀ x y z → [ x ≤ y ⇒ y < z ⇒ x < z ]
+  ≤-⇔-≤''      : ∀ x y   → [  (x ≤ y) ⇔ (x ≤'' y)  ]
+  ≤-reflects-≡ : ∀ x y   → [ (∀[ z ] z ≤ x ⇔ z ≤ y) ⇔ x ≡ˢ y ]
 
   -dist' a b = GroupLemmas'.invDistr a b
   -dist  a b = -dist' a b ∙ +-comm _ _
@@ -135,3 +136,7 @@ abstract
   -- Booij's _≤_ ⇔ Brigdes' _≤''_
   ≤-⇔-≤'' x y .fst x≤y ε y<ε = ≤-<-trans x y ε x≤y y<ε
   ≤-⇔-≤'' x y .snd x≤''y y<x = <-irrefl x (x≤''y x y<x)
+
+  ≤-reflects-≡ x y .fst z≤x⇔z≤y = ≤-antisym x y (z≤x⇔z≤y x .fst (≤-refl x)) (z≤x⇔z≤y y .snd (≤-refl y))
+  ≤-reflects-≡ x y .snd x≡y z .fst = subst (λ p → [ z ≤ p ]) x≡y
+  ≤-reflects-≡ x y .snd x≡y z .snd = subst (λ p → [ z ≤ p ]) (sym x≡y)

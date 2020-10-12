@@ -4,6 +4,26 @@ This is an attempt to make use of [Booij 2020 - Analysis in Univalent Type Theor
 
 The main file is [SyntheticReals.agda](agda/SyntheticReals.agda) that is also [rendered in clickable html](https://mchristianl.github.io/synthetic-reals/html/SyntheticReals.html) and [a literate agda version](https://mchristianl.github.io/synthetic-reals/html/) is in the making.
 
+## NEWS
+
+### 12.10.2020
+
+there are now instance proofs to replace the postulates
+- [Cubical.Data.Nat](https://mchristianl.github.io/synthetic-reals/html/Cubical.Data.Nat.html) being an instance of a [LinearlyOrderedCommSemiring](https://mchristianl.github.io/synthetic-reals/html/Number.Structures2.html#LinearlyOrderedCommSemiring) in [Number.Instances.Nat](https://mchristianl.github.io/synthetic-reals/html/Number.Instances.Nat.html)
+- [Cubical.Data.Int](https://mchristianl.github.io/synthetic-reals/html/Cubical.Data.Int.html) being an instance of a [LinearlyOrderedCommRing](https://mchristianl.github.io/synthetic-reals/html/Number.Structures2.html#LinearlyOrderedCommRing) in [Number.Instances.Int](https://mchristianl.github.io/synthetic-reals/html/Number.Instances.Int.html)
+- ~~[Cubical.HITs.Ints.QuoInt](https://mchristianl.github.io/synthetic-reals/html/Cubical.HITs.Ints.QuoInt.html) being an instance of a [LinearlyOrderedCommRing](https://mchristianl.github.io/synthetic-reals/html/Number.Structures2.html#LinearlyOrderedCommRing) in [Number.Instances.QuoIntUnfinished](https://mchristianl.github.io/synthetic-reals/html/Number.Instances.QuoIntUnfinished.html)~~
+  - I could not obtain all necessary properties, but with a hint from Anders Mörtberg, I was able to proof the structure of `Int` equal to the structure of `QuoInt`
+  - therefore, there is an instance proof of `Cubical.HITs.Ints.QuoInt` being an instance of a `LinearlyOrderedCommRing` in [Number.Instances.QuoIntFromInt](https://mchristianl.github.io/synthetic-reals/html/Number.Instances.QuoIntFromInt.html)
+  - [Cubical.HITs.Ints.QuoInt](https://mchristianl.github.io/synthetic-reals/html/Cubical.HITs.Ints.QuoInt.html) being an instance of a [LinearlyOrderedCommRing](https://mchristianl.github.io/synthetic-reals/html/Number.Structures2.html#LinearlyOrderedCommRing) in [Number.Instances.QuoInt](https://mchristianl.github.io/synthetic-reals/html/Number.Instances.QuoInt.html)
+- and finally, there is [Cubical.HITs.Rationals.QuoQ](https://mchristianl.github.io/synthetic-reals/html/Cubical.HITs.Rationals.QuoQ.html) being an instance of a [LinearlyOrderedField](https://mchristianl.github.io/synthetic-reals/html/Number.Structures2.html#LinearlyOrderedField) in [Number.Instances.QuoQ](https://mchristianl.github.io/synthetic-reals/html/Number.Instances.QuoQ.Instance.html)
+
+to make the usage a bit more convenient, there are little "preludes" with renamed properties for
+- [Number.Prelude.Nat](https://mchristianl.github.io/synthetic-reals/html/Number.Prelude.Nat.html)
+- [Number.Prelude.Int](https://mchristianl.github.io/synthetic-reals/html/Number.Prelude.Int.html) (although this should not be used because `QuoInt` is preferred)
+- [Number.Prelude.QuoInt](https://mchristianl.github.io/synthetic-reals/html/Number.Prelude.QuoInt.html)
+- (`Number.Prelude.QuoQ` comes next)
+
+
 ## developments on-top of real numbers
 
 Not all necessary machinery is already available in the cubical standard library. Nonetheless, we provide `record`s for several number types that are [backed by postulates](https://mchristianl.github.io/synthetic-reals/html/Number.Postulates.html). Ideally these postulates will be replaced by actual implementations from the standard library when they are available.

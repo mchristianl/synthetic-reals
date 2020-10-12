@@ -1,16 +1,41 @@
 
+## immediate TODOs
+
+- split `·-reflects-<` into `·-reflects-<ˡ` and `·-reflects-<ʳ`
+- we use `·-reflects-≡ˡ` where the standard library uses the nomer "injective" like `*-injˡ` (or something similar)
+  - since `preserves-≡` is automatic, we might switch to `·-injectiveˡ` instead of `·-reflects-≡ˡ`
+- we have `+-rinv`, `+-inverse` and `ʳ` `ˡ` variants in use ⇒ unify them!
+- in equivalences, we still need to follow the convention that the "simpler" term is the RHS
+  e.g. `·-creates-< : ∀ a b x → [ 0 < x ] → [ (a < b) ⇔ ((a · x) < (b · x)) ]` is wrong
+  (this needs to be checked)
+
 ## general TODOs
 
-- make use of .lagda.md for the parts that literally follow Booij's thesis
-- likely due to [#1646](https://github.com/agda/agda/issues/1646) we might flatten-out the module hierarchy for better performance
+- Lemma 6.7.1. contains more properties that are provable on ordered fields already
+  - some of them look like we've proven them for Bridges1999 already
+- is it possible to proof `comm`, `assoc` and `absorbs` from `isMin` and `isMax`?
 - merge the notes with Hit.agda
+- check whether this `rinv` `linv` `lemmaʳ` `lemmaˡ` is the way its done in the standard library
+- is `+-<-extensional` the right name for `∀ w x y z → (x + y) < (z + w) → (x < z) ⊎ (y < w)`?
+- get the absolute value function `abs` into the number hierarchy
+- get the square root function `sqrt` into the number hierarchy
+- complete all necessary axioms in the number hierarchy
+  - then divide into necessary axioms and derivable theorems
+    - and try to proof the theorems
+
+## ongoing TODOs
+
 - use equivalences intstead of `lemma` and `lemma-back`
 - can we use `preserves` and `reflects` instead of `lemma` and `lemma-back`?
   - "f preserves P: P A ⇒ P (f A)"
   - "f reflects  P: P (f A) ⇒ P A"
-- name the "items"
-- check whether this `rinv` `linv` `lemmaʳ` `lemmaˡ` is the way its done in the standard library
-- is `+-<-extensional` the right name for `∀ w x y z → (x + y) < (z + w) → (x < z) ⊎ (y < w)`?
+- name the "items" (from Bridges 1999)
+- can't we just use ℚ from the non-cubical standard library?
+  - yes ... but we need to add missing properties (e.g. `_<_` and `min`, `max`)
+
+## ongoing concerns
+
+- likely due to [#1646](https://github.com/agda/agda/issues/1646) we might flatten-out the module hierarchy for better performance
 - How to structure the algebraic number hierarchy: bundling/unbundling and "What makes a bundle-morphism"?
   - `isX : IsX` is called "the unbundle"
   - `x : X` without its `isX : IsX` is called "raw"
@@ -27,6 +52,39 @@
     - field and ordered_field
     - division_by_zero includes all types where `inverse 0 = 0` and `a / 0 = 0`.
       These include all of Isabelle’s standard numeric types. However, the basic properties of fields are derived without assuming division by zero.
+
+## later TODOs
+
+- make use of .lagda.md for the parts that literally follow Booij's thesis
+
+## TODOs after later TODOs
+
+- in `Cubical.Functions.Bundle` we have a definition of fibre bundle
+- the `Categories` part of the cubical standard library is quite readable!
+
+## stuff to check out
+
+- subsets and embeddings
+  - checkout `Cubical.Foundations.Logic`
+    ```agda
+    -- We show that the powerset is the subtype classifier
+    -- i.e. ℙ X ≃ Σ[A ∈ Type ℓ] (A ↪ X)
+    Embedding→Subset : {X : Type ℓ} → Σ[ A ∈ Type ℓ ] (A ↪ X) → ℙ X
+    Embedding→Subset (_ , f , isPropFiber) x = fiber f x , isPropFiber x
+
+    Subset→Embedding : {X : Type ℓ} → ℙ X → Σ[ A ∈ Type ℓ ] (A ↪ X)
+    Subset→Embedding {X = X} A = D , f , ψ
+      where ...
+    ```
+    where
+    ```agda
+    hasPropFibers : (A → B) → Type _
+    hasPropFibers f = ∀ y → isProp (fiber f y)
+
+    _↪_ : Type ℓ → Type ℓ → Type ℓ
+    A ↪ B = Σ[ f ∈ (A → B) ] hasPropFibers f
+    ```
+  - there is also
 - check out `Relation.Binary.Structures` where we can also find `IsStrictPartialOrder` (whether we can use this)
   - also see in `Data.Nat.Properties` the definition of `Structures` and `Bundles`
     - here, under `Structures` we find the `IsX` records, where under `Bundles` there is the corresponding `X` record
@@ -66,38 +124,6 @@
   - the use of instances seems to be very recent, since they also write _"First instance modules, which provide `Functor`, `Monad`, `Applicative` instances for various datatypes. Found under `Data.X.Instances`."_
 - check out ["irrelevancy annotations"](https://agda.readthedocs.io/en/v2.6.1/language/irrelevance.html#irrelevant-record-fields) and whether they serve as some form of "term abstractification" (i.e. blocking the term normalization)
   - does this work with `--cubical`? what is its intention?
-- can't we just use ℚ from the non-cubical standard library?
-- subsets and embeddings
-  - checkout `Cubical.Foundations.Logic`
-    ```agda
-    -- We show that the powerset is the subtype classifier
-    -- i.e. ℙ X ≃ Σ[A ∈ Type ℓ] (A ↪ X)
-    Embedding→Subset : {X : Type ℓ} → Σ[ A ∈ Type ℓ ] (A ↪ X) → ℙ X
-    Embedding→Subset (_ , f , isPropFiber) x = fiber f x , isPropFiber x
-
-    Subset→Embedding : {X : Type ℓ} → ℙ X → Σ[ A ∈ Type ℓ ] (A ↪ X)
-    Subset→Embedding {X = X} A = D , f , ψ
-      where ...
-    ```
-    where
-    ```agda
-    hasPropFibers : (A → B) → Type _
-    hasPropFibers f = ∀ y → isProp (fiber f y)
-
-    _↪_ : Type ℓ → Type ℓ → Type ℓ
-    A ↪ B = Σ[ f ∈ (A → B) ] hasPropFibers f
-    ```
-  - there is also
-- use `hProp`s
+- use of `hProp`s
   - ~~checkout `Cubical.Structures.Poset`~~
   - provide a Σ-theory similar to `CommRingΣTheory` with axioms and structure
-- get the absolute value function `abs` into the number hierarchy
-- get the square root function `sqrt` into the number hierarchy
-- complete all necessary axioms in the number hierarchy
-  - then divide into necessary axioms and derivable theorems
-    - and try to proof the theorems
-
-## later TODOs
-
-- in `Cubical.Functions.Bundle` we have a definition of fibre bundle
-- the `Categories` part of the cubical standard library is quite readable!
