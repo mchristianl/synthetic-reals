@@ -4,9 +4,9 @@ This is an attempt to make use of [Booij 2020 - Analysis in Univalent Type Theor
 
 [UPDATE (12.10.2020): the "main" file is currently broken. There is [Number.Instances.QuoQ](https://mchristianl.github.io/synthetic-reals/html/Number.Instances.QuoQ.Instance.html) instead.]
 
-The main file is [SyntheticReals.agda](agda/SyntheticReals.agda) that is also [rendered in clickable html](https://mchristianl.github.io/synthetic-reals/html/SyntheticReals.html) and [a literate agda version](https://mchristianl.github.io/synthetic-reals/html/) is in the making.
+~~The main file is [SyntheticReals.agda](agda/SyntheticReals.agda) that is also [rendered in clickable html](https://mchristianl.github.io/synthetic-reals/html/SyntheticReals.html) and [a literate agda version](https://mchristianl.github.io/synthetic-reals/html/) is in the making.~~
 
-## NEWS
+## NEWS / current development status
 
 ### 12.10.2020
 
