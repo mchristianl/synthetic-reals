@@ -31,7 +31,7 @@ open import Number.Bundles2
 
 open import Cubical.Data.Nat.Literals
 open import Cubical.Data.Nat using (suc; zero; ℕ; HasFromNat)
-open import Number.Prelude.Nat using (¬-<ⁿ-zero; +ⁿ-comm; ¬suc<ⁿ0)
+open import Number.Prelude.Nat using (¬-<ⁿ-zero; +ⁿ-comm; ¬suc<ⁿ0; _+ⁿ_; _·ⁿ_; ·ⁿ-reflects-≡ˡ')
 open import Number.Instances.QuoIntFromInt public
 open import Cubical.HITs.Ints.QuoInt as QuoInt using
   ( ℤ
@@ -50,8 +50,11 @@ open import Cubical.HITs.Ints.QuoInt as QuoInt using
   ; +-comm
   ; +-assoc
   ; sucℤ-+ʳ
+  ; sucℤ-+ˡ
   ; spos
   ; sneg
+  ; *-pos-suc
+  ; negate-invol
   ) renaming
   ( isSetℤ to is-set
   ; _*_ to _·_
@@ -65,6 +68,7 @@ open IsLinearlyOrderedCommRing is-LinearlyOrderedCommRing using
   ; +-<-ext
   ; +-rinv
   ; +-identity
+  ; ·-identity
   ; _≤_
   ; ·-preserves-<
   ; <-tricho
@@ -110,6 +114,16 @@ suc-creates-< x y .snd p = +-reflects-< x y (pos 1) $ substₚ (λ p → p < y +
 ·-creates-< : ∀ a b x → [ 0 < x ] → [ (a < b) ⇔ ((a · x) < (b · x)) ]
 ·-creates-< a b x p .fst q = ·-preserves-< a b x p q
 ·-creates-< a b x p .snd q = ·-reflects-< a b x p q
+
+·-creates-<ˡ : ∀ a b x → [ 0 < x ] → [ (a < b) ⇔ ((x · a) < (x · b)) ]
+·-creates-<ˡ a b x p .fst q = transport (λ i → [ ·-comm a x i < ·-comm b x i ]) $ ·-preserves-< a b x p q
+·-creates-<ˡ a b x p .snd q = ·-reflects-< a b x p (transport (λ i → [ ·-comm x a i < ·-comm x b i ]) q)
+
+·-creates-<-≡ : ∀ a b x → [ 0 < x ] → (a < b) ≡ ((a · x) < (b · x))
+·-creates-<-≡ a b x p = ⇔toPath' (·-creates-< a b x p)
+
+·-creates-<ˡ-≡ : ∀ a b x → [ 0 < x ] → (a < b) ≡ ((x · a) < (x · b))
+·-creates-<ˡ-≡ a b x p = ⇔toPath' (·-creates-<ˡ a b x p)
 
 +-creates-≤ : ∀ a b x → [ (a ≤ b) ⇔ ((a + x) ≤ (b + x)) ]
 +-creates-≤ a b x = {!   !}
@@ -190,9 +204,6 @@ private
 ·-reflects-<ˡ : (x y z : ℤ) → [ pos 0 < z ] → [ z · x < z · y ] → [ x < y ]
 ·-reflects-<ˡ x y z p q = ·-reflects-< x y z p  (transport (λ i → [ ·-comm z x i < ·-comm z y i ]) q)
 
-·-creates-<-≡ : ∀ a b x → [ 0 < x ] → (a < b) ≡ ((a · x) < (b · x))
-·-creates-<-≡ a b x p = ⇔toPath (·-creates-< a b x p .fst) (·-creates-< a b x p .snd)
-
 -flips-<0 : ∀ x → [ (x < 0) ⇔ (0 < (- x)) ]
 -flips-<0 (signed spos zero) = (λ x → x) , (λ x → x)
 -flips-<0 (signed sneg zero) = (λ x → x) , (λ x → x)
@@ -212,6 +223,13 @@ private
   ( (- y) +    0    < - x  ) ⇒ᵖ⟨ transport (λ i → [ +-identity (- y) .fst i < - x ]) ⟩
   (  - y            < - x  ) ◼ᵖ) .snd p
 
+-flips-<-⇔ : ∀ x y → [ (x < y) ⇔ (- y < - x) ]
+-flips-<-⇔ x y .fst = -flips-< x y
+-flips-<-⇔ x y .snd p = transport (λ i → [ negate-invol x i < negate-invol y i ]) $ -flips-< (- y) (- x) p
+
+-flips-<-≡ : ∀ x y → (x < y) ≡ (- y < - x)
+-flips-<-≡ x y = ⇔toPath' (-flips-<-⇔ x y)
+
 -identity-· : ∀ a → (- 1) · a ≡ - a
 -identity-· (pos zero) j = posneg (~ i0 ∨ ~ j)
 -identity-· (neg zero) j = posneg (~ i1 ∨ ~ j)
@@ -226,15 +244,32 @@ private
   ((- 1) · a) · b ≡⟨ (λ i → -identity-· a i · b) ⟩
   (- a) · b       ∎
 
+private
+  lem : ∀ z → [ z < 0 ] → [ 0 < - z ]
+  lem z p = subst (λ p → [ p < - z ]) (sym posneg) $ -flips-< z 0 p
+
+·-creates-<-flippedˡ-≡ : (x y z : ℤ) → [ z < 0 ] → (z · x < z · y) ≡ (y < x)
+·-creates-<-flippedˡ-≡ x y z p =
+     z  · x  <    z ·  y  ≡⟨ -flips-<-≡ (z · x) (z · y) ⟩
+  - (z  · y) < - (z ·  x) ≡⟨ (λ i → -distˡ z y i < -distˡ z x i) ⟩
+  (- z) · y  < (- z) · x  ≡⟨ sym $ ·-creates-<ˡ-≡ y x (- z) (lem z p) ⟩
+          y  <         x  ∎
+
+·-creates-<-flippedʳ-≡ : (x y z : ℤ) → [ z < 0 ] → (x · z < y · z) ≡ (y < x)
+·-creates-<-flippedʳ-≡ x y z p = (λ i → ·-comm x z i < ·-comm y z i) ∙ ·-creates-<-flippedˡ-≡ x y z p
+
 ·-reflects-<-flippedˡ : (x y z : ℤ) → [ z < 0 ] → [ z · x < z · y ] → [ y < x ]
-·-reflects-<-flippedˡ x y z p q = (
-     z  · x  <    z ·  y  ⇒ᵖ⟨ -flips-< (z · x) (z · y) ⟩
-  - (z  · y) < - (z ·  x) ⇒ᵖ⟨ transport (λ i → [ -distˡ z y i < -distˡ z x i ]) ⟩
-  (- z) · y  < (- z) · x  ⇒ᵖ⟨ ·-creates-< y x (- z) (subst (λ p → [ p < - z ]) (sym posneg) $ -flips-< z 0 p) .snd ∘ transport (λ i → [ ·-comm (- z) y i < ·-comm (- z) x i ]) ⟩
-          y  <         x  ◼ᵖ) .snd q
+·-reflects-<-flippedˡ x y z p q = pathTo⇒ (·-creates-<-flippedˡ-≡ x y z p) q
+  --   (z  · x  <    z ·  y  ⇒ᵖ⟨ -flips-< (z · x) (z · y) ⟩
+  -- - (z  · y) < - (z ·  x) ⇒ᵖ⟨ transport (λ i → [ -distˡ z y i < -distˡ z x i ]) ⟩
+  -- (- z) · y  < (- z) · x  ⇒ᵖ⟨ ·-creates-<ˡ y x (- z) (lem z p) .snd ⟩
+  --         y  <         x  ◼ᵖ) .snd q
 
 ·-reflects-<-flippedʳ : (x y z : ℤ) → [ z < 0 ] → [ x · z < y · z ] → [ y < x ]
 ·-reflects-<-flippedʳ x y z p q = ·-reflects-<-flippedˡ x y z p (transport (λ i → [ ·-comm x z i < ·-comm y z i ]) q)
+
+-- ·-preserves-<-flippedˡ : (x y z : ℤ) → [ z < 0 ] → [ x < y ] → [ z · y < z · x ]
+-- ·-preserves-<-flippedˡ x y z p q = {!   !}
 
 ·-reflects-0< : ∀ a b → [ 0 < a · b ] → [ ((0 < a) ⇔ (0 < b)) ⊓ ((a < 0) ⇔ (b < 0)) ]
 ·-reflects-0< a b p .fst .fst q = ·-reflects-<ˡ 0 b a q (transport (λ i → [ ·-nullifiesʳ a (~ i) < a · b ]) p)
@@ -247,7 +282,7 @@ private
 
 ⊕-identityʳ : ∀ s → (s Bool.⊕ spos) ≡ s
 ⊕-identityʳ spos = refl
-⊕-identityʳ sneg  = refl
+⊕-identityʳ sneg = refl
 
 ·-preserves-signˡ : ∀ x y → [ 0 < y ] → sign (x · y) ≡ sign x
 ·-preserves-signˡ x (signed spos zero) p = ⊥-elim {A = λ _ → sign (x · ℤ.posneg i0) ≡ sign x} (¬-<ⁿ-zero p)
@@ -275,6 +310,51 @@ private
 <-split-neg (pos (suc m)) p = ⊥-elim {A = λ _ → Σ[ n ∈ ℕ ] pos (suc m) ≡ neg (suc n)} (¬suc<ⁿ0 m p)
 <-split-neg (neg (suc m)) p = m , refl
 
+#-split-abs : ∀ a → [ a # 0 ] → Σ[ x ∈ _ ] (abs a ≡ suc (abs x))
+#-split-abs a (inl a<0) with <-split-neg a a<0; ... | (n , p) = neg n , λ i → abs (p i)
+#-split-abs a (inr 0<a) with <-split-pos a 0<a; ... | (n , p) = pos n , λ i → abs (p i)
+
+-- this is  QuoInt.signed-zero
+signed0≡0 : ∀ s → signed s 0 ≡ 0
+signed0≡0 spos   = refl
+signed0≡0 sneg i = posneg (~ i)
+
+·-sucIntʳ⁺ : ∀ m n → m · pos (suc n) ≡ m + m · pos n
+·-sucIntʳ⁺ m n = ·-comm m (pos (suc n)) ∙ *-pos-suc n m ∙ (λ i → m + ·-comm (pos n) m i)
+
+signed-respects-+ : ∀ s a b → signed s (a +ⁿ b) ≡ signed s a + signed s b
+signed-respects-+ spos  zero   b   = refl
+signed-respects-+ sneg  zero   b   = refl
+signed-respects-+ spos (suc a) b i = sucℤ  $ signed-respects-+ spos a b i
+signed-respects-+ sneg (suc a) b i = predℤ $ signed-respects-+ sneg a b i
+
+-- this is QuoInt.signed-inv
+sign-abs-identity : ∀ a → signed (sign a) (abs a) ≡ a
+sign-abs-identity (pos zero) j  = posneg (i0 ∧ j)
+sign-abs-identity (neg zero) j  = posneg (i1 ∧ j)
+sign-abs-identity (posneg i) j  = posneg (i  ∧ j)
+sign-abs-identity (pos (suc n)) = refl
+sign-abs-identity (neg (suc n)) = refl
+
+signed-reflects-≡₁ : ∀ s₁ s₂ n → signed s₁ (suc n) ≡ signed s₂ (suc n) → s₁ ≡ s₂
+signed-reflects-≡₁ s₁ s₂ n p i = sign (p i)
+
+signed-reflects-≡₂ : ∀ s₁ s₂ a b → signed s₁ a ≡ signed s₂ b → a ≡ b
+signed-reflects-≡₂ s₁ s₂ a b p i = abs (p i)
+
+-abs : ∀ a → abs (- a) ≡ abs a
+-abs (signed s n) = refl
+-abs (posneg i) = refl
+
+-reflects-≡ : ∀ a b → - a ≡ - b → a ≡ b
+-reflects-≡ a b p = sym (negate-invol a) ∙ (λ i → - p i) ∙ negate-invol b
+
+abs-preserves-· : ∀ a b → abs (a · b) ≡ abs a ·ⁿ abs b
+abs-preserves-· a b = refl
+
+sign-abs-≡ : ∀ a b → sign a ≡ sign b → abs a ≡ abs b → a ≡ b
+sign-abs-≡ a b p q = transport (λ i → sign-abs-identity a i ≡ sign-abs-identity b i) λ i → signed (p i) (q i)
+
 0<-sign : ∀ z → [ 0 < z ] → sign z ≡ spos
 0<-sign z p i = sign $ <-split-pos z p .snd i
 
@@ -284,3 +364,52 @@ private
 sign-pos : ∀ n → sign (pos n) ≡ spos
 sign-pos zero = refl
 sign-pos (suc n) = refl
+
+-- inj-*sm : l * suc m ≡ n * suc m → l ≡ n
+-- inj-*sm {zero} {m} {n} p = 0≡n*sm→0≡n p
+-- inj-*sm {l} {m} {zero} p = sym (0≡n*sm→0≡n (sym p))
+-- inj-*sm {suc l} {m} {suc n} p = cong suc (inj-*sm (inj-m+ {m = suc m} p))
+
+private
+  lem1 : ∀ a x → sign a ≡ sign (signed (sign a) (abs a +ⁿ x ·ⁿ abs a))
+  lem1 (pos zero)    x = sym $ sign-pos (x ·ⁿ 0)
+  lem1 (neg zero)    x = sym $ sign-pos (x ·ⁿ 0)
+  lem1 (posneg i)    x = sym $ sign-pos (x ·ⁿ 0)
+  lem1 (pos (suc n)) x = refl
+  lem1 (neg (suc n)) x = refl
+
+·-reflects-≡ˡ⁺ : ∀ a b x → (pos (suc x)) · a ≡ (pos (suc x)) · b → a ≡ b
+·-reflects-≡ˡ⁺ a b x p = sym (sign-abs-identity a) ∙ (λ i → signed (κ i) (γ i)) ∙ sign-abs-identity b where
+  φ : suc x ·ⁿ abs a ≡ suc x ·ⁿ abs b
+  φ = signed-reflects-≡₂ _ _ _ _ p
+  γ : abs a ≡ abs b
+  γ = ·ⁿ-reflects-≡ˡ' {x} {abs a} {abs b} φ
+  κ = transport ( sign (signed (sign a) (suc x ·ⁿ abs a))
+                ≡ sign (signed (sign b) (suc x ·ⁿ abs b)) ≡⟨ (λ i → lem1 a x (~ i) ≡ lem1 b x (~ i)) ⟩
+                  sign a ≡ sign b                         ∎) (λ i → sign (p i))
+
+·-reflects-≡ˡ⁻ : ∀ a b x → (neg (suc x)) · a ≡ (neg (suc x)) · b → a ≡ b
+·-reflects-≡ˡ⁻ a b x p = sym (sign-abs-identity a) ∙ γ ∙ sign-abs-identity b  where
+  φ : suc x ·ⁿ abs a ≡ suc x ·ⁿ abs b
+  φ = signed-reflects-≡₂ _ _ _ _ p
+  κ : abs a ≡ abs b
+  κ = ·ⁿ-reflects-≡ˡ' {x} {abs a} {abs b} φ
+  γ : signed (sign a) (abs a) ≡ signed (sign b) (abs b)
+  γ with #-dicho a
+  ... | inl a#0 = -reflects-≡ _ _ (λ i → signed (θ i) (κ i)) where
+    abstract
+      c = #-split-abs a a#0 .fst
+      q₁ : abs a ≡ suc (abs c)
+      q₁ = #-split-abs a a#0 .snd
+      q₂ : abs b ≡ suc (abs c)
+      q₂ = sym κ ∙ q₁
+    θ : not (sign a) ≡ not (sign b)
+    θ = signed-reflects-≡₁ _ _ _ (transport (λ i → signed (not (sign a)) (suc x ·ⁿ q₁ i) ≡ signed (not (sign b)) (suc x ·ⁿ q₂ i)) p)
+  ... | inr a≡0 = cong₂ signed refl (λ i → abs (a≡0 i)) ∙ signed0≡0 (sign a) ∙ sym (signed0≡0 (sign b)) ∙ cong₂ signed refl ((λ i → abs (a≡0 (~ i))) ∙ κ)
+
+·-reflects-≡ˡ : ∀ a b x → [ x # 0 ] → x · a ≡ x · b → a ≡ b
+·-reflects-≡ˡ a b x (inl x<0) q = let (y , r) = <-split-neg x x<0 in ·-reflects-≡ˡ⁻ a b y (transport (λ i → r i · a ≡ r i · b) q)
+·-reflects-≡ˡ a b x (inr 0<x) q = let (y , r) = <-split-pos x 0<x in ·-reflects-≡ˡ⁺ a b y (transport (λ i → r i · a ≡ r i · b) q)
+
+·-reflects-≡ʳ : ∀ a b x → [ x # 0 ] → a · x ≡ b · x → a ≡ b
+·-reflects-≡ʳ a b x p q = ·-reflects-≡ˡ a b x p (·-comm x a ∙ q ∙ ·-comm b x)

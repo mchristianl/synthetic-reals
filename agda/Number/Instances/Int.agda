@@ -98,10 +98,25 @@ infixl 4 _<_
 -- NOTE: this definition leads to a lot cases and a lot of calculations
 --       the general advice would be to have as few cases as possible
 --       because then at a call site we also need not many cases
+-- NOTE: the way that QuoInt._+_ is defined works that it reduces the first argument, e.g. it reduces `a` in `a + b`
+--       therefore we also need to split (only) on the first argument `a`
+--         _+_ : ℤ → ℤ → ℤ
+--         (signed _ zero) + n = n
+--         (posneg _)      + n = n
+--         (pos (suc m))   + n = sucℤ  (pos m + n)
+--         (neg (suc m))   + n = predℤ (neg m + n)
+--       we might apply something similar for _·_
+--       although that is not done for QuoInt._*_
+--         _*_ : ℤ → ℤ → ℤ
+--         m * n = signed (sign m *S sign n) (abs m ℕ.* abs n)
+--       but it is done for ℕ._*_
+--         _*_ : Nat → Nat → Nat
+--         zero  * m = zero
+--         suc n * m = m + n * m
 _·_ : ℤ → ℤ → ℤ
 pos      a  · pos      b  = pos (a ·ⁿ b)
 pos  zero   · negsuc   b  = pos 0
-pos (suc a) · negsuc   b  = negsuc (a ·ⁿ b +ⁿ (a +ⁿ b))
+pos (suc a) · negsuc   b  = negsuc (a ·ⁿ b +ⁿ (a +ⁿ b)) -- maybe `(a +ⁿ b) +ⁿ a ·ⁿ b` would be a better choice ?
 negsuc   a  · pos  zero   = pos 0
 negsuc   a  · pos (suc b) = negsuc (a ·ⁿ b +ⁿ (a +ⁿ b))
 negsuc   a  · negsuc   b  = pos (suc a ·ⁿ suc b)
@@ -830,3 +845,26 @@ is-LinearlyOrderedCommRing .IsLinearlyOrderedCommRing.+-inverse                 
 ℤbundle .LinearlyOrderedCommRing.max                        = max
 ℤbundle .LinearlyOrderedCommRing._<_                        = _<_
 ℤbundle .LinearlyOrderedCommRing.is-LinearlyOrderedCommRing = is-LinearlyOrderedCommRing
+
+-- ·-reflects-≡ˡ : ∀ a b x → (pos (suc x)) ·' a ≡ (pos (suc x)) ·' b → a ≡ b
+-- ·-reflects-≡ˡ a b x p = {!   !}
+
+-- private
+--   ¬0≡suc
+--   ¬0≡possuc
+--   ¬0≡negsuc
+--   ¬pos≡negsuc
+--
+-- ·-reflects-≡ʳ : ∀ a b x → a · (pos (suc x)) ≡ b · (pos (suc x)) → a ≡ b
+-- ·-reflects-≡ʳ (pos      0 ) (pos      0 ) x q = refl
+-- ·-reflects-≡ʳ (pos      0 ) (pos (suc b)) x q = {! ⊥  !}
+-- ·-reflects-≡ʳ (pos (suc a)) (pos      0 ) x q = {! ⊥  !}
+-- ·-reflects-≡ʳ (pos (suc a)) (pos (suc b)) x q i = sucInt $ ·-reflects-≡ʳ (pos a) (pos b) x {!   !} i
+-- ·-reflects-≡ʳ (pos      0 ) (negsuc   b ) x q = {! ⊥  !}
+-- ·-reflects-≡ʳ (pos (suc a)) (negsuc   b ) x q = {! ⊥  !}
+-- ·-reflects-≡ʳ (negsuc   a ) (pos      0 ) x q = {! ⊥  !}
+-- ·-reflects-≡ʳ (negsuc   a ) (pos (suc b)) x q = {! ⊥  !}
+-- ·-reflects-≡ʳ (negsuc zero) (negsuc zero) x q = refl
+-- ·-reflects-≡ʳ (negsuc zero) (negsuc (suc b)) x q = {! ⊥  !}
+-- ·-reflects-≡ʳ (negsuc (suc a)) (negsuc zero) x q = {! ⊥  !}
+-- ·-reflects-≡ʳ (negsuc (suc a)) (negsuc (suc b)) x q i = predInt $ ·-reflects-≡ʳ (negsuc a) (negsuc b) x {!   !} i

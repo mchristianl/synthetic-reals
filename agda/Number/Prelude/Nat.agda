@@ -34,6 +34,8 @@ open import Cubical.Data.Nat public using (suc; zero; ℕ; HasFromNat) renaming
   ; isSetℕ      to is-setⁿ
   ; inj-m+      to +ⁿ-preserves-≡ˡ
   ; inj-+m      to +ⁿ-preserves-≡ʳ
+  ; inj-sm*     to ·ⁿ-reflects-≡ˡ'
+  ; inj-*sm     to ·ⁿ-reflects-≡ʳ'
   )
 open import Number.Instances.Nat as Nat public using () renaming
   ( bundle         to ℕbundle

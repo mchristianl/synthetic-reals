@@ -52,14 +52,45 @@ open import Cubical.HITs.Rationals.QuoQ using
   )
 
 abstract
-  lemma1 : ∀ a b₁ b₂ c → (a ·ᶻ b₁) ·ᶻ (b₂ ·ᶻ c) ≡ (a ·ᶻ c) ·ᶻ (b₂ ·ᶻ b₁)
-  lemma1 a b₁ b₂ c =
-    (a ·ᶻ b₁) ·ᶻ (b₂ ·ᶻ c) ≡⟨ sym $ ·ᶻ-assoc a b₁ (b₂ ·ᶻ c) ⟩
-    a ·ᶻ (b₁ ·ᶻ (b₂ ·ᶻ c)) ≡⟨ (λ i → a ·ᶻ ·ᶻ-assoc b₁ b₂ c i) ⟩
-    a ·ᶻ ((b₁ ·ᶻ b₂) ·ᶻ c) ≡⟨ (λ i → a ·ᶻ ·ᶻ-comm (b₁ ·ᶻ b₂) c i) ⟩
-    a ·ᶻ (c ·ᶻ (b₁ ·ᶻ b₂)) ≡⟨ ·ᶻ-assoc a c (b₁ ·ᶻ b₂) ⟩
-    (a ·ᶻ c) ·ᶻ (b₁ ·ᶻ b₂) ≡⟨ (λ i → (a ·ᶻ c) ·ᶻ ·ᶻ-comm b₁ b₂ i) ⟩
-    (a ·ᶻ c) ·ᶻ (b₂ ·ᶻ b₁) ∎
+  private
+    lemma1 : ∀ a b₁ b₂ c → (a ·ᶻ b₁) ·ᶻ (b₂ ·ᶻ c) ≡ (a ·ᶻ c) ·ᶻ (b₂ ·ᶻ b₁)
+    lemma1 a b₁ b₂ c =
+      (a ·ᶻ b₁) ·ᶻ (b₂ ·ᶻ c) ≡⟨ sym $ ·ᶻ-assoc a b₁ (b₂ ·ᶻ c) ⟩
+      a ·ᶻ (b₁ ·ᶻ (b₂ ·ᶻ c)) ≡⟨ (λ i → a ·ᶻ ·ᶻ-assoc b₁ b₂ c i) ⟩
+      a ·ᶻ ((b₁ ·ᶻ b₂) ·ᶻ c) ≡⟨ (λ i → a ·ᶻ ·ᶻ-comm (b₁ ·ᶻ b₂) c i) ⟩
+      a ·ᶻ (c ·ᶻ (b₁ ·ᶻ b₂)) ≡⟨ ·ᶻ-assoc a c (b₁ ·ᶻ b₂) ⟩
+      (a ·ᶻ c) ·ᶻ (b₁ ·ᶻ b₂) ≡⟨ (λ i → (a ·ᶻ c) ·ᶻ ·ᶻ-comm b₁ b₂ i) ⟩
+      (a ·ᶻ c) ·ᶻ (b₂ ·ᶻ b₁) ∎
+
+    ·ᶻ-commʳ : ∀ a b c → (a ·ᶻ b) ·ᶻ c ≡ (a ·ᶻ c) ·ᶻ b
+    ·ᶻ-commʳ a b c = (a ·ᶻ  b) ·ᶻ c  ≡⟨ sym $ ·ᶻ-assoc a b c ⟩
+                      a ·ᶻ (b  ·ᶻ c) ≡⟨ (λ i → a ·ᶻ ·ᶻ-comm b c i) ⟩
+                      a ·ᶻ (c  ·ᶻ b) ≡⟨ ·ᶻ-assoc a c b ⟩
+                     (a ·ᶻ  c) ·ᶻ b  ∎
+
+∼-preserves-<ᶻ : ∀ aᶻ aⁿ bᶻ bⁿ → (aᶻ , aⁿ) ∼ (bᶻ , bⁿ) → [ ((aᶻ <ᶻ 0) ⇒ (bᶻ <ᶻ 0)) ⊓ ((0 <ᶻ aᶻ) ⇒ (0 <ᶻ bᶻ)) ]
+∼-preserves-<ᶻ aᶻ aⁿ bᶻ bⁿ r = γ where
+  aⁿᶻ = [1+ aⁿ ⁿ]ᶻ
+  bⁿᶻ = [1+ bⁿ ⁿ]ᶻ
+  0<aⁿᶻ : [ 0 <ᶻ aⁿᶻ ]
+  0<aⁿᶻ = ℕ₊₁.n aⁿ , +ⁿ-comm (ℕ₊₁.n aⁿ) 1
+  0<bⁿᶻ : [ 0 <ᶻ bⁿᶻ ]
+  0<bⁿᶻ = ℕ₊₁.n bⁿ , +ⁿ-comm (ℕ₊₁.n bⁿ) 1
+  γ : [ ((aᶻ <ᶻ 0) ⇒ (bᶻ <ᶻ 0)) ⊓ ((0 <ᶻ aᶻ) ⇒ (0 <ᶻ bᶻ)) ]
+  γ .fst aᶻ<0 = (
+    aᶻ <ᶻ 0               ⇒ᵖ⟨ ·ᶻ-preserves-<ᶻ aᶻ 0 bⁿᶻ 0<bⁿᶻ ⟩
+    aᶻ ·ᶻ bⁿᶻ <ᶻ 0 ·ᶻ bⁿᶻ ⇒ᵖ⟨ (subst (λ p → [ aᶻ ·ᶻ bⁿᶻ <ᶻ p ]) $ ·ᶻ-nullifiesˡ bⁿᶻ) ⟩
+    aᶻ ·ᶻ bⁿᶻ <ᶻ 0        ⇒ᵖ⟨ subst (λ p → [ p <ᶻ 0 ]) r ⟩
+    bᶻ ·ᶻ aⁿᶻ <ᶻ 0        ⇒ᵖ⟨ subst (λ p → [ bᶻ ·ᶻ aⁿᶻ <ᶻ p ]) (sym (·ᶻ-nullifiesˡ aⁿᶻ)) ⟩
+    bᶻ ·ᶻ aⁿᶻ <ᶻ 0 ·ᶻ aⁿᶻ ⇒ᵖ⟨ ·ᶻ-reflects-<ᶻ bᶻ 0 aⁿᶻ 0<aⁿᶻ ⟩
+    bᶻ        <ᶻ 0        ◼ᵖ) .snd aᶻ<0
+  γ .snd 0<aᶻ = (
+    0        <ᶻ aᶻ        ⇒ᵖ⟨ ·ᶻ-preserves-<ᶻ 0 aᶻ bⁿᶻ 0<bⁿᶻ ⟩
+    0 ·ᶻ bⁿᶻ <ᶻ aᶻ ·ᶻ bⁿᶻ ⇒ᵖ⟨ (subst (λ p → [ p <ᶻ aᶻ ·ᶻ bⁿᶻ ]) $ ·ᶻ-nullifiesˡ bⁿᶻ) ⟩
+    0        <ᶻ aᶻ ·ᶻ bⁿᶻ ⇒ᵖ⟨ subst (λ p → [ 0 <ᶻ p ]) r ⟩
+    0        <ᶻ bᶻ ·ᶻ aⁿᶻ ⇒ᵖ⟨ subst (λ p → [ p <ᶻ bᶻ ·ᶻ aⁿᶻ ]) (sym (·ᶻ-nullifiesˡ aⁿᶻ)) ⟩
+    0 ·ᶻ aⁿᶻ <ᶻ bᶻ ·ᶻ aⁿᶻ ⇒ᵖ⟨ ·ᶻ-reflects-<ᶻ 0 bᶻ aⁿᶻ 0<aⁿᶻ ⟩
+    0        <ᶻ bᶻ        ◼ᵖ) .snd 0<aᶻ
 
 -- < on ℤ × ℕ₊₁ in terms of < on ℤ
 _<'_ : ℤ × ℕ₊₁ → ℤ × ℕ₊₁ → hProp ℓ-zero
@@ -68,62 +99,45 @@ _<'_ : ℤ × ℕ₊₁ → ℤ × ℕ₊₁ → hProp ℓ-zero
       bⁿᶻ = [1+ bⁿ ⁿ]ᶻ
   in (aᶻ ·ᶻ bⁿᶻ) <ᶻ (bᶻ ·ᶻ aⁿᶻ)
 
+private
+  lem1 : ∀ x y z → [ 0 <ᶻ y ] → [ 0 <ᶻ z ] → (0 <ᶻ (x ·ᶻ y)) ≡ (0 <ᶻ (x ·ᶻ z))
+  lem1 x y z p q =
+     0       <ᶻ (x ·ᶻ y) ≡⟨ (λ i → ·ᶻ-nullifiesˡ y (~ i) <ᶻ x ·ᶻ y) ⟩
+    (0 ·ᶻ y) <ᶻ (x ·ᶻ y) ≡⟨ sym $ ·ᶻ-creates-<ᶻ-≡ 0 x y p ⟩
+     0       <ᶻ  x       ≡⟨ ·ᶻ-creates-<ᶻ-≡ 0 x z q ⟩
+    (0 ·ᶻ z) <ᶻ (x ·ᶻ z) ≡⟨ (λ i → ·ᶻ-nullifiesˡ z i <ᶻ x ·ᶻ z) ⟩
+     0       <ᶻ (x ·ᶻ z) ∎
+
 <'-respects-∼ˡ : ∀ a b x → a ∼ b → a <' x ≡ b <' x
 <'-respects-∼ˡ a@(aᶻ , aⁿ) b@(bᶻ , bⁿ) x@(xᶻ , xⁿ) a~b = γ where
-  aⁿᶻ = [1+ aⁿ ⁿ]ᶻ
-  bⁿᶻ = [1+ bⁿ ⁿ]ᶻ
+  aⁿᶻ = [1+ aⁿ ⁿ]ᶻ; 0<aⁿᶻ : [ 0 <ᶻ aⁿᶻ ]; 0<aⁿᶻ = 0<ᶻpos[suc] _
+  bⁿᶻ = [1+ bⁿ ⁿ]ᶻ; 0<bⁿᶻ : [ 0 <ᶻ bⁿᶻ ]; 0<bⁿᶻ = 0<ᶻpos[suc] _
   xⁿᶻ = [1+ xⁿ ⁿ]ᶻ
-  0<aⁿᶻ : [ 0 <ᶻ aⁿᶻ ]
-  0<aⁿᶻ = 0<ᶻpos[suc] _
-  0<bⁿᶻ : [ 0 <ᶻ bⁿᶻ ]
-  0<bⁿᶻ = 0<ᶻpos[suc] _
   p : aᶻ ·ᶻ bⁿᶻ ≡ bᶻ ·ᶻ aⁿᶻ
   p = a~b
   γ : ((aᶻ ·ᶻ xⁿᶻ) <ᶻ (xᶻ ·ᶻ aⁿᶻ)) ≡ ((bᶻ ·ᶻ xⁿᶻ) <ᶻ (xᶻ ·ᶻ bⁿᶻ))
-  γ with <ᶻ-tricho 0 aᶻ
-  ... | inl (inl 0<aᶻ) =
-    (aᶻ ·ᶻ xⁿᶻ)                <ᶻ (xᶻ ·ᶻ aⁿᶻ)                ≡⟨ ·ᶻ-creates-<ᶻ-≡ (aᶻ ·ᶻ xⁿᶻ) (xᶻ ·ᶻ aⁿᶻ) (aᶻ ·ᶻ bⁿᶻ) (·ᶻ-preserves-0<ᶻ aᶻ bⁿᶻ 0<aᶻ 0<bⁿᶻ) ⟩
-    (aᶻ ·ᶻ xⁿᶻ) ·ᶻ (aᶻ ·ᶻ bⁿᶻ) <ᶻ (xᶻ ·ᶻ aⁿᶻ) ·ᶻ (aᶻ ·ᶻ bⁿᶻ) ≡⟨ (λ i → (aᶻ ·ᶻ xⁿᶻ) ·ᶻ p i <ᶻ (xᶻ ·ᶻ aⁿᶻ) ·ᶻ (aᶻ ·ᶻ bⁿᶻ)) ⟩
-    (aᶻ ·ᶻ xⁿᶻ) ·ᶻ (bᶻ ·ᶻ aⁿᶻ) <ᶻ (xᶻ ·ᶻ aⁿᶻ) ·ᶻ (aᶻ ·ᶻ bⁿᶻ) ≡⟨ (λ i → ·ᶻ-comm (aᶻ ·ᶻ xⁿᶻ) (bᶻ ·ᶻ aⁿᶻ) i <ᶻ (xᶻ ·ᶻ aⁿᶻ) ·ᶻ (aᶻ ·ᶻ bⁿᶻ)) ⟩
-    (bᶻ ·ᶻ aⁿᶻ) ·ᶻ (aᶻ ·ᶻ xⁿᶻ) <ᶻ (xᶻ ·ᶻ aⁿᶻ) ·ᶻ (aᶻ ·ᶻ bⁿᶻ) ≡⟨ (λ i → lemma1 bᶻ aⁿᶻ aᶻ xⁿᶻ i <ᶻ lemma1 xᶻ aⁿᶻ aᶻ bⁿᶻ i) ⟩
-    (bᶻ ·ᶻ xⁿᶻ) ·ᶻ (aᶻ ·ᶻ aⁿᶻ) <ᶻ (xᶻ ·ᶻ bⁿᶻ) ·ᶻ (aᶻ ·ᶻ aⁿᶻ) ≡⟨ sym $ ·ᶻ-creates-<ᶻ-≡ (bᶻ ·ᶻ xⁿᶻ) (xᶻ ·ᶻ bⁿᶻ) (aᶻ ·ᶻ aⁿᶻ) (·ᶻ-preserves-0<ᶻ aᶻ aⁿᶻ 0<aᶻ 0<aⁿᶻ) ⟩
-    (bᶻ ·ᶻ xⁿᶻ)                <ᶻ (xᶻ ·ᶻ bⁿᶻ)                ∎
-  ... | inl (inr aᶻ<0) = {!   !}
-  ... | inr      0≡aᶻ  =
-    (aᶻ ·ᶻ xⁿᶻ) <ᶻ (xᶻ ·ᶻ aⁿᶻ) ≡⟨ {!   !} ⟩
-    ( 0 ·ᶻ xⁿᶻ) <ᶻ (xᶻ ·ᶻ aⁿᶻ) ≡⟨ {!   !} ⟩
-      0         <ᶻ (xᶻ ·ᶻ aⁿᶻ) ≡⟨ {! κ   !} ⟩
-      0         <ᶻ (xᶻ ·ᶻ bⁿᶻ) ≡⟨ {!   !} ⟩
-    ( 0 ·ᶻ xⁿᶻ) <ᶻ (xᶻ ·ᶻ bⁿᶻ) ≡⟨ {!   !} ⟩
-    (bᶻ ·ᶻ xⁿᶻ) <ᶻ (xᶻ ·ᶻ bⁿᶻ) ∎ where
-      bᶻ≡0 : bᶻ ≡ 0
-      bᶻ≡0 = {!   !}
-      κ : ∀ x y z → [ 0 <ᶻ y ] → [ 0 <ᶻ z ] → (0 <ᶻ (x ·ᶻ y)) ≡ (0 <ᶻ (x ·ᶻ z))
-      κ x y z p q =
-         0       <ᶻ (x ·ᶻ y) ≡⟨ {!   !} ⟩
-        (0 ·ᶻ y) <ᶻ (x ·ᶻ y) ≡⟨ {!   !} ⟩
-         0       <ᶻ  x       ≡⟨ {!   !} ⟩
-        (0 ·ᶻ z) <ᶻ (x ·ᶻ z) ≡⟨ {!   !} ⟩
-         0       <ᶻ (x ·ᶻ z) ∎
-  -- in (aᶻ ·ᶻ xⁿᶻ)              <ᶻ (xᶻ ·ᶻ aⁿᶻ)              ≡⟨ {!   !} ⟩
-  --    (aᶻ ·ᶻ xⁿᶻ) / (aᶻ ·ᶻ bⁿᶻ) <ᶻ (xᶻ ·ᶻ aⁿᶻ) / (bᶻ ·ᶻ aⁿᶻ) ≡⟨ {!   !} ⟩
-  --          xⁿᶻ  /       bⁿᶻ  <ᶻ  xᶻ        /  bᶻ        ≡⟨ {!   !} ⟩
-  --    (bᶻ ·ᶻ xⁿᶻ) <ᶻ (xᶻ ·ᶻ bⁿᶻ) ∎
+  γ = aᶻ ·ᶻ xⁿᶻ        <ᶻ xᶻ ·ᶻ aⁿᶻ        ≡⟨ ·ᶻ-creates-<ᶻ-≡ (aᶻ ·ᶻ xⁿᶻ) (xᶻ ·ᶻ aⁿᶻ) bⁿᶻ 0<bⁿᶻ ⟩
+      aᶻ ·ᶻ xⁿᶻ ·ᶻ bⁿᶻ <ᶻ xᶻ ·ᶻ aⁿᶻ ·ᶻ bⁿᶻ ≡⟨ (λ i → ·ᶻ-commʳ aᶻ xⁿᶻ bⁿᶻ i <ᶻ xᶻ ·ᶻ aⁿᶻ ·ᶻ bⁿᶻ) ⟩
+      aᶻ ·ᶻ bⁿᶻ ·ᶻ xⁿᶻ <ᶻ xᶻ ·ᶻ aⁿᶻ ·ᶻ bⁿᶻ ≡⟨ (λ i → p i ·ᶻ xⁿᶻ <ᶻ xᶻ ·ᶻ aⁿᶻ ·ᶻ bⁿᶻ) ⟩
+      bᶻ ·ᶻ aⁿᶻ ·ᶻ xⁿᶻ <ᶻ xᶻ ·ᶻ aⁿᶻ ·ᶻ bⁿᶻ ≡⟨ (λ i → ·ᶻ-commʳ bᶻ aⁿᶻ xⁿᶻ i <ᶻ ·ᶻ-commʳ xᶻ aⁿᶻ bⁿᶻ i) ⟩
+      bᶻ ·ᶻ xⁿᶻ ·ᶻ aⁿᶻ <ᶻ xᶻ ·ᶻ bⁿᶻ ·ᶻ aⁿᶻ ≡⟨ sym $ ·ᶻ-creates-<ᶻ-≡ (bᶻ ·ᶻ xⁿᶻ) (xᶻ ·ᶻ bⁿᶻ) aⁿᶻ 0<aⁿᶻ ⟩
+      bᶻ ·ᶻ xⁿᶻ        <ᶻ xᶻ ·ᶻ bⁿᶻ        ∎
 
-  -- aᶻ > 0:
 <'-respects-∼ʳ : ∀ x a b → a ∼ b → x <' a ≡ x <' b
 <'-respects-∼ʳ x@(xᶻ , xⁿ) a@(aᶻ , aⁿ) b@(bᶻ , bⁿ) a~b =
-  let aⁿᶻ = [1+ aⁿ ⁿ]ᶻ
-      bⁿᶻ = [1+ bⁿ ⁿ]ᶻ
+  let aⁿᶻ = [1+ aⁿ ⁿ]ᶻ; 0<aⁿᶻ : [ 0 <ᶻ aⁿᶻ ]; 0<aⁿᶻ = 0<ᶻpos[suc] _
+      bⁿᶻ = [1+ bⁿ ⁿ]ᶻ; 0<bⁿᶻ : [ 0 <ᶻ bⁿᶻ ]; 0<bⁿᶻ = 0<ᶻpos[suc] _
       xⁿᶻ = [1+ xⁿ ⁿ]ᶻ
       p : aᶻ ·ᶻ bⁿᶻ ≡ bᶻ ·ᶻ aⁿᶻ
       p = a~b
-  in (xᶻ ·ᶻ aⁿᶻ)                <ᶻ (aᶻ ·ᶻ xⁿᶻ)                ≡⟨ {!   !} ⟩
-     (xᶻ ·ᶻ aⁿᶻ) ·ᶻ (aᶻ ·ᶻ bⁿᶻ) <ᶻ (aᶻ ·ᶻ xⁿᶻ) ·ᶻ (aᶻ ·ᶻ bⁿᶻ) ≡⟨ {!   !} ⟩
-     (xᶻ ·ᶻ aⁿᶻ) ·ᶻ (aᶻ ·ᶻ bⁿᶻ) <ᶻ (aᶻ ·ᶻ xⁿᶻ) ·ᶻ (bᶻ ·ᶻ aⁿᶻ) ≡⟨ {!   !} ⟩
-     (xᶻ ·ᶻ aⁿᶻ) ·ᶻ (aᶻ ·ᶻ bⁿᶻ) <ᶻ (bᶻ ·ᶻ aⁿᶻ) ·ᶻ (aᶻ ·ᶻ xⁿᶻ) ≡⟨ {!   !} ⟩
-     (xᶻ ·ᶻ bⁿᶻ) ·ᶻ (aᶻ ·ᶻ aⁿᶻ) <ᶻ (bᶻ ·ᶻ xⁿᶻ) ·ᶻ (aᶻ ·ᶻ aⁿᶻ) ≡⟨ {!   !} ⟩
-     (xᶻ ·ᶻ bⁿᶻ)                <ᶻ (bᶻ ·ᶻ xⁿᶻ)              ∎
+  in xᶻ ·ᶻ aⁿᶻ        <ᶻ aᶻ  ·ᶻ  xⁿᶻ        ≡⟨ (λ i → xᶻ ·ᶻ aⁿᶻ <ᶻ ·ᶻ-comm aᶻ xⁿᶻ i) ⟩
+     xᶻ ·ᶻ aⁿᶻ        <ᶻ xⁿᶻ ·ᶻ  aᶻ         ≡⟨ ·ᶻ-creates-<ᶻ-≡ (xᶻ ·ᶻ aⁿᶻ) (xⁿᶻ ·ᶻ  aᶻ) bⁿᶻ 0<bⁿᶻ ⟩
+     xᶻ ·ᶻ aⁿᶻ ·ᶻ bⁿᶻ <ᶻ xⁿᶻ ·ᶻ  aᶻ ·ᶻ bⁿᶻ  ≡⟨ (λ i → xᶻ ·ᶻ aⁿᶻ ·ᶻ bⁿᶻ <ᶻ ·ᶻ-assoc xⁿᶻ aᶻ bⁿᶻ (~ i)) ⟩
+     xᶻ ·ᶻ aⁿᶻ ·ᶻ bⁿᶻ <ᶻ xⁿᶻ ·ᶻ (aᶻ ·ᶻ bⁿᶻ) ≡⟨ (λ i → xᶻ ·ᶻ aⁿᶻ ·ᶻ bⁿᶻ <ᶻ xⁿᶻ ·ᶻ (p i)) ⟩
+     xᶻ ·ᶻ aⁿᶻ ·ᶻ bⁿᶻ <ᶻ xⁿᶻ ·ᶻ (bᶻ ·ᶻ aⁿᶻ) ≡⟨ (λ i → ·ᶻ-commʳ xᶻ aⁿᶻ bⁿᶻ i <ᶻ ·ᶻ-assoc xⁿᶻ bᶻ aⁿᶻ i) ⟩
+     xᶻ ·ᶻ bⁿᶻ ·ᶻ aⁿᶻ <ᶻ xⁿᶻ ·ᶻ  bᶻ ·ᶻ aⁿᶻ  ≡⟨ sym $ ·ᶻ-creates-<ᶻ-≡ (xᶻ ·ᶻ bⁿᶻ) (xⁿᶻ ·ᶻ bᶻ) aⁿᶻ 0<aⁿᶻ ⟩
+     xᶻ ·ᶻ bⁿᶻ        <ᶻ xⁿᶻ ·ᶻ  bᶻ         ≡⟨ (λ i → xᶻ ·ᶻ bⁿᶻ <ᶻ ·ᶻ-comm xⁿᶻ bᶻ i) ⟩
+     xᶻ ·ᶻ bⁿᶻ        <ᶻ bᶻ  ·ᶻ  xⁿᶻ        ∎
 
 infixl 4 _<_
 _<_ : hPropRel ℚ ℚ ℓ-zero
@@ -199,11 +213,11 @@ max'-respects-∼ a@(aᶻ , aⁿ) b@(bᶻ , bⁿ) x@(xᶻ , xⁿ) a~b =
     0≤bⁿᶻ : [ 0 ≤ᶻ bⁿᶻ ]
     0≤bⁿᶻ (k , p) = snotzⁿ $ sym (+ⁿ-suc k _) ∙ p
 
-minᶠ : ℚ → ℚ → ℚ
-minᶠ a b = onCommonDenomSym min' min'-sym min'-respects-∼ a b
+min : ℚ → ℚ → ℚ
+min a b = onCommonDenomSym min' min'-sym min'-respects-∼ a b
 
-maxᶠ : ℚ → ℚ → ℚ
-maxᶠ a b = onCommonDenomSym max' max'-sym max'-respects-∼ a b
+max : ℚ → ℚ → ℚ
+max a b = onCommonDenomSym max' max'-sym max'-respects-∼ a b
 
 -- injᶻⁿ⁺¹ : ∀ x → [ 0 <ᶻ x ] → Σ[ y ∈ ℕ₊₁ ] x ≡ [1+ y ⁿ]ᶻ
 -- injᶻⁿ⁺¹ (signed spos zero) p = ⊥-elim {A = λ _ → Σ[ y ∈ ℕ₊₁ ] ℤ.posneg i0 ≡ [1+ y ⁿ]ᶻ}  (¬-<ⁿ-zero p)
@@ -259,27 +273,3 @@ sign = SetQuotient.rec {R = _∼_} {B = Sign} Bool.isSetBool sign' sign'-preserv
 
 sign-signᶻ-identity : ∀ z n → sign [ z , n ]ᶠ ≡ signᶻ z
 sign-signᶻ-identity z n = refl
-
-∼-preserves-<ᶻ : ∀ aᶻ aⁿ bᶻ bⁿ → (aᶻ , aⁿ) ∼ (bᶻ , bⁿ) → [ ((aᶻ <ᶻ 0) ⇒ (bᶻ <ᶻ 0)) ⊓ ((0 <ᶻ aᶻ) ⇒ (0 <ᶻ bᶻ)) ]
-∼-preserves-<ᶻ aᶻ aⁿ bᶻ bⁿ r = γ where
-  aⁿᶻ = [1+ aⁿ ⁿ]ᶻ
-  bⁿᶻ = [1+ bⁿ ⁿ]ᶻ
-  0<aⁿᶻ : [ 0 <ᶻ aⁿᶻ ]
-  0<aⁿᶻ = ℕ₊₁.n aⁿ , +ⁿ-comm (ℕ₊₁.n aⁿ) 1
-  0<bⁿᶻ : [ 0 <ᶻ bⁿᶻ ]
-  0<bⁿᶻ = ℕ₊₁.n bⁿ , +ⁿ-comm (ℕ₊₁.n bⁿ) 1
-  γ : [ ((aᶻ <ᶻ 0) ⇒ (bᶻ <ᶻ 0)) ⊓ ((0 <ᶻ aᶻ) ⇒ (0 <ᶻ bᶻ)) ]
-  γ .fst aᶻ<0 = (
-    aᶻ <ᶻ 0               ⇒ᵖ⟨ ·ᶻ-preserves-<ᶻ aᶻ 0 bⁿᶻ 0<bⁿᶻ ⟩
-    aᶻ ·ᶻ bⁿᶻ <ᶻ 0 ·ᶻ bⁿᶻ ⇒ᵖ⟨ (subst (λ p → [ aᶻ ·ᶻ bⁿᶻ <ᶻ p ]) $ ·ᶻ-nullifiesˡ bⁿᶻ) ⟩
-    aᶻ ·ᶻ bⁿᶻ <ᶻ 0        ⇒ᵖ⟨ subst (λ p → [ p <ᶻ 0 ]) r ⟩
-    bᶻ ·ᶻ aⁿᶻ <ᶻ 0        ⇒ᵖ⟨ subst (λ p → [ bᶻ ·ᶻ aⁿᶻ <ᶻ p ]) (sym (·ᶻ-nullifiesˡ aⁿᶻ)) ⟩
-    bᶻ ·ᶻ aⁿᶻ <ᶻ 0 ·ᶻ aⁿᶻ ⇒ᵖ⟨ ·ᶻ-reflects-<ᶻ bᶻ 0 aⁿᶻ 0<aⁿᶻ ⟩
-    bᶻ        <ᶻ 0        ◼ᵖ) .snd aᶻ<0
-  γ .snd 0<aᶻ = (
-    0        <ᶻ aᶻ        ⇒ᵖ⟨ ·ᶻ-preserves-<ᶻ 0 aᶻ bⁿᶻ 0<bⁿᶻ ⟩
-    0 ·ᶻ bⁿᶻ <ᶻ aᶻ ·ᶻ bⁿᶻ ⇒ᵖ⟨ (subst (λ p → [ p <ᶻ aᶻ ·ᶻ bⁿᶻ ]) $ ·ᶻ-nullifiesˡ bⁿᶻ) ⟩
-    0        <ᶻ aᶻ ·ᶻ bⁿᶻ ⇒ᵖ⟨ subst (λ p → [ 0 <ᶻ p ]) r ⟩
-    0        <ᶻ bᶻ ·ᶻ aⁿᶻ ⇒ᵖ⟨ subst (λ p → [ p <ᶻ bᶻ ·ᶻ aⁿᶻ ]) (sym (·ᶻ-nullifiesˡ aⁿᶻ)) ⟩
-    0 ·ᶻ aⁿᶻ <ᶻ bᶻ ·ᶻ aⁿᶻ ⇒ᵖ⟨ ·ᶻ-reflects-<ᶻ 0 bᶻ aⁿᶻ 0<aⁿᶻ ⟩
-    0        <ᶻ bᶻ        ◼ᵖ) .snd 0<aᶻ

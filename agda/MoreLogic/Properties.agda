@@ -68,6 +68,20 @@ symₚ {x = x} x≡y = substₚ (λ p → p ≡ₚ x) x≡y ∣ refl ∣
 ¬¬-involutive P .fst = ¬¬-elim     P
 ¬¬-involutive P .snd = ¬¬-intro (¬ P)
 
+⇔toPath' : ∀{ℓ} {P Q : hProp ℓ} → [ P ⇔ Q ] → P ≡ Q
+⇔toPath' = uncurry ⇔toPath
+
+pathTo⇔ : ∀{ℓ} {P Q : hProp ℓ} → P ≡ Q → [ P ⇔ Q ]
+pathTo⇔ p≡q = (pathTo⇒ p≡q , pathTo⇐ p≡q)
+
+⊓⇔⊓ : ∀{ℓ ℓ' ℓ'' ℓ'''} {P : hProp ℓ} {Q : hProp ℓ'} {R : hProp ℓ''} {S : hProp ℓ'''}
+   → [ (P ⇔ R) ⊓ (Q ⇔ S) ] → [ (P ⊓ Q) ⇔ (R ⊓ S) ]
+⊓⇔⊓ (p⇔r , q⇔s) .fst (p , q) = p⇔r .fst p , q⇔s .fst q
+⊓⇔⊓ (p⇔r , q⇔s) .snd (r , s) = p⇔r .snd r , q⇔s .snd s
+
+⊓≡⊓ : ∀{ℓ} {P Q R S : hProp ℓ} → P ≡ R → Q ≡ S → (P ⊓ Q) ≡ (R ⊓ S)
+⊓≡⊓ p≡r q≡s i = p≡r i ⊓ q≡s i
+
 [path]To⇒ : (P Q : hProp ℓ) → [ P ] ≡ [ Q ] → [ P ⇒ Q ]
 [path]To⇒ P Q [P]≡[Q] p = transport [P]≡[Q] p
 

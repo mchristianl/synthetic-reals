@@ -5,7 +5,7 @@ These are some personal notes, discoveries, conclusions and ideas that should no
 ## general notes
 
 - [a list of unicode symbols in agda](https://people.inf.elte.hu/divip/AgdaTutorial/Symbols.html)
-
+- when "designing" a path, it is possible with `transport` to get a "preview" in Have/Goal. So even when we do not want to transport, it might be beneficial to use `transport (λ i → ...)` just for the display
 
 ## unresolved metas when using mere propositions in implicit arguments
 
@@ -1879,7 +1879,16 @@ lemma-4-1-12 {ℓ} {ℓ'} OF = let -- NOTE: for mentioning the ℓ and ℓ' and 
   ```
 - for some reason the instance resolution does only work in let-blocks
   I get a "Terms marked as eligible for instance search should end with a name, so 'instance' is ignored here. when checking the definition of my-instance"
-
+- in
+  ```agda
+  ℚ-reflects-denom : ∀ z aⁿ bⁿ → [ z #ᶻ 0 ] → [ z / aⁿ ] ≡ [ z / bⁿ ] → aⁿ ≡ bⁿ
+  ℚ-reflects-denom z aⁿ bⁿ z#0 p = ℕ₊₁→ℕ-reflects-≡ aⁿ bⁿ (sym γ) where
+    φ with z#0
+    ... | p = ?
+  ```
+  I get a "Cannot `with` on variable z#0 bound in a module telescope (or patterns of a parent clause) when inferring the type of z#0".
+  So this might mean that `where` introduces a module and "binds" (?) the variables in a "module telescope".
+  And we cannot case-split on them.
 
 ## "preserve" and "reflect"
 

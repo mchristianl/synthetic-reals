@@ -2,7 +2,12 @@
 ## immediate TODOs
 
 - split `·-reflects-<` into `·-reflects-<ˡ` and `·-reflects-<ʳ`
+- we use `·-reflects-≡ˡ` where the standard library uses the nomer "injective" like `*-injˡ` (or something similar)
+  - since `preserves-≡` is automatic, we might switch to `·-injectiveˡ` instead of `·-reflects-≡ˡ`
 - we have `+-rinv`, `+-inverse` and `ʳ` `ˡ` variants in use ⇒ unify them!
+- in equivalences, we still need to follow the convention that the "simpler" term is the RHS
+  e.g. `·-creates-< : ∀ a b x → [ 0 < x ] → [ (a < b) ⇔ ((a · x) < (b · x)) ]` is wrong
+  (this needs to be checked)
 
 ## general TODOs
 

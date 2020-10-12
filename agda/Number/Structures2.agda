@@ -48,7 +48,7 @@ record IsLinearlyOrderedCommSemiring {ℓ ℓ'} {F : Type ℓ} (0f 1f : F) (_+_ 
   field
     is-CommSemiring     : [ isCommSemiring 0f 1f _+_ _·_ ]
     <-StrictLinearOrder : [ isStrictLinearOrder _<_ ]
-    ≤-Lattice         : [ isLattice _≤_ min max ]
+    ≤-Lattice           : [ isLattice _≤_ min max ]
     +-<-ext             : ∀ w x y z → [ (w + x) < (y + z) ] → [ (w < y) ⊔ (x < z) ]
     ·-preserves-<       : ∀ x y z   → [ 0f < z ] → [ x < y ] → [ (x · z) < (y · z) ]
 
