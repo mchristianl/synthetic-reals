@@ -100,7 +100,7 @@ open IsLinearlyOrderedCommRing is-LinearlyOrderedCommRingᶻ public using () ren
   ; _#_           to _#ᶻ_      --       but some-other-how _#ᶻ_ works fine ... ?
   ; <-irrefl      to <ᶻ-irrefl --       turns out that this was due to `p = [ 0 ≤ᶻ aⁿᶻ ] ∋ is-0≤ⁿᶻ` instead of `p : [ 0 ≤ᶻ aⁿᶻ ]; p = is-0≤ⁿᶻ`
   ; <-trans       to <ᶻ-trans
-  ; +-<-ext       to +ᶻ-<-ext
+  ; +-<-ext       to +ᶻ-<ᶻ-ext
   ; +-rinv        to +ᶻ-rinv
   ; +-identity    to +ᶻ-identity
   ; ·-preserves-< to ·ᶻ-preserves-<ᶻ
@@ -109,6 +109,7 @@ open IsLinearlyOrderedCommRing is-LinearlyOrderedCommRingᶻ public using () ren
   ; ·-identity    to ·ᶻ-identity
   ; is-min        to is-minᶻ
   ; is-max        to is-maxᶻ
+  ; is-dist       to is-distᶻ
   )
 
 -- open IsLinearlyOrderedCommSemiring is-LinearlyOrderedCommSemiringᶻ public using () renaming

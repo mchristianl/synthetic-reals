@@ -554,21 +554,30 @@ is-max = SetQuotient.elimProp3  {R = _∼_} (λ x y z → isProp[] ((max x y ≤
         maxᶻ ((aᶻ ·ᶻ bⁿᶻ) ·ᶻ cⁿᶻ) ((bᶻ ·ᶻ aⁿᶻ) ·ᶻ cⁿᶻ) ≤ᶻ cᶻ ·ᶻ (aⁿᶻ ·ᶻ bⁿᶻ)                    ≡⟨ (λ i → ·ᶻ-maxᶻ-distribʳ (aᶻ ·ᶻ bⁿᶻ) (bᶻ ·ᶻ aⁿᶻ) cⁿᶻ 0≤cⁿᶻ (~ i) ≤ᶻ cᶻ ·ᶻ (aⁿᶻ ·ᶻ bⁿᶻ)) ⟩
         maxᶻ (aᶻ ·ᶻ bⁿᶻ) (bᶻ ·ᶻ aⁿᶻ) ·ᶻ cⁿᶻ ≤ᶻ cᶻ ·ᶻ (aⁿᶻ ·ᶻ bⁿᶻ) ∎
 
+private
+  lem2  : ∀ a b c d → (a ·ᶻ c) ·ᶻ (b ·ᶻ d) ≡ (a ·ᶻ b) ·ᶻ (c ·ᶻ d)
+  lem2' : ∀ a b c d → (a ·ᶻ c) ·ᶻ (b ·ᶻ d) ≡ (a ·ᶻ b) ·ᶻ (d ·ᶻ c)
+  lem3  : ∀ a b c d → (a ·ᶻ c) ·ᶻ (b ·ᶻ d) ≡ (a ·ᶻ d) ·ᶻ (c ·ᶻ b)
+  lem3' : ∀ a b c d → (a ·ᶻ c) ·ᶻ (b ·ᶻ d) ≡ (a ·ᶻ d) ·ᶻ (b ·ᶻ c)
+
+  lem2  a b c d = ·ᶻ-commʳ a c (b ·ᶻ d) ∙ (λ i → ·ᶻ-assoc a b d i ·ᶻ c) ∙ sym (·ᶻ-assoc (a ·ᶻ b) d c) ∙ (λ i → (a ·ᶻ b) ·ᶻ ·ᶻ-comm d c i)
+  lem2' a b c d = lem2 a b c d ∙ λ i → (a ·ᶻ b) ·ᶻ ·ᶻ-comm c d i
+  lem3  a b c d = (λ i → a ·ᶻ c ·ᶻ ·ᶻ-comm b d i) ∙ sym (·ᶻ-assoc a c (d ·ᶻ b)) ∙ (λ i → a ·ᶻ ·ᶻ-commˡ c d b i) ∙ ·ᶻ-assoc a d (c ·ᶻ b)
+  lem3' a b c d = lem3 a b c d ∙ λ i → (a ·ᶻ d) ·ᶻ ·ᶻ-comm c b i
+
 ·-preserves-< : (x y z : ℚ) → [ 0 < z ] → [ x < y ] → [ x · z < y · z ]
 ·-preserves-< = SetQuotient.elimProp3 {R = _∼_} (λ x y z → isProp[] ((0 < z) ⇒ (x < y) ⇒ (x · z < y · z))) γ where
   γ : (a b c : ℤ × ℕ₊₁) → [ 0 < [ c ]ᶠ ] → [ [ a ]ᶠ < [ b ]ᶠ ] → [ [ a ]ᶠ · [ c ]ᶠ < [ b ]ᶠ · [ c ]ᶠ ]
   γ a@(aᶻ , aⁿ) b@(bᶻ , bⁿ) c@(cᶻ , cⁿ) = κ where
-    aⁿᶻ = [1+ aⁿ ⁿ]ᶻ; 0<aⁿᶻ : [ 0 <ᶻ aⁿᶻ ]; 0<aⁿᶻ = is-0<ⁿᶻ
-    bⁿᶻ = [1+ bⁿ ⁿ]ᶻ; 0<bⁿᶻ : [ 0 <ᶻ bⁿᶻ ]; 0<bⁿᶻ = is-0<ⁿᶻ
+    aⁿᶻ = [1+ aⁿ ⁿ]ᶻ
+    bⁿᶻ = [1+ bⁿ ⁿ]ᶻ
     cⁿᶻ = [1+ cⁿ ⁿ]ᶻ; 0<cⁿᶻ : [ 0 <ᶻ cⁿᶻ ]; 0<cⁿᶻ = is-0<ⁿᶻ
     κ : [ 0 ·ᶻ cⁿᶻ <ᶻ cᶻ ·ᶻ 1 ] → [ aᶻ ·ᶻ bⁿᶻ <ᶻ bᶻ ·ᶻ aⁿᶻ ] → [ (aᶻ ·ᶻ cᶻ) ·ᶻ (bⁿᶻ ·ᶻ cⁿᶻ) <ᶻ (bᶻ ·ᶻ cᶻ) ·ᶻ (aⁿᶻ ·ᶻ cⁿᶻ) ]
-    κ p q = transport (λ i → [ lem' aᶻ bⁿᶻ cᶻ cⁿᶻ (~ i) <ᶻ lem' bᶻ aⁿᶻ cᶻ cⁿᶻ (~ i) ]) $ ·ᶻ-preserves-<ᶻ (aᶻ ·ᶻ bⁿᶻ) (bᶻ ·ᶻ aⁿᶻ) (cᶻ ·ᶻ cⁿᶻ) 0<cᶻ·cⁿᶻ q where
+    κ p q = transport (λ i → [ lem2 aᶻ bⁿᶻ cᶻ cⁿᶻ (~ i) <ᶻ lem2 bᶻ aⁿᶻ cᶻ cⁿᶻ (~ i) ]) $ ·ᶻ-preserves-<ᶻ (aᶻ ·ᶻ bⁿᶻ) (bᶻ ·ᶻ aⁿᶻ) (cᶻ ·ᶻ cⁿᶻ) 0<cᶻ·cⁿᶻ q where
       0<cᶻ : [ 0 <ᶻ cᶻ ]
       0<cᶻ = transport (λ i → [ ·ᶻ-nullifiesˡ cⁿᶻ i <ᶻ ·ᶻ-identity cᶻ .fst i ]) p
       0<cᶻ·cⁿᶻ : [ 0 <ᶻ (cᶻ ·ᶻ cⁿᶻ) ]
       0<cᶻ·cⁿᶻ = ·ᶻ-preserves-0<ᶻ cᶻ cⁿᶻ 0<cᶻ 0<cⁿᶻ
-      lem' : ∀ a b c₁ c₂ → (a ·ᶻ c₁) ·ᶻ (b ·ᶻ c₂) ≡ (a ·ᶻ b) ·ᶻ (c₁ ·ᶻ c₂)
-      lem' a b c₁ c₂ = ·ᶻ-commʳ a c₁ (b ·ᶻ c₂) ∙ (λ i → ·ᶻ-assoc a b c₂ i ·ᶻ c₁) ∙ sym (·ᶻ-assoc (a ·ᶻ b) c₂ c₁) ∙ (λ i → (a ·ᶻ b) ·ᶻ ·ᶻ-comm c₂ c₁ i)
 
 private
   -- continuing the pattern...
@@ -597,10 +606,43 @@ open import Cubical.HITs.Rationals.QuoQ using
   ; *-distribʳ  to ·-distribʳ
   )
 
+-- the following hold definitionally:
+--       [ aᶻ , aⁿ ]ᶠ · [ bᶻ , bⁿ ]ᶠ ≡ [ aᶻ · bᶻ , aⁿ ·₊₁ bⁿ ]ᶠ
+--       [ aᶻ , aⁿ ]ᶠ < [ bᶻ , bⁿ ]ᶠ ≡ aᶻ ·ᶻ bⁿᶻ <ᶻ bᶻ ·ᶻ aⁿᶻ
+--   min [ aᶻ , aⁿ ]ᶠ   [ bᶻ , bⁿ ]ᶠ ≡ [ (minᶻ (aᶻ ·ᶻ bⁿᶻ) (bᶻ ·ᶻ aⁿᶻ) , aⁿ ·₊₁ bⁿ) ]ᶠ
+--       [ aᶻ , aⁿ ]ᶠ + [ bᶻ , bⁿ ]ᶠ ≡ [ aᶻ ·ᶻ bⁿᶻ +ᶻ bᶻ ·ᶻ aⁿᶻ , aⁿ ·₊₁ bⁿ ]ᶠ
+
 +-<-ext : (w x y z : ℚ) → [ w + x < y + z ] → [ (w < y) ⊔ (x < z) ]
 +-<-ext = elimProp4 {R = _∼_} (λ w x y z → isProp[] ((w + x < y + z) ⇒ ((w < y) ⊔ (x < z)))) γ where
   γ : (w x y z : ℤ × ℕ₊₁) → [ [ w ]ᶠ + [ x ]ᶠ < [ y ]ᶠ + [ z ]ᶠ ] → [ ([ w ]ᶠ < [ y ]ᶠ) ⊔ ([ x ]ᶠ < [ z ]ᶠ) ]
-  γ w@(wᶻ , wⁿ) x@(xᶻ , xⁿ) y@(yᶻ , yⁿ) z@(zᶻ , zⁿ) = {!   !}
+  γ w@(wᶻ , wⁿ) x@(xᶻ , xⁿ) y@(yᶻ , yⁿ) z@(zᶻ , zⁿ) = κ where
+    wⁿᶻ = [1+ wⁿ ⁿ]ᶻ; 0<wⁿᶻ : [ 0 <ᶻ wⁿᶻ ]; 0<wⁿᶻ = is-0<ⁿᶻ
+    xⁿᶻ = [1+ xⁿ ⁿ]ᶻ; 0<xⁿᶻ : [ 0 <ᶻ xⁿᶻ ]; 0<xⁿᶻ = is-0<ⁿᶻ
+    yⁿᶻ = [1+ yⁿ ⁿ]ᶻ; 0<yⁿᶻ : [ 0 <ᶻ yⁿᶻ ]; 0<yⁿᶻ = is-0<ⁿᶻ
+    zⁿᶻ = [1+ zⁿ ⁿ]ᶻ; 0<zⁿᶻ : [ 0 <ᶻ zⁿᶻ ]; 0<zⁿᶻ = is-0<ⁿᶻ
+    0<xzⁿᶻ : [ 0 <ᶻ xⁿᶻ ·ᶻ zⁿᶻ ]; 0<xzⁿᶻ = ·ᶻ-preserves-0<ᶻ xⁿᶻ zⁿᶻ 0<xⁿᶻ 0<zⁿᶻ
+    0<wyⁿᶻ : [ 0 <ᶻ wⁿᶻ ·ᶻ yⁿᶻ ]; 0<wyⁿᶻ = ·ᶻ-preserves-0<ᶻ wⁿᶻ yⁿᶻ 0<wⁿᶻ 0<yⁿᶻ
+    φ₁ = wᶻ ·ᶻ xⁿᶻ ·ᶻ (yⁿᶻ ·ᶻ zⁿᶻ) ≡⟨ lem2  wᶻ yⁿᶻ xⁿᶻ zⁿᶻ ⟩ wᶻ ·ᶻ yⁿᶻ ·ᶻ (xⁿᶻ ·ᶻ zⁿᶻ) ∎
+    φ₂ = xᶻ ·ᶻ wⁿᶻ ·ᶻ (yⁿᶻ ·ᶻ zⁿᶻ) ≡⟨ lem3  xᶻ yⁿᶻ wⁿᶻ zⁿᶻ ⟩ xᶻ ·ᶻ zⁿᶻ ·ᶻ (wⁿᶻ ·ᶻ yⁿᶻ) ∎
+    φ₃ = yᶻ ·ᶻ zⁿᶻ ·ᶻ (wⁿᶻ ·ᶻ xⁿᶻ) ≡⟨ lem2' yᶻ wⁿᶻ zⁿᶻ xⁿᶻ ⟩ yᶻ ·ᶻ wⁿᶻ ·ᶻ (xⁿᶻ ·ᶻ zⁿᶻ) ∎
+    φ₄ = zᶻ ·ᶻ yⁿᶻ ·ᶻ (wⁿᶻ ·ᶻ xⁿᶻ) ≡⟨ lem3' zᶻ wⁿᶻ yⁿᶻ xⁿᶻ ⟩ zᶻ ·ᶻ xⁿᶻ ·ᶻ (wⁿᶻ ·ᶻ yⁿᶻ) ∎
+    φ = (    (wᶻ ·ᶻ xⁿᶻ +ᶻ xᶻ ·ᶻ wⁿᶻ) ·ᶻ (yⁿᶻ ·ᶻ zⁿᶻ)
+          <ᶻ (yᶻ ·ᶻ zⁿᶻ +ᶻ zᶻ ·ᶻ yⁿᶻ) ·ᶻ (wⁿᶻ ·ᶻ xⁿᶻ) ⇒ᵖ⟨ transport (λ i → [ is-distᶻ (wᶻ ·ᶻ xⁿᶻ) (xᶻ ·ᶻ wⁿᶻ) (yⁿᶻ ·ᶻ zⁿᶻ) .snd i <ᶻ is-distᶻ (yᶻ ·ᶻ zⁿᶻ) (zᶻ ·ᶻ yⁿᶻ) (wⁿᶻ ·ᶻ xⁿᶻ) .snd i ]) ⟩
+             wᶻ ·ᶻ xⁿᶻ ·ᶻ (yⁿᶻ ·ᶻ zⁿᶻ) +ᶻ xᶻ ·ᶻ wⁿᶻ ·ᶻ (yⁿᶻ ·ᶻ zⁿᶻ)
+          <ᶻ yᶻ ·ᶻ zⁿᶻ ·ᶻ (wⁿᶻ ·ᶻ xⁿᶻ) +ᶻ zᶻ ·ᶻ yⁿᶻ ·ᶻ (wⁿᶻ ·ᶻ xⁿᶻ) ⇒ᵖ⟨ transport (λ i → [ φ₁ i +ᶻ φ₂ i <ᶻ φ₃ i +ᶻ φ₄ i ]) ⟩
+             wᶻ ·ᶻ yⁿᶻ ·ᶻ (xⁿᶻ ·ᶻ zⁿᶻ) +ᶻ xᶻ ·ᶻ zⁿᶻ ·ᶻ (wⁿᶻ ·ᶻ yⁿᶻ)
+          <ᶻ yᶻ ·ᶻ wⁿᶻ ·ᶻ (xⁿᶻ ·ᶻ zⁿᶻ) +ᶻ zᶻ ·ᶻ xⁿᶻ ·ᶻ (wⁿᶻ ·ᶻ yⁿᶻ) ◼ᵖ) .snd
+    P₁ = wᶻ ·ᶻ yⁿᶻ ·ᶻ (xⁿᶻ ·ᶻ zⁿᶻ) <ᶻ yᶻ ·ᶻ wⁿᶻ ·ᶻ (xⁿᶻ ·ᶻ zⁿᶻ)
+    P₂ = xᶻ ·ᶻ zⁿᶻ ·ᶻ (wⁿᶻ ·ᶻ yⁿᶻ) <ᶻ zᶻ ·ᶻ xⁿᶻ ·ᶻ (wⁿᶻ ·ᶻ yⁿᶻ)
+    Q₁ = wᶻ ·ᶻ yⁿᶻ <ᶻ yᶻ ·ᶻ wⁿᶻ
+    Q₂ = xᶻ ·ᶻ zⁿᶻ <ᶻ zᶻ ·ᶻ xⁿᶻ
+    ψ = +ᶻ-<ᶻ-ext (wᶻ ·ᶻ yⁿᶻ ·ᶻ (xⁿᶻ ·ᶻ zⁿᶻ)) (xᶻ ·ᶻ zⁿᶻ ·ᶻ (wⁿᶻ ·ᶻ yⁿᶻ)) (yᶻ ·ᶻ wⁿᶻ ·ᶻ (xⁿᶻ ·ᶻ zⁿᶻ)) (zᶻ ·ᶻ xⁿᶻ ·ᶻ (wⁿᶻ ·ᶻ yⁿᶻ))
+    κ : [ (wᶻ ·ᶻ xⁿᶻ +ᶻ xᶻ ·ᶻ wⁿᶻ) ·ᶻ (yⁿᶻ ·ᶻ zⁿᶻ) <ᶻ (yᶻ ·ᶻ zⁿᶻ +ᶻ zᶻ ·ᶻ yⁿᶻ) ·ᶻ (wⁿᶻ ·ᶻ xⁿᶻ) ]
+      → [ Q₁ ⊔ Q₂ ]
+    κ p =  case ψ (φ p) as P₁ ⊔ P₂ ⇒ (Q₁ ⊔ Q₂) of λ
+      { (inl q) → inlᵖ (·ᶻ-reflects-<ᶻ (wᶻ ·ᶻ yⁿᶻ) (yᶻ ·ᶻ wⁿᶻ) (xⁿᶻ ·ᶻ zⁿᶻ) 0<xzⁿᶻ q)
+      ; (inr q) → inrᵖ (·ᶻ-reflects-<ᶻ (xᶻ ·ᶻ zⁿᶻ) (zᶻ ·ᶻ xⁿᶻ) (wⁿᶻ ·ᶻ yⁿᶻ) 0<wyⁿᶻ q)
+      }
 
 +-Semigroup : [ isSemigroup _+_ ]
 +-Semigroup .IsSemigroup.is-set   = isSetℚ
