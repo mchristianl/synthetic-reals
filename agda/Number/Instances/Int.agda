@@ -218,16 +218,6 @@ private
       a +ⁿ (b +ⁿ b ·ⁿ a) ≡⟨ (λ i → a +ⁿ ·ⁿ-suc b a (~ i)) ⟩
       a +ⁿ b ·ⁿ suc a    ∎
 
-    lemma7 : ∀ a b → b +ⁿ a *ⁿ suc b ≡ a +ⁿ b *ⁿ suc a
-    lemma7 a b =
-      b +ⁿ a *ⁿ suc b    ≡⟨ (λ i → b +ⁿ *ⁿ-suc a b i) ⟩
-      b +ⁿ (a +ⁿ a *ⁿ b) ≡⟨ (λ i → +ⁿ-assoc b a (a *ⁿ b) i) ⟩
-      (b +ⁿ a) +ⁿ a *ⁿ b ≡⟨ (λ i → +ⁿ-comm b a i +ⁿ a *ⁿ b) ⟩
-      (a +ⁿ b) +ⁿ a *ⁿ b ≡⟨ (λ i → +ⁿ-assoc a b (a *ⁿ b) (~ i)) ⟩
-      a +ⁿ (b +ⁿ a *ⁿ b) ≡⟨ (λ i → a +ⁿ (b +ⁿ *ⁿ-comm a b i)) ⟩
-      a +ⁿ (b +ⁿ b *ⁿ a) ≡⟨ (λ i → a +ⁿ *ⁿ-suc b a (~ i)) ⟩
-      a +ⁿ b *ⁿ suc a    ∎
-
 abstract
   <-irrefl : (a : ℤ) → [ ¬ (a < a) ]
   <-irrefl (pos  zero  ) = <ⁿ-irrefl 0

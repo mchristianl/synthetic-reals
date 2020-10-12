@@ -1,0 +1,129 @@
+<!DOCTYPE HTML>
+<html><head><meta charset="utf-8"><title>Number.Prelude.Int</title><link rel="stylesheet" href="Agda.css"></head><body><pre class="Agda"><a id="1" class="Symbol">{-#</a> <a id="5" class="Keyword">OPTIONS</a> <a id="13" class="Pragma">--cubical</a> <a id="23" class="Pragma">--no-import-sorts</a> <a id="41" class="Symbol">#-}</a>
+
+<a id="46" class="Keyword">module</a> <a id="53" href="Number.Prelude.Int.html" class="Module">Number.Prelude.Int</a> <a id="72" class="Keyword">where</a>
+
+<a id="79" class="Keyword">open</a> <a id="84" class="Keyword">import</a> <a id="91" href="Cubical.Data.Int.html" class="Module">Cubical.Data.Int</a> <a id="108" class="Keyword">public</a> <a id="115" class="Keyword">using</a>
+  <a id="123" class="Symbol">(</a> <a id="125" href="Cubical.Data.Int.Base.html#160" class="Datatype">Int</a>
+  <a id="131" class="Symbol">;</a> <a id="133" href="Cubical.Data.Int.Base.html#661" class="Function">fromNatInt</a>
+  <a id="146" class="Symbol">;</a> <a id="148" href="Cubical.Data.Int.Base.html#775" class="Function">fromNegInt</a>
+  <a id="161" class="Symbol">;</a> <a id="163" href="Cubical.Data.Int.Base.html#293" class="Function">sucInt</a>
+  <a id="172" class="Symbol">;</a> <a id="174" href="Cubical.Data.Int.Base.html#421" class="Function">predInt</a>
+  <a id="184" class="Symbol">;</a> <a id="186" href="Cubical.Data.Int.Properties.html#4307" class="Function">sucInt+</a>
+  <a id="196" class="Symbol">;</a> <a id="198" href="Cubical.Data.Int.Properties.html#3971" class="Function">predInt+</a>
+  <a id="209" class="Symbol">;</a> <a id="211" href="Cubical.Data.Int.Properties.html#2686" class="Function Operator">_+pos_</a>
+  <a id="220" class="Symbol">;</a> <a id="222" href="Cubical.Data.Int.Properties.html#2759" class="Function Operator">_+negsuc_</a>
+  <a id="234" class="Symbol">)</a> <a id="236" class="Keyword">renaming</a>
+  <a id="247" class="Symbol">(</a> <a id="249" href="Cubical.Data.Int.Properties.html#2545" class="Function">isSetInt</a> <a id="258" class="Symbol">to</a> <a id="Properties.isSetInt"></a><a id="261" href="Number.Prelude.Int.html#261" class="Function">isSetℤ</a>
+  <a id="270" class="Symbol">;</a> <a id="272" href="Cubical.Data.Int.Properties.html#2923" class="Function Operator">_-_</a>      <a id="281" class="Symbol">to</a> <a id="284" class="Keyword">infix</a> <a id="290" class="Number">7</a> <a id="Properties._-_"></a><a id="292" href="Number.Prelude.Int.html#292" class="Function Operator">_-ᶻ_</a>
+  <a id="299" class="Symbol">;</a> <a id="301" href="Cubical.Data.Int.Properties.html#2852" class="Function Operator">_+_</a>      <a id="310" class="Symbol">to</a> <a id="313" class="Keyword">infix</a> <a id="319" class="Number">5</a> <a id="Properties._+_"></a><a id="321" href="Number.Prelude.Int.html#321" class="Function Operator">_+ᶻ_</a>
+  <a id="328" class="Symbol">;</a> <a id="330" href="Cubical.Data.Int.Base.html#180" class="InductiveConstructor">pos</a>      <a id="339" class="Symbol">to</a> <a id="Base.Int.pos"></a><a id="342" href="Number.Prelude.Int.html#342" class="InductiveConstructor">posᶻ</a>
+  <a id="349" class="Symbol">;</a> <a id="351" href="Cubical.Data.Int.Base.html#205" class="InductiveConstructor">negsuc</a>   <a id="360" class="Symbol">to</a> <a id="Base.Int.negsuc"></a><a id="363" href="Number.Prelude.Int.html#363" class="InductiveConstructor">negsucᶻ</a>
+  <a id="373" class="Symbol">)</a>
+<a id="375" class="Keyword">open</a> <a id="380" class="Keyword">import</a> <a id="387" href="Number.Instances.Int.html" class="Module">Number.Instances.Int</a> <a id="408" class="Keyword">public</a> <a id="415" class="Keyword">using</a>
+  <a id="423" class="Symbol">(</a> <a id="425" href="Number.Instances.Int.html#12567" class="Function">+negsuc-identityˡ</a>
+  <a id="445" class="Symbol">;</a> <a id="447" href="Number.Instances.Int.html#12111" class="Function">negsuc+negsuc≡+ⁿ</a>
+  <a id="466" class="Symbol">;</a> <a id="468" href="Number.Instances.Int.html#2389" class="InductiveConstructor">sneg</a>
+  <a id="475" class="Symbol">;</a> <a id="477" href="Number.Instances.Int.html#2363" class="InductiveConstructor">spos</a>
+  <a id="484" class="Symbol">)</a> <a id="486" class="Keyword">renaming</a>
+  <a id="497" class="Symbol">(</a> <a id="499" href="Number.Instances.Int.html#3839" class="Function Operator">_·_</a>          <a id="512" class="Symbol">to</a> <a id="_·_"></a><a id="515" href="Number.Prelude.Int.html#515" class="Function Operator">_·ᶻ_</a>
+  <a id="522" class="Symbol">;</a> <a id="524" href="Number.Instances.Int.html#2622" class="Function Operator">-_</a>           <a id="537" class="Symbol">to</a> <a id="-_"></a><a id="540" href="Number.Prelude.Int.html#540" class="Function Operator">-ᶻ_</a>
+  <a id="546" class="Symbol">;</a> <a id="548" href="Number.Instances.Int.html#4975" class="Function Operator">_&lt;_</a>          <a id="561" class="Symbol">to</a> <a id="_&lt;_"></a><a id="564" href="Number.Prelude.Int.html#564" class="Function Operator">_&lt;ᶻ_</a>
+  <a id="571" class="Symbol">;</a> <a id="573" href="Number.Instances.Int.html#5114" class="Function">min</a>          <a id="586" class="Symbol">to</a> <a id="min"></a><a id="589" href="Number.Prelude.Int.html#589" class="Function">minᶻ</a>
+  <a id="596" class="Symbol">;</a> <a id="598" href="Number.Instances.Int.html#5294" class="Function">max</a>          <a id="611" class="Symbol">to</a> <a id="max"></a><a id="614" href="Number.Prelude.Int.html#614" class="Function">maxᶻ</a>
+  <a id="621" class="Symbol">;</a> <a id="623" href="Number.Instances.Int.html#18384" class="Function">is-min</a>       <a id="636" class="Symbol">to</a> <a id="is-min"></a><a id="639" href="Number.Prelude.Int.html#639" class="Function">is-minᶻ</a>
+  <a id="649" class="Symbol">;</a> <a id="651" href="Number.Instances.Int.html#19273" class="Function">is-max</a>       <a id="664" class="Symbol">to</a> <a id="is-max"></a><a id="667" href="Number.Prelude.Int.html#667" class="Function">is-maxᶻ</a>
+  <a id="677" class="Symbol">;</a> <a id="679" href="Number.Instances.Int.html#28763" class="Function">·-reflects-&lt;</a> <a id="692" class="Symbol">to</a> <a id="·-reflects-&lt;"></a><a id="695" href="Number.Prelude.Int.html#695" class="Function">·ᶻ-reflects-&lt;ᶻ</a>
+  <a id="712" class="Symbol">;</a> <a id="714" href="Number.Instances.Int.html#42357" class="Function">is-LinearlyOrderedCommRing</a> <a id="741" class="Symbol">to</a> <a id="is-LinearlyOrderedCommRing"></a><a id="744" href="Number.Prelude.Int.html#744" class="Function">is-LinearlyOrderedCommRingᶻ</a>
+  <a id="774" class="Symbol">)</a>
+
+<a id="777" class="Comment">-- Int≅Builtin</a>
+<a id="792" class="Comment">-- Int≡Builtin</a>
+<a id="807" class="Comment">-- Sign</a>
+<a id="815" class="Comment">-- spos</a>
+<a id="823" class="Comment">-- sneg</a>
+<a id="831" class="Comment">-- _·ˢ_</a>
+<a id="839" class="Comment">-- sign</a>
+<a id="847" class="Comment">-- signed</a>
+<a id="857" class="Comment">-- -_</a>
+<a id="863" class="Comment">-- -involutive</a>
+<a id="878" class="Comment">-- _·_</a>
+<a id="885" class="Comment">-- _·&#39;_</a>
+<a id="893" class="Comment">-- _·&#39;&#39;_</a>
+<a id="902" class="Comment">-- ·&#39;&#39;-nullifiesʳ</a>
+<a id="920" class="Comment">-- _&lt;_</a>
+<a id="927" class="Comment">-- min</a>
+<a id="934" class="Comment">-- max</a>
+<a id="941" class="Comment">-- &lt;-irrefl</a>
+<a id="953" class="Comment">-- &lt;-trans</a>
+<a id="964" class="Comment">-- &lt;-asym</a>
+<a id="974" class="Comment">-- &lt;-cotrans</a>
+<a id="987" class="Comment">-- +-identityʳ</a>
+<a id="1002" class="Comment">-- +-identityˡ</a>
+<a id="1017" class="Comment">-- -1·≡-</a>
+<a id="1026" class="Comment">-- negsuc≡-pos</a>
+<a id="1041" class="Comment">-- negsuc-reflects-≡</a>
+<a id="1062" class="Comment">-- pos-reflects-≡</a>
+<a id="1080" class="Comment">-- possuc+negsuc≡0</a>
+<a id="1099" class="Comment">-- sucInt[negsuc+pos]≡0</a>
+<a id="1123" class="Comment">-- +-inverseʳ</a>
+<a id="1137" class="Comment">-- +-inverseˡ</a>
+<a id="1151" class="Comment">-- +-inverse</a>
+<a id="1164" class="Comment">-- pos+pos≡+ⁿ</a>
+<a id="1178" class="Comment">-- negsuc+negsuc≡+ⁿ</a>
+<a id="1198" class="Comment">-- +negsuc-identityˡ</a>
+<a id="1219" class="Comment">-- pos+negsuc≡⊎</a>
+<a id="1235" class="Comment">-- negsuc+pos≡⊎</a>
+<a id="1251" class="Comment">-- pos+negsuc≡negsuc+pos</a>
+<a id="1276" class="Comment">-- predInt-</a>
+<a id="1288" class="Comment">-- pos+negsuc-swap</a>
+<a id="1307" class="Comment">-- negsuc+pos-swap</a>
+<a id="1326" class="Comment">-- +negsuc-assoc</a>
+<a id="1343" class="Comment">-- sucInt[negsuc+pos]≡pos</a>
+<a id="1369" class="Comment">-- +pos-inverse</a>
+<a id="1385" class="Comment">-- +pos-assoc</a>
+<a id="1399" class="Comment">-- Trichotomy</a>
+<a id="1413" class="Comment">-- _≟_</a>
+<a id="1420" class="Comment">-- MinTrichtotomy</a>
+<a id="1438" class="Comment">-- MaxTrichtotomy</a>
+<a id="1456" class="Comment">-- min-trichotomy</a>
+<a id="1474" class="Comment">-- max-trichotomy</a>
+<a id="1492" class="Comment">-- is-min</a>
+<a id="1502" class="Comment">-- is-max</a>
+<a id="1512" class="Comment">-- sucInt-reflects-&lt;</a>
+<a id="1533" class="Comment">-- predInt-reflects-&lt;</a>
+<a id="1555" class="Comment">-- sucInt-preserves-&lt;</a>
+<a id="1577" class="Comment">-- predInt-preserves-&lt;</a>
+<a id="1600" class="Comment">-- +-preserves-&lt;</a>
+<a id="1617" class="Comment">-- +-reflects-&lt;</a>
+<a id="1633" class="Comment">-- +-reflects-&lt;ˡ</a>
+<a id="1650" class="Comment">-- +-&lt;-ext</a>
+<a id="1661" class="Comment">-- ·≡·&#39;</a>
+<a id="1669" class="Comment">-- ·&#39;-nullifiesʳ</a>
+<a id="1686" class="Comment">-- ·&#39;-nullifiesˡ</a>
+<a id="1703" class="Comment">-- -distrˡ</a>
+<a id="1714" class="Comment">-- ·-comm</a>
+<a id="1724" class="Comment">-- -distrʳ</a>
+<a id="1735" class="Comment">-- ·&#39;-assoc</a>
+<a id="1747" class="Comment">-- ·&#39;-assoc≡</a>
+<a id="1760" class="Comment">-- ·-assoc</a>
+<a id="1771" class="Comment">-- ·-nullifiesˡ</a>
+<a id="1787" class="Comment">-- ·-nullifiesʳ</a>
+<a id="1803" class="Comment">-- ·-identityˡ</a>
+<a id="1818" class="Comment">-- ·-identityʳ</a>
+<a id="1833" class="Comment">-- ·-preserves-&lt;</a>
+<a id="1850" class="Comment">-- ·-reflects-&lt;</a>
+<a id="1866" class="Comment">-- ·-sucInt</a>
+<a id="1878" class="Comment">-- ·-sucIntˡ</a>
+<a id="1891" class="Comment">-- ·-predInt</a>
+<a id="1904" class="Comment">-- ·-predIntˡ</a>
+<a id="1918" class="Comment">-- -distrib</a>
+<a id="1930" class="Comment">-- ·-distribˡ</a>
+<a id="1944" class="Comment">-- ·-distribʳ</a>
+
+<a id="1959" class="Comment">-- ·-Semigroup .IsSemigroup.is-assoc</a>
+<a id="1996" class="Comment">-- +-Monoid .IsMonoid.is-identity</a>
+<a id="2030" class="Comment">-- ·-Monoid .IsMonoid.is-identity</a>
+<a id="2064" class="Comment">-- is-Semiring .IsSemiring.is-dist</a>
+<a id="2099" class="Comment">-- &lt;-StrictLinearOrder .IsStrictLinearOrder.is-tricho</a>
+</pre></body></html>
