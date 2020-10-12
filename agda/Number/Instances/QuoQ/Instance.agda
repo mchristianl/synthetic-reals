@@ -75,6 +75,9 @@ private
                     a ·ᶻ (c  ·ᶻ b) ≡⟨ ·ᶻ-assoc a c b ⟩
                    (a ·ᶻ  c) ·ᶻ b  ∎
 
+  ·ᶻ-commˡ : ∀ a b c → a ·ᶻ (b ·ᶻ c) ≡ b ·ᶻ (a ·ᶻ c)
+  ·ᶻ-commˡ a b c = ·ᶻ-comm a (b ·ᶻ c) ∙ sym (·ᶻ-commʳ b a c) ∙ sym (·ᶻ-assoc b a c)
+
   is-0<ⁿᶻ : ∀{aⁿ} → [ 0 <ᶻ [1+ aⁿ ⁿ]ᶻ ]
   is-0<ⁿᶻ {aⁿ} = ℕ₊₁.n aⁿ , +ⁿ-comm (ℕ₊₁.n aⁿ) 1
 
@@ -163,12 +166,8 @@ _⁻¹'  : (x : ℤ × ℕ₊₁) → [ [ x ]ᶠ # 0 ] → ℚ
 ⁻¹'-respects-∼ : (a b : ℤ × ℕ₊₁) (p : a ∼ b)
                 → PathP (λ i → [ eq/ a b p i # 0 ] → ℚ) (a ⁻¹') (b ⁻¹')
 ⁻¹'-respects-∼ a@(aᶻ , aⁿ) b@(bᶻ , bⁿ) p = κ where
-  aⁿᶻ = [1+ aⁿ ⁿ]ᶻ
-  bⁿᶻ = [1+ bⁿ ⁿ]ᶻ
-  0<aⁿᶻ : [ 0 <ᶻ aⁿᶻ ]
-  0<aⁿᶻ = ℕ₊₁.n aⁿ , +ⁿ-comm (ℕ₊₁.n aⁿ) 1
-  0<bⁿᶻ : [ 0 <ᶻ bⁿᶻ ]
-  0<bⁿᶻ = ℕ₊₁.n bⁿ , +ⁿ-comm (ℕ₊₁.n bⁿ) 1
+  aⁿᶻ = [1+ aⁿ ⁿ]ᶻ; 0<aⁿᶻ : [ 0 <ᶻ aⁿᶻ ]; 0<aⁿᶻ = is-0<ⁿᶻ -- ℕ₊₁.n aⁿ , +ⁿ-comm (ℕ₊₁.n aⁿ) 1
+  bⁿᶻ = [1+ bⁿ ⁿ]ᶻ; 0<bⁿᶻ : [ 0 <ᶻ bⁿᶻ ]; 0<bⁿᶻ = is-0<ⁿᶻ -- ℕ₊₁.n bⁿ , +ⁿ-comm (ℕ₊₁.n bⁿ) 1
   η : signᶻ aᶻ ≡ signᶻ bᶻ
   η i = sign (eq/ a b p i)
   s : aᶻ ·ᶻ bⁿᶻ ≡ bᶻ ·ᶻ aⁿᶻ
@@ -502,25 +501,6 @@ private
   γ y q = ·-inv#0ˡ x y q
 ·-inv'' x .snd p = ∣ (x ⁻¹) {{p}} , ·-invʳ x p ∣
 
--- ·-inv'' : ∀ x → [ (∃[ y ] ([ isSetℚ ] (x · y) ≡ˢ 1)) ⇔ (x # 0) ]
--- ·-inv'' = SetQuotient.elimProp {R = _∼_} φ λ x → κ₁ x , κ₂ x where
---   φ : (x : ℚ) → _
---   φ x = isProp[] ((∃[ y ] ([ isSetℚ ] (x · y) ≡ˢ 1)) ⇔ (x # 0))
---   κ₁ : ∀ x → [ ∃[ y ] ([ isSetℚ ] ([ x ]ᶠ · y) ≡ˢ 1) ] → [ [ x ]ᶠ # 0 ]
---   κ₁ x p = ∣∣-elim (λ _ → φ') (λ{ (y , q) → γ y q } ) p    where
---     φ' = isProp[] ([ x ]ᶠ # 0)
---     γ : ∀ y → [ [ isSetℚ ] ([ x ]ᶠ · y) ≡ˢ 1 ] → [ [ x ]ᶠ # 0 ]
---     γ y q = ·-inv#0ˡ [ x ]ᶠ y q
---   κ₂ : ∀ x → [ [ x ]ᶠ # 0 ] → [ ∃[ y ] ([ isSetℚ ] ([ x ]ᶠ · y) ≡ˢ 1) ]
---   κ₂ x p = ∣ ([ x ]ᶠ ⁻¹) {{p}} , ·-invʳ' x p ∣
-  -- κ₁ : ∀ x → [ ∃[ y ] ([ isSetℚ ] (x · y) ≡ˢ 1) ] → [ x # 0 ]
-  -- κ₁ x p = ∣∣-elim (λ _ → φ') (λ{ (y , q) → γ y q } ) p    where
-  --   φ' = isProp[] (x # 0)
-  --   γ : ∀ y → [ [ isSetℚ ] (x · y) ≡ˢ 1 ] → [ x # 0 ]
-  --   γ y q = ·-inv#0ˡ x y q
-  -- κ₂ : ∀ x → [ x # 0 ] → [ ∃[ y ] ([ isSetℚ ] (x · y) ≡ˢ 1) ]
-  -- κ₂ x x#0 = ∣ (x ⁻¹) {{x#0}} , ·-invʳ x x#0 ∣
-
 -- -- note, that the following holds definitionally (TODO: put this at the definition of `min`)
 -- _ =    min [ aᶻ , aⁿ ]ᶠ [ bᶻ , bⁿ ]ᶠ                 ≡⟨ refl ⟩
 --     [ (minᶻ (aᶻ *ᶻ bⁿᶻ) (bᶻ *ᶻ aⁿᶻ) , aⁿ *₊₁ bⁿ) ]ᶠ  ∎
@@ -570,14 +550,25 @@ is-max = SetQuotient.elimProp3  {R = _∼_} (λ x y z → isProp[] ((max x y ≤
         ((aᶻ ·ᶻ cⁿᶻ) ·ᶻ bⁿᶻ ≤ᶻ (cᶻ ·ᶻ aⁿᶻ) ·ᶻ bⁿᶻ) ⊓ ((bᶻ ·ᶻ cⁿᶻ) ·ᶻ aⁿᶻ ≤ᶻ (cᶻ ·ᶻ bⁿᶻ) ·ᶻ aⁿᶻ) ≡⟨ ⊓≡⊓ (λ i → ·ᶻ-assoc aᶻ cⁿᶻ bⁿᶻ (~ i) ≤ᶻ ·ᶻ-assoc cᶻ aⁿᶻ bⁿᶻ (~ i)) (λ i → ·ᶻ-assoc bᶻ cⁿᶻ aⁿᶻ (~ i) ≤ᶻ ·ᶻ-assoc cᶻ bⁿᶻ aⁿᶻ (~ i)) ⟩
         (aᶻ ·ᶻ (cⁿᶻ ·ᶻ bⁿᶻ) ≤ᶻ cᶻ ·ᶻ (aⁿᶻ ·ᶻ bⁿᶻ)) ⊓ (bᶻ ·ᶻ (cⁿᶻ ·ᶻ aⁿᶻ) ≤ᶻ cᶻ ·ᶻ (bⁿᶻ ·ᶻ aⁿᶻ)) ≡⟨ ⊓≡⊓ (λ i → aᶻ ·ᶻ ·ᶻ-comm cⁿᶻ bⁿᶻ i ≤ᶻ cᶻ ·ᶻ (aⁿᶻ ·ᶻ bⁿᶻ)) (λ i → bᶻ ·ᶻ ·ᶻ-comm cⁿᶻ aⁿᶻ i ≤ᶻ cᶻ ·ᶻ ·ᶻ-comm bⁿᶻ aⁿᶻ i) ⟩
         (aᶻ ·ᶻ (bⁿᶻ ·ᶻ cⁿᶻ) ≤ᶻ cᶻ ·ᶻ (aⁿᶻ ·ᶻ bⁿᶻ)) ⊓ (bᶻ ·ᶻ (aⁿᶻ ·ᶻ cⁿᶻ) ≤ᶻ cᶻ ·ᶻ (aⁿᶻ ·ᶻ bⁿᶻ)) ≡⟨ sym $ ⇔toPath' $ is-maxᶻ (aᶻ ·ᶻ (bⁿᶻ ·ᶻ cⁿᶻ)) (bᶻ ·ᶻ (aⁿᶻ ·ᶻ cⁿᶻ)) (cᶻ ·ᶻ (aⁿᶻ ·ᶻ bⁿᶻ)) ⟩
-        maxᶻ (aᶻ ·ᶻ (bⁿᶻ ·ᶻ cⁿᶻ)) (bᶻ ·ᶻ (aⁿᶻ ·ᶻ cⁿᶻ)) ≤ᶻ cᶻ ·ᶻ (aⁿᶻ ·ᶻ bⁿᶻ) ≡⟨ (λ i → maxᶻ (·ᶻ-assoc aᶻ bⁿᶻ cⁿᶻ i) (·ᶻ-assoc bᶻ aⁿᶻ cⁿᶻ i) ≤ᶻ cᶻ ·ᶻ (aⁿᶻ ·ᶻ bⁿᶻ)) ⟩
-        maxᶻ ((aᶻ ·ᶻ bⁿᶻ) ·ᶻ cⁿᶻ) ((bᶻ ·ᶻ aⁿᶻ) ·ᶻ cⁿᶻ) ≤ᶻ cᶻ ·ᶻ (aⁿᶻ ·ᶻ bⁿᶻ) ≡⟨ (λ i → ·ᶻ-maxᶻ-distribʳ (aᶻ ·ᶻ bⁿᶻ) (bᶻ ·ᶻ aⁿᶻ) cⁿᶻ 0≤cⁿᶻ (~ i) ≤ᶻ cᶻ ·ᶻ (aⁿᶻ ·ᶻ bⁿᶻ)) ⟩
+        maxᶻ (aᶻ ·ᶻ (bⁿᶻ ·ᶻ cⁿᶻ)) (bᶻ ·ᶻ (aⁿᶻ ·ᶻ cⁿᶻ)) ≤ᶻ cᶻ ·ᶻ (aⁿᶻ ·ᶻ bⁿᶻ)                    ≡⟨ (λ i → maxᶻ (·ᶻ-assoc aᶻ bⁿᶻ cⁿᶻ i) (·ᶻ-assoc bᶻ aⁿᶻ cⁿᶻ i) ≤ᶻ cᶻ ·ᶻ (aⁿᶻ ·ᶻ bⁿᶻ)) ⟩
+        maxᶻ ((aᶻ ·ᶻ bⁿᶻ) ·ᶻ cⁿᶻ) ((bᶻ ·ᶻ aⁿᶻ) ·ᶻ cⁿᶻ) ≤ᶻ cᶻ ·ᶻ (aⁿᶻ ·ᶻ bⁿᶻ)                    ≡⟨ (λ i → ·ᶻ-maxᶻ-distribʳ (aᶻ ·ᶻ bⁿᶻ) (bᶻ ·ᶻ aⁿᶻ) cⁿᶻ 0≤cⁿᶻ (~ i) ≤ᶻ cᶻ ·ᶻ (aⁿᶻ ·ᶻ bⁿᶻ)) ⟩
         maxᶻ (aᶻ ·ᶻ bⁿᶻ) (bᶻ ·ᶻ aⁿᶻ) ·ᶻ cⁿᶻ ≤ᶻ cᶻ ·ᶻ (aⁿᶻ ·ᶻ bⁿᶻ) ∎
 
 ·-preserves-< : (x y z : ℚ) → [ 0 < z ] → [ x < y ] → [ x · z < y · z ]
 ·-preserves-< = SetQuotient.elimProp3 {R = _∼_} (λ x y z → isProp[] ((0 < z) ⇒ (x < y) ⇒ (x · z < y · z))) γ where
   γ : (a b c : ℤ × ℕ₊₁) → [ 0 < [ c ]ᶠ ] → [ [ a ]ᶠ < [ b ]ᶠ ] → [ [ a ]ᶠ · [ c ]ᶠ < [ b ]ᶠ · [ c ]ᶠ ]
-  γ a@(aᶻ , aⁿ) b@(bᶻ , bⁿ) c@(cᶻ , cⁿ) = {!   !}
+  γ a@(aᶻ , aⁿ) b@(bᶻ , bⁿ) c@(cᶻ , cⁿ) = κ where
+    aⁿᶻ = [1+ aⁿ ⁿ]ᶻ; 0<aⁿᶻ : [ 0 <ᶻ aⁿᶻ ]; 0<aⁿᶻ = is-0<ⁿᶻ
+    bⁿᶻ = [1+ bⁿ ⁿ]ᶻ; 0<bⁿᶻ : [ 0 <ᶻ bⁿᶻ ]; 0<bⁿᶻ = is-0<ⁿᶻ
+    cⁿᶻ = [1+ cⁿ ⁿ]ᶻ; 0<cⁿᶻ : [ 0 <ᶻ cⁿᶻ ]; 0<cⁿᶻ = is-0<ⁿᶻ
+    κ : [ 0 ·ᶻ cⁿᶻ <ᶻ cᶻ ·ᶻ 1 ] → [ aᶻ ·ᶻ bⁿᶻ <ᶻ bᶻ ·ᶻ aⁿᶻ ] → [ (aᶻ ·ᶻ cᶻ) ·ᶻ (bⁿᶻ ·ᶻ cⁿᶻ) <ᶻ (bᶻ ·ᶻ cᶻ) ·ᶻ (aⁿᶻ ·ᶻ cⁿᶻ) ]
+    κ p q = transport (λ i → [ lem' aᶻ bⁿᶻ cᶻ cⁿᶻ (~ i) <ᶻ lem' bᶻ aⁿᶻ cᶻ cⁿᶻ (~ i) ]) $ ·ᶻ-preserves-<ᶻ (aᶻ ·ᶻ bⁿᶻ) (bᶻ ·ᶻ aⁿᶻ) (cᶻ ·ᶻ cⁿᶻ) 0<cᶻ·cⁿᶻ q where
+      0<cᶻ : [ 0 <ᶻ cᶻ ]
+      0<cᶻ = transport (λ i → [ ·ᶻ-nullifiesˡ cⁿᶻ i <ᶻ ·ᶻ-identity cᶻ .fst i ]) p
+      0<cᶻ·cⁿᶻ : [ 0 <ᶻ (cᶻ ·ᶻ cⁿᶻ) ]
+      0<cᶻ·cⁿᶻ = ·ᶻ-preserves-0<ᶻ cᶻ cⁿᶻ 0<cᶻ 0<cⁿᶻ
+      lem' : ∀ a b c₁ c₂ → (a ·ᶻ c₁) ·ᶻ (b ·ᶻ c₂) ≡ (a ·ᶻ b) ·ᶻ (c₁ ·ᶻ c₂)
+      lem' a b c₁ c₂ = ·ᶻ-commʳ a c₁ (b ·ᶻ c₂) ∙ (λ i → ·ᶻ-assoc a b c₂ i ·ᶻ c₁) ∙ sym (·ᶻ-assoc (a ·ᶻ b) c₂ c₁) ∙ (λ i → (a ·ᶻ b) ·ᶻ ·ᶻ-comm c₂ c₁ i)
 
 private
   -- continuing the pattern...
