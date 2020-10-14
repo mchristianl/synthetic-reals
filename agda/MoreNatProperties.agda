@@ -11,15 +11,15 @@ open import Cubical.Relation.Nullary.Base -- ¬_
 open import Cubical.Data.Empty renaming (elim to ⊥-elim) -- `⊥` and `elim`
 open import Function.Base using (_$_)
 
-open import Cubical.Data.Nat
-open import Cubical.Data.Nat.Properties
+open import Cubical.Data.Nat hiding (min)
+-- open import Cubical.Data.Nat.Properties hiding (min)
 open import Cubical.Data.Nat.Order renaming (zero-≤ to z≤n; suc-≤-suc to s≤s)
 
 min : ℕ → ℕ → ℕ
 min a b with a ≟ b
-... | lt a<b = a 
-... | eq a≡b = a 
-... | gt b<a = b 
+... | lt a<b = a
+... | eq a≡b = a
+... | gt b<a = b
 
 max : ℕ → ℕ → ℕ
 max a b with a ≟ b
@@ -37,7 +37,7 @@ module FinInstances where
     s≤s' {m} {n} {{m≤n}} = s≤s m≤n
 
 ¬1<0 : ¬(1 < 0)
-¬1<0 (k , p) = snotz (sym (+-suc k 1) ∙ p) 
+¬1<0 (k , p) = snotz (sym (+-suc k 1) ∙ p)
 
 suc-preserves-< : ∀{x y} → x < y → suc x < suc y
 suc-preserves-< {x} {y} p = s≤s p
@@ -47,8 +47,8 @@ suc-reflects-< {x} {y} (k , p) = k , (injSuc (sym (+-suc k (suc x)) ∙ p))
 ¬[k+x<k] : ∀ k x → ¬(k + x < k)
 ¬[k+x<k] k x (z , p) = snotz $ sym $ inj-m+ {k} {0} (+-zero k ∙ sym p ∙ +-suc z (k + x) ∙ (λ i → suc (+-comm z (k + x) i)) ∙ (λ i → suc (+-assoc k x z (~ i))) ∙ sym (+-suc k (x + z)))
 
-import MoreLogic
-open MoreLogic.Reasoning
+-- import MoreLogic
+open import MoreLogic.Reasoning
 
 <-asymʷ : ∀ a b → a < b → ¬(b < a)
 <-asymʷ a b a<b = ¬m<m ∘ <-trans a<b

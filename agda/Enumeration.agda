@@ -8,9 +8,9 @@ open import Cubical.Data.Sigma.Base renaming (_×_ to infixr 4 _×_)
 open import Cubical.Data.Empty renaming (elim to ⊥-elim) -- `⊥` and `elim`
 open import Function.Base using (_$_)
 
-open import Cubical.Data.Nat
+open import Cubical.Data.Nat hiding (min)
 open import Cubical.Data.Nat.Order
-open import Cubical.Data.Nat.Properties -- using (+-suc; injSuc; snotz; +-comm; +-assoc; +-zero; inj-m+)
+-- open import Cubical.Data.Nat.Properties -- using (+-suc; injSuc; snotz; +-comm; +-assoc; +-zero; inj-m+)
 
 open import MoreNatProperties
 
@@ -33,7 +33,7 @@ max' a b = f⁻¹ (max (f a) (f b))
 
 max'-sym : ∀ a b → max' a b ≡ max' b a
 max'-sym a b with f a ≟ f b | f b ≟ f a
-... | lt x | lt y = ⊥-elim {A = λ _ → f⁻¹ (f b) ≡ f⁻¹ (f a)} $  <-asymʷ _ _ x y 
+... | lt x | lt y = ⊥-elim {A = λ _ → f⁻¹ (f b) ≡ f⁻¹ (f a)} $  <-asymʷ _ _ x y
 ... | lt x | eq y = refl
 ... | lt x | gt y = refl
 ... | eq x | lt y = refl
@@ -41,7 +41,7 @@ max'-sym a b with f a ≟ f b | f b ≟ f a
 ... | eq x | gt y = cong f⁻¹ x
 ... | gt x | lt y = refl
 ... | gt x | eq y = sym (cong f⁻¹ y)
-... | gt x | gt y = ⊥-elim {A = λ _ → f⁻¹ (f a) ≡ f⁻¹ (f b)} $  <-asymʷ _ _ x y 
+... | gt x | gt y = ⊥-elim {A = λ _ → f⁻¹ (f a) ≡ f⁻¹ (f b)} $  <-asymʷ _ _ x y
 
 max'-implies-≤'₁ : ∀ a b → a ≤' max' a b
 max'-implies-≤'₁ a b with (f a) ≟ (f b)
@@ -54,20 +54,20 @@ max-implies-≤' a b = max'-implies-≤'₁ a b , transport (λ i → b ≤' max
 
 min'-sym : ∀ a b → min' a b ≡ min' b a
 min'-sym a b with f a ≟ f b | f b ≟ f a
-... | lt x | lt y = ⊥-elim {A = λ _ → f⁻¹ (f a) ≡ f⁻¹ (f b)} $  <-asymʷ _ _ x y    
-... | lt x | eq y = sym (cong f⁻¹ y) 
+... | lt x | lt y = ⊥-elim {A = λ _ → f⁻¹ (f a) ≡ f⁻¹ (f b)} $  <-asymʷ _ _ x y
+... | lt x | eq y = sym (cong f⁻¹ y)
 ... | lt x | gt y = refl
-... | eq x | lt y = cong f⁻¹ x  
+... | eq x | lt y = cong f⁻¹ x
 ... | eq x | eq y = cong f⁻¹ x
-... | eq x | gt y = refl 
+... | eq x | gt y = refl
 ... | gt x | lt y = refl
-... | gt x | eq y = refl  
-... | gt x | gt y = ⊥-elim {A = λ _ → f⁻¹ (f b) ≡ f⁻¹ (f a)} $  <-asymʷ _ _ x y 
+... | gt x | eq y = refl
+... | gt x | gt y = ⊥-elim {A = λ _ → f⁻¹ (f b) ≡ f⁻¹ (f a)} $  <-asymʷ _ _ x y
 
 min'-implies-≤'₁ : ∀ a b → min' a b ≤' a
 min'-implies-≤'₁ a b with (f a) ≟ (f b)
-... | lt x = 0 , cong f (isRetraction a) ∙ refl {x = f a} 
-... | eq x = 0 , cong f (isRetraction a) ∙ refl {x = f a} 
+... | lt x = 0 , cong f (isRetraction a) ∙ refl {x = f a}
+... | eq x = 0 , cong f (isRetraction a) ∙ refl {x = f a}
 ... | gt (x , p) = suc x , (λ i → suc (x + cong f (sym (isRetraction b)) (~ i))) ∙ sym (+-suc _ _) ∙ p
 
 min-implies-≤' : ∀ a b → (min' a b ≤' a) × (min' a b ≤' b)

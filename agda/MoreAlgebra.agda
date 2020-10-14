@@ -75,7 +75,7 @@ module Definitions where
   IsCotrans : {ℓ ℓ' : Level} {A : Type ℓ} → (R : Rel A A ℓ') → Type (ℓ-max ℓ ℓ')
   IsCotrans {A = A} R = (a b : A) → R a b → (∀(x : A) → (R a x) ⊎ (R x b))
 
-  -- NOTE: see Cubical.Structures.Poset
+  -- NOTE: see Cubical.Algebra.Poset
   IsSymᵖ : {ℓ ℓ' : Level} {A : Type ℓ} → (R : hPropRel A A ℓ') → Type (ℓ-max ℓ ℓ')
   IsSymᵖ {A = A} R = (a b : A) → [ R a b ] → [ R b a ]
 
@@ -88,7 +88,7 @@ module Definitions where
   {- NOTE: formulating the properties on witnesses with `[_]` is similar to the previous Propositions-as-types formalism
            but it is not the way to proceed with hProps
            the idea is, to produce an hProp again
-           e.g. from `Cubical.Structures.Poset`
+           e.g. from `Cubical.Algebra.Poset`
              isTransitive : {A : Type ℓ₀} → Order ℓ₁ A → hProp (ℓ-max ℓ₀ ℓ₁)
              isTransitive {ℓ₀ = ℓ₀} {ℓ₁ = ℓ₁} {A = X} _⊑_ = φ , φ-prop
                where
@@ -184,8 +184,8 @@ module Definitions where
 
   -- NOTE: there is already
   --       isAntisym : {A : Type ℓ₀} → isSet A → Order ℓ₁ A → hProp (ℓ-max ℓ₀ ℓ₁)
-  --       in Cubical.Structures.Poset. Can we use this?
-  import Cubical.Structures.Poset
+  --       in Cubical.Algebra.Poset. Can we use this?
+  -- import Cubical.Algebra.Poset
 
   IsAntisym : {ℓ ℓ' : Level} {A : Type ℓ} → (R : Rel A A ℓ') → Type (ℓ-max ℓ ℓ')
   IsAntisym {A = A} R = ∀ a b → R a b → R b a → a ≡ b
@@ -207,7 +207,7 @@ module Definitions where
 -- NOTE: there is `Properties` and `Consequences`
 --       the difference somehow is, that we do want to open `Consequences` directly
 --       but we do not want to open `Properties` directly, because it might have a name clash
---       e.g. there is `Properties.Group` which clashes with `Cubical.Structures.Group.Group` when opening `Properties`
+--       e.g. there is `Properties.Group` which clashes with `Cubical.Algebra.Group.Group` when opening `Properties`
 --       but it is totally fine to open `Properties.Group` directly because it does not export a `Group`
 -- TODO: check whether this matches the wording of the (old) standard library
 module Consequences where
@@ -224,7 +224,7 @@ module Consequences where
     in λ where
       .IsApartnessRel.isIrrefl a (inl a<a) → <-irrefl _ a<a
       .IsApartnessRel.isIrrefl a (inr a<a) → <-irrefl _ a<a
-      .IsApartnessRel.isSym    a b p → swap p
+      .IsApartnessRel.isSym    a b p → ⊎-swap p
       .IsApartnessRel.isCotrans a b (inl a<b) x → case (<-cotrans _ _ a<b x) of λ where -- case x of f = f x
         (inl a<x) → inl (inl a<x)
         (inr x<b) → inr (inl x<b)
@@ -239,7 +239,7 @@ module Consequences where
     in record
       { isIrrefl  = λ where a (inl a<a) → <-irrefl _ a<a
                             a (inr a<a) → <-irrefl _ a<a
-      ; isSym     = λ where a b p → swap p
+      ; isSym     = λ where a b p → ⊎-swap p
       ; isCotrans = λ where
         a b (inl a<b) x → case (<-cotrans _ _ a<b x) of λ where
           (inl a<x) → inl (inl a<x)
@@ -280,8 +280,8 @@ module Consequences where
 module Properties where
 
   module _ where
-    open import Cubical.Structures.Group
-    -- import Cubical.Structures.Group.Properties
+    open import Cubical.Algebra.Group
+    -- import Cubical.Algebra.Group.Properties
 
     module GroupProperties (G : Group {ℓ}) where
       open Group G
@@ -312,10 +312,10 @@ module Properties where
         x                    ∎)
 
   module _ where
-    open import Cubical.Structures.Ring
+    open import Cubical.Algebra.Ring
     module RingProperties (R : Ring {ℓ}) where
       open Ring R
-      open Cubical.Structures.Ring.Theory R
+      open Cubical.Algebra.Ring.Theory R
 
       -- NOTE: a few facts about rings that might be collected from elsewhere
       a+b-b≡a : ∀ a b → a ≡ (a + b) - b
@@ -325,7 +325,7 @@ module Properties where
                         S = transport (λ i → a ≡ (+-assoc a b (- b)) i ) R
                     in S
 
-      -- NOTE: this is called `simplL` and `simplL` in `Cubical.Structures.Group.Properties.GroupLemmas`
+      -- NOTE: this is called `simplL` and `simplL` in `Cubical.Algebra.Group.Properties.GroupLemmas`
       +-preserves-≡ : ∀{a b} → ∀ c → a ≡ b → a + c ≡ b + c
       +-preserves-≡ c a≡b i = a≡b i + c
 
